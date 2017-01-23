@@ -13,7 +13,8 @@
 		var cc = document.getElementById(divname); 
 		
 		remain = remain - 1;
-		if(remain <= 0){
+		if(remain < 0){
+			document.getElementById('divdown').style.display = "none";
 			document.getElementById('formdiv1').style.display = "block";
 			document.getElementById('formdiv2').style.display = "block";
 			return false;
@@ -35,7 +36,7 @@
         <div class="col-sm-offset-2 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    New Pomos
+                    Start Pomo
                 </div>
 
                 <div class="panel-body">
@@ -84,7 +85,7 @@
                     <div class="panel-body">
                         <table class="table table-striped task-table">
                             <thead>
-                                <th>Task</th>
+                                <th>Pomo</th>
                                 <th>&nbsp;</th>
                             </thead>
                             <tbody>
