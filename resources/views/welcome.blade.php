@@ -8,7 +8,7 @@
                 <div class="panel-heading">Welcome</div>
 
                 <div class="panel-body">
-                    Your Application's Landing Page.
+                    Start a new Pomo! Manager your task!
                 </div>
             </div>
         </div>

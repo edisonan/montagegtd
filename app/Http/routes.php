@@ -31,6 +31,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/tasks', 'TaskController@index');
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');
+    
+    Route::get('/pomos', 'PomoController@index');
+    Route::get('/pomos/start', 'PomoController@start');
+    
+    Route::post('/pomo', 'PomoController@store');
+    Route::delete('/pomo/{pomo}', 'PomoController@destroy');
 
     Route::auth();
 
