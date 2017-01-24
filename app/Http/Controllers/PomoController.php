@@ -73,6 +73,18 @@ class PomoController extends Controller
     	$pomo_start_time = $request->session()->set('pomo_start_time', time());
     	return redirect('/pomos');
     }
+    
+    /**
+     * Discard a new pomo.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function discard(Request $request)
+    {
+    	$pomo_start_time = $request->session()->forget('pomo_start_time');
+    	return redirect('/pomos');
+    }
 
     /**
      * Create a new pomo.

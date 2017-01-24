@@ -1,6 +1,17 @@
 @extends('layouts.app')
 
 <script language="javascript" type="text/javascript"> 
+
+	document.addEventListener('DOMContentLoaded', function () {
+	  if (!Notification) {
+	    alert('Desktop notifications not available in your browser. Try Chromium.'); 
+	    return;
+	  }
+
+	  if (Notification.permission !== "granted")
+	    Notification.requestPermission();
+	});
+	
 	var interval = 1000; 
 	var remain = {{ $runing_pomo_remain }};
 	var status = {{ $runing_pomo_status }};
@@ -13,6 +24,10 @@
 		var cc = document.getElementById(divname); 
 		
 		remain = remain - 1;
+		if(remain == 0){
+			notify("您已经完成了一个小目标，快来记录一下吧~");
+		}
+		
 		if(remain < 0){
 			document.getElementById('divdown').style.display = "none";
 			document.getElementById('formdiv1').style.display = "block";
@@ -25,10 +40,35 @@
 		
 		cc.innerHTML = "#Remain# " + minute_label +":"+ second_label; 
 	}
+
+	function notify(message)
+	{
+		if (Notification.permission !== "granted")
+		    Notification.requestPermission();
+		  else {
+		    var notification = new Notification('Notification title', {
+		      icon: 'http://congcong.us/favicon.ico',
+		      icon: 'http://congcong.us/favicon.ico',
+		      body: message,
+		    });
+
+		    notification.onclick = function () {
+		      window.open("{{'pomos'}}");      
+		    };
+
+		  }
+	}
+
+	function discard(){
+		if (confirm("确认要放弃咩？")) {
+			location.href = '{{'pomos/discard'}}';
+		}
+	}
 	
 	if(status == 2){
 		window.setInterval(function(){ShowCountDown( remain, "divdown" );}, interval); 
 	}
+	
 </script> 
 
 @section('content')
@@ -44,7 +84,10 @@
                     @include('common.errors')
                     
                     @if($runing_pomo_status == 2)
-                    	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="#" role="button" id = "divdown" ></a>
+                    	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="#" role="button" id = "divdown" onclick="discard()" ></a>
+                    	<!-- 
+                    	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    	 -->
                     @elseif($runing_pomo_status == 1)
                    		 <a class="btn btn-lg btn-primary btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > start new pomo! </a>
                     @endif
@@ -68,6 +111,7 @@
                                 <button type="submit" class="btn btn-default">
                                     <i class="fa fa-btn fa-plus"></i>Add Pomo
                                 </button>
+                                <a href="#" onclick="discard()">discard and restart?</a>
                             </div>
                         </div>
                     </form>
