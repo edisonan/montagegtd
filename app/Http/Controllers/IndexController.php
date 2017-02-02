@@ -24,7 +24,7 @@ class IndexController extends Controller
     
     protected $pomos;
 
-    const DEFAULT_INTERVAL = 10;//25min
+    const DEFAULT_INTERVAL = 1500;//25min
     
     /**
      * Create a new controller instance.
