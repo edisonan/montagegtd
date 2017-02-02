@@ -5,14 +5,14 @@ namespace App;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Task extends Model
+class Note extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['name','priority','remindtime','deadline','status'];
+    protected $fillable = ['name','status'];
     
     /**
      * The attributes that should be cast to native types.

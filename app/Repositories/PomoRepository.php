@@ -19,4 +19,18 @@ class PomoRepository
                     ->orderBy('created_at', 'asc')
                     ->get();
     }
+    
+    /**
+     * Get all of the pomos for a given user.
+     *
+     * @param  User  $user
+     * @return Collection
+     */
+    public function forUserByTime(User $user, $time)
+    {
+        return Pomo::where('user_id', $user->id)
+        			->where('created_at', '>' ,$time)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+    }
 }

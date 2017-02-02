@@ -53,15 +53,31 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
+    	
         $this->validate($request, [
             'name' => 'required|max:255',
+            'remindtime' => 'date_format:Y-m-d H:i:s',
+            'deadline' => 'date_format:Y-m-d H:i:s',
         ]);
+        
+        $params = array();
+        $params['name'] = $request->name;
+        
+        echo $request->priority;
+        if(isset($request->priority) && in_array($request->priority, array(1,2,3,4))){
+        	$params['priority'] = $request->priority;
+        }
+        
+        if(isset($request->remindtime) && strtotime($request->remindtime) > time()){
+        	$params['remindtime'] = $request->remindtime;
+        }
+        
+        if(isset($request->deadline) && strtotime($request->deadline) > time()){
+        	$params['deadline'] = $request->deadline;
+        }
+        $request->user()->tasks()->create($params);
 
-        $request->user()->tasks()->create([
-            'name' => $request->name,
-        ]);
-
-        return redirect('/tasks');
+        return redirect('/index');
     }
 
     /**
@@ -74,9 +90,19 @@ class TaskController extends Controller
     public function destroy(Request $request, Task $task)
     {
         $this->authorize('destroy', $task);
+        
+        $params = array();
+        
+        if($request->type == 'finish'){
+        	$params['status'] = 2;
+        } else {
+        	$params['status'] = 3;
+        }
+        $flag = $task->update($params);
+//         print_r($params);
+//         print_r($flag);exit;
 
-        $task->delete();
-
-        return redirect('/tasks');
+        return redirect('/index');
     }
+    
 }

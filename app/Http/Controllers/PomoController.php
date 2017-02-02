@@ -19,7 +19,7 @@ class PomoController extends Controller
      */
     protected $pomos;
     
-    const DEFAULT_INTERVAL = 1500;//25min
+    const DEFAULT_INTERVAL = 10;//25min
     
     /**
      * Create a new controller instance.
@@ -71,7 +71,7 @@ class PomoController extends Controller
     public function start(Request $request)
     {
     	$pomo_start_time = $request->session()->set('pomo_start_time', time());
-    	return redirect('/pomos');
+    	return redirect('/index');
     }
     
     /**
@@ -83,7 +83,7 @@ class PomoController extends Controller
     public function discard(Request $request)
     {
     	$pomo_start_time = $request->session()->forget('pomo_start_time');
-    	return redirect('/pomos');
+    	return redirect('/index');
     }
 
     /**
@@ -95,7 +95,6 @@ class PomoController extends Controller
     public function store(Request $request)
     {
     	$pomo_start_time = $request->session()->get('pomo_start_time');
-    	
     	if(isset($pomo_start_time) && !empty($pomo_start_time) && time() > $pomo_start_time + self::DEFAULT_INTERVAL){
 	        $this->validate($request, [
 	            'name' => 'required|max:255',
@@ -104,12 +103,11 @@ class PomoController extends Controller
 	        $request->user()->pomos()->create([
 	            'name' => $request->name,
 	        ]);
-	        
 	        //remove
 	        $request->session()->forget('pomo_start_time');
     	}
 
-        return redirect('/pomos');
+        return redirect('/index');
     }
 
     /**
@@ -125,6 +123,6 @@ class PomoController extends Controller
 
         $pomo->delete();
 
-        return redirect('/pomos');
+        return redirect('/index');
     }
 }

@@ -27,6 +27,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/', function () {
         return view('welcome');
     })->middleware('guest');
+    
+    Route::get('/index', 'IndexController@index');
+    
+    Route::get('/notes', 'NoteController@index');
+    Route::post('/note', 'NoteController@store');
+    Route::delete('/note/{note}', 'NoteController@destroy');
 
     Route::get('/tasks', 'TaskController@index');
     Route::post('/task', 'TaskController@store');

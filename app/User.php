@@ -41,4 +41,12 @@ class User extends Authenticatable
     {
     	return $this->hasMany(Pomo::class);
     }
+    
+    /**
+     * Get all of the tasks for the user.
+     */
+    public function notes()
+    {
+    	return $this->hasMany(Note::class);
+    }
 }
