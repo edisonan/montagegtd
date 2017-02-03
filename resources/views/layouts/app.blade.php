@@ -56,8 +56,7 @@
                     <!-- Authentication Links -->
                     <li><a href="{{ url('/') }}">开蕃走起！</a></li>
                     <li><a href="{{ url('/notes') }}">在想什么？</a></li>
-                    <li><a href="#">排行榜</a></li>
-                    <li><a href="#">统计</a></li>
+                    
                     @if (Auth::guest())
                         <li><a href="{{ url('/login') }}">登录</a></li>
                         <li><a href="{{ url('/register') }}">注册</a></li>
@@ -68,10 +67,12 @@
                             </a>
 
                             <ul class="dropdown-menu" role="menu">
+                    			<li><a href="#">统计</a></li>
                                 <li><a href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a></li>
                             </ul>
                         </li>
                     @endif
+                    
                 </ul>
             </div>
         </div>

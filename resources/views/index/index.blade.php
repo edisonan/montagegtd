@@ -15,7 +15,7 @@
 	var interval = 1000; 
 	var remain = {{ $runing_pomo_remain }};
 	var status = {{ $runing_pomo_status }};
-	
+
 	function ShowCountDown(leftsecond, divname) 
 	{ 
 		var minute=Math.floor(leftsecond/60); 
@@ -25,20 +25,29 @@
 		
 		remain = remain - 1;
 		if(remain == 0){
-			notify("您已经完成了一个小目标，快来记录一下吧~");
+			if(status == 2){
+				notify("您已经完成了一个小目标，快来记录一下吧~");
+			} else if(status == 4){
+				notify("休息完成，快来开始下一个番茄吧~");
+			}
 		}
 		
 		if(remain < 0){
-			document.getElementById('divdown').style.display = "none";
-			document.getElementById('formdiv1').style.display = "block";
-			document.getElementById('formdiv2').style.display = "block";
-			return false;
+			if(status == 2){
+				document.getElementById('divdown').style.display = "none";
+				document.getElementById('formdiv1').style.display = "block";
+				return false;
+			} else {
+				location.href = '{{url('/index')}}';
+			}
 		}
 
 		var minute_label = (minute >= 10)?minute:"0"+minute ;
 		var second_label = (second >= 10)?second:"0"+second ;
+
+		var add_content = status == 2?'#此番茄还剩#':'#休息还剩#';
 		
-		cc.innerHTML = "#Remain# " + minute_label +":"+ second_label; 
+		cc.innerHTML = add_content + minute_label +":"+ second_label; 
 	}
 
 	function notify(message)
@@ -46,7 +55,7 @@
 		if (Notification.permission !== "granted")
 		    Notification.requestPermission();
 		  else {
-		    var notification = new Notification('Notification title', {
+		    var notification = new Notification('小目标', {
 		      icon: 'http://congcong.us/favicon.ico',
 		      body: message,
 		    });
@@ -54,7 +63,6 @@
 		    notification.onclick = function () {
 		      window.open("{{'/index'}}");      
 		    };
-
 		  }
 	}
 
@@ -70,10 +78,9 @@
 		document.getElementById('task_form_div3').style.display = "block";
 	}
 	
-	if(status == 2){
+	if(status == 2 || status == 4){
 		window.setInterval(function(){ShowCountDown( remain, "divdown" );}, interval); 
 	}
-
 </script> 
 
 @section('content')
@@ -97,14 +104,16 @@
                     	@else
                     	快来记录一下这个番茄吧
                     	@endif
-                    	<a href="{{'pomos'}}">history</a>
+                    	<div style="float:right">
+                    		<a href="{{'pomos'}}">[已完成番茄]</a>
+                    	</div>
                 </div>
 
                 <div class="panel-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
                     
-                    @if($runing_pomo_status == 2)
+                    @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
                     	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="#" role="button" id = "divdown" onclick="discard()" ></a>
                     	<!-- 
                     	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -173,7 +182,10 @@
         <div class="col-sm-offset-2 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新的待办事项<a href="{{'tasks'}}">history</a>
+                    	新的待办事项
+                    	<div style="float:right">
+                    		<a href="{{'tasks'}}">[已完成待办]</a>
+                    	</div>
                 </div>
 
                 <div class="panel-body">
@@ -189,7 +201,7 @@
                             <label for="task-name" class="col-sm-3 control-label">待办内容</label>
 
                             <div class="col-sm-6">
-                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}"><a href="#" onclick="displayATHiddenDiv()">高级选项</a>
+                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}"><a href="javascript:void(0)" onclick="displayATHiddenDiv()">高级选项</a>
                             </div>
                         </div>
                         
@@ -219,7 +231,7 @@
                             <label for="task-name" class="col-sm-3 control-label">提醒时间</label>
 
                             <div class="col-sm-6">
-                                <input type="text" name="remindtime" id="task-remindtime" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})">
+                                <input type="text" name="remindtime" id="task-remindtime" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
                             </div>
                         </div>
                         
@@ -227,7 +239,7 @@
                             <label for="task-name" class="col-sm-3 control-label">截止日期</label>
 
                             <div class="col-sm-6">
-                                <input type="text" name="deadline" id="task-deadline" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})">
+                                <input type="text" name="deadline" id="task-deadline" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
                             </div>
                         </div>
 
@@ -251,7 +263,7 @@
                             </thead>
                             <tbody>
                                 @foreach ($tasks as $task)
-                                    <tr>
+                                    <tr @if($task->priority == 4) class="danger" title="重要紧急" @elseif($task->priority == 3) class="warning" title="重要不紧急"  @elseif($task->priority == 2) class="info" title="不重要紧急" @endif>
                                         <td class="table-text"  width="80%"><div>{{ $task->name }}</div></td>
 
                                         <!-- Task Delete Button -->

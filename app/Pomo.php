@@ -6,7 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pomo extends Model
 {
-/**
+	const DEFAULT_INTERVAL = 5;//25min
+	const DEFAULT_REST_INTERVAL = 5;//5min
+	
+	
+	const STATUS_INIT = 1;
+	const STATUS_PROCESSING = 2;
+	const STATUS_FINISHED = 3;
+	const STATUS_RESTING = 4;
+	
+	/**
      * The attributes that are mass assignable.
      *
      * @var array

@@ -24,8 +24,6 @@ class IndexController extends Controller
     
     protected $pomos;
 
-    const DEFAULT_INTERVAL = 1500;//25min
-    
     /**
      * Create a new controller instance.
      *
@@ -48,19 +46,30 @@ class IndexController extends Controller
      */
     public function index(Request $request)
     {
-    	//1默认未开启 2进行中 3已经完成
-    	$runing_pomo_status = 1;
+    	//1默认等待中 2进行中 3已经完成 4休息中 5休息结束
+    	$runing_pomo_status = $request->session()->get('pomo_status', 1);
     	$runing_pomo_remain = 0;
     	 
-    	$pomo_start_time = $request->session()->get('pomo_start_time');
-    	if(isset($pomo_start_time) && !empty($pomo_start_time)){
-    		if(time() < $pomo_start_time + self::DEFAULT_INTERVAL){
-    			$runing_pomo_status = 2;
-    			$runing_pomo_remain = $pomo_start_time + self::DEFAULT_INTERVAL - time();
+    	$pomo_start_time = $request->session()->get('pomo_start_time', time());
+    	
+    	//判断是否正在进行中或者休息中，如果尚未完成则进行展示剩余时间
+    	if($runing_pomo_status == Pomo::STATUS_PROCESSING || $runing_pomo_status == Pomo::STATUS_RESTING){
+    		$interval_time = ($runing_pomo_status == Pomo::STATUS_PROCESSING) ? Pomo::DEFAULT_INTERVAL:Pomo::DEFAULT_REST_INTERVAL;
+    		$remain_time = $pomo_start_time + $interval_time - time();
+    		
+    		//如果已经完成，或者休息完成，那么自动设置状态
+    		if($remain_time < 0){
+    			if($runing_pomo_status == Pomo::STATUS_PROCESSING){
+	    			$request->session()->set('pomo_status', Pomo::STATUS_FINISHED);
+    			} else {
+    				$request->session()->set('pomo_status', Pomo::STATUS_INIT);
+    				$runing_pomo_status = Pomo::STATUS_INIT;
+    			}
     		} else {
-    			$runing_pomo_status = 3;
+    			$runing_pomo_remain = $remain_time;
     		}
     	}
+    	
     	$tasks = $this->tasks->forUserByStatus($request->user(), 1);
     	$pomos = $this->pomos->forUserByTime($request->user(), date('Y-m-d H:i:s',strtotime(date('Y-m-d'))));
     	

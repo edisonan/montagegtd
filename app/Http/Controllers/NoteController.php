@@ -41,10 +41,10 @@ class NoteController extends Controller
     public function index(Request $request)
     {
         return view('notes.index', [
-            'notes' => $this->notes->forUser($request->user()),
+            'notes' => $this->notes->forUserByStatus($request->user(), 2),
         ]);
     }
-
+    
     /**
      * Create a new note.
      *

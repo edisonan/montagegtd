@@ -19,8 +19,6 @@ class PomoController extends Controller
      */
     protected $pomos;
     
-    const DEFAULT_INTERVAL = 1500;//25min
-    
     /**
      * Create a new controller instance.
      *
@@ -47,9 +45,9 @@ class PomoController extends Controller
     	
     	$pomo_start_time = $request->session()->get('pomo_start_time');
     	if(isset($pomo_start_time) && !empty($pomo_start_time)){
-    		if(time() < $pomo_start_time + self::DEFAULT_INTERVAL){
+    		if(time() < $pomo_start_time + Pomo::DEFAULT_INTERVAL){
     			$runing_pomo_status = 2;
-    			$runing_pomo_remain = $pomo_start_time + self::DEFAULT_INTERVAL - time();
+    			$runing_pomo_remain = $pomo_start_time + Pomo::DEFAULT_INTERVAL - time();
     		} else {
     			$runing_pomo_status = 3;
     		}
@@ -70,6 +68,7 @@ class PomoController extends Controller
      */
     public function start(Request $request)
     {
+    	$request->session()->set('pomo_status', Pomo::STATUS_PROCESSING);
     	$pomo_start_time = $request->session()->set('pomo_start_time', time());
     	return redirect('/index');
     }
@@ -82,6 +81,7 @@ class PomoController extends Controller
      */
     public function discard(Request $request)
     {
+    	$request->session()->set('pomo_status', Pomo::STATUS_INIT);
     	$pomo_start_time = $request->session()->forget('pomo_start_time');
     	return redirect('/index');
     }
@@ -95,7 +95,7 @@ class PomoController extends Controller
     public function store(Request $request)
     {
     	$pomo_start_time = $request->session()->get('pomo_start_time');
-    	if(isset($pomo_start_time) && !empty($pomo_start_time) && time() > $pomo_start_time + self::DEFAULT_INTERVAL){
+    	if(isset($pomo_start_time) && !empty($pomo_start_time) && time() > $pomo_start_time + Pomo::DEFAULT_INTERVAL){
 	        $this->validate($request, [
 	            'name' => 'required|max:255',
 	        ]);
@@ -103,8 +103,10 @@ class PomoController extends Controller
 	        $request->user()->pomos()->create([
 	            'name' => $request->name,
 	        ]);
-	        //remove
-	        $request->session()->forget('pomo_start_time');
+	        
+	        //auto resting
+	        $request->session()->set('pomo_status', Pomo::STATUS_RESTING);
+	        $request->session()->set('pomo_start_time', time());
     	}
 
         return redirect('/index');

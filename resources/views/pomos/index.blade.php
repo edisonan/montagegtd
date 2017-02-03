@@ -5,13 +5,13 @@
         <div class="col-sm-offset-2 col-sm-8">
 
             <!-- Finish Pomos -->
-            @if (count($pomos) > 0)
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        Finish Pomos
+                        	番茄汇总
                     </div>
 
                     <div class="panel-body">
+		            @if (count($pomos) > 0)
                         <table class="table table-striped task-table">
                             <thead>
                                 <th>Pomo</th>
@@ -37,9 +37,11 @@
                                 @endforeach
                             </tbody>
                         </table>
+                    @else
+                    	暂时还没有完成哦，快去<a href="{{url('/index')}}">开始第一个番茄</a>吧！
+		            @endif
                     </div>
                 </div>
-            @endif
         </div>
     </div>
 @endsection

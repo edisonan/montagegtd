@@ -6,6 +6,31 @@ function submitProcess($status){
 	document.getElementById('status_id').value = $status;
 	document.getElementById('add_note_form').submit();
 }
+
+function addContent($content){
+	note_name = document.getElementById('note-name');
+	note_name.value = note_name.value + $content;
+}
+
+window.onload=function(){  
+	var allElements = document.getElementsByTagName('*'); 
+	for (var i=0; i< allElements.length; i++ ) 
+	{ 
+		console.log(allElements[i].className);
+		if (allElements[i].className == "preprepre" ) { 
+			var html = allElements[i].textContent;
+			
+			var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
+			html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
+			
+			reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
+			html = html.replace(reg, "<a href='#'>$1</a>");
+			
+			allElements[i].innerHTML = html;
+		} 
+	}
+} 
+
 </script>
 
 @section('content')
@@ -13,7 +38,7 @@ function submitProcess($status){
         <div class="col-sm-offset-2 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    New note
+                    	新的笔记
                 </div>
 
                 <div class="panel-body">
@@ -26,10 +51,12 @@ function submitProcess($status){
 
                         <!-- note Name -->
                         <div class="form-group">
-                            <label for="note-name" class="col-sm-3 control-label">note</label>
+                            <label for="note-name" class="col-sm-2 control-label">你在想什么呢</label>
 
-                            <div class="col-sm-6">
-                            	<textarea class="form-control" rows="3"  name="name" id="note-name" ></textarea>
+                            <div class="col-sm-10">
+                            	<textarea class="form-control" rows="4"  name="name" id="note-name" ></textarea>
+                            	<br/>
+                            	<span>推荐话题:</span><a href="#" onclick="addContent('#每日小目标#')">#每日小目标#</a> <a href="#"  onclick="addContent('#每日总结#')">#每日总结#</a> <a href="#"  onclick="addContent('#读书笔记#')">#读书笔记#</a> <a href="#"  onclick="addContent('#分享#')">#分享#</a>
                             </div>
                         </div>
 
@@ -74,7 +101,7 @@ function submitProcess($status){
                                         	<center><img alt="" width="40px" src="http://gravatar.duoshuo.com/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1"> {{ $note->user->name }}</center>
                                         </td>
                                         
-                                        <td class="table-text"  width="80%"><pre style="white-space: pre-wrap;word-wrap: break-word;">{{ $note->name }}</pre></td>
+                                        <td class="table-text"  width="80%"><pre style="white-space: pre-wrap;word-wrap: break-word;" class="preprepre">{{ $note->name }}</pre></td>
 
                                         <!-- note Delete Button -->
                                         <td  width="10%">
