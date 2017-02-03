@@ -71,7 +71,7 @@ function submitProcess($status){
                                 @foreach ($notes as $note)
                                     <tr>
                                         <td class="table-text"  width="10%">
-                                        	<center><img alt="" width="40px" src="http://gravatar.duoshuo.com/avatar/{{ md5(strtolower(trim($note->user->email))) }}"> {{ $note->user->name }}</center>
+                                        	<center><img alt="" width="40px" src="http://gravatar.duoshuo.com/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1"> {{ $note->user->name }}</center>
                                         </td>
                                         
                                         <td class="table-text"  width="80%"><pre style="white-space: pre-wrap;word-wrap: break-word;">{{ $note->name }}</pre></td>
