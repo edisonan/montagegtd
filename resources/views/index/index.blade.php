@@ -94,7 +94,7 @@
                     			@endif
                     		@endif
                     		
-                    	@else()
+                    	@else
                     	快来记录一下这个番茄吧
                     	@endif
                     	<a href="{{'pomos'}}">history</a>
@@ -198,16 +198,16 @@
 
                             <div class="col-sm-6">
                             	<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio1" value="1" checked> 1
+								  <input type="radio" name="priority" id="inlineRadio1" value="1" checked> I不重要不紧急
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio2" value="2"> 2
+								  <input type="radio" name="priority" id="inlineRadio2" value="2"> II不重要紧急
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio3" value="3"> 3
+								  <input type="radio" name="priority" id="inlineRadio3" value="3"> III重要不紧急
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio4" value="4"> 4
+								  <input type="radio" name="priority" id="inlineRadio4" value="4"> IV重要紧急 
 								</label>
 								<!-- 
                                 <input type="text" name="priority" id="task-priority" class="form-control" value="{{ old('task') }}">
