@@ -81,6 +81,25 @@
 	if(status == 2 || status == 4){
 		window.setInterval(function(){ShowCountDown( remain, "divdown" );}, interval); 
 	}
+
+	window.onload=function(){  
+		var allElements = document.getElementsByTagName('*'); 
+		for (var i=0; i< allElements.length; i++ ) 
+		{ 
+			console.log(allElements[i].className);
+			if (allElements[i].className == "preprepre" ) { 
+				var html = allElements[i].textContent;
+				
+				var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
+				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
+				
+				reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
+				html = html.replace(reg, "<a href='#'>$1</a>");
+				
+				allElements[i].innerHTML = html;
+			} 
+		}
+	} 
 </script> 
 
 @section('content')
@@ -128,10 +147,6 @@
 
                         <!-- Pomo Name -->
                         <div class="form-group" @if($runing_pomo_status != 3) style="display:none" @endif id="formdiv1">
-                        	<!--  
-                            <label for="pomo-name" class="col-sm-3 control-label">此番茄做了什么？</label>
-                        	-->
-
                             <div class="col-sm-9">
                                 <input type="text" name="name" id="pomo-name" class="form-control" value="{{ old('pomo') }}" placeholder="此番茄做了什么？">
                             </div>
@@ -210,16 +225,16 @@
 
                             <div class="col-sm-6">
                             	<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio1" value="1" checked> I不重要不紧急
+								  <input type="radio" name="priority" id="inlineRadio1" value="1" checked>不重要不紧急
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio2" value="2"> II不重要紧急
+								  <input type="radio" name="priority" id="inlineRadio2" value="2">不重要紧急
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio3" value="3"> III重要不紧急
+								  <input type="radio" name="priority" id="inlineRadio3" value="3">重要不紧急
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio4" value="4"> IV重要紧急 
+								  <input type="radio" name="priority" id="inlineRadio4" value="4">重要紧急 
 								</label>
 								<!-- 
                                 <input type="text" name="priority" id="task-priority" class="form-control" value="{{ old('task') }}">
@@ -264,7 +279,7 @@
                             <tbody>
                                 @foreach ($tasks as $task)
                                     <tr @if($task->priority == 4) class="danger" title="重要紧急" @elseif($task->priority == 3) class="warning" title="重要不紧急"  @elseif($task->priority == 2) class="info" title="不重要紧急" @endif>
-                                        <td class="table-text"  width="80%"><div>{{ $task->name }}</div></td>
+                                        <td class="table-text"  width="80%"><div class="preprepre">{{ $task->name }}</pre></td>
 
                                         <!-- Task Delete Button -->
                                         <td  width="10%"  align='right'>

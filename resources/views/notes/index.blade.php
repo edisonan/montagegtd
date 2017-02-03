@@ -84,13 +84,13 @@ window.onload=function(){
             @if (count($notes) > 0)
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        Current notes
+                       	 大家在分享什么
                     </div>
 
                     <div class="panel-body">
                         <table class="table table-striped task-table">
                             <thead>
-                                <th>Notes</th>
+                                <th>想法</th>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>
                             </thead>
@@ -112,6 +112,14 @@ window.onload=function(){
 
                                                 <button type="submit" id="delete-note-{{ $note->id }}" class="btn btn-danger">
                                                     <i class="fa fa-btn fa-trash"></i>
+                                                </button>
+                                            </form>
+                                            @else
+                                            <form action="{{url('note/like/' . $note->id)}}" method="POST">
+                                                {{ csrf_field() }}
+
+                                                <button type="button" id="like-note-{{ $note->id }}" class="btn btn-info">
+                                                    <i class="fa fa-btn fa-thumbs-o-up"></i>
                                                 </button>
                                             </form>
                                             @endif
