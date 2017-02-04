@@ -80,7 +80,7 @@ class NoteController extends Controller
     {
         $this->authorize('destroy', $note);
 
-        $notes->delete();
+        $note->delete();
 
         return redirect('/notes');
     }
