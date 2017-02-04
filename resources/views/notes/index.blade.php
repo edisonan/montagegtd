@@ -24,7 +24,7 @@ window.onload=function(){
 			html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
 			
 			reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
-			html = html.replace(reg, "<a href='#'>$1</a>");
+			html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
 			
 			allElements[i].innerHTML = html;
 		} 
@@ -70,7 +70,7 @@ function html_encode(str)
                             <div class="col-sm-10">
                             	<textarea class="form-control" rows="4"  name="name" id="note-name" ></textarea>
                             	<br/>
-                            	<span>推荐话题:</span><a href="#" onclick="addContent('#每日小目标#')">#每日小目标#</a> <a href="#"  onclick="addContent('#每日总结#')">#每日总结#</a> <a href="#"  onclick="addContent('#读书笔记#')">#读书笔记#</a> <a href="#"  onclick="addContent('#分享#')">#分享#</a> <a href="#"  onclick="addContent('#碎碎念#')">#碎碎念#</a>
+                            	<span>推荐话题:</span><a href="javascript:void(0)" onclick="addContent('#每日小目标#')">#每日小目标#</a> <a href="javascript:void(0)"  onclick="addContent('#每日总结#')">#每日总结#</a> <a href="javascript:void(0)"  onclick="addContent('#读书笔记#')">#读书笔记#</a> <a href="javascript:void(0)"  onclick="addContent('#分享#')">#分享#</a> <a href="javascript:void(0)"  onclick="addContent('#碎碎念#')">#碎碎念#</a>
                             </div>
                         </div>
 

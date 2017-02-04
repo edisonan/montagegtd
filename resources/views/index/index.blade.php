@@ -94,7 +94,7 @@
 				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
 				
 				reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
-				html = html.replace(reg, "<a href='#'>$1</a>");
+				html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
 				
 				allElements[i].innerHTML = html;
 			} 
@@ -133,7 +133,7 @@
                     @include('common.errors')
                     
                     @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
-                    	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="#" role="button" id = "divdown" onclick="discard()" ></a>
+                    	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
                     	<!-- 
                     	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     	 -->
@@ -154,7 +154,7 @@
                                 <button type="submit" class="btn btn-success">
                                     <i class="fa fa-btn fa-plus"></i>记录一下
                                 </button>
-                                <a href="#" onclick="discard()">放弃?</a>
+                                <a href="javascript:void(0)" onclick="discard()">放弃?</a>
                             </div>
                         </div>
                     </form>
