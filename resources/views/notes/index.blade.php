@@ -18,7 +18,7 @@ window.onload=function(){
 	{ 
 		console.log(allElements[i].className);
 		if (allElements[i].className == "preprepre" ) { 
-			var html = allElements[i].textContent;
+			var html = html_encode(allElements[i].textContent);
 			
 			var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
 			html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
@@ -30,6 +30,20 @@ window.onload=function(){
 		} 
 	}
 } 
+
+function html_encode(str)   
+{   
+  var s = "";   
+  if (str.length == 0) return "";   
+  s = str.replace(/&/g, "&gt;");   
+  s = s.replace(/</g, "&lt;");   
+  s = s.replace(/>/g, "&gt;");   
+  s = s.replace(/ /g, "&nbsp;");   
+  s = s.replace(/\'/g, "&#39;");   
+  s = s.replace(/\"/g, "&quot;");   
+  s = s.replace(/\n/g, "<br>");   
+  return s;   
+}
 
 </script>
 
