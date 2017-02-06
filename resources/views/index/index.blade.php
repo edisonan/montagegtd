@@ -117,12 +117,6 @@
     
     
     	<div class="col-sm-offset-2 col-sm-8">
-    		@if($runing_pomo_status == 3)
-    			<div class="alert alert-success alert-dismissible" role="alert">
-				  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-			                  您已经完成了一个小目标，快来记录一下吧~
-				</div>
-    		@endif
     		
     		@if($tip_type != 0)
 	    		<div class="alert alert-success alert-dismissible" role="alert">
@@ -130,7 +124,6 @@
 					  <?php echo $tip_message;?>
 				</div>
     		@endif
-    		
     		
             <div class="panel panel-default">
                 <div class="panel-heading">
