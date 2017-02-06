@@ -78,6 +78,17 @@
 		document.getElementById('task_form_div3').style.display = "block";
 	}
 	
+	function clearTips($suffix){
+		setCookie('{{ date('Ymd') }}'+$suffix,"close",1);
+	}
+
+	function setCookie(c_name,value,expiredays)
+	{
+		var exdate=new Date()
+		exdate.setDate(exdate.getDate()+expiredays)
+		document.cookie=c_name+ "=" +escape(value)+((expiredays==null) ? "" : ";expires="+exdate.toGMTString())
+	}
+	
 	if(status == 2 || status == 4){
 		window.setInterval(function(){ShowCountDown( remain, "divdown" );}, interval); 
 	}
@@ -86,7 +97,6 @@
 		var allElements = document.getElementsByTagName('*'); 
 		for (var i=0; i< allElements.length; i++ ) 
 		{ 
-			console.log(allElements[i].className);
 			if (allElements[i].className == "preprepre" ) { 
 				var html = allElements[i].textContent;
 				
@@ -107,6 +117,21 @@
     
     
     	<div class="col-sm-offset-2 col-sm-8">
+    		@if($runing_pomo_status == 3)
+    			<div class="alert alert-success alert-dismissible" role="alert">
+				  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			                  您已经完成了一个小目标，快来记录一下吧~
+				</div>
+    		@endif
+    		
+    		@if($tip_type != 0)
+	    		<div class="alert alert-success alert-dismissible" role="alert">
+					  <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="clearTips(@if($tip_type == 2) 'morning_tip' @elseif($tip_type == 3) 'afternoon_tip'  @endif)"><span aria-hidden="true">&times;</span></button>
+					  <?php echo $tip_message;?>
+				</div>
+    		@endif
+    		
+    		
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	@if($runing_pomo_status != 3)
@@ -119,7 +144,6 @@
                     			开蕃走起
                     			@endif
                     		@endif
-                    		
                     	@else
                     	快来记录一下这个番茄吧
                     	@endif
@@ -215,8 +239,9 @@
                         <div class="form-group">
                             <label for="task-name" class="col-sm-3 control-label">待办内容</label>
 
-                            <div class="col-sm-6">
-                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}"><a href="javascript:void(0)" onclick="displayATHiddenDiv()">高级选项</a>
+                            <div class="col-sm-8">
+	                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}">
+								    <a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级选项</small></a>
                             </div>
                         </div>
                         

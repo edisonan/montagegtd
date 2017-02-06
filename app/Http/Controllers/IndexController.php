@@ -61,6 +61,7 @@ class IndexController extends Controller
     		if($remain_time < 0){
     			if($runing_pomo_status == Pomo::STATUS_PROCESSING){
 	    			$request->session()->set('pomo_status', Pomo::STATUS_FINISHED);
+	    			$runing_pomo_status = Pomo::STATUS_FINISHED;
     			} else {
     				$request->session()->set('pomo_status', Pomo::STATUS_INIT);
     				$runing_pomo_status = Pomo::STATUS_INIT;
@@ -73,11 +74,31 @@ class IndexController extends Controller
     	$tasks = $this->tasks->forUserByStatus($request->user(), 1);
     	$pomos = $this->pomos->forUserByTime($request->user(), date('Y-m-d H:i:s',strtotime(date('Y-m-d'))));
     	
+    	//tips
+    	$tip_type = 0;
+    	$tip_message = '';
+    	
+    	if($runing_pomo_status == 3){
+    		$tip_type = 1;
+    		$tip_message = '您已经完成了一个小目标，快来记录一下吧~';
+    	} else {
+    		$hour = date('H');
+    		if($hour < 10 && $hour > 6 && !isset($_COOKIE[date('Ymd').'morning_tip'])){
+    			$tip_type = 2;
+    			$tip_message = '一日之计在于晨，写个<a href="'.url('/notes',array('add_content','#今日小目标#')).'">今日小目标</a>吧';
+    		} else if($hour > 18 && $hour < 22 && !isset($_COOKIE[date('Ymd').'afternoon_tip'])){
+    			$tip_type = 3;
+    			$tip_message = '今天过得怎么样，写个<a href="'.url('/notes',array('add_content','#每日总结#')).'">每日总结</a>吧';
+    		}
+    	}
+    	
         return view('index.index', [
             'tasks' => $tasks,
             'pomos' => $pomos,
         	'runing_pomo_status' => $runing_pomo_status,
         	'runing_pomo_remain' => $runing_pomo_remain,
+        	'tip_type' => $tip_type,
+        	'tip_message' => $tip_message,
         ]);
     }
 }

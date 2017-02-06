@@ -31,6 +31,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/index', 'IndexController@index');
     
     Route::get('/notes', 'NoteController@index');
+    Route::get('/notes/add_content/{add_content}', 'NoteController@index');
     Route::post('/note', 'NoteController@store');
     Route::delete('/note/{note}', 'NoteController@destroy');
 

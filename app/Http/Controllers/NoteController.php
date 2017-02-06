@@ -38,9 +38,10 @@ class NoteController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function index(Request $request)
+    public function index(Request $request,$add_content = '')
     {
         return view('notes.index', [
+            'add_content' => $add_content,
             'notes' => $this->notes->forUserByStatus($request->user(), 2),
         ]);
     }
