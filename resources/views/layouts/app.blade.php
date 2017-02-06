@@ -54,8 +54,8 @@
                 <!-- Right Side Of Navbar -->
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Authentication Links -->
-                    <li><a href="{{ url('/') }}">开蕃走起！</a></li>
-                    <li><a href="{{ url('/notes') }}">在想什么？</a></li>
+                    <li><a href="{{ url('/') }}">开始一个番茄！</a></li>
+                    <li><a href="{{ url('/notes') }}">记录你所想！</a></li>
                     
                     @if (Auth::guest())
                         <li><a href="{{ url('/login') }}">登录</a></li>
