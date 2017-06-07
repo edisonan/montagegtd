@@ -77,7 +77,12 @@ class TaskController extends Controller
         }
         $request->user()->tasks()->create($params);
 
-        return redirect('/index');
+        if ($request->ajax() || $request->wantsJson()) {
+        	$resp = $this->responseJson(self::OK_CODE);
+        	return response($resp);
+        } else {
+        	return redirect('/index');
+        }
     }
 
     /**
@@ -99,10 +104,13 @@ class TaskController extends Controller
         	$params['status'] = 3;
         }
         $flag = $task->update($params);
-//         print_r($params);
-//         print_r($flag);exit;
 
-        return redirect('/index');
+        if ($request->ajax() || $request->wantsJson()) {
+        	$resp = $this->responseJson(self::OK_CODE);
+        	return response($resp);
+        } else {
+        	return redirect('/index');
+        }
     }
     
 }

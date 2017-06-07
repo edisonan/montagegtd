@@ -62,12 +62,14 @@ class NoteController extends Controller
             'name' => $request->name,
             'status' => $request->status,
         ]);
-        print_r([
-            'name' => $request->name,
-            'status' => $request->status,
-        ]);
 
-        return redirect('/notes');
+        if ($request->ajax() || $request->wantsJson()) {
+        	$resp = $this->responseJson(self::OK_CODE);
+        	return response($resp);
+        } else {
+        	return redirect('/notes');
+        }
+        
     }
 
     /**
@@ -83,6 +85,11 @@ class NoteController extends Controller
 
         $note->delete();
 
-        return redirect('/notes');
+        if ($request->ajax() || $request->wantsJson()) {
+        	$resp = $this->responseJson(self::OK_CODE);
+        	return response($resp);
+        } else {
+        	return redirect('/notes');
+        }
     }
 }

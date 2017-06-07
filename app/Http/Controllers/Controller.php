@@ -9,5 +9,16 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
+	const OK_CODE = 9999;
+	
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    
+    public function responseJson($code, $result = '', $msg = ''){
+    	$resp = array(
+    		'code'=>$code,
+    		'msg'=>$msg,
+    		'result'=>$result,
+    	);
+    	return json_encode($resp);
+    }
 }

@@ -70,7 +70,13 @@ class PomoController extends Controller
     {
     	$request->session()->set('pomo_status', Pomo::STATUS_PROCESSING);
     	$pomo_start_time = $request->session()->set('pomo_start_time', time());
-    	return redirect('/index');
+    	
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/index');
+    	}
     }
     
     /**
@@ -83,7 +89,12 @@ class PomoController extends Controller
     {
     	$request->session()->set('pomo_status', Pomo::STATUS_INIT);
     	$pomo_start_time = $request->session()->forget('pomo_start_time');
-    	return redirect('/index');
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/index');
+    	}
     }
 
     /**
@@ -108,8 +119,13 @@ class PomoController extends Controller
 	        $request->session()->set('pomo_status', Pomo::STATUS_RESTING);
 	        $request->session()->set('pomo_start_time', time());
     	}
-
-        return redirect('/index');
+    	
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/index');
+    	}
     }
 
     /**
@@ -125,6 +141,11 @@ class PomoController extends Controller
 
         $pomo->delete();
 
-        return redirect('/index');
+        if ($request->ajax() || $request->wantsJson()) {
+        	$resp = $this->responseJson(self::OK_CODE);
+        	return response($resp);
+        } else {
+        	return redirect('/index');
+        }
     }
 }
