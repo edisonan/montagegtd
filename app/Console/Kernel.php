@@ -5,6 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
+use App\Repositories\TaskRepository;
 use App\Repositories\ThirdRepository;
 use App\Http\Utils\FFClient;
 
@@ -52,5 +53,20 @@ class Kernel extends ConsoleKernel
     		}
     		
     	})->daily()->appendOutputTo(env('CRON_LOG'))->emailOutputTo('accacc@126.com');
+    	
+    	$schedule->call(function () {
+    		$start_time = date('Y-m-d H:i:s');
+    		$end_time = date('Y-m-d H:i:s',strtotime($start_time)+60);
+    		
+    		$taskRepository = new TaskRepository();
+    		$tasks = $taskRepository->forUserByRemindTime($start_time, $end_time);
+    		
+    		foreach ($tasks as $task){
+    			$user = $task->user;
+	    		Mail::send('emails.reminder', ['user' => $user], function ($m) use ($user) {
+	    			$m->to($user->email, $user->name)->subject('Your Reminder!'.$task->name);
+	    		});
+    		}
+    	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo('accacc@126.com');
     }
 }
