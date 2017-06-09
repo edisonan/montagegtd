@@ -19,9 +19,21 @@
                             <tbody>
                                 @foreach ($tasks as $task)
                                     <tr>
-                                        <td class="table-text"  width="80%"><div>{{ $task->name }}</div></td>
+                                        <td class="table-text"  width="80%">
+                                        	<div>
+                                        		@for ($i = 0; $i < $task->priority; $i++)
+                                        		☆ 
+                                        		@endfor
+                                        		{{ $task->name }}
+                                        	</div>
+                                        </td>
+                                        
+                                        <td  width="20%" align="right">
+                                        	{{ date('y-m-d', strtotime($task->updated_at)) }}√
+                                        </td>
 
                                         <!-- Task Delete Button -->
+                                        <!-- 
                                         <td  width="20%" align="right">
                                             <form action="{{url('task/' . $task->id)}}" method="POST">
                                                 {{ csrf_field() }}
@@ -32,6 +44,7 @@
                                                 </button>
                                             </form>
                                         </td>
+                                         -->
                                     </tr>
                                 @endforeach
                             </tbody>

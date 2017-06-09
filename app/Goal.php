@@ -5,14 +5,14 @@ namespace App;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Third extends Model
+class Goal extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['token','token_value','token_secret','source','third_id','third_name'];
+    protected $fillable = ['name','status'];
     
     /**
      * The attributes that should be cast to native types.
@@ -29,5 +29,13 @@ class Third extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    
+    /**
+     * Get all of the tasks for the user.
+     */
+    public function tasks()
+    {
+    	return $this->hasMany(Task::class);
     }
 }

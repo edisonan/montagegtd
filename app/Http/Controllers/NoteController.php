@@ -9,6 +9,9 @@ use App\Http\Controllers\Controller;
 
 use App\Note;
 use App\Repositories\NoteRepository;
+use App\Tag;
+use App\NoteTagMap;
+use App\Repositories\TagRepository;
 
 class NoteController extends Controller
 {
@@ -18,6 +21,7 @@ class NoteController extends Controller
      * @var NoteRepository
      */
     protected $notes;
+    protected $tags;
 
     /**
      * Create a new controller instance.
@@ -25,11 +29,12 @@ class NoteController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct(NoteRepository $notes)
+    public function __construct(NoteRepository $notes, TagRepository $tags)
     {
         $this->middleware('auth');
 
         $this->notes = $notes;
+        $this->tags = $tags;
     }
 
     /**
@@ -40,9 +45,23 @@ class NoteController extends Controller
      */
     public function index(Request $request,$add_content = '')
     {
+    	$notes = $this->notes->forUserByStatus($request->user(), 2);
+    	
+    	foreach ($notes as $key => $note){
+    		if(!empty($note->noteTagMaps)){
+    			foreach ($note->noteTagMaps as $noteTagMap){
+    				$url = "/notes?tag_id=".$noteTagMap->tag->id;
+    				$tag_name = '#'.$noteTagMap->tag->name.'#';
+    				
+    				$note->name = str_replace($tag_name, "<a href='$url'  target='_blank'>".$tag_name."</a>", $note->name);
+    				$notes[$key] = $note;
+    			}
+    		}
+    	}
+    	
         return view('notes.index', [
             'add_content' => $add_content,
-            'notes' => $this->notes->forUserByStatus($request->user(), 2),
+            'notes' => $notes,
         ]);
     }
     
@@ -58,10 +77,26 @@ class NoteController extends Controller
             'name' => 'required',
         ]);
 
-        $request->user()->notes()->create([
+        $note = $request->user()->notes()->create([
             'name' => $request->name,
             'status' => $request->status,
         ]);
+        
+        preg_match_all('/#(.*?)#/i',$request->name,$match);
+        foreach ($match[0] as $item){
+        	$tag_name = trim($item,'#');
+        	if(empty($tag_name)){
+        		continue;
+        	}
+        	
+        	$tag = $this->tags->forTagName($tag_name);
+        	if(empty($tag)){
+        		$tag = Tag::create(array('name'=>$tag_name));
+        	}
+        	
+        	$tagNote = new NoteTagMap();
+        	$tagNote->create(array('tag_id'=>$tag->id, 'note_id'=>$note->id));
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);

@@ -30,4 +30,11 @@ class Note extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    /**
+     */
+    public function noteTagMaps()
+    {
+    	return $this->hasMany(NoteTagMap::class);
+    }
 }

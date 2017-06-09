@@ -11,6 +11,7 @@ use App\Task;
 use App\Pomo;
 use App\Repositories\TaskRepository;
 use App\Repositories\PomoRepository;
+use App\Repositories\GoalRepository;
 
 class IndexController extends Controller
 {
@@ -21,8 +22,9 @@ class IndexController extends Controller
      */
     protected $tasks;
     
-    
     protected $pomos;
+    
+    protected $goals;
 
     /**
      * Create a new controller instance.
@@ -30,12 +32,13 @@ class IndexController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct(TaskRepository $tasks,PomoRepository $pomos)
+    public function __construct(TaskRepository $tasks,PomoRepository $pomos,GoalRepository $goals)
     {
         $this->middleware('auth');
 
         $this->tasks = $tasks;
         $this->pomos = $pomos;
+        $this->goals = $goals;
     }
 
     /**
@@ -73,6 +76,19 @@ class IndexController extends Controller
     	
     	$tasks = $this->tasks->forUserByStatus($request->user(), 1);
     	$pomos = $this->pomos->forUserByTime($request->user(), date('Y-m-d H:i:s',strtotime(date('Y-m-d'))));
+    	$goals = $this->goals->forUser($request->user());
+    	
+    	foreach ($tasks as $key => $task){
+    		if(!empty($task->taskTagMaps)){
+    			foreach ($task->taskTagMaps as $taskTagMap){
+    				$url = "/index?tag_id=".$taskTagMap->tag->id;
+    				$tag_name = '#'.$taskTagMap->tag->name.'#';
+    	
+    				$task->name = str_replace($tag_name, "<a href='$url' target='_blank'>".$tag_name."</a>", $task->name);
+    				$tasks[$key] = $task;
+    			}
+    		}
+    	}
     	
     	//tips
     	$tip_type = 0;
@@ -95,6 +111,7 @@ class IndexController extends Controller
         return view('index.index', [
             'tasks' => $tasks,
             'pomos' => $pomos,
+            'goals' => $goals,
         	'runing_pomo_status' => $runing_pomo_status,
         	'runing_pomo_remain' => $runing_pomo_remain,
         	'tip_type' => $tip_type,

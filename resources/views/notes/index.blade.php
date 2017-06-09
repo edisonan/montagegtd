@@ -23,8 +23,8 @@ window.onload=function(){
 			var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
 			html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
 			
-			reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
-			html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
+// 			reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
+// 			html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
 			
 			allElements[i].innerHTML = html;
 		} 
@@ -112,10 +112,12 @@ function html_encode(str)
                                 @foreach ($notes as $note)
                                     <tr>
                                         <td class="table-text"  width="10%">
-                                        	<center><img alt="" width="40px" src="http://gravatar.duoshuo.com/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1"> {{ $note->user->name }}</center>
+                                        	<center><img alt="" width="40px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1"> 
+                                        		{{ $note->user->name }}
+                                        	</center>
                                         </td>
                                         
-                                        <td class="table-text"  width="80%"><pre style="white-space: pre-wrap;word-wrap: break-word;" class="preprepre">{{ $note->name }}</pre></td>
+                                        <td class="table-text"  width="80%"><pre style="white-space: pre-wrap;word-wrap: break-word;" class="preprepre"><?php echo $note->name; ?></pre></td>
 
                                         <!-- note Delete Button -->
                                         <td  width="10%">
@@ -124,8 +126,11 @@ function html_encode(str)
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
 
-                                                <button type="submit" id="delete-note-{{ $note->id }}" class="btn btn-danger">
+                                                <button type="submit" id="delete-note-{{ $note->id }}" class="btn btn-link" title="删除!!!">
+                                                	<span style="color:red">×</span>
+                                                	<!-- 
                                                     <i class="fa fa-btn fa-trash"></i>
+                                                	 -->
                                                 </button>
                                             </form>
                                             @else

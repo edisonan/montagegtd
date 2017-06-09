@@ -76,6 +76,7 @@
 		document.getElementById('task_form_div1').style.display = "block";
 		document.getElementById('task_form_div2').style.display = "block";
 		document.getElementById('task_form_div3').style.display = "block";
+		document.getElementById('task_form_div4').style.display = "block";
 	}
 	
 	function clearTips($suffix){
@@ -103,8 +104,8 @@
 				var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
 				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
 				
-				reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
-				html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
+// 				reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
+// 				html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
 				
 				allElements[i].innerHTML = html;
 			} 
@@ -150,12 +151,12 @@
                     @include('common.errors')
                     
                     @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
-                    	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
+                    	<a class="btn btn-lg btn-default btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
                     	<!-- 
                     	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     	 -->
                     @elseif($runing_pomo_status == 1)
-                   		 <a class="btn btn-lg btn-primary btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
+                   		 <a class="btn btn-lg btn-default btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
                     @endif
                     
                     <!-- New Task Form -->
@@ -240,23 +241,20 @@
                         
                         <div class="form-group" id="task_form_div1" style="display: none;">
                             <label for="task-name" class="col-sm-3 control-label">优先级</label>
-
+							
                             <div class="col-sm-6">
                             	<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio1" value="1" checked>不重要不紧急
+								  <input type="radio" name="priority" id="inlineRadio1" value="1" title="不重要不紧急" checked><span title="不重要不紧急">☆</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio2" value="2">不重要紧急
+								  <input type="radio" name="priority" id="inlineRadio2" value="2" title="不重要紧急"><span title="不重要紧急">☆☆</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio3" value="3">重要不紧急
+								  <input type="radio" name="priority" id="inlineRadio3" value="3" title="重要不紧急"><span title="重要不紧急">☆☆☆</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio4" value="4">重要紧急 
+								  <input type="radio" name="priority" id="inlineRadio4" value="4" title="重要紧急 "><span title="重要紧急 ">☆☆☆☆</span>
 								</label>
-								<!-- 
-                                <input type="text" name="priority" id="task-priority" class="form-control" value="{{ old('task') }}">
-								 -->
                             </div>
                         </div>
                         
@@ -273,6 +271,19 @@
 
                             <div class="col-sm-6">
                                 <input type="text" name="deadline" id="task-deadline" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" "form-group" id="task_form_div4" style="display: none;">
+                            <label for="task-name" class="col-sm-3 control-label">目标归属</label>
+
+                            <div class="col-sm-6">
+	                            <select class="form-control" name="goal_id">
+		                              @foreach ($goals as $goal)
+		                              	<option checked></option>
+									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
+									  @endforeach
+								</select>
                             </div>
                         </div>
 
@@ -296,28 +307,58 @@
                             </thead>
                             <tbody>
                                 @foreach ($tasks as $task)
-                                    <tr @if($task->priority == 4) class="danger" title="重要紧急" @elseif($task->priority == 3) class="warning" title="重要不紧急"  @elseif($task->priority == 2) class="info" title="不重要紧急" @endif>
-                                        <td class="table-text"  width="80%"><div class="preprepre">{{ $task->name }}</pre></td>
+                                    <tr 
+	                                    @if($task->priority == 4) 
+	                                    	class="danger" title="重要紧急事项" 
+	                                    @elseif($task->priority == 3) 
+	                                    	class="warning" title="重要不紧急事项"  
+	                                    @elseif($task->priority == 2) 
+	                                    	class="info" title="不重要紧急事项" 
+	                                    @else
+	                                    	title="不重要不紧急事项" 
+	                                    @endif
+                                    >
+                                        <td class="table-text"  width="90%">
+                                        	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
+                                        	
+                                        	@for ($i = 1; $i <= $task->priority; $i++)
+                                        		★
+                                        	@endfor
+                                        	
+                                        	@if(!empty($task->goal->name))
+                                        	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
+                                        	@endif
+                                        	
+                                        	{{ $task->name }}
+                                        	</pre>
+                                        </td>
 
                                         <!-- Task Delete Button -->
-                                        <td  width="10%"  align='right'>
+                                        <td  width="1"  align='right'>
                                             <form action="{{url('task/' . $task->id)}}" method="POST" class=".form-inline">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
 												<input type="hidden" name="type" value="finish"/> 
-                                                <button type="submit" id="delete-task-{{ $task->id }}" class="btn btn-success">
+                                                <button type="submit" id="delete-task-{{ $task->id }}" class="btn btn-link"  title="已完成">
+                                                	<!-- 
                                                     <i class="glyphicon glyphicon-ok"></i>
+                                                	 -->
+                                                	 <span style="color:green">Done √</span>
+                                                    
                                                 </button>
                                             </form>
                                         </td>
-                                        <td  width="10%"  align='right'>
+                                        <td  width="1"  align='right'>
                                             <form action="{{url('task/' . $task->id)}}" method="POST"  class=".form-inline">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
 
 												<input type="hidden" name="type"  value="delete"/> 
-                                                <button type="submit" id="delete-task-{{ $task->id }}" class="btn btn-danger">
+                                                <button type="submit" id="delete-task-{{ $task->id }}" class="btn btn-link" title="删除!!!">
+                                                	<!-- 
                                                     <i class="fa fa-btn fa-trash"></i>
+                                                	 -->
+                                                	 <span style="color:red">×</span>
                                                 </button>
                                             </form>
                                         </td>

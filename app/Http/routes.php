@@ -39,11 +39,20 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');
     
+    Route::get('/goals', 'GoalController@index');
+    Route::post('/goal', 'GoalController@store');
+    Route::delete('/goal/{goal}', 'GoalController@destroy');
+    
     Route::get('/pomos', 'PomoController@index');
     Route::get('/pomos/start', 'PomoController@start');
     Route::get('/pomos/discard', 'PomoController@discard');
 	
+    Route::get('/third/index', 'ThirdController@index');
+    Route::get('/third/testFave', 'ThirdController@testFave');
     Route::get('/third/fanfouIndex', 'ThirdController@fanfouIndex');
+    Route::get('/third/fanfouCallback', 'ThirdController@fanfouCallback');
+    Route::get('/third/twitterIndex', 'ThirdController@twitterIndex');
+    Route::get('/third/twitterCallback', 'ThirdController@twitterCallback');
     
     Route::post('/pomo', 'PomoController@store');
     Route::delete('/pomo/{pomo}', 'PomoController@destroy');

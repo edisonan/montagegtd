@@ -35,10 +35,10 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 		
-	'facebook' => [
-		'client_id'     => 'your-client-id',
-		'client_secret' => 'your-client-secret',
-		'scope'         => [],
-	]
+	'fanfou' => [
+		'key' => env('FANFOU_KEY'),
+		'secret' => env('FANFOU_SECRET'),
+		'callback' => env('FANFOU_CALLBACK')
+	],
 
 ];

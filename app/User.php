@@ -49,4 +49,20 @@ class User extends Authenticatable
     {
     	return $this->hasMany(Note::class);
     }
+    
+    /**
+     * Get all of the thirds for the user.
+     */
+    public function thirds()
+    {
+    	return $this->hasMany(Third::class);
+    }
+    
+    /**
+     * Get all of the tags for the user.
+     */
+    public function goals()
+    {
+    	return $this->hasMany(Goal::class);
+    }
 }
