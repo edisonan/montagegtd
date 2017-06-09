@@ -46,4 +46,5 @@ class NoteRepository
     	->orderBy('created_at', 'desc')
     	->get();
     }
+    
 }

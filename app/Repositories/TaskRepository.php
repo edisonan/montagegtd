@@ -16,7 +16,7 @@ class TaskRepository
     public function forUser(User $user)
     {
         return Task::where('user_id', $user->id)
-                    ->orderBy('created_at', 'asc')
+                    ->orderBy('updated_at', 'desc')
                     ->get();
     }
     
@@ -31,6 +31,7 @@ class TaskRepository
     	return Task::where('user_id', $user->id)
     	->where('status',$status)
     	->orderBy('priority', 'desc')
+    	->orderBy('updated_at', 'desc')
     	->get();
     }
 }
