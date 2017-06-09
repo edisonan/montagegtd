@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 use App\Repositories\ThirdRepository;
+use App\Http\Utils\FFClient;
 
 class Kernel extends ConsoleKernel
 {
