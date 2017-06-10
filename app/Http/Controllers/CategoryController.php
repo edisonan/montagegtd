@@ -100,7 +100,7 @@ class CategoryController extends Controller
     {
     	$this->authorize('destroy', $category);
     	
-    	if(empty($request->method() == 'GET')){
+    	if($request->method() == 'GET'){
     		return view('categorys.update',array('category'=>$category));
     	}
     	

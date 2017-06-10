@@ -120,7 +120,7 @@ class FeedController extends Controller
     {
     	$this->authorize('destroy', $feed);
     	
-    	if(empty($request->method() == 'GET')){
+    	if($request->method() == 'GET'){
     		return view('feeds.update',array('feed'=>$feed));
     	}
     	
