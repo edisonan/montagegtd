@@ -16,7 +16,7 @@
     						<li>
     							<a href="{{ url('feeds?feed_id='.$feed->id.'&status'.($request->has('status')?$request->status:'unread')) }}">{{$feed->feed_name}}</a>
     							(
-    							@if(!$request->has('status') || $request->status == 'unread')
+    							@if($status == 'unread')
     								{{$feed->unread_count}}
     							@else
     								{{$feed->read_count}}
