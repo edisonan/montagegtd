@@ -58,11 +58,10 @@ class ArticleController extends Controller
     		$articles = $this->articles->forUserByStatus($request->user(), $status);
     	}
     	
-    	print_r($categorys);
-    	
         return view('articles.index', [
             'categorys' => $categorys,
         	'articles' => $articles,
+        	'status' => $status,
         ]);
     }
     
