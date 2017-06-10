@@ -321,9 +321,15 @@
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
                                         	
-                                        	@for ($i = 1; $i <= $task->priority; $i++)
-                                        		★
-                                        	@endfor
+                                        	@if($task->priority == 4) 
+		                                    	▌
+		                                    @elseif($task->priority == 3) 
+		                                    	▎  
+		                                    @elseif($task->priority == 2) 
+		                                    	▏ 
+		                                    @else
+		                                    	|
+		                                    @endif
                                         	
                                         	@if(!empty($task->goal->name))
                                         	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
