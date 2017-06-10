@@ -63,8 +63,8 @@ class Kernel extends ConsoleKernel
     		
     		foreach ($tasks as $task){
     			$user = $task->user;
-	    		Mail::send('emails.reminder', ['user' => $user], function ($m) use ($user) {
-	    			$m->to($user->email, $user->name)->subject('Your Reminder!'.$task->name);
+	    		\Mail::send('emails.reminder', ['user' => $user, 'task'=>$task], function ($m) use ($user, $task) {
+	    			$m->to($user->email, $user->name)->subject('Task Reminder for :'.$task->name);
 	    		});
     		}
     	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo('accacc@126.com');
