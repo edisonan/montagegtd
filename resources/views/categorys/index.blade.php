@@ -37,7 +37,7 @@
                     </form>
                     
                     
-                    @if (count($categorys) > 0)
+                    @if (count($feeds) > 0)
                     <table class="table table-striped task-table">
                             <thead>
                                 <th>分类列表</th>
@@ -49,7 +49,7 @@
                                     <tr >
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
-                                        		{{ $category->name }}|
+                                        		{{ $category->name }}
                                         	</pre>
                                         </td>
 
