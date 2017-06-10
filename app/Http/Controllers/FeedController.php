@@ -75,7 +75,7 @@ class FeedController extends Controller
         	echo 'error:'.$request->category_id;exit;
         }
 
-        $note = $request->user()->notes()->create([
+        $feed = $request->user()->feeds()->create([
             'feed_name' => $request->feed_name,
         	'url' => $request->url,
         	'category_id' => $request->category_id,
