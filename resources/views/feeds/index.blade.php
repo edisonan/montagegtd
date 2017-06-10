@@ -20,9 +20,9 @@
                         <!-- Task Name -->
                         <div class="form-group">
                             <label for="task-name" class="col-sm-3 control-label">订阅地址</label>
-								<input type="text" name="url" id="url" class="form-control" value="{{ old('task') }}">
+								
                             <div class="col-sm-8">
-	                                
+	                                <input type="text" name="url" id="url" class="form-control" value="{{ old('task') }}">
                             </div>
                         </div>
                         

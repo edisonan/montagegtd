@@ -14,15 +14,15 @@
                     @include('common.errors')
 
                     <!-- New Task Form -->
-                    <form action="{{ url('feed') }}" method="POST" class="form-horizontal">
+                    <form action="{{ url('category') }}" method="POST" class="form-horizontal">
                         {{ csrf_field() }}
 
                         <!-- Task Name -->
                         <div class="form-group">
                             <label for="task-name" class="col-sm-3 control-label">分类名称</label>
-								<input type="text" name="name" id="name" class="form-control" value="{{ old('task') }}">
+								
                             <div class="col-sm-8">
-	                                
+	                               <input type="text" name="name" id="name" class="form-control" value="{{ old('task') }}">
                             </div>
                         </div>
 
