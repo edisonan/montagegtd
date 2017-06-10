@@ -72,7 +72,7 @@ class FeedController extends Controller
         
         $category = $this->categorys->forCategoryId($request->user(),$request->category_id);
         if(empty($category)){
-        	return redirect('/feeds');
+        	echo 'error:'.$request->category_id;exit;
         }
 
         $note = $request->user()->notes()->create([
