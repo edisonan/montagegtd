@@ -322,13 +322,13 @@
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
                                         	
                                         	@if($task->priority == 4) 
-		                                    	▌
+		                                    	<span style="color:blue">▌</span>
 		                                    @elseif($task->priority == 3) 
-		                                    	▎  
+		                                    	<span style="color:blue">▎</span>
 		                                    @elseif($task->priority == 2) 
-		                                    	▏ 
+		                                    	<span style="color:blue">▏</span>
 		                                    @else
-		                                    	|
+		                                    	<span style="color:blue">|</span>
 		                                    @endif
                                         	
                                         	@if(!empty($task->goal->name))
