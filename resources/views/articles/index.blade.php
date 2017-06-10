@@ -21,7 +21,7 @@
                     @if (count($articles) > 0)
                     <table class="table table-striped task-table">
                             <thead>
-                                <th>文章列表[<a href="{{ url('feeds') }}">新增订阅</a>]</th>
+                                <th>文章列表[<a href="{{ url('feeds') }}">未读</a>][<a href="{{ url('feeds?status=read') }}">已读</a>][<a href="{{ url('feeds?status=star') }}">加星</a>]</th>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>
                             </thead>
@@ -30,7 +30,7 @@
                                     <tr >
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
-                                        		<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
+                                        		<a href="{{ url('article/view/'.$article->id) }}" target="_blank" title="所属订阅：{{ $article->feed->feed_name}}">{{ $article->subject }}</a>
                                         	</pre>
                                         </td>
 

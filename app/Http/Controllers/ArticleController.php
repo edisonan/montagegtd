@@ -52,7 +52,7 @@ class ArticleController extends Controller
     		$status = 'unread';
     	}
     	
-    	$articles = $this->articles->forUser($request->user(), $status);
+    	$articles = $this->articles->forUserByStatus($request->user(), $status);
     	
         return view('articles.index', [
             'categorys' => $categorys,
