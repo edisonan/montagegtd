@@ -13,8 +13,6 @@ use App\Category;
 use App\Repositories\CategoryRepository;
 use App\Article;
 
-use Log;
-
 use ArandiLopez\Feed\Factories\FeedFactory; //use SimplePie to parse RSS feeds, see: https://github.com/arandilopez/laravel-feed-parser
 
 use Illuminate\Contracts\Logging\Log;
@@ -195,7 +193,7 @@ class FeedController extends Controller
     	//set previous week
     	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     
-    	Log::info("Check Feed:".$Feed->url);
+    	\Log::info("Check Feed:".$Feed->url);
     	
     	$feedFactory = new FeedFactory(['cache.enabled' => false]);
     	$feeder = $feedFactory->make($Feed->url);
@@ -235,7 +233,7 @@ class FeedController extends Controller
     				//save article content to database
     				$article->save();
     				
-    				Log::info("Article Title:".$item->get_title());
+    				\Log::info("Article Title:".$item->get_title());
     			}
     		}
     
