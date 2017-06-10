@@ -65,7 +65,8 @@ class ArticleController extends Controller
     	$this->authorize('destroy', $article);
     	
     	if($article->staus == 'unread'){
-    		$article->update(array('status'=>'read'));
+    		$article->status = 'read';
+    		$article->update();
     	}
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -83,9 +84,11 @@ class ArticleController extends Controller
     	$this->authorize('destroy', $article);
     	 
     	if($article->staus == 'star'){
-    		$article->update(array('status'=>'read'));
+    		$article->status = 'read';
+    		$article->update();
     	} else {
-    		$article->update(array('status'=>'star'));
+    		$article->status = 'star';
+    		$article->update();
     	}
     	
     	if ($request->ajax() || $request->wantsJson()) {
