@@ -57,11 +57,10 @@ class CategoryController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
+        	'caegory_order' => 'required',
         ]);
         
-        $note = $request->user()->categorys()->create([
-            'name' => $request->name,
-        ]);
+        $note = $request->user()->categorys()->create($request->all());
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
@@ -82,8 +81,12 @@ class CategoryController extends Controller
     public function destroy(Request $request, Category $category)
     {
         $this->authorize('destroy', $category);
-
-        $category->delete();
+        
+        if(empty($category->feeds())){
+        	$category->delete();
+        } else {
+        	echo 'This category has Feeds!cannot delete!';exit;
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
@@ -91,5 +94,28 @@ class CategoryController extends Controller
         } else {
         	return redirect('/categorys');
         }
+    }
+    
+    public function update(Request $request, Category $category)
+    {
+    	$this->authorize('destroy', $category);
+    	
+    	if(empty($request->all())){
+    		return view('categorys.update',array('category'=>$category));
+    	}
+    	
+    	$this->validate($request, [
+    			'name' => 'required',
+    			'category_order' => 'required',
+    	]);
+    
+    	$category->update($request->all());
+    
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/categorys');
+    	}
     }
 }

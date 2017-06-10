@@ -39,15 +39,19 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/tasks', 'TaskController@index');
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');
+    Route::post('/task/{task}', 'TaskController@update');
     
     Route::get('/categorys', 'CategoryController@index');
     Route::post('/category', 'CategoryController@store');
+    Route::post('/category/{category}', 'CategoryController@update');
     Route::delete('/category/{category}', 'CategoryController@destroy');
     
     Route::get('/feeds', 'FeedController@index');
     Route::post('/feed', 'FeedController@store');
-    Route::get('/feed/updateFeed', 'FeedController@updateFeed');
+    Route::get('/feed/checkNewFeed', 'FeedController@checkNewFeed');
+    Route::get('/feed/checkFeedUrl', 'FeedController@checkFeedUrl');
     Route::delete('/feed/{feed}', 'FeedController@destroy');
+    Route::post('/feed/{feed}', 'FeedController@update');
     
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');
@@ -58,6 +62,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/goals', 'GoalController@index');
     Route::post('/goal', 'GoalController@store');
     Route::delete('/goal/{goal}', 'GoalController@destroy');
+    Route::post('/goal/{goal}', 'GoalController@update');
     
     Route::get('/pomos', 'PomoController@index');
     Route::get('/pomos/start', 'PomoController@start');

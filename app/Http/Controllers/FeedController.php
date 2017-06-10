@@ -15,6 +15,8 @@ use App\Article;
 
 use ArandiLopez\Feed\Factories\FeedFactory; //use SimplePie to parse RSS feeds, see: https://github.com/arandilopez/laravel-feed-parser
 
+use Illuminate\Contracts\Logging\Log;
+
 
 class FeedController extends Controller
 {
@@ -81,6 +83,8 @@ class FeedController extends Controller
         	'url' => $request->url,
         	'category_id' => $request->category_id,
         ]);
+        
+        $this->checkFeed($feed);
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
@@ -112,24 +116,85 @@ class FeedController extends Controller
         }
     }
     
-    public function updateFeed(Request $request){
-    	$feeds = Feed::orderBy('updated_at', 'asc')->take(15)->get();
+    public function update(Request $request, Feed $feed)
+    {
+    	$this->authorize('destroy', $feed);
+    	
+    	if(empty($request->all())){
+    		return view('feeds.update',array('feed'=>$feed));
+    	}
+    	
+    	$this->validate($request, [
+    			'feed_name' => 'required',
+    			'url' => 'required',
+    			'category_id' => 'required',
+    	]);
+    	
+    	$category = $this->categorys->forCategoryId($request->user(),$request->category_id);
+    	if(empty($category)){
+    		echo 'error:'.$request->category_id;exit;
+    	}
+    
+    	$feed->update($request->all());
+    
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/feeds');
+    	}
+    }
+    
+    public function checkNewFeed(Request $request)
+    {
+    	$feeds = Feed::where('user_id',$request->user()->id)->orderBy('updated_at', 'asc')->take(15)->get();
     	
     	if (! empty($feeds)) {
     		foreach ($feeds as $feed) {
     			//update feed, see update function
-    			$this->update($feed);
+    			$this->checkFeed($feed);
     		}
     	}
     	
     }
     
-    public function update(Feed $Feed)
+    public function checkFeedUrl(Request $request)
+    {
+    	$result_code = 1001;
+    	
+    	if($request->has('url')){
+    		$feedFactory = new FeedFactory(['cache.enabled' => false]);
+    		$feeder = $feedFactory->make($request->url);
+    		$simplePieInstance = $feeder->getRawFeederObject();
+    		 
+    		//only add articles and update feed when results are found
+    		if (!empty($simplePieInstance)) {
+    			$result_code = self::OK_CODE;
+    		}
+    		
+    		$content = file_get_contents($request->url);
+    		$pos = strpos($content, 'utf-8');
+    		if($pos === false){
+    			iconv('gbk', 'utf-8', $content);
+    		}
+    		$postb = strpos($content, '<title>')+7;
+    		$poste = strpos($content, '</title>');
+    		$length = $poste-$postb;
+    		 
+    		$title = substr($content, $postb, $length);
+    	}
+    	
+    	$resp = $this->responseJson($result_code, array('title'=>$title));
+    	return response($resp);
+    }
+    
+    public function checkFeed(Feed $Feed)
     {
     	//set previous week
     	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     
-    	echo $Feed->url.'<br>';
+    	Log::info("Check Feed:".$Feed->url);
+    	
     	$feedFactory = new FeedFactory(['cache.enabled' => false]);
     	$feeder = $feedFactory->make($Feed->url);
     	$simplePieInstance = $feeder->getRawFeederObject();
@@ -167,8 +232,8 @@ class FeedController extends Controller
     
     				//save article content to database
     				$article->save();
-    
-    				echo '- '.$item->get_title().'<br>';
+    				
+    				Log::info("Article Title:".$item->get_title());
     			}
     		}
     

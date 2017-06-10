@@ -103,4 +103,21 @@ class GoalController extends Controller
         }
     }
     
+    public function update(Request $request, Goal $goal)
+    {
+    	$this->authorize('destroy', $goal);
+    	
+    	if(empty($request->all())){
+    		return view('goals.update', array('goal'=>$goal));
+    	}
+    
+    	$flag = $goal->update($request->all());
+    
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/goals');
+    	}
+    }
 }

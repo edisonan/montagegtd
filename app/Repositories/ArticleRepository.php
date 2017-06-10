@@ -33,6 +33,14 @@ class ArticleRepository
 		    	->get();
     }
     
+    public function forUserByStatusFeedId(User $user,string $status,$feed_id)
+    {
+    	return Article::where('user_id', $user->id)
+    	->where('status',$status)
+    	->where('feed_id',$feed_id)
+    	->get();
+    }
+    
     /**
      * Get goal for goal id.
      *

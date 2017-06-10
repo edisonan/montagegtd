@@ -144,4 +144,18 @@ class TaskController extends Controller
         }
     }
     
+    public function update(Request $request, Task $task)
+    {
+    	$this->authorize('destroy', $task);
+    
+    	$flag = $task->update($request->all());
+    
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/index');
+    	}
+    }
+    
 }
