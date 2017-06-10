@@ -8,7 +8,7 @@
                 <div class="panel-heading">
                     	新的订阅
                     	<div style="float:right">
-                    		[<a href="{{ url('categorys') }}" target="_blank">新建</a>]
+                    		[<a href="{{ url('categorys') }}" target="_blank">新建设置</a>]
                     	</div>
                 </div>
 

@@ -11,6 +11,7 @@ use App\Feed;
 use App\Repositories\FeedRepository;
 use App\Category;
 use App\Repositories\CategoryRepository;
+use App\Article;
 
 use ArandiLopez\Feed\Factories\FeedFactory; //use SimplePie to parse RSS feeds, see: https://github.com/arandilopez/laravel-feed-parser
 
