@@ -11,7 +11,7 @@
 
                 <div class="panel-body">
 
-                    {{ $article->content }}
+                    <?php echo  $article->content; ?>
                     
                 </div>
             </div>
