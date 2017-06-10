@@ -40,6 +40,14 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');
     
+    Route::get('/categorys', 'CategoryController@index');
+    Route::post('/category', 'CategoryController@store');
+    Route::delete('/category/{category}', 'CategoryController@destroy');
+    
+    Route::get('/feeds', 'FeedController@index');
+    Route::post('/feed', 'FeedController@store');
+    Route::delete('/feed/{feed}', 'FeedController@destroy');
+    
     Route::get('/goals', 'GoalController@index');
     Route::post('/goal', 'GoalController@store');
     Route::delete('/goal/{goal}', 'GoalController@destroy');
