@@ -121,7 +121,8 @@ class FeedController extends Controller
     	$this->authorize('destroy', $feed);
     	
     	if($request->method() == 'GET'){
-    		return view('feeds.update',array('feed'=>$feed));
+    		$categorys = $this->categorys->forUser($request->user());
+    		return view('feeds.update',array('feed'=>$feed,'categorys'=>$categorys));
     	}
     	
     	$this->validate($request, [
