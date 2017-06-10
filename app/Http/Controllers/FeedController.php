@@ -157,6 +157,13 @@ class FeedController extends Controller
     		}
     	}
     	
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/feeds');
+    	}
+    	
     }
     
     public function checkFeedUrl(Request $request)
