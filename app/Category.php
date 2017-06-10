@@ -7,7 +7,7 @@ use DB;
 
 class Category extends Model
 {
-	protected $fillable = ['name','user_id'];
+	protected $fillable = ['name','user_id','category_order'];
 	protected $table = 'categories';
 	protected $appends = array('unread_count', 'read_count', 'total_count');
 	protected $casts = [
