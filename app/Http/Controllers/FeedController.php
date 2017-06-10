@@ -161,6 +161,7 @@ class FeedController extends Controller
     
     public function checkFeedUrl(Request $request)
     {
+    	echo 123;exit;
     	$result_code = 1001;
     	
     	if($request->has('url')){

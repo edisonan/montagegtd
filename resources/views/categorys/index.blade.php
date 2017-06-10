@@ -54,7 +54,7 @@
                                         </td>
 
 										<td  width="1"  align='right'>
-                                            <a href="{{ url('category/'.$feed->id)}}" style="color:blue">✎</span>
+                                            <a href="{{ url('category/'.$category->id)}}" style="color:blue">✎</span>
                                         </td>
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
