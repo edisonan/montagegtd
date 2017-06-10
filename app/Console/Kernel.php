@@ -52,7 +52,7 @@ class Kernel extends ConsoleKernel
 	    		file_put_contents(env('CRON_LOG'),$result);
     		}
     		
-    	})->daily()->appendOutputTo(env('CRON_LOG'))->emailOutputTo('accacc@126.com');
+    	})->daily()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
     	
     	$schedule->call(function () {
     		$start_time = date('Y-m-d H:i:s');
@@ -67,6 +67,6 @@ class Kernel extends ConsoleKernel
 	    			$m->to($user->email, $user->name)->subject('Task Reminder for :'.$task->name);
 	    		});
     		}
-    	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo('accacc@126.com');
+    	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
     }
 }
