@@ -95,21 +95,21 @@
 	}
 
 	window.onload=function(){  
-		var allElements = document.getElementsByTagName('*'); 
-		for (var i=0; i< allElements.length; i++ ) 
-		{ 
-			if (allElements[i].className == "preprepre" ) { 
-				var html = allElements[i].textContent;
+// 		var allElements = document.getElementsByTagName('*'); 
+// 		for (var i=0; i< allElements.length; i++ ) 
+// 		{ 
+// 			if (allElements[i].className == "preprepre" ) { 
+// 				var html = allElements[i].textContent;
 				
-				var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
-				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
+// 				var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
+// 				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
 				
-// 				reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
-// 				html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
+// // 				reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
+// // 				html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
 				
-				allElements[i].innerHTML = html;
-			} 
-		}
+// 				allElements[i].innerHTML = html;
+// 			} 
+// 		}
 	} 
 </script> 
 
@@ -322,13 +322,13 @@
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
                                         	
                                         	@if($task->priority == 4) 
-		                                    	<span style="color:blue">▌</span>
+		                                    	<span style="color:#f0ad4e">▌</span>
 		                                    @elseif($task->priority == 3) 
-		                                    	<span style="color:blue">▎</span>
+		                                    	<span style="color:#337ab7">▎</span>
 		                                    @elseif($task->priority == 2) 
-		                                    	<span style="color:blue">▏</span>
+		                                    	<span style="color:#5bc0de">▏</span>
 		                                    @else
-		                                    	<span style="color:blue">|</span>
+		                                    	<span style="color:#5cb85c">|</span>
 		                                    @endif
                                         	
                                         	@if(!empty($task->goal->name))
