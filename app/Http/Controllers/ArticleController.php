@@ -65,8 +65,7 @@ class ArticleController extends Controller
     	$this->authorize('destroy', $article);
     	
     	if($article->staus == 'unread'){
-    		$article->status = 'read';
-    		$article->update();
+    		$article->update(array('status'=>'read'));
     	}
 
         if ($request->ajax() || $request->wantsJson()) {
