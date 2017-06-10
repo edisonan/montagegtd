@@ -6,7 +6,7 @@
         <div class="col-sm-offset-2 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新的订阅
+                    	新的文章
                 </div>
 
                 <div class="panel-body">
