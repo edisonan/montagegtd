@@ -180,10 +180,8 @@ class FeedController extends Controller
     			$result_code = self::OK_CODE;
     		}
     		
-    		$content = file_get_contents($request->url);  
-			preg_match('!<title>(.*?)</title>!i', $content, $match);  
     		 
-    		$title = $match[1];
+    		$title = \App\Http\Utils\CommonUtil::page_title($request->url);
     	}
     	
     	$resp = $this->responseJson($result_code, array('title'=>$title));
