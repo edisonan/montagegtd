@@ -82,7 +82,7 @@
 
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
-                                            <form action="{{url('feed' . $feed->id)}}" method="POST"  class=".form-inline">
+                                            <form action="{{url('feed/' . $feed->id)}}" method="POST"  class=".form-inline">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
 

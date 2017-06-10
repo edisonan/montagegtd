@@ -55,7 +55,7 @@
 
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
-                                            <form action="{{url('category' . $category->id)}}" method="POST"  class=".form-inline">
+                                            <form action="{{url('category/' . $category->id)}}" method="POST"  class=".form-inline">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
 
