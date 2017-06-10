@@ -30,7 +30,7 @@
                                     <tr >
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
-                                        		<a href="{{ url('article/view') }}">{{ $article->subject }}</a>
+                                        		<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
                                         	</pre>
                                         </td>
 
