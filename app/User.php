@@ -4,6 +4,13 @@ namespace App;
 
 use App\Task;
 use App\Pomo;
+use App\Feed;
+use App\Category;
+use App\Article;
+use App\Note;
+use App\Third;
+use App\Goal;
+
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
@@ -64,5 +71,20 @@ class User extends Authenticatable
     public function goals()
     {
     	return $this->hasMany(Goal::class);
+    }
+    
+    public function feeds()
+    {
+    	return $this->hasMany(Feed::class);
+    }
+    
+    public function categorys()
+    {
+    	return $this->hasMany(Category::class);
+    }
+    
+    public function articles()
+    {
+    	return $this->hasMany(Article::class);
     }
 }

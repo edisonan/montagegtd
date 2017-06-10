@@ -56,6 +56,7 @@ class Kernel extends ConsoleKernel
     	})->daily()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
     	
     	$schedule->call(function () {
+    		date_default_timezone_set("Asia/Shanghai");
     		$start_time = date('Y-m-d H:i:s');
     		$end_time = date('Y-m-d H:i:s',strtotime($start_time)+60);
     		

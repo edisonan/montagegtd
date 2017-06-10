@@ -29,6 +29,7 @@ Route::group(['middleware' => ['web']], function () {
     })->middleware('guest');
     
     Route::get('/index', 'IndexController@index');
+    Route::get('/index/test', 'IndexController@test');
     
     Route::get('/notes', 'NoteController@index');
     Route::get('/notes/add_content/{add_content}', 'NoteController@index');

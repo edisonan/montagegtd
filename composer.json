@@ -7,6 +7,9 @@
     "require": {
         "php": ">=5.5.9",
         "laravel/framework": "5.2.*",
+        "vlucas/phpdotenv": "~2.2",
+		"arandilopez/laravel-feed-parser": "0.1.*",
+		"laravelcollective/html": "~5.4"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

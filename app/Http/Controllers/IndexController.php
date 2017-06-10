@@ -118,4 +118,9 @@ class IndexController extends Controller
         	'tip_message' => $tip_message,
         ]);
     }
+    
+    public function index(Request $request)
+    {
+    	 return view('index.test');
+    }
 }
