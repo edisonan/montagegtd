@@ -180,7 +180,7 @@ class FeedController extends Controller
     			$result_code = self::OK_CODE;
     		}
     		
-    		exit;
+    		
     		$content = file_get_contents($request->url);
     		$pos = strpos($content, 'utf-8');
     		if($pos === false){
@@ -191,6 +191,8 @@ class FeedController extends Controller
     		$length = $poste-$postb;
     		 
     		$title = substr($content, $postb, $length);
+    		echo $title;
+    		exit;
     	}
     	
     	$resp = $this->responseJson($result_code, array('title'=>$title));
