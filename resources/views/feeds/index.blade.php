@@ -26,7 +26,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-group" id="task_form_div1" style="display: none;">
+                        <div class="form-group" id="task_form_div1" >
                             <label for="task-name" class="col-sm-3 control-label">订阅名称</label>
                             
                             <div class="col-sm-8">
@@ -35,7 +35,7 @@
 							
                         </div>
                         
-                        <div class="form-group" "form-group" id="task_form_div4" style="display: none;">
+                        <div class="form-group" "form-group" id="task_form_div4" >
                             <label for="task-name" class="col-sm-3 control-label">所属分类[<a href="{{ url('categorys') }}" target="_blank">新建</a>]</label>
 
                             <div class="col-sm-6">

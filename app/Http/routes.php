@@ -48,6 +48,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/feed', 'FeedController@store');
     Route::delete('/feed/{feed}', 'FeedController@destroy');
     
+    Route::get('/articles', 'ArticleController@index');
+    Route::post('/article', 'ArticleController@store');
+    Route::get('/article/view/{article}', 'ArticleController@store');
+    Route::delete('/article/{feed}', 'ArticleController@destroy');
+    
     Route::get('/goals', 'GoalController@index');
     Route::post('/goal', 'GoalController@store');
     Route::delete('/goal/{goal}', 'GoalController@destroy');

@@ -3,9 +3,9 @@
 namespace App\Repositories;
 
 use App\User;
-use App\Goal;
+use App\Article;
 
-class GoalRepository
+class ArticleRepository
 {
     /**
      * Get all of the tasks for a given user.
@@ -15,7 +15,7 @@ class GoalRepository
      */
     public function forUser(User $user)
     {
-        return Goal::where('user_id', $user->id)
+        return Article::where('user_id', $user->id)
                 ->orderBy('created_at', 'asc')
                 ->get();
     }
@@ -28,7 +28,7 @@ class GoalRepository
      */
     public function forUserByStatus(User $user,string $status)
     {
-    	return Goal::where('user_id', $user->id)
+    	return Article::where('user_id', $user->id)
 		    	->where('status',$status)
 		    	->get();
     }
@@ -40,10 +40,10 @@ class GoalRepository
      * @param  int  $goal_id
      * @return Collection
      */
-    public function forGoalId(User $user,$goal_id)
+    public function forArticleId(User $user,$article_id)
     {
-    	return Goal::where('user_id', $user->id)
-    	->where('id',$goal_id)
+    	return Article::where('user_id', $user->id)
+    	->where('id',$article_id)
     	->get();
     }
 }
