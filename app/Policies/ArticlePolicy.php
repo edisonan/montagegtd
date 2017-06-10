@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\User;
-use App\Category;
+use App\Article;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ArticlePolicy
