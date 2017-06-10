@@ -63,12 +63,11 @@ class ArticleController extends Controller
     public function view(Request $request,Article  $article)
     {
     	$this->authorize('destroy', $article);
-    	var_dump($article);
-    	if($article->staus == 'unread'){
-    		$foo = $article->update(array('status'=>'read'));
+    	
+    	if($article->status == 'unread'){
+    		$article->status = 'read';
+    		$article->update();
     	}
-    	var_dump($article);
-    	var_dump($foo);
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE,$article);
@@ -84,7 +83,7 @@ class ArticleController extends Controller
     {
     	$this->authorize('destroy', $article);
     	 
-    	if($article->staus == 'star'){
+    	if($article->status == 'star'){
     		$article->status = 'read';
     		$article->update();
     	} else {
