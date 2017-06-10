@@ -46,6 +46,7 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/feeds', 'FeedController@index');
     Route::post('/feed', 'FeedController@store');
+    Route::post('/feed/updateFeed', 'FeedController@updateFeed');
     Route::delete('/feed/{feed}', 'FeedController@destroy');
     
     Route::get('/articles', 'ArticleController@index');
