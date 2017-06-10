@@ -63,6 +63,10 @@ class ArticleController extends Controller
     public function view(Request $request,Article  $article)
     {
     	$this->authorize('destroy', $article);
+    	
+    	if($article->staus == 'unread'){
+    		$article->update(array('status'=>'read'));
+    	}
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE,$article);
@@ -72,6 +76,26 @@ class ArticleController extends Controller
     			'article' => $article,
     		]);
         }
+    }
+    
+    public function star(Request $request,Article  $article)
+    {
+    	$this->authorize('destroy', $article);
+    	 
+    	if($article->staus == 'star'){
+    		$article->update(array('status'=>'read'));
+    	} else {
+    		$article->update(array('status'=>'star'));
+    	}
+    	
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE,$article);
+    		return response($resp);
+    	} else {
+    		return view('articles.view', [
+    			'article' => $article,
+    		]);
+    	}
     }
     
     /**

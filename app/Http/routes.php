@@ -52,6 +52,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');
     Route::get('/article/view/{article}', 'ArticleController@view');
+    Route::get('/article/star/{article}', 'ArticleController@star');
     Route::delete('/article/{article}', 'ArticleController@destroy');
     
     Route::get('/goals', 'GoalController@index');
