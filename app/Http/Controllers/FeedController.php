@@ -161,16 +161,15 @@ class FeedController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/feeds');
+    		return redirect('/articles');
     	}
     	
     }
     
     public function checkFeedUrl(Request $request)
     {
-    	echo 123;exit;
     	$result_code = 1001;
-    	
+    	echo $request->url;
     	if($request->has('url')){
     		$feedFactory = new FeedFactory(['cache.enabled' => false]);
     		$feeder = $feedFactory->make($request->url);
@@ -181,6 +180,7 @@ class FeedController extends Controller
     			$result_code = self::OK_CODE;
     		}
     		
+    		exit;
     		$content = file_get_contents($request->url);
     		$pos = strpos($content, 'utf-8');
     		if($pos === false){
