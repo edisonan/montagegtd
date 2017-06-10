@@ -68,9 +68,8 @@ class ArticleController extends Controller
         	$resp = $this->responseJson(self::OK_CODE,$article);
         	return response($resp);
         } else {
-        	return view('articles.index', [
-    			'categorys' => $categorys,
-    			'articles' => $articles,
+        	return view('articles.view', [
+    			'article' => $article,
     		]);
         }
     }
