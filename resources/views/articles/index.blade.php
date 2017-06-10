@@ -7,6 +7,9 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的文章
+                    	<div style="float:right">
+                    		<a href="{{'feeds'}}">[增加订阅]</a>
+                    	</div>
                 </div>
 
                 <div class="panel-body">
