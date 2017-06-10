@@ -36,7 +36,7 @@
                         </div>
                         
                         <div class="form-group" "form-group" id="task_form_div4" style="display: none;">
-                            <label for="task-name" class="col-sm-3 control-label">所属分类[<a href="{{ categorys }}" target="_blank">新建</a>]</label>
+                            <label for="task-name" class="col-sm-3 control-label">所属分类[<a href="{{ url('categorys') }}" target="_blank">新建</a>]</label>
 
                             <div class="col-sm-6">
 	                            <select class="form-control" name="category_id">

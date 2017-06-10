@@ -37,7 +37,7 @@
                     </form>
                     
                     
-                    @if (count($feeds) > 0)
+                    @if (count($categorys) > 0)
                     <table class="table table-striped task-table">
                             <thead>
                                 <th>分类列表</th>
