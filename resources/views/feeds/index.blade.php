@@ -100,7 +100,7 @@ $(document).ready(function () {
                                         	<div class="preprepre">
                                         	
                                         	@if(!empty($feed->category->name))
-                                        	<a href="#{{$task->goal->id}}">[{{ $feed->category->name }}]</a>
+                                        	[{{ $feed->category->name }}]
                                         	@endif
                                         	
                                         	<img alt="" width="100px" src="{{ $feed->favicon}}"><a href="{{ $feed->url }}" title="{{ $feed->feed_desc }}">{{ $feed->feed_name }}</a>
