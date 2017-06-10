@@ -6,7 +6,7 @@
         <div class="col-sm-offset-2 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新的文章
+                    	新的文章[<a href="{{ url('feeds') }}">未读</a>][<a href="{{ url('feeds?status=read') }}">已读</a>][<a href="{{ url('feeds?status=star') }}">加星</a>]
                     	<div style="float:right">
                     		<a href="{{'feeds'}}">[增加订阅]</a>
                     	</div>
@@ -21,7 +21,7 @@
                     @if (count($articles) > 0)
                     <table class="table table-striped task-table">
                             <thead>
-                                <th>文章列表[<a href="{{ url('feeds') }}">未读</a>][<a href="{{ url('feeds?status=read') }}">已读</a>][<a href="{{ url('feeds?status=star') }}">加星</a>]</th>
+                                <th>文章列表</th>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>
                             </thead>
