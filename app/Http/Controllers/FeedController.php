@@ -182,7 +182,7 @@ class FeedController extends Controller
     		
     		$lines_array = file($request->url);  
 			$lines_string = implode('', $lines_array);  
-			eregi("<head>(.*)</head>", $lines_string, $head);  
+			preg_match("<head>(.*)</head>", $lines_string, $head);  
     		 
     		$title = $head[0];
     	}
