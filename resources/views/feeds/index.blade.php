@@ -7,6 +7,9 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的订阅
+                    	<div style="float:right">
+                    		[<a href="{{ url('categorys') }}" target="_blank">新建</a>]
+                    	</div>
                 </div>
 
                 <div class="panel-body">
@@ -36,7 +39,7 @@
                         </div>
                         
                         <div class="form-group" "form-group" id="task_form_div4" >
-                            <label for="task-name" class="col-sm-3 control-label">所属分类[<a href="{{ url('categorys') }}" target="_blank">新建</a>]</label>
+                            <label for="task-name" class="col-sm-3 control-label">所属分类</label>
 
                             <div class="col-sm-6">
 	                            <select class="form-control" name="category_id">
