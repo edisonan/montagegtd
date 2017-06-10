@@ -169,7 +169,7 @@ class FeedController extends Controller
     public function checkFeedUrl(Request $request)
     {
     	$result_code = 1001;
-    	echo $request->url;
+    	
     	if($request->has('url')){
     		$feedFactory = new FeedFactory(['cache.enabled' => false]);
     		$feeder = $feedFactory->make($request->url);
@@ -180,22 +180,15 @@ class FeedController extends Controller
     			$result_code = self::OK_CODE;
     		}
     		
-    		
-    		$content = file_get_contents($request->url);
-    		$pos = strpos($content, 'utf-8');
-    		if($pos === false){
-    			iconv('gbk', 'utf-8', $content);
-    		}
-    		$postb = strpos($content, '<title>')+7;
-    		$poste = strpos($content, '</title>');
-    		$length = $poste-$postb;
+    		$lines_array = file($request->url);  
+			$lines_string = implode('', $lines_array);  
+			eregi("<head>(.*)</head>", $lines_string, $head);  
     		 
-    		$title = substr($content, $postb, $length);
-    		echo $title;
-    		exit;
+    		$title = $head[0];
     	}
     	
     	$resp = $this->responseJson($result_code, array('title'=>$title));
+    	echo $resp;exit;
     	return response($resp);
     }
     
