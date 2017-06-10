@@ -49,6 +49,7 @@ class Kernel extends ConsoleKernel
     		foreach ($message_arr as $item){
 	    		$ff_user = new FFClient( $config['key'] , $config['secret'] , $oauth_token , $oauth_token_secret );
 	    		$result = $ff_user -> update($item.rand(1,9));
+	    		
 	    		file_put_contents(env('CRON_LOG'),$result);
     		}
     		
@@ -67,6 +68,6 @@ class Kernel extends ConsoleKernel
 	    			$m->to($user->email, $user->name)->subject('Task Reminder for :'.$task->name);
 	    		});
     		}
-    	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	})->everyMinute()->appendOutputTo(env('CRON_LOG'));
     }
 }
