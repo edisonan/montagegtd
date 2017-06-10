@@ -8,13 +8,13 @@
 $(document).ready(function () {
 	$("#check_url").click(function(){
 		url = $("#url").val();
-		$.post("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
+		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
 			if(result.code != 9999){
 				alert('该url未检测到内容，请确认！');
 			} else {
 				alert('检测成功');
 			}
-			$("#feed_name").val(result.title);
+			$("#feed_name").val(result.result.title);
 		});
 	});
 });
