@@ -38,7 +38,7 @@
                 <div class="panel-heading">
                     	新的文章[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
                     	<div style="float:right">
-                    		<a href="{{'feeds/checkNewFeed'}}">[强制更新?]</a>
+                    		<a href="{{'feed/checkNewFeed'}}">[强制更新?]</a>
                     		<a href="{{'feeds'}}">[增加订阅]</a>
                     	</div>
                 </div>

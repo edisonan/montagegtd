@@ -53,6 +53,9 @@
                                         	</pre>
                                         </td>
 
+										<td  width="1"  align='right'>
+                                            <a href="{{ url('category/'.$feed->id)}}" style="color:blue">✎</span>
+                                        </td>
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
                                             <form action="{{url('category/' . $category->id)}}" method="POST"  class=".form-inline">

@@ -13,6 +13,8 @@ use App\Category;
 use App\Repositories\CategoryRepository;
 use App\Article;
 
+use Log;
+
 use ArandiLopez\Feed\Factories\FeedFactory; //use SimplePie to parse RSS feeds, see: https://github.com/arandilopez/laravel-feed-parser
 
 use Illuminate\Contracts\Logging\Log;
@@ -120,7 +122,7 @@ class FeedController extends Controller
     {
     	$this->authorize('destroy', $feed);
     	
-    	if(empty($request->all())){
+    	if(empty($request->method() == 'GET')){
     		return view('feeds.update',array('feed'=>$feed));
     	}
     	

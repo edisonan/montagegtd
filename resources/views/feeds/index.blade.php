@@ -11,7 +11,7 @@ $("#check_url").click(function(){
 		}
 		$("#feed_name").val(result.title);
 	});
-}
+});
 </script>
 
 @section('content')
@@ -102,6 +102,10 @@ $("#check_url").click(function(){
                                         	</pre>
                                         </td>
 
+										<td  width="1"  align='right'>
+                                            <a href="{{ url('feed/'.$feed->id)}}" style="color:blue">✎</span>
+                                        </td>
+                                        
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
                                             <form action="{{url('feed/' . $feed->id)}}" method="POST"  class=".form-inline">

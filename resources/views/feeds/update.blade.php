@@ -11,7 +11,7 @@ $("#check_url").click(function(){
 		}
 		$("#feed_name").val(result.title);
 	});
-}
+});
 </script>
 
 @section('content')

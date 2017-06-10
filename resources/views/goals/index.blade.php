@@ -53,15 +53,8 @@
                                         </td>
 
                                         <!-- Task Delete Button -->
-                                        <td  width="10%"  align='right'>
-                                            <form action="{{url('goal/' . $goal->id)}}" method="POST" class=".form-inline">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-												<input type="hidden" name="type" value="finish"/> 
-                                                <button type="submit" id="delete-goal-{{ $goal->id }}" class="btn btn-success">
-                                                    <i class="glyphicon glyphicon-ok"></i>
-                                                </button>
-                                            </form>
+                                        <td  width="1"  align='right'>
+                                            <a href="{{ url('goal/'.$feed->id)}}" style="color:blue">✎</span>
                                         </td>
                                         <td  width="10%"  align='right'>
                                             <form action="{{url('goal/' . $goal->id)}}" method="POST"  class=".form-inline">

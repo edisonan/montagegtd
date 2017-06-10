@@ -107,7 +107,7 @@ class GoalController extends Controller
     {
     	$this->authorize('destroy', $goal);
     	
-    	if(empty($request->all())){
+    	if(empty($request->method() == 'GET')){
     		return view('goals.update', array('goal'=>$goal));
     	}
     
