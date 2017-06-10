@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+
+
+@section('content')
+
 <script type="text/javascript">
 $(document).ready(function () {
 	$("#check_url").click(function(){
@@ -15,8 +19,6 @@ $(document).ready(function () {
 	});
 });
 </script>
-
-@section('content')
     <div class="container">
     
         <div class="col-sm-offset-2 col-sm-8">

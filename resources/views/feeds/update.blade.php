@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('content')
 <script type="text/javascript">
 $(document).ready(function () {
 
@@ -16,8 +17,6 @@ $(document).ready(function () {
 	});
 });
 </script>
-
-@section('content')
     <div class="container">
     
         <div class="col-sm-offset-2 col-sm-8">
