@@ -12,7 +12,7 @@ class Task extends Model
      *
      * @var array
      */
-    protected $fillable = ['name','priority','remindtime','deadline','status','goal_id'];
+    protected $fillable = ['name','priority','remindtime','deadline','status','parent_task_id'];
     
     /**
      * The attributes that should be cast to native types.
@@ -21,7 +21,7 @@ class Task extends Model
      */
     protected $casts = [
         'user_id' => 'int',
-        'goal_id' => 'int',
+        'parent_task_id' => 'int',
     ];
 
     /**
@@ -35,8 +35,13 @@ class Task extends Model
     /**
      * Get all of the tags for the user.
      */
-    public function goal()
+    public function parentTask()
     {
-    	return $this->belongsTo(Goal::class, 'goal_id');
+    	return $this->belongsTo(Task::class, 'parent_task_id');
+    }
+    
+    public function childTasks()
+    {
+    	return $this->hasMany(Task::class, 'parent_task_id');
     }
 }

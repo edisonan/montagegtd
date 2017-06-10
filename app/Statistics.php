@@ -5,14 +5,16 @@ namespace App;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Goal extends Model
+class Statistics extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['name','status'];
+    protected $fillable = ['date_type','data_type','count'];
+    
+    protected $table = 'statistics';
     
     /**
      * The attributes that should be cast to native types.
@@ -29,13 +31,5 @@ class Goal extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-    
-    /**
-     * Get all of the tasks for the user.
-     */
-    public function tasks()
-    {
-    	return $this->hasMany(Task::class);
     }
 }

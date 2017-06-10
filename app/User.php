@@ -9,7 +9,6 @@ use App\Category;
 use App\Article;
 use App\Note;
 use App\Third;
-use App\Goal;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -65,13 +64,6 @@ class User extends Authenticatable
     	return $this->hasMany(Third::class);
     }
     
-    /**
-     * Get all of the tags for the user.
-     */
-    public function goals()
-    {
-    	return $this->hasMany(Goal::class);
-    }
     
     public function feeds()
     {

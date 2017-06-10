@@ -11,7 +11,6 @@ use App\Task;
 use App\Tag;
 use App\TaskTagMap;
 use App\Repositories\TaskRepository;
-use App\Repositories\GoalRepository;
 use App\Repositories\TagRepository;
 
 class TaskController extends Controller
@@ -22,7 +21,6 @@ class TaskController extends Controller
      * @var TaskRepository
      */
     protected $tasks;
-    protected $goals;
     protected $tags;
 
     /**
@@ -31,12 +29,11 @@ class TaskController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct(TaskRepository $tasks, GoalRepository $goals, TagRepository $tags)
+    public function __construct(TaskRepository $tasks,  TagRepository $tags)
     {
         $this->middleware('auth');
 
         $this->tasks = $tasks;
-        $this->goals = $goals;
         $this->tags = $tags;
     }
 
@@ -71,22 +68,22 @@ class TaskController extends Controller
         $params = array();
         $params['name'] = $request->name;
         
-        if(isset($request->priority) && in_array($request->priority, array(1,2,3,4))){
+        if($request->has('priority') && in_array($request->priority, array(1,2,3,4))){
         	$params['priority'] = $request->priority;
         }
         
-        if(isset($request->remindtime) && strtotime($request->remindtime) > time()){
+        if($request->has('remindtime') && strtotime($request->remindtime) > time()){
         	$params['remindtime'] = $request->remindtime;
         }
         
-        if(isset($request->deadline) && strtotime($request->deadline) > time()){
+        if($request->has('deadline') && strtotime($request->deadline) > time()){
         	$params['deadline'] = $request->deadline;
         }
         
-        if(isset($request->goal_id)){
-        	$goal = $this->goals->forGoalId($request->user(), $request->goal_id);
-        	if(!empty($goal)){
-	        	$params['goal_id'] = $request->goal_id;
+        if($request->has('parent_task_id')){
+        	$parent_task = $this->tasks->forUserById($request->user(),$request->parent_task_id);
+        	if(!empty($parent_task)){
+        		$params['parent_task_id'] = $request->parent_task_id;
         	}
         }
         

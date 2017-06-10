@@ -239,7 +239,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-group" id="task_form_div1" style="display: none;">
+                        <div class="form-group" id="task_form_div1" style="">
                             <label for="task-name" class="col-sm-3 control-label">优先级</label>
 							
                             <div class="col-sm-6">
@@ -274,19 +274,6 @@
                             </div>
                         </div>
                         
-                        <div class="form-group" "form-group" id="task_form_div4" style="display: none;">
-                            <label for="task-name" class="col-sm-3 control-label">目标归属</label>
-
-                            <div class="col-sm-6">
-	                            <select class="form-control" name="goal_id">
-		                              @foreach ($goals as $goal)
-		                              	<option checked></option>
-									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
-									  @endforeach
-								</select>
-                            </div>
-                        </div>
-
                         <!-- Add Task Button -->
                         <div class="form-group">
                             <div class="col-sm-offset-3 col-sm-6">
@@ -330,10 +317,6 @@
 		                                    @else
 		                                    	<span style="color:#5cb85c">|</span>
 		                                    @endif
-                                        	
-                                        	@if(!empty($task->goal->name))
-                                        	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
-                                        	@endif
                                         	
                                         	{{ $task->name }}
                                         	</pre>

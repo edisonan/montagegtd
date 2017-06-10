@@ -62,12 +62,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/article/star/{article}', 'ArticleController@star');
     Route::delete('/article/{article}', 'ArticleController@destroy');
     
-    Route::get('/goals', 'GoalController@index');
-    Route::post('/goal', 'GoalController@store');
-    Route::delete('/goal/{goal}', 'GoalController@destroy');
-    Route::post('/goal/{goal}', 'GoalController@update');
-    Route::get('/goal/{goal}', 'GoalController@update');
-    
     Route::get('/pomos', 'PomoController@index');
     Route::get('/pomos/start', 'PomoController@start');
     Route::get('/pomos/discard', 'PomoController@discard');
