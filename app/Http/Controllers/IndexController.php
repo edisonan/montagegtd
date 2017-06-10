@@ -119,7 +119,7 @@ class IndexController extends Controller
         ]);
     }
     
-    public function index(Request $request)
+    public function test(Request $request)
     {
     	 return view('index.test');
     }
