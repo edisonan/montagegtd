@@ -78,8 +78,8 @@
                                         	<a href="#{{$task->goal->id}}">[{{ $feed->category->name }}]</a>
                                         	@endif
                                         	
-                                        	{{ $feed->feed_name }}|
-                                        	{{ $feed->url }}
+                                        	<img alt="" src="{{ $feed->favicon}}"><a href="{{ $feed->url }}" title="{{ $feed->feed_desc }}">{{ $feed->feed_name }}</a>
+                                        	
                                         	</pre>
                                         </td>
 

@@ -6,7 +6,7 @@
         <div class="col-sm-offset-2 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新的文章[<a href="{{ url('feeds') }}">未读</a>][<a href="{{ url('feeds?status=read') }}">已读</a>][<a href="{{ url('feeds?status=star') }}">加星</a>]
+                    	新的文章[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
                     	<div style="float:right">
                     		<a href="{{'feeds'}}">[增加订阅]</a>
                     	</div>
