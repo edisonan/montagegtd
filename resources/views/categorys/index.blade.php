@@ -25,6 +25,14 @@
 	                               <input type="text" name="name" id="name" class="form-control" value="{{ old('task') }}">
                             </div>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="task-name" class="col-sm-3 control-label">分类排序</label>
+								
+                            <div class="col-sm-8">
+	                               <input type="text" name="category_order" id="category_order" class="form-control" value="{{ $category->category_order }}">
+                            </div>
+                        </div>
 
                         <!-- Add Task Button -->
                         <div class="form-group">
