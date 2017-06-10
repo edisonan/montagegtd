@@ -14,7 +14,7 @@
     					<ul>
     					@foreach($category->feeds as $feed)
     						<li>
-    							<a href="{{ url('feeds?feed_id='.$feed->id.'&status'.($request->has('status')?$request->status:'unread')) }}">{{$feed->feed_name}}</a>
+    							<a href="{{ url('feeds?feed_id='.$feed->id.'&status='.$status }}">{{$feed->feed_name}}</a>
     							(
     							@if($status == 'unread')
     								{{$feed->unread_count}}
