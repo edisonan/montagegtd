@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-<<script type="text/javascript">
+<script type="text/javascript">
 $(document).ready(function () {
 
 	$("#check_url").click(function(){
