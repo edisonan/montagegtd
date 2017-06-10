@@ -30,7 +30,7 @@
                             <label for="task-name" class="col-sm-3 control-label">分类排序</label>
 								
                             <div class="col-sm-8">
-	                               <input type="text" name="category_order" id="category_order" class="form-control" value="{{ $category->category_order }}">
+	                               <input type="text" name="category_order" id="category_order" class="form-control" value="">
                             </div>
                         </div>
 
