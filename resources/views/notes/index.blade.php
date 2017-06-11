@@ -103,7 +103,7 @@ function html_encode(str)
 
                     <div class="panel-body">
                     	@foreach ($notes as $note)
-                    	<div class="col-sm-offset-0 col-sm-12">
+                    	<div class="col-sm-offset-0 col-sm-12" style="background-color: rgba(84, 126, 130, 0.03);margin-top: 10px;">
 							  <div class="col-sm-offset-0 col-sm-1">
 							    <center>
 							    		<img alt="" width="40px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1">
@@ -111,8 +111,8 @@ function html_encode(str)
 							  </div>
   							
   							<div class="col-sm-offset-0 col-sm-11">
-  								<div class="col-sm-offset-0 col-sm-11">
-			    					{{ $note->user->name }}
+  								<div class="col-sm-offset-0 col-sm-11" style="height:20px">
+			    					<b>{{ $note->user->name }}</b>
 								</div>
 								
 								<div class="col-sm-offset-0 col-sm-11">
