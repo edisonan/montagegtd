@@ -20,7 +20,7 @@
 		    					@foreach($category->feeds as $feed)
 		    						<li>
 		    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
-		    							<span style="white-space:nowrap;">
+		    							<span style="display: block;width: 200px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
 		    							[
 		    							@if($status == 'unread')
 		    								{{$feed->unread_count}}
