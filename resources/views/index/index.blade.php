@@ -114,6 +114,22 @@
 </script> 
 
 @section('content')
+<script type="text/javascript">
+$(document).ready(function () {
+
+	$(".finish_task").click(function(){
+		task_value = $(this).attr("task_value");
+		$.post("{{ url('feed/task_id/') }}"+task_value,{type:"finish"},function(result){
+			result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				$('#'+task_value).remove();
+			}
+		});
+	});
+});
+</script>
     <div class="container">
     
     
@@ -304,39 +320,17 @@
 	                                    @else
 	                                    	title="不重要不紧急事项" 
 	                                    @endif
+	                                    
+	                                    id="{{$task->id}}"
                                     >
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
-                                        	
-                                        	@if($task->priority == 4) 
-		                                    	<span style="color:#f0ad4e">▌</span>
-		                                    @elseif($task->priority == 3) 
-		                                    	<span style="color:#337ab7">▎</span>
-		                                    @elseif($task->priority == 2) 
-		                                    	<span style="color:#5bc0de">▏</span>
-		                                    @else
-		                                    	<span style="color:#5cb85c">|</span>
-		                                    @endif
-                                        	
+											<a href="javascript:void(0)" class="finish_task" task_value="{{ $task->id }}">☐</a>                                        	
                                         	{{ $task->name }}
                                         	</pre>
                                         </td>
 
                                         <!-- Task Delete Button -->
-                                        <td  width="1"  align='right'>
-                                            <form action="{{url('task/' . $task->id)}}" method="POST" class=".form-inline">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-												<input type="hidden" name="type" value="finish"/> 
-                                                <button type="submit" id="delete-task-{{ $task->id }}" class="btn btn-link"  title="已完成">
-                                                	<!-- 
-                                                    <i class="glyphicon glyphicon-ok"></i>
-                                                	 -->
-                                                	 <span style="color:green">Done √</span>
-                                                    
-                                                </button>
-                                            </form>
-                                        </td>
                                         <td  width="1"  align='right'>
                                             <form action="{{url('task/' . $task->id)}}" method="POST"  class=".form-inline">
                                                 {{ csrf_field() }}
