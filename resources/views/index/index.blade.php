@@ -255,7 +255,7 @@ $(document).ready(function () {
                             </div>
                         </div>
                         
-                        <div class="form-group" id="task_form_div1" style="">
+                        <div class="form-group" id="task_form_div1" style="display:none">
                             <label for="task-name" class="col-sm-3 control-label">优先级</label>
 							
                             <div class="col-sm-8">
@@ -300,7 +300,7 @@ $(document).ready(function () {
 									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
 									  @endforeach
 								</select>
-								<a href="{{ url('goals') }}" ><small>高级</small></a>
+								<a href="{{ url('goals') }}" ><small>新建</small></a>
                             </div>
                         </div>
                         
