@@ -84,8 +84,12 @@ class NoteController extends Controller
             'name' => 'required',
         ]);
 
+        $name = htmlspecialchars($request->name);
+        $name = str_replace('&lt;code&gt;', '<code>', $name);
+        $name = str_replace('&lt;/code&gt;', '</code>', $name);
+        
         $note = $request->user()->notes()->create([
-            'name' => $request->name,
+            'name' => $name,
             'status' => $request->status,
         ]);
         
