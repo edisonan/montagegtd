@@ -90,7 +90,7 @@ class StatisticsController extends Controller
     		$count_arr['task_count'] = $count_arr['task_count'] + $statistic->count;
     	}
     	$task_bar_statistics = $bar_basic_arr;
-    	$task_bar_statistics['legend']['data'] = '任务量';
+    	$task_bar_statistics['legend']['data'] = array('任务量');
     	$task_bar_statistics['xAxis'][] = array(
     			'type'=>'category',
     			'data'=>array_keys($task_arr),
@@ -109,7 +109,7 @@ class StatisticsController extends Controller
     		$count_arr['pomo_count'] = $count_arr['pomo_count'] + $statistic->count;
     	}
     	$pomo_bar_statistics = $bar_basic_arr;
-    	$pomo_bar_statistics['legend']['data'] = '任务量';
+    	$pomo_bar_statistics['legend']['data'] = array('任务量');
     	$pomo_bar_statistics['xAxis'][] = array(
     			'type'=>'category',
     			'data'=>array_keys($pomo_arr),
@@ -129,7 +129,7 @@ class StatisticsController extends Controller
     	}
     	
     	$note_bar_statistics = $bar_basic_arr;
-    	$note_bar_statistics['legend']['data'] = '任务量';
+    	$note_bar_statistics['legend']['data'] = array('任务量');
     	$note_bar_statistics['xAxis'][] = array(
     			'type'=>'category',
     			'data'=>array_keys($note_arr),
