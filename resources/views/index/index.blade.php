@@ -214,14 +214,7 @@ $(document).ready(function () {
 
                                         <!-- Task Delete Button -->
                                         <td width="20%"  align='right'>
-                                            <form action="{{url('pomo/' . $pomo->id)}}" method="POST">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-                                                <button type="submit" id="delete-pomo-{{ $pomo->id }}" class="btn btn-danger">
-                                                    <i class="fa fa-btn fa-trash"></i>
-                                                </button>
-                                            </form>
+                                        	{{ $pomo->udated_at }}
                                         </td>
                                     </tr>
                                 @endforeach

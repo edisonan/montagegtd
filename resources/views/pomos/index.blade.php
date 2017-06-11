@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="container">
-        <div class="col-sm-offset-2 col-sm-8">
 
             <!-- Finish Pomos -->
                 <div class="panel panel-default">
@@ -28,8 +27,8 @@
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
 
-                                                <button type="submit" id="delete-pomo-{{ $pomo->id }}" class="btn btn-danger">
-                                                    <i class="fa fa-btn fa-trash"></i>
+                                                <button type="submit" id="delete-pomo-{{ $pomo->id }}" class="btn btn-link">
+                                                    X
                                                 </button>
                                             </form>
                                         </td>
@@ -42,6 +41,5 @@
 		            @endif
                     </div>
                 </div>
-        </div>
     </div>
 @endsection
