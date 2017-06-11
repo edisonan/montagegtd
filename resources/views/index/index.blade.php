@@ -140,7 +140,7 @@ $(document).ready(function () {
     <div class="container">
     
     
-    	<div class="col-sm-offset-2 col-sm-8">
+    	<div class="col-sm-offset-0 col-sm-6">
     		
     		@if($tip_type != 0)
 	    		<div class="alert alert-success alert-dismissible" role="alert">
@@ -228,7 +228,7 @@ $(document).ready(function () {
     
     
     
-        <div class="col-sm-offset-2 col-sm-8">
+        <div class="col-sm-offset-0 col-sm-6">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的待办事项
@@ -251,7 +251,7 @@ $(document).ready(function () {
 
                             <div class="col-sm-8">
 	                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}" style="display: -webkit-inline-box;width: 85%;">
-								    <a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级选项</small></a>
+								    <a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级</small></a>
                             </div>
                         </div>
                         
@@ -260,16 +260,16 @@ $(document).ready(function () {
 							
                             <div class="col-sm-6">
                             	<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio1" value="1" title="不重要不紧急" checked><span title="不重要不紧急">☆</span>
+								  <input type="radio" name="priority" id="inlineRadio1" value="1" title="不重要不紧急" checked><span title="不重要不紧急"><small>☆</small></span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio2" value="2" title="不重要紧急"><span title="不重要紧急">☆☆</span>
+								  <input type="radio" name="priority" id="inlineRadio2" value="2" title="不重要紧急"><span title="不重要紧急"><small>☆☆</small></span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio3" value="3" title="重要不紧急"><span title="重要不紧急">☆☆☆</span>
+								  <input type="radio" name="priority" id="inlineRadio3" value="3" title="重要不紧急"><span title="重要不紧急"><small>☆☆☆</small></span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio4" value="4" title="重要紧急 "><span title="重要紧急 ">☆☆☆☆</span>
+								  <input type="radio" name="priority" id="inlineRadio4" value="4" title="重要紧急 "><span title="重要紧急 "><small>☆☆☆☆</small></span>
 								</label>
                             </div>
                         </div>
