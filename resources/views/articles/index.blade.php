@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
     
-    	@if(count($categorys)>0)
+    	
     	<div class="col-sm-offset-0 col-sm-3">
     		<div class="panel panel-default">
                 <div class="panel-heading">
@@ -12,33 +12,35 @@
 
                 <div class="panel-body">
 		    		<ul class="nav nav-pills nav-stacked">
-		    			@foreach($categorys as $category)
-		    			<li role="presentation" class="">
-		    				{{ $category->name }}
-		    				@if(count($category->feeds)>0)
-		    					<ul>
-		    					@foreach($category->feeds as $feed)
-		    						<li>
-		    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
-		    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
-		    							[
-		    							@if($status == 'unread')
-		    								{{$feed->unread_count}}
-		    							@else
-		    								{{$feed->read_count}}
-		    							@endif
-		    							]
-		    							{{ $feed->feed_name,0,10 }}
-		    							</span>
-		    							
-		    							
-		    							</a>
-		    						</li>
-		    					@endforeach
-		    					</ul>
-		    				@endif
-		    			</li>
-		    			@endforeach
+		    			@if(count($categorys)>0)
+			    			@foreach($categorys as $category)
+			    			<li role="presentation" class="">
+			    				{{ $category->name }}
+			    				@if(count($category->feeds)>0)
+			    					<ul>
+			    					@foreach($category->feeds as $feed)
+			    						<li>
+			    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
+			    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+			    							[
+			    							@if($status == 'unread')
+			    								{{$feed->unread_count}}
+			    							@else
+			    								{{$feed->read_count}}
+			    							@endif
+			    							]
+			    							{{ $feed->feed_name,0,10 }}
+			    							</span>
+			    							
+			    							
+			    							</a>
+			    						</li>
+			    					@endforeach
+			    					</ul>
+			    				@endif
+			    			</li>
+			    			@endforeach
+			    		@endif
 		    		</ul>
 		    	</div>	
     		</div>
