@@ -52,7 +52,7 @@ class FeedController extends Controller
     	$title = $url = '';
     	
     	if($request->has('url')){
-    		$url = $request->usl;
+    		$url = $request->url;
     		$title = \App\Http\Utils\CommonUtil::page_title($request->url);
     	}
     	
