@@ -37,21 +37,25 @@
             	// 基于准备好的dom，初始化echarts图表
                 var myPomoChart = ec.init(document.getElementById('pomo_main')); 
              	// 为echarts对象加载数据 
-                myChart.setOption(<?php echo $pomo_bar_statistics;?>); 
+             	var option =  eval('(' +' <?php echo $pomo_bar_statistics;?>' + ')');
+                myPomoChart.setOption(option); 
                 
                 // 基于准备好的dom，初始化echarts图表
-                var myPomoChart = ec.init(document.getElementById('task_main')); 
+                var myTaskChart = ec.init(document.getElementById('task_main')); 
+             	var option =  eval('(' +' <?php echo $task_bar_statistics;?>' + ')');
              	// 为echarts对象加载数据 
-                myChart.setOption(<?php echo $task_bar_statistics;?>); 
+                myTaskChart.setOption(option); 
 
              	// 基于准备好的dom，初始化echarts图表
-                var myPomoChart = ec.init(document.getElementById('note_main')); 
+                var myNoteChart = ec.init(document.getElementById('note_main')); 
+             	var option =  eval('(' +' <?php echo $note_bar_statistics;?>' + ')');
              	// 为echarts对象加载数据 
-                myChart.setOption(<?php echo $note_bar_statistics;?>); 
+                myNoteChart.setOption(option); 
 
-                var myPomoChart = ec.init(document.getElementById('pie_main')); 
+                var myPieChart = ec.init(document.getElementById('pie_main')); 
+             	var option =  eval('(' +' <?php echo $pie_bar_statistics;?>' + ')');
              	// 为echarts对象加载数据 
-                myChart.setOption(<?php echo $count_pie_statistics;?>); 
+                myPieChart.setOption(option); 
                 
                 
                 var option = {
