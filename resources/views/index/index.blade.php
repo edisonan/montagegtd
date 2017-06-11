@@ -120,10 +120,11 @@ $(document).ready(function () {
 	$(".finish_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
+		task_type = $(this).attr("task_type");
 		$.ajax({
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'DELETE',
-		    data: {type:"finish",_token:task_token},
+		    data: {type:task_type,_token:task_token},
 		    success: function(result) {
 		    	result_arr = JSON.parse(result);
 				if(result_arr.code != 9999){
@@ -331,25 +332,14 @@ $(document).ready(function () {
                                     >
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
-											<a href="javascript:void(0)" class="finish_task" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">☐</a>                                        	
+											<a href="javascript:void(0)" class="finish_task" task_type="finish" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">☐</a>                                        	
                                         	{{ $task->name }}
                                         	</pre>
                                         </td>
 
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
-                                            <form action="{{url('task/' . $task->id)}}" method="POST"  class=".form-inline">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-												<input type="hidden" name="type"  value="delete"/> 
-                                                <button type="submit" id="delete-task-{{ $task->id }}" class="btn btn-link" title="删除!!!">
-                                                	<!-- 
-                                                    <i class="fa fa-btn fa-trash"></i>
-                                                	 -->
-                                                	 <span style="color:red">×</span>
-                                                </button>
-                                            </form>
+                                        	<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">X</a> 
                                         </td>
                                     </tr>
                                 @endforeach
