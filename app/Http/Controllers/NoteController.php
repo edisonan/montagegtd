@@ -47,6 +47,13 @@ class NoteController extends Controller
     {
     	$notes = $this->notes->forUserByStatus($request->user(), 2, $need_page=true);
     	
+    	if($request->has('add_content')){
+    		$add_content = $request->add_content;
+    		if(\App\Http\Utils\CommonUtil::isUrl($add_content)){
+    			$add_content = '#分享链接#['.$add_content.']'.page_title($url);
+    		}
+    	}
+    	
     	foreach ($notes as $key => $note){
     		if(!empty($note->noteTagMaps)){
     			foreach ($note->noteTagMaps as $noteTagMap){
