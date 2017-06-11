@@ -97,7 +97,7 @@ class IndexController extends Controller
     	
     	if($runing_pomo_status == 3){
     		$tip_type = 1;
-    		$tip_message = '您已经完成了一个小目标，快来记录一下吧~';
+    		$tip_message = '您已经完成了一个番茄，快来记录一下吧~';
     	} else {
     		$hour = date('H');
     		if($hour < 10 && $hour > 6 && !isset($_COOKIE[date('Ymd').'morning_tip'])){

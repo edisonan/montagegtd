@@ -26,7 +26,7 @@
 		remain = remain - 1;
 		if(remain == 0){
 			if(status == 2){
-				notify("您已经完成了一个小目标，快来记录一下吧~");
+				notify("您已经完成了一个番茄，快来记录一下吧~");
 			} else if(status == 4){
 				notify("休息完成，快来开始下一个番茄吧~");
 			}
@@ -55,7 +55,7 @@
 		if (Notification.permission !== "granted")
 		    Notification.requestPermission();
 		  else {
-		    var notification = new Notification('小目标', {
+		    var notification = new Notification('木叶村[专业GTD,番茄工作法]', {
 		      icon: 'http://congcong.us/favicon.ico',
 		      body: message,
 		    });

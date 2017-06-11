@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>小目标-高效时间管理,番茄工作法,来定个小目标吧</title>
+    <title>木叶村-专业GTD，番茄工作法</title>
 
     <!-- Fonts -->
     <link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
