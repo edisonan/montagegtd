@@ -146,10 +146,10 @@ class StatisticsController extends Controller
     	$count_pie_statistics = array();
     	
         return view('statistics.index', [
-            'task_bar_statistics' => json_encode($task_bar_statistics),
-        	'pomo_bar_statistics' => json_encode($pomo_bar_statistics),
-        	'note_bar_statistics' => json_encode($note_bar_statistics),
-        	'count_pie_statistics' => json_encode($count_pie_statistics),
+            'task_bar_statistics' => \json_encode($task_bar_statistics),
+        	'pomo_bar_statistics' => \json_encode($pomo_bar_statistics),
+        	'note_bar_statistics' => \json_encode($note_bar_statistics),
+        	'count_pie_statistics' => \json_encode($count_pie_statistics),
         ]);
     }
     
