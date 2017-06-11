@@ -28,8 +28,9 @@
 		    								{{$feed->read_count}}
 		    							@endif
 		    							]
-		    							</span>
 		    							{{$feed->feed_name}}
+		    							</span>
+		    							
 		    							
 		    							</a>
 		    						</li>
