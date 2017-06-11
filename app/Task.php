@@ -4,6 +4,7 @@ namespace App;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
+use App\Goal;
 
 class Task extends Model
 {
@@ -12,7 +13,7 @@ class Task extends Model
      *
      * @var array
      */
-    protected $fillable = ['name','priority','remindtime','deadline','status','parent_task_id'];
+    protected $fillable = ['name','priority','remindtime','deadline','status','parent_task_id','goal_id'];
     
     /**
      * The attributes that should be cast to native types.
@@ -22,6 +23,7 @@ class Task extends Model
     protected $casts = [
         'user_id' => 'int',
         'parent_task_id' => 'int',
+    	'goal_id' => 'int',
     ];
 
     /**
@@ -43,5 +45,10 @@ class Task extends Model
     public function childTasks()
     {
     	return $this->hasMany(Task::class, 'parent_task_id');
+    }
+    
+    public function goal()
+    {
+    	return $this->belongsTo(Goal::class, 'goal_id');
     }
 }
