@@ -11,6 +11,8 @@ use App\Http\Utils\FFClient;
 
 use DB;
 use App\Note;
+use App\Task;
+use App\Pomo;
 
 
 class Kernel extends ConsoleKernel
