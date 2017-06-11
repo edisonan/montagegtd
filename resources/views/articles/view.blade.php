@@ -13,7 +13,10 @@
                     	<a href="{{ url('article/star/'.$article->id) }}">☆</a>
                     	@endif;
                     	</span>
+                    	
+                    	<a href="{{ $article->url }}" target="">
                     	{{ $article->subject }}
+                    	</a>
                 </div>
 
                 <div class="panel-body">
