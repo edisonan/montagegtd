@@ -121,6 +121,11 @@ $(document).ready(function () {
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
 		task_type = $(this).attr("task_type");
+
+		if (task_type == 'delete' && !confirm("确认要删除此任务咩？")) {
+			return false;
+		}
+		
 		$.ajax({
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'DELETE',
