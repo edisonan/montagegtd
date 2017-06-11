@@ -88,9 +88,10 @@ class Kernel extends ConsoleKernel
     		
     		\Log::info('statistics:'.$start_time.'|'.$end_time);
     		
-    		$note_counts = DB::table('notes')->select('user_id,count(*) as count')->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
-    		$task_counts = DB::table('tasks')->select('user_id,count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
-    		$pomo_counts = DB::table('pomos')->select('user_id,count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		$note_counts = Note::select('user_id','count(*) as count')->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		$task_counts = Task::select('user_id','count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		$pomo_counts = Pomo::select('user_id','count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		
     		
     		foreach ($note_counts as $note_count){
     			$note = Note::where(['user_id'=>$note_count['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'static_date' => $start_time])->first();
