@@ -36,7 +36,7 @@
                                         </td>
                                         
                                         <td  width="20%" align="right">
-                                        	{{ date('y-m-d', strtotime($task->updated_at)) }}√
+                                        	{{ date('y-m-d H:i', strtotime($task->updated_at)) }}√
                                         </td>
 
                                         <!-- Task Delete Button -->
