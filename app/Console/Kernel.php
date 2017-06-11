@@ -14,6 +14,8 @@ use App\Note;
 use App\Task;
 use App\Pomo;
 use App\Statistics;
+use App\Repositories\FeedRepository;
+use App\Feed;
 
 
 class Kernel extends ConsoleKernel
@@ -144,6 +146,17 @@ class Kernel extends ConsoleKernel
     		}
     	
     	})->dailyAt('00:30')->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	
+    	$schedule->call(function () {
+    		date_default_timezone_set("Asia/Shanghai");
+    		
+    		$feeds = Feed::get();
+    		$feedRepository = new FeedRepository();
+    		foreach ($feeds as $feed){
+    			$feedRepository->checkFeed($feed);
+    			\Log::info('process feed ! url:'.$feed->url);
+    		}
+    	})->everyTenMinutes()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
     	 
     }
     
