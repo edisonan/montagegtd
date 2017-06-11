@@ -40,7 +40,7 @@
 
                 <!-- Branding Image -->
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    	小目标
+                    	木叶村
                 </a>
                 
                 
@@ -54,8 +54,9 @@
                 <!-- Right Side Of Navbar -->
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Authentication Links -->
-                    <li><a href="{{ url('/') }}">开始一个番茄！</a></li>
-                    <li><a href="{{ url('/notes') }}">记录你所想！</a></li>
+                    <li><a href="{{ url('/') }}">做番茄！</a></li>
+                    <li><a href="{{ url('/notes') }}">记想法！</a></li>
+                    <li><a href="{{ url('articles') }}">去阅读！</a></li>
                     
                     @if (Auth::guest())
                         <li><a href="{{ url('/login') }}">登录</a></li>
@@ -67,7 +68,6 @@
                             </a>
 
                             <ul class="dropdown-menu" role="menu">
-                            	<li><a href="{{ url('articles') }}">阅读</a></li>
                     			<li><a href="{{ url('statistics') }}">统计</a></li>
                                 <li><a href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a></li>
                             </ul>
