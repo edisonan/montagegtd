@@ -77,6 +77,13 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/pomo/{pomo}', 'PomoController@destroy');
     
     Route::get('/statistics', 'StatisticsController@index');
+    
+    Route::get('/goals', 'GoalController@index');
+    Route::post('/goal', 'GoalController@store');
+    Route::delete('/goal/{goal}', 'GoalController@destroy');
+    Route::post('/goal/{goal}', 'GoalController@update');
+    Route::get('/goal/{goal}', 'GoalController@update');
+    
 
     Route::auth();
 

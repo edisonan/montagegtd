@@ -11,6 +11,7 @@ use App\Task;
 use App\Pomo;
 use App\Repositories\TaskRepository;
 use App\Repositories\PomoRepository;
+use App\Repositories\GoalRepository;
 
 class IndexController extends Controller
 {
@@ -23,6 +24,8 @@ class IndexController extends Controller
     
     protected $pomos;
     
+    protected $goals;
+    
 
     /**
      * Create a new controller instance.
@@ -30,12 +33,13 @@ class IndexController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct(TaskRepository $tasks,PomoRepository $pomos)
+    public function __construct(TaskRepository $tasks,PomoRepository $pomos,GoalRepository $goals)
     {
         $this->middleware('auth');
 
         $this->tasks = $tasks;
         $this->pomos = $pomos;
+        $this->goals = $goals;
     }
 
     /**
@@ -73,6 +77,7 @@ class IndexController extends Controller
     	
     	$tasks = $this->tasks->forUserByStatus($request->user(), 1);
     	$pomos = $this->pomos->forUserByTime($request->user(), date('Y-m-d H:i:s',strtotime(date('Y-m-d'))));
+    	$goals = $this->goals->forUser($request->user());
     	
     	foreach ($tasks as $key => $task){
     		if(!empty($task->taskTagMaps)){
@@ -107,6 +112,7 @@ class IndexController extends Controller
         return view('index.index', [
             'tasks' => $tasks,
             'pomos' => $pomos,
+        	'goals' => $goals,
         	'runing_pomo_status' => $runing_pomo_status,
         	'runing_pomo_remain' => $runing_pomo_remain,
         	'tip_type' => $tip_type,

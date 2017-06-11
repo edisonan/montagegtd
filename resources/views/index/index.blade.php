@@ -290,6 +290,19 @@ $(document).ready(function () {
                             </div>
                         </div>
                         
+                        <div class="form-group" "form-group" id="task_form_div4" style="display: none;">
+                            <label for="task-name" class="col-sm-3 control-label">所属技能</label>
+
+                            <div class="col-sm-6">
+	                            <select class="form-control" name="goal_id">
+		                              @foreach ($goals as $goal)
+		                              	<option checked></option>
+									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
+									  @endforeach
+								</select>
+                            </div>
+                        </div>
+                        
                         <!-- Add Task Button -->
                         <div class="form-group">
                             <div class="col-sm-offset-3 col-sm-6">
@@ -324,7 +337,12 @@ $(document).ready(function () {
                                     >
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
+                                        	
 											<a href="javascript:void(0)" class="finish_task" task_type="finish" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">☐</a>                                        	
+											
+											@if(!empty($task->goal->name))
+                                        	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
+                                        	@endif
                                         	{{ $task->name }}
                                         	</pre>
                                         </td>

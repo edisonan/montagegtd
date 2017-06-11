@@ -12,6 +12,7 @@ use App\Tag;
 use App\TaskTagMap;
 use App\Repositories\TaskRepository;
 use App\Repositories\TagRepository;
+use App\Repositories\GoalRepository;
 
 class TaskController extends Controller
 {
@@ -21,6 +22,7 @@ class TaskController extends Controller
      * @var TaskRepository
      */
     protected $tasks;
+    protected $goals;
     protected $tags;
 
     /**
@@ -29,11 +31,12 @@ class TaskController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct(TaskRepository $tasks,  TagRepository $tags)
+    public function __construct(TaskRepository $tasks, GoalRepository $goals,   TagRepository $tags)
     {
         $this->middleware('auth');
 
         $this->tasks = $tasks;
+        $this->goals = $goals;
         $this->tags = $tags;
     }
 
@@ -84,6 +87,13 @@ class TaskController extends Controller
         	$parent_task = $this->tasks->forUserById($request->user(),$request->parent_task_id);
         	if(!empty($parent_task)){
         		$params['parent_task_id'] = $request->parent_task_id;
+        	}
+        }
+        
+        if(isset($request->goal_id)){
+        	$goal = $this->goals->forGoalId($request->user(), $request->goal_id);
+        	if(!empty($goal)){
+        		$params['goal_id'] = $request->goal_id;
         	}
         }
         
