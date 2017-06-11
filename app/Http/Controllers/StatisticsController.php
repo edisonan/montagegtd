@@ -8,6 +8,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 use App\Repositories\StatisticsRepository;
+use function GuzzleHttp\json_encode;
 
 class StatisticsController extends Controller
 {
@@ -107,17 +108,48 @@ class StatisticsController extends Controller
     		$pomo_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
     		$count_arr['pomo_count'] = $count_arr['pomo_count'] + $statistic->count;
     	}
+    	$pomo_bar_statistics = $bar_basic_arr;
+    	$pomo_bar_statistics['legend']['data'] = '任务量';
+    	$pomo_bar_statistics['xAxis'][] = array(
+    			'type'=>'category',
+    			'data'=>array_keys($pomo_arr),
+    	);
+    	$pomo_bar_statistics['yAxis'][] = array(
+    			'type'=>'value',
+    	);
+    	$pomo_bar_statistics['series'][] = array(
+    			'name'=>'任务量',
+    			'type'=>'bar',
+    			'data'=>array_values($pomo_arr),
+    	);
     	
     	foreach ($note_statistics as $statistic){
     		$note_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
     		$count_arr['note_count'] = $count_arr['note_count'] + $statistic->count;
     	}
     	
+    	$note_bar_statistics = $bar_basic_arr;
+    	$note_bar_statistics['legend']['data'] = '任务量';
+    	$note_bar_statistics['xAxis'][] = array(
+    			'type'=>'category',
+    			'data'=>array_keys($note_arr),
+    	);
+    	$note_bar_statistics['yAxis'][] = array(
+    			'type'=>'value',
+    	);
+    	$note_bar_statistics['series'][] = array(
+    			'name'=>'任务量',
+    			'type'=>'bar',
+    			'data'=>array_values($note_arr),
+    	);
+    	
+    	$count_pie_statistics = array();
+    	
         return view('statistics.index', [
-            'task_bar_statistics' => $task_bar_statistics,
-        	'pomo_bar_statistics' => $pomo_bar_statistics,
-        	'note_bar_statistics' => $note_bar_statistics,
-        	'count_pie_statistics' => $count_pie_statistics,
+            'task_bar_statistics' => json_encode($task_bar_statistics),
+        	'pomo_bar_statistics' => json_encode($pomo_bar_statistics),
+        	'note_bar_statistics' => json_encode($note_bar_statistics),
+        	'count_pie_statistics' => json_encode($count_pie_statistics),
         ]);
     }
     
