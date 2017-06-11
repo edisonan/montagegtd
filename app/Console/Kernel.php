@@ -97,21 +97,21 @@ class Kernel extends ConsoleKernel
     		
     		
     		foreach ($note_counts as $count_info){
-    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statstic_date' => $start_time])->first();
+    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time])->first();
     			if(empty($statistics)) $statistics = new Statistics();
     			$statistics->save(['user_id'=>$note_count['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time, 'count' => $note_info['count']]);
     			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     		
     		foreach ($task_counts as $task_count){
-    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statstic_date' => $start_time])->first();
+    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time])->first();
     			if(empty($statistics)) $statistics = new Statistics();
     			$statistics->save(['user_id'=>$note_count['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time, 'count' => $note_info['count']]);
     			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     		
     		foreach ($pomo_counts as $pomo_count){
-    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statstic_date' => $start_time])->first();
+    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time])->first();
     			if(empty($statistics)) $statistics = new Statistics();
     			$statistics->save(['user_id'=>$note_count['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time, 'count' => $note_info['count']]);
     			\Log::info($count_info['user_id'].$count_info['count']);
