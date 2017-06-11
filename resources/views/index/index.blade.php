@@ -258,7 +258,7 @@ $(document).ready(function () {
                         <div class="form-group" id="task_form_div1" style="">
                             <label for="task-name" class="col-sm-3 control-label">优先级</label>
 							
-                            <div class="col-sm-6">
+                            <div class="col-sm-8">
                             	<label class="radio-inline">
 								  <input type="radio" name="priority" id="inlineRadio1" value="1" title="不重要不紧急" checked><span title="不重要不紧急"><small>☆</small></span>
 								</label>
