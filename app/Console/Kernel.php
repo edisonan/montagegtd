@@ -63,7 +63,7 @@ class Kernel extends ConsoleKernel
 	    		file_put_contents(env('CRON_LOG'),$result);
     		}
     		
-    	})->dailyAt('13:00')->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	})->daily()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
     	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
@@ -86,8 +86,10 @@ class Kernel extends ConsoleKernel
     		
     		$date_type = 'day';
     		
-    		$start_time = date('Y-m-d',strtotime('-1 days'));
-    		$end_time = date('Y-m-d');
+    		$now = date('Y-m-d');
+    		
+    		$start_time = date('Y-m-d',strtotime($now)-86400);
+    		$end_time = $now;
     		
     		\Log::info('statistics:'.$start_time.'|'.$end_time);
     		
@@ -100,7 +102,7 @@ class Kernel extends ConsoleKernel
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			$param_arr['count'] = $count_info['total'];
+    			$param_arr['total'] = $count_info['total'];
     			
     			if(empty($statistics)) {
     				$statistics = new Statistics();
@@ -108,14 +110,14 @@ class Kernel extends ConsoleKernel
     			} else {
     				$statistics->update($param_arr);
     			}
-    			\Log::info($count_info['user_id'].$count_info['count']);
+    			\Log::info($count_info['user_id'].$count_info['total']);
     		}
     		
-    		foreach ($task_counts as $task_count){
+    		foreach ($task_counts as $count_info){
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			$param_arr['count'] = $count_info['total'];
+    			$param_arr['total'] = $count_info['total'];
     			
     			if(empty($statistics)) {
     				$statistics = new Statistics();
@@ -123,14 +125,14 @@ class Kernel extends ConsoleKernel
     			} else {
     				$statistics->update($param_arr);
     			}
-    			\Log::info($count_info['user_id'].$count_info['count']);
+    			\Log::info($count_info['user_id'].$count_info['total']);
     		}
     		
-    		foreach ($pomo_counts as $pomo_count){
+    		foreach ($pomo_counts as $count_info){
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			$param_arr['count'] = $count_info['total'];
+    			$param_arr['total'] = $count_info['total'];
     			
     			if(empty($statistics)) {
     				$statistics = new Statistics();
@@ -138,10 +140,10 @@ class Kernel extends ConsoleKernel
     			} else {
     				$statistics->update($param_arr);
     			}
-    			\Log::info($count_info['user_id'].$count_info['count']);
+    			\Log::info($count_info['user_id'].$count_info['total']);
     		}
     	
-    	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	})->dailyAt('00:30')->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
     	 
     }
     
