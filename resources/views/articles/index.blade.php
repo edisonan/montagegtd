@@ -45,7 +45,6 @@
 		    	</div>	
     		</div>
     	</div>
-    	@endif
     
         <div class="col-sm-offset-0 col-sm-8">
             <div class="panel panel-default">
