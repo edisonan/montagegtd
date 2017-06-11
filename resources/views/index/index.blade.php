@@ -313,7 +313,6 @@ $(document).ready(function () {
                             <thead>
                                 <th>待办事项</th>
                                 <th>&nbsp;</th>
-                                <th>&nbsp;</th>
                             </thead>
                             <tbody>
                                 @foreach ($tasks as $task)
@@ -336,6 +335,7 @@ $(document).ready(function () {
                                         	{{ $task->name }}
                                         	</pre>
                                         </td>
+                                        
 
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
