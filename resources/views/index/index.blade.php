@@ -257,7 +257,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">待办内容</label>
 
                             <div class="col-sm-8">
-	                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}">
+	                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}" style="display: -webkit-inline-box;width: 85%;">
 								    <a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级选项</small></a>
                             </div>
                         </div>
