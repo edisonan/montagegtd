@@ -54,7 +54,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">订阅名称</label>
                             
                             <div class="col-sm-8">
-                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{  title }}">
+                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{  $title }}">
                             </div>
 							
                         </div>
