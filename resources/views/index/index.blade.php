@@ -121,7 +121,7 @@ $(document).ready(function () {
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
 		$.ajax({
-		    url: "{{ url('feed') }}"+"/"+task_value,
+		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'DELETE',
 		    data: {type:"finish",_token:task_token},
 		    success: function(result) {
