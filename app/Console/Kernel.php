@@ -99,7 +99,7 @@ class Kernel extends ConsoleKernel
     		foreach ($note_counts as $count_info){
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
-    			$statistics = Statistics::where()->first($param_arr);
+    			$statistics = Statistics::where($param_arr)->first();
     			if(empty($statistics)) 
     				$statistics = new Statistics();
     			
@@ -111,7 +111,7 @@ class Kernel extends ConsoleKernel
     		foreach ($task_counts as $task_count){
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
-    			$statistics = Statistics::where()->first($param_arr);
+    			$statistics = Statistics::where($param_arr)->first();
     			if(empty($statistics)) 
     				$statistics = new Statistics();
     			
@@ -123,7 +123,7 @@ class Kernel extends ConsoleKernel
     		foreach ($pomo_counts as $pomo_count){
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
-    			$statistics = Statistics::where()->first($param_arr);
+    			$statistics = Statistics::where($param_arr)->first();
     			if(empty($statistics)) 
     				$statistics = new Statistics();
     			
