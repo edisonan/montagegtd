@@ -107,15 +107,20 @@ function html_encode(str)
 							  <div class="col-sm-offset-0 col-sm-1">
 							    <center>
 							    		<img alt="" width="40px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1">
-							            {{ $note->user->name }}
 							    </center>
 							  </div>
-  
-							<div class="col-sm-offset-0 col-sm-10">
-		    					{{ $note->name }}
+  							
+  							<div class="col-sm-offset-0 col-sm-11">
+  								<div class="col-sm-offset-0 col-sm-11">
+			    					{{ $note->user->name }}
+								</div>
+								
+								<div class="col-sm-offset-0 col-sm-11">
+			    					{{ $note->name }}
+								</div>
 							</div>
-					
-							<div class="col-sm-offset-0 col-sm-1">
+							
+							<div class="col-sm-offset-11 col-sm-1">
 										@if($note->user_id == Auth::user()->id )
                                             <form action="{{url('note/' . $note->id)}}" method="POST">
                                                 {{ csrf_field() }}
