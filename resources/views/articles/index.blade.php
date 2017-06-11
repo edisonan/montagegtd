@@ -19,14 +19,19 @@
 		    					<ul>
 		    					@foreach($category->feeds as $feed)
 		    						<li>
-		    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">{{$feed->feed_name}}</a>
-		    							(
+		    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
+		    							<span style="white-space:nowrap;">
+		    							[
 		    							@if($status == 'unread')
 		    								{{$feed->unread_count}}
 		    							@else
 		    								{{$feed->read_count}}
 		    							@endif
-		    							)
+		    							]
+		    							</span>
+		    							{{$feed->feed_name}}
+		    							
+		    							</a>
 		    						</li>
 		    					@endforeach
 		    					</ul>
