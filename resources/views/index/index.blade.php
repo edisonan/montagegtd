@@ -351,7 +351,7 @@ $(document).ready(function () {
 
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
-                                        	<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">X</a> 
+                                        	<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">x</a> 
                                         </td>
                                     </tr>
                                 @endforeach

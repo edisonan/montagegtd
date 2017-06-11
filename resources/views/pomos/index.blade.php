@@ -28,7 +28,7 @@
                                                 {{ method_field('DELETE') }}
 
                                                 <button type="submit" id="delete-pomo-{{ $pomo->id }}" class="btn btn-link">
-                                                    X
+                                                    x
                                                 </button>
                                             </form>
                                         </td>
