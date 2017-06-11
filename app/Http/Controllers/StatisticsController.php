@@ -86,11 +86,11 @@ class StatisticsController extends Controller
     	
     	$days = 30;
     	
-    	$start_date = date('Y-m-d');
-    	$end_date = date('Y-m-d',strtotime("-30 days"));
+    	$start_date = date('Y-m-d',strtotime("-30 days"));
+    	$end_date = date('Y-m-d');
     	
     	$basic_arr = array();
-    	for($i=0;$i<$days;$i++){
+    	for($i=$days;$i>=0;$i--){
     		$basic_arr[date('Y-m-d',strtotime("-$i days"))] = 0;
     	}
     	
@@ -101,9 +101,9 @@ class StatisticsController extends Controller
     	$note_statistics = $this->statistics->forUserSpecial($request->user(), 'day', 'note', $start_date, $end_date);
     	
     	$count_arr = array(
-    			'task_count'=>array('value'=>0,'name'=>'任务数'),
-    			'pomo_count'=>array('value'=>0,'name'=>'任务数'),
-    			'note_count'=>array('value'=>0,'name'=>'任务数'),
+    			'task_count'=>array('value'=>0,'name'=>'任务量'),
+    			'pomo_count'=>array('value'=>0,'name'=>'番茄量'),
+    			'note_count'=>array('value'=>0,'name'=>'笔记数'),
     	);
     	
     	foreach ($task_statistics as $statistic){
@@ -181,6 +181,8 @@ class StatisticsController extends Controller
         	'pomo_bar_statistics' => \json_encode($pomo_bar_statistics),
         	'note_bar_statistics' => \json_encode($note_bar_statistics),
         	'count_pie_statistics' => \json_encode($count_pie_statistics),
+        	'start_date'=>$start_date,
+        	'end_date'=>$end_date
         ]);
     }
     

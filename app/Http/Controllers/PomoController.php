@@ -113,6 +113,7 @@ class PomoController extends Controller
 	
 	        $request->user()->pomos()->create([
 	            'name' => $request->name,
+	        	'status'=> 2,
 	        ]);
 	        
 	        //auto resting

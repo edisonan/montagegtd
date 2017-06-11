@@ -9,6 +9,10 @@ use App\Repositories\TaskRepository;
 use App\Repositories\ThirdRepository;
 use App\Http\Utils\FFClient;
 
+use DB;
+use App\Note;
+
+
 class Kernel extends ConsoleKernel
 {
     /**
@@ -31,6 +35,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')
         //          ->hourly();
     	$schedule->call(function () {
+    		date_default_timezone_set("Asia/Shanghai");
     		$config = config('services.fanfou');
     		
     		$thirdRepository = new ThirdRepository();
@@ -46,14 +51,16 @@ class Kernel extends ConsoleKernel
     		
     		$message_arr = explode('|', $message);
     		
+    		$imojs = array('(｀･ω･´) (´･ω･｀)','(ÒωÓױ)呃！！！！','(￣▽￣")','(。-`ω´-)','╮(￣▽￣)╭');
+    		
     		foreach ($message_arr as $item){
 	    		$ff_user = new FFClient( $config['key'] , $config['secret'] , $oauth_token , $oauth_token_secret );
-	    		$result = $ff_user -> update($item.rand(1,9));
+	    		$result = $ff_user -> update($item.rand(0,4));
 	    		
 	    		file_put_contents(env('CRON_LOG'),$result);
     		}
     		
-    	})->daily()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	})->dailyAt('13:00')->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
     	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
@@ -70,5 +77,40 @@ class Kernel extends ConsoleKernel
 	    		});
     		}
     	})->everyMinute()->appendOutputTo(env('CRON_LOG'));
+    	
+    	$schedule->call(function () {
+    		date_default_timezone_set("Asia/Shanghai");
+    		
+    		$date_type = 'day';
+    		
+    		$start_time = date('Y-m-d',strtotime('-1 days'));
+    		$end_time = date('Y-m-d');
+    		
+    		$note_counts = DB::table('notes')->select('user_id,count(*) as count')->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		$task_counts = DB::table('tasks')->select('user_id,count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		$pomo_counts = DB::table('pomos')->select('user_id,count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		
+    		foreach ($note_counts as $note_count){
+    			$note = Note::where(['user_id'=>$note_count['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'static_date' => $start_time])->first();
+    			$note->save(['user_id'=>$note_count['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'static_date' => $start_time]);
+    			\Log::info($note_count['user_id'].$note_count['count']);
+    		}
+    		
+    		foreach ($task_counts as $task_count){
+    			$pomo = Note::where(['user_id'=>$task_count['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'static_date' => $start_time])->first();
+    			$pomo->save(['user_id'=>$task_count['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'static_date' => $start_time, 'count' => $task_count['count']]);
+    			\Log::info($task_count['user_id'].$task_count['count']);
+    		}
+    		
+    		foreach ($pomo_counts as $pomo_count){
+    			$pomo = Pomo::where(['user_id'=>$task_count['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'static_date' => $start_time])->first();
+    			$pomo->save(['user_id'=>$task_count['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'static_date' => $start_time, 'count' => $task_count['count']]);
+    			\Log::info($pomo_count['user_id'].$pomo_count['count']);
+    		}
+    	
+    	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	 
     }
+    
+     
 }

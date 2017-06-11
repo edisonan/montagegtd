@@ -5,7 +5,7 @@
             <!-- Current Tasks -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        	统计汇总
+                        	统计汇总[{{$start_date}}-{{$end_date}}]
                     </div>
 
                     <div class="panel-body">
