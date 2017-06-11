@@ -28,7 +28,7 @@
 		    								{{$feed->read_count}}
 		    							@endif
 		    							]
-		    							{{$feed->feed_name}}
+		    							{{ substr($feed->feed_name,0,10) }}
 		    							</span>
 		    							
 		    							
