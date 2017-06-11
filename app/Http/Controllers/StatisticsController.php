@@ -24,7 +24,7 @@ class StatisticsController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct(StatisticsRepository $notes)
+    public function __construct(StatisticsRepository $statistics)
     {
         $this->middleware('auth');
 
