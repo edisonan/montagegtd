@@ -116,7 +116,7 @@ function html_encode(str)
 								</div>
 								
 								<div class="col-sm-offset-0 col-sm-11">
-			    					{{ $note->name }}
+			    					<?php echo $note->name;?>
 								</div>
 							</div>
 							
