@@ -64,14 +64,16 @@
                             <thead>
                                 <th>文章列表</th>
                                 <th>&nbsp;</th>
-                                <th>&nbsp;</th>
                             </thead>
                             <tbody>
                                 @foreach ($articles as $article)
                                     <tr >
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
-                                        		<a href="{{ url('article/view/'.$article->id) }}" target="_blank" title="所属订阅：{{ $article->feed->feed_name}}">{{ $article->subject }}</a>
+                                        		<a href="{{ url('article/view/'.$article->id) }}" target="_blank" title="所属订阅：{{ $article->feed->feed_name}}">
+                                        		{{ $article->subject }}
+                                        		&nbsp;&nbsp;{{$article->published}}
+                                        		</a>
                                         	</pre>
                                         </td>
 
