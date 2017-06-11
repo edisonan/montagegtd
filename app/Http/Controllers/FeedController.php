@@ -49,9 +49,18 @@ class FeedController extends Controller
     	$feeds = $this->feeds->forUser($request->user(), $need_page=true);
     	$categorys = $this->categorys->forUser($request->user());
     	
+    	$title = $url = '';
+    	
+    	if($request->has('url')){
+    		$url = $request->usl;
+    		$title = \App\Http\Utils\CommonUtil::page_title($request->url);
+    	}
+    	
         return view('feeds.index', [
             'feeds' => $feeds,
         	'categorys' => $categorys,
+        	'url' => $url,
+        	'title' => $title,
         ]);
     }
     

@@ -45,7 +45,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">订阅地址</label>
 								
                             <div class="col-sm-8">
-	                                <input type="text" name="url" id="url" class="form-control" value="{{ old('task') }}">
+	                                <input type="text" name="url" id="url" class="form-control" value="{{ $url }}">
 	                                <a href="javascript:void(0)" id="check_url">check url!</a>
                             </div>
                         </div>
@@ -54,7 +54,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">订阅名称</label>
                             
                             <div class="col-sm-8">
-                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ old('task') }}">
+                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{  title }}">
                             </div>
 							
                         </div>
