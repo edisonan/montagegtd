@@ -18,8 +18,8 @@ class StatisticsRepository
         return Statistics::where('user_id', $user->id)
         			->where('date_type', $date_type)
         			->where('data_type', $data_type)
-        			->where('statistic_date', '>', $start_time)
-        			->where('statistic_date', '<=', $end_time)
+        			->where('statistic_date', '>', $start_date)
+        			->where('statistic_date', '<=', $end_date)
                     ->orderBy('created_at', 'desc')
                     ->get();
     }
