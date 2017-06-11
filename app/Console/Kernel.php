@@ -100,11 +100,14 @@ class Kernel extends ConsoleKernel
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			if(empty($statistics)) 
-    				$statistics = new Statistics();
-    			
     			$param_arr['count'] = $count_info['count'];
-    			$statistics->save($param_arr);
+    			
+    			if(empty($statistics)) {
+    				$statistics = new Statistics();
+    				$statistics->create($param_arr);
+    			} else {
+    				$statistics->update($param_arr);
+    			}
     			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     		
@@ -112,11 +115,14 @@ class Kernel extends ConsoleKernel
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			if(empty($statistics)) 
-    				$statistics = new Statistics();
-    			
     			$param_arr['count'] = $count_info['count'];
-    			$statistics->save($param_arr);
+    			
+    			if(empty($statistics)) {
+    				$statistics = new Statistics();
+    				$statistics->create($param_arr);
+    			} else {
+    				$statistics->update($param_arr);
+    			}
     			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     		
@@ -124,11 +130,14 @@ class Kernel extends ConsoleKernel
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			if(empty($statistics)) 
-    				$statistics = new Statistics();
-    			
     			$param_arr['count'] = $count_info['count'];
-    			$statistics->save($param_arr);
+    			
+    			if(empty($statistics)) {
+    				$statistics = new Statistics();
+    				$statistics->create($param_arr);
+    			} else {
+    				$statistics->update($param_arr);
+    			}
     			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     	
