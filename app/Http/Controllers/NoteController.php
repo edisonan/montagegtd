@@ -45,7 +45,7 @@ class NoteController extends Controller
      */
     public function index(Request $request,$add_content = '')
     {
-    	$notes = $this->notes->forUserByStatus($request->user(), 2);
+    	$notes = $this->notes->forUserByStatus($request->user(), 2, $need_page=true);
     	
     	foreach ($notes as $key => $note){
     		if(!empty($note->noteTagMaps)){

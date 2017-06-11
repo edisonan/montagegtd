@@ -83,6 +83,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                         {!! $categorys->links() !!}
                     @endif
                 </div>
             </div>

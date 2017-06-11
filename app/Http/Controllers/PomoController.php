@@ -54,7 +54,7 @@ class PomoController extends Controller
     	}
     	
         return view('pomos.index', [
-            'pomos' => $this->pomos->forUser($request->user()),
+            'pomos' => $this->pomos->forUser($request->user(),$need_page=true),
         	'runing_pomo_status' => $runing_pomo_status,
         	'runing_pomo_remain' => $runing_pomo_remain,
         ]);

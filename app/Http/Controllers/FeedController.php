@@ -50,7 +50,7 @@ class FeedController extends Controller
      */
     public function index(Request $request)
     {
-    	$feeds = $this->feeds->forUser($request->user());
+    	$feeds = $this->feeds->forUser($request->user(), $need_page);
     	$categorys = $this->categorys->forUser($request->user());
     	
         return view('feeds.index', [

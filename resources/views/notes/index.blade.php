@@ -149,6 +149,7 @@ function html_encode(str)
                         </table>
                     </div>
                 </div>
+                 {!! $notes->links() !!}
             @endif
         </div>
     </div>

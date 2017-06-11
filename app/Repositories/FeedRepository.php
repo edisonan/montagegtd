@@ -13,11 +13,16 @@ class FeedRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user)
+    public function forUser(User $user,$need_page=false)
     {
-        return Feed::where('user_id', $user->id)
-                ->orderBy('created_at', 'asc')
-                ->get();
+        $feed = Feed::where('user_id', $user->id)
+                ->orderBy('created_at', 'asc');
+        
+        if($need_page){
+        	return $feed->paginate(50);
+        } else {
+        	return $feed->get();
+        }
     }
     
     /**

@@ -13,11 +13,15 @@ class PomoRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user)
+    public function forUser(User $user,$need_page=false)
     {
-        return Pomo::where('user_id', $user->id)
-                    ->orderBy('created_at', 'asc')
-                    ->get();
+        $pomo = Pomo::where('user_id', $user->id)
+                    ->orderBy('created_at', 'asc');
+        if($need_page){
+        	return $pomo->paginate(50);
+        } else {
+        	return $pomo->get();
+        }
     }
     
     /**

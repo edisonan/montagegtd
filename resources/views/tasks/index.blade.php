@@ -49,6 +49,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                         {!! $tasks->links() !!}
                         @else
                     	暂时还没有完成哦，快去<a href="{{url('/index')}}">开始第一个任务</a>吧！
 			            @endif

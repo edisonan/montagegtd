@@ -13,11 +13,15 @@ class CategoryRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user)
+    public function forUser(User $user,$need_page = false)
     {
-        return Category::where('user_id', $user->id)
-                ->orderBy('created_at', 'asc')
-                ->get();
+        $category = Category::where('user_id', $user->id)
+                ->orderBy('created_at', 'asc');
+        if($need_page){
+        	return $category->paginate(50);
+        } else {
+        	return $category->get();
+        }
     }
     
     /**

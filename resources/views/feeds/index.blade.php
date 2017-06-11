@@ -131,6 +131,7 @@ $(document).ready(function () {
                                 @endforeach
                             </tbody>
                         </table>
+                         {!! $feeds->links() !!}
                     @endif
                 </div>
             </div>

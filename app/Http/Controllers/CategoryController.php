@@ -40,7 +40,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-    	$categorys = $this->categorys->forUser($request->user());
+    	$categorys = $this->categorys->forUser($request->user(), $need_page=true);
     	
         return view('categorys.index', [
             'categorys' => $categorys,

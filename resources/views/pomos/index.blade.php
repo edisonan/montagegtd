@@ -36,6 +36,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                         {!! $pomos->links() !!}
                     @else
                     	暂时还没有完成哦，快去<a href="{{url('/index')}}">开始第一个番茄</a>吧！
 		            @endif
