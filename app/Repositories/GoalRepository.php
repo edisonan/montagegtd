@@ -26,11 +26,16 @@ class GoalRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,string $status)
+    public function forUserByStatus(User $user,string $status, $need_page)
     {
-    	return Goal::where('user_id', $user->id)
-		    	->where('status',$status)
-		    	->get();
+    	$goals = Goal::where('user_id', $user->id)
+		    	->where('status',$status);
+    	
+		if($need_page){
+    		return $goals->paginate(20);
+    	} else {
+    		return $goals->get();
+    	}
     }
     
     /**

@@ -5,7 +5,7 @@
             <!-- Current Goals -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        	Goals
+                        	技能列表
                     </div>
 
                     <div class="panel-body">
@@ -18,7 +18,7 @@
 
                         <!-- Task Name -->
                         <div class="form-group">
-                            <label for="goal-name" class="col-sm-3 control-label">Name:</label>
+                            <label for="goal-name" class="col-sm-3 control-label">技能名称:</label>
 
                             <div class="col-sm-8">
 	                                <input type="text" name="name" id="goal-name" class="form-control" value="{{ old('goal') }}">
@@ -29,7 +29,7 @@
                         <div class="form-group">
                             <div class="col-sm-offset-3 col-sm-6">
                                 <button type="submit" class="btn btn-default">
-                                    <i class="fa fa-btn fa-plus"></i>Add！
+                                    <i class="fa fa-btn fa-plus"></i>添加！
                                 </button>
                             </div>
                         </div>
@@ -39,7 +39,7 @@
                     @if (count($goals) > 0)
                     <table class="table table-striped goal-table">
                             <thead>
-                                <th>goals</th>
+                                <th>&nbsp;</th>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>
                             </thead>
@@ -71,6 +71,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                         {!! $goals->links() !!}
                     @endif
                 </div>
                 </div>

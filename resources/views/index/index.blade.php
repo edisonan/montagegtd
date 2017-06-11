@@ -300,7 +300,7 @@ $(document).ready(function () {
 									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
 									  @endforeach
 								</select>
-								<a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级</small></a>
+								<a href="{{ url('goals') }}" ><small>高级</small></a>
                             </div>
                         </div>
                         
