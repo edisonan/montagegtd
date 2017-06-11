@@ -9,7 +9,10 @@
                     </div>
 
                     <div class="panel-body">
-                    	<div id="main" style="height:400px"></div>
+                    	<div id="pie_main" style="height:400px"></div>
+                    	<div id="pomo_main" style="height:400px"></div>
+                    	<div id="task_main" style="height:400px"></div>
+                    	<div id="note_main" style="height:400px"></div>
                     </div>
                 </div>
         </div>
@@ -27,11 +30,29 @@
         require(
             [
                 'echarts',
+                'echarts/chart/bar',
                 'echarts/chart/bar' // 使用柱状图就加载bar模块，按需加载
             ],
             function (ec) {
+//             	// 基于准备好的dom，初始化echarts图表
+//                 var myPomoChart = ec.init(document.getElementById('pomo_main')); 
+//              	// 为echarts对象加载数据 
+//                 myChart.setOption({{pomo_bar_statistics}}); 
+                
                 // 基于准备好的dom，初始化echarts图表
-                var myChart = ec.init(document.getElementById('main')); 
+                var myPomoChart = ec.init(document.getElementById('task_main')); 
+             	// 为echarts对象加载数据 
+                myChart.setOption({{task_bar_statistics}}); 
+
+//              	// 基于准备好的dom，初始化echarts图表
+//                 var myPomoChart = ec.init(document.getElementById('note_main')); 
+//              	// 为echarts对象加载数据 
+//                 myChart.setOption({{note_bar_statistics}}); 
+
+//                 var myPomoChart = ec.init(document.getElementById('pie_main')); 
+//              	// 为echarts对象加载数据 
+//                 myChart.setOption({{count_pie_statistics}}); 
+                
                 
                 var option = {
                     tooltip: {
@@ -60,8 +81,7 @@
                     ]
                 };
         
-                // 为echarts对象加载数据 
-                myChart.setOption(option); 
+                
             }
         );
     </script>

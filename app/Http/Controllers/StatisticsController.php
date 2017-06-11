@@ -39,12 +39,85 @@ class StatisticsController extends Controller
      */
     public function index(Request $request,$add_content = '')
     {
+    	$bar_basic_arr = array(
+    		'tooltip'=>array(
+    			'show'=>true
+    		),
+    		'legend'=>array(
+    			'data'=>'销量'
+    		),
+    		'xAxis'=>array(
+//     			array(
+//     				'type'=>'category',
+//     				'data'=>array()
+//     			)
+    		),
+    		'yAxis'=>array(
+//     			array(
+//     				'type'=>'value',
+//     			)
+    		),
+    		'series'=>array(
+//     			array(
+//     				'name'=>'数量',
+//     				'type'=>'bar',
+//     				'data'=>array()
+//     			)
+    		)
+    	);
+    	
+    	$days = 30;
+    	
     	$start_date = date('Y-m-d');
-    	$end_date = date('Y-m-d',strtotime("-7 days"));
-    	$statistics = $this->statistics->forUserSpecial($request->user(), 'day', 'task', $start_date, $end_date);
+    	$end_date = date('Y-m-d',strtotime("-30 days"));
+    	
+    	$basic_arr = array();
+    	for($i=0;$i<$days;$i++){
+    		$basic_arr[date('Y-m-d',strtotime("-$i days"))] = 0;
+    	}
+    	
+    	$task_arr = $pomo_arr = $note_arr = $basic_arr;
+    	
+    	$task_statistics = $this->statistics->forUserSpecial($request->user(), 'day', 'task', $start_date, $end_date);
+    	$pomo_statistics = $this->statistics->forUserSpecial($request->user(), 'day', 'pomo', $start_date, $end_date);
+    	$note_statistics = $this->statistics->forUserSpecial($request->user(), 'day', 'note', $start_date, $end_date);
+    	
+    	$count_arr = array('task_count'=>0,'pomo_count'=>0,'note_count'=>0);
+    	
+    	foreach ($task_statistics as $statistic){
+    		$task_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
+    		$count_arr['task_count'] = $count_arr['task_count'] + $statistic->count;
+    	}
+    	$task_bar_statistics = $bar_basic_arr;
+    	$task_bar_statistics['legend']['data'] = '任务量';
+    	$task_bar_statistics['xAxis'][] = array(
+    			'type'=>'category',
+    			'data'=>array_keys($task_arr),
+    	);
+    	$task_bar_statistics['yAxis'][] = array(
+    			'type'=>'value',
+    	);
+    	$task_bar_statistics['series'][] = array(
+    			'name'=>'任务量',
+    			'type'=>'bar',
+    			'data'=>array_values($task_arr),
+    	);
+    	
+    	foreach ($pomo_statistics as $statistic){
+    		$pomo_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
+    		$count_arr['pomo_count'] = $count_arr['pomo_count'] + $statistic->count;
+    	}
+    	
+    	foreach ($note_statistics as $statistic){
+    		$note_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
+    		$count_arr['note_count'] = $count_arr['note_count'] + $statistic->count;
+    	}
     	
         return view('statistics.index', [
-            'statistics' => $statistics,
+            'task_bar_statistics' => $task_bar_statistics,
+        	'pomo_bar_statistics' => $pomo_bar_statistics,
+        	'note_bar_statistics' => $note_bar_statistics,
+        	'count_pie_statistics' => $count_pie_statistics,
         ]);
     }
     
