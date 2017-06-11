@@ -294,12 +294,13 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">所属技能</label>
 
                             <div class="col-sm-6">
-	                            <select class="form-control" name="goal_id">
+	                            <select class="form-control" name="goal_id" style="display: -webkit-inline-box;width: 85%;">
 		                              @foreach ($goals as $goal)
 		                              	<option checked></option>
 									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
 									  @endforeach
 								</select>
+								<a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级</small></a>
                             </div>
                         </div>
                         
