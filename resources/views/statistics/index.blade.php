@@ -37,21 +37,21 @@
             	// 基于准备好的dom，初始化echarts图表
                 var myPomoChart = ec.init(document.getElementById('pomo_main')); 
              	// 为echarts对象加载数据 
-                myChart.setOption({{$pomo_bar_statistics}}); 
+                myChart.setOption(<?php echo $pomo_bar_statistics;?>); 
                 
                 // 基于准备好的dom，初始化echarts图表
                 var myPomoChart = ec.init(document.getElementById('task_main')); 
              	// 为echarts对象加载数据 
-                myChart.setOption({{$task_bar_statistics}}); 
+                myChart.setOption(<?php echo $task_bar_statistics;?>); 
 
              	// 基于准备好的dom，初始化echarts图表
                 var myPomoChart = ec.init(document.getElementById('note_main')); 
              	// 为echarts对象加载数据 
-                myChart.setOption({{$note_bar_statistics}}); 
+                myChart.setOption(<?php echo $note_bar_statistics;?>); 
 
                 var myPomoChart = ec.init(document.getElementById('pie_main')); 
              	// 为echarts对象加载数据 
-                myChart.setOption({{$count_pie_statistics}}); 
+                myChart.setOption(<?php echo $count_pie_statistics;?>); 
                 
                 
                 var option = {
