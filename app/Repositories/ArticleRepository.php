@@ -32,10 +32,10 @@ class ArticleRepository
 		    	->where('status',$status);
     	
     	if($need_page){
-    		$article->paginate(50);
+    		return $article->paginate(50);
+    	} else {
+    		return $article->get();
     	}
-    	
-		return   	$article->get();
     }
     
     public function forUserByStatusFeedId(User $user,string $status,$feed_id,$need_page=false)
@@ -44,10 +44,10 @@ class ArticleRepository
     	->where('status',$status)
     	->where('feed_id',$feed_id);
     	if($need_page){
-    		$article->paginate(50);
+    		return $article->paginate(50);
+    	} else {
+    		return $article->get();
     	}
-    	
-    	return $article->get();
     }
     
     /**
