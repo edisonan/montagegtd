@@ -12,7 +12,7 @@ class Statistics extends Model
      *
      * @var array
      */
-    protected $fillable = ['date_type','data_type','count'];
+    protected $fillable = ['user_id','date_type','data_type','count','statistic_date'];
     
     protected $table = 'statistics';
     

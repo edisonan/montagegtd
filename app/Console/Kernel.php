@@ -13,6 +13,7 @@ use DB;
 use App\Note;
 use App\Task;
 use App\Pomo;
+use App\Statistics;
 
 
 class Kernel extends ConsoleKernel
@@ -90,27 +91,30 @@ class Kernel extends ConsoleKernel
     		
     		\Log::info('statistics:'.$start_time.'|'.$end_time);
     		
-    		$note_counts = Note::select('user_id','count(*) as count')->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
-    		$task_counts = Task::select('user_id','count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
-    		$pomo_counts = Pomo::select('user_id','count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
+    		$note_counts = Note::select('user_id',DB::raw('count(*) as count'))->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
+    		$task_counts = Task::select('user_id',DB::raw('count(*) as count'))->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
+    		$pomo_counts = Pomo::select('user_id',DB::raw('count(*) as count'))->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
     		
     		
-    		foreach ($note_counts as $note_count){
-    			$note = Note::where(['user_id'=>$note_count['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'static_date' => $start_time])->first();
-    			$note->save(['user_id'=>$note_count['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'static_date' => $start_time]);
-    			\Log::info($note_count['user_id'].$note_count['count']);
+    		foreach ($note_counts as $count_info){
+    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statstic_date' => $start_time])->first();
+    			if(empty($statistics)) $statistics = new Statistics();
+    			$statistics->save(['user_id'=>$note_count['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time, 'count' => $note_info['count']]);
+    			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     		
     		foreach ($task_counts as $task_count){
-    			$pomo = Note::where(['user_id'=>$task_count['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'static_date' => $start_time])->first();
-    			$pomo->save(['user_id'=>$task_count['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'static_date' => $start_time, 'count' => $task_count['count']]);
-    			\Log::info($task_count['user_id'].$task_count['count']);
+    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statstic_date' => $start_time])->first();
+    			if(empty($statistics)) $statistics = new Statistics();
+    			$statistics->save(['user_id'=>$note_count['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time, 'count' => $note_info['count']]);
+    			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     		
     		foreach ($pomo_counts as $pomo_count){
-    			$pomo = Pomo::where(['user_id'=>$task_count['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'static_date' => $start_time])->first();
-    			$pomo->save(['user_id'=>$task_count['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'static_date' => $start_time, 'count' => $task_count['count']]);
-    			\Log::info($pomo_count['user_id'].$pomo_count['count']);
+    			$statistics = Statistics::where(['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statstic_date' => $start_time])->first();
+    			if(empty($statistics)) $statistics = new Statistics();
+    			$statistics->save(['user_id'=>$note_count['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time, 'count' => $note_info['count']]);
+    			\Log::info($count_info['user_id'].$count_info['count']);
     		}
     	
     	})->everyMinute()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
