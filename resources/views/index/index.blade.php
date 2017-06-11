@@ -120,13 +120,18 @@ $(document).ready(function () {
 	$(".finish_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
-		$.delete("{{ url('feed') }}"+"/"+task_value,{type:"finish",_token:task_token},function(result){
-			result_arr = JSON.parse(result);
-			if(result_arr.code != 9999){
-				alert('处理失败，请稍后再试');
-			} else {
-				$('#'+task_value).remove();
-			}
+		$.ajax({
+		    url: "{{ url('feed') }}"+"/"+task_value,
+		    type: 'DELETE',
+		    data: {type:"finish",_token:task_token},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$('#'+task_value).remove();
+				}
+		    }
 		});
 	});
 });
