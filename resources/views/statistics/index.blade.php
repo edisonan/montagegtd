@@ -53,7 +53,7 @@
                 myNoteChart.setOption(option); 
 
                 var myPieChart = ec.init(document.getElementById('pie_main')); 
-             	var option =  eval('(' +' <?php echo $pie_bar_statistics;?>' + ')');
+             	var option =  eval('(' +' <?php echo $count_pie_statistics;?>' + ')');
              	// 为echarts对象加载数据 
                 myPieChart.setOption(option); 
                 
