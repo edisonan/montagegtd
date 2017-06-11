@@ -5,7 +5,6 @@ namespace App;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 use App\Goal;
-use App\User;
 use App\Task;
 
 class Goal extends Model
