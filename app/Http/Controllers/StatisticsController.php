@@ -107,8 +107,8 @@ class StatisticsController extends Controller
     	);
     	
     	foreach ($task_statistics as $statistic){
-    		$task_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
-    		$count_arr['task_count']['value'] = $count_arr['task_count']['value'] + $statistic->count;
+    		$task_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->total;
+    		$count_arr['task_count']['value'] = $count_arr['task_count']['value'] + $statistic->total;
     	}
     	$task_bar_statistics = $bar_basic_arr;
     	$task_bar_statistics['legend']['data'] = array('任务量');
@@ -126,8 +126,8 @@ class StatisticsController extends Controller
     	);
     	
     	foreach ($pomo_statistics as $statistic){
-    		$pomo_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
-    		$count_arr['pomo_count']['value'] = $count_arr['pomo_count']['value'] + $statistic->count;
+    		$pomo_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->total;
+    		$count_arr['pomo_count']['value'] = $count_arr['pomo_count']['value'] + $statistic->total;
     	}
     	$pomo_bar_statistics = $bar_basic_arr;
     	$pomo_bar_statistics['legend']['data'] = array('番茄量');
@@ -145,8 +145,8 @@ class StatisticsController extends Controller
     	);
     	
     	foreach ($note_statistics as $statistic){
-    		$note_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->count;
-    		$count_arr['note_count']['value'] = $count_arr['note_count']['value'] + $statistic->count;
+    		$note_arr[date('Y-m-d',strtotime($statistic->statistic_date))] = $statistic->total;
+    		$count_arr['note_count']['value'] = $count_arr['note_count']['value'] + $statistic->total;
     	}
     	
     	$note_bar_statistics = $bar_basic_arr;

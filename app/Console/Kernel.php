@@ -91,16 +91,16 @@ class Kernel extends ConsoleKernel
     		
     		\Log::info('statistics:'.$start_time.'|'.$end_time);
     		
-    		$note_counts = Note::select('user_id',DB::raw('count(*) as count'))->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
-    		$task_counts = Task::select('user_id',DB::raw('count(*) as count'))->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
-    		$pomo_counts = Pomo::select('user_id',DB::raw('count(*) as count'))->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
+    		$note_counts = Note::select('user_id',DB::raw('count(*) as total'))->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
+    		$task_counts = Task::select('user_id',DB::raw('count(*) as total'))->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
+    		$pomo_counts = Pomo::select('user_id',DB::raw('count(*) as total'))->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->get();
     		
     		
     		foreach ($note_counts as $count_info){
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			$param_arr['count'] = $count_info['count'];
+    			$param_arr['count'] = $count_info['total'];
     			
     			if(empty($statistics)) {
     				$statistics = new Statistics();
@@ -115,7 +115,7 @@ class Kernel extends ConsoleKernel
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			$param_arr['count'] = $count_info['count'];
+    			$param_arr['count'] = $count_info['total'];
     			
     			if(empty($statistics)) {
     				$statistics = new Statistics();
@@ -130,7 +130,7 @@ class Kernel extends ConsoleKernel
     			$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time];
     			
     			$statistics = Statistics::where($param_arr)->first();
-    			$param_arr['count'] = $count_info['count'];
+    			$param_arr['count'] = $count_info['total'];
     			
     			if(empty($statistics)) {
     				$statistics = new Statistics();
