@@ -4,36 +4,42 @@
     <div class="container">
     
     	@if(count($categorys)>0)
-    	<div class="col-sm-offset-2 col-sm-8">
-    		
-    		<ul class="nav nav-pills nav-stacked">
-    			@foreach($categorys as $category)
-    			<li role="presentation" class="">
-    				{{ $category->name }}
-    				@if(count($category->feeds)>0)
-    					<ul>
-    					@foreach($category->feeds as $feed)
-    						<li>
-    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">{{$feed->feed_name}}</a>
-    							(
-    							@if($status == 'unread')
-    								{{$feed->unread_count}}
-    							@else
-    								{{$feed->read_count}}
-    							@endif
-    							)
-    						</li>
-    					@endforeach
-    					</ul>
-    				@endif
-    			</li>
-    			@endforeach
-    		</ul>
-    		
+    	<div class="col-sm-offset-0 col-sm-3">
+    		<div class="panel panel-default">
+                <div class="panel-heading">
+                	订阅分类
+                </div>
+
+                <div class="panel-body">
+		    		<ul class="nav nav-pills nav-stacked">
+		    			@foreach($categorys as $category)
+		    			<li role="presentation" class="">
+		    				{{ $category->name }}
+		    				@if(count($category->feeds)>0)
+		    					<ul>
+		    					@foreach($category->feeds as $feed)
+		    						<li>
+		    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">{{$feed->feed_name}}</a>
+		    							(
+		    							@if($status == 'unread')
+		    								{{$feed->unread_count}}
+		    							@else
+		    								{{$feed->read_count}}
+		    							@endif
+		    							)
+		    						</li>
+		    					@endforeach
+		    					</ul>
+		    				@endif
+		    			</li>
+		    			@endforeach
+		    		</ul>
+		    	</div>	
+    		</div>
     	</div>
     	@endif
     
-        <div class="col-sm-offset-2 col-sm-8">
+        <div class="col-sm-offset-0 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的文章[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
