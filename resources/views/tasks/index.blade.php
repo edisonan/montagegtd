@@ -5,7 +5,7 @@
             <!-- Current Tasks -->
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        	待办汇总
+                        	任务汇总
                     </div>
 
                     <div class="panel-body">
@@ -18,12 +18,19 @@
                             </thead>
                             <tbody>
                                 @foreach ($tasks as $task)
-                                    <tr>
+                                    <tr
+                                    	@if($task->priority == 4) 
+	                                    	class="danger" title="重要紧急事项" 
+	                                    @elseif($task->priority == 3) 
+	                                    	class="warning" title="重要不紧急事项"  
+	                                    @elseif($task->priority == 2) 
+	                                    	class="info" title="不重要紧急事项" 
+	                                    @else
+	                                    	title="不重要不紧急事项" 
+	                                    @endif
+                                    >
                                         <td class="table-text"  width="80%">
                                         	<div>
-                                        		@for ($i = 0; $i < $task->priority; $i++)
-                                        		☆ 
-                                        		@endfor
                                         		{{ $task->name }}
                                         	</div>
                                         </td>

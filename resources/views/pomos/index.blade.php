@@ -19,7 +19,7 @@
                             <tbody>
                                 @foreach ($pomos as $pomo)
                                     <tr>
-                                        <td class="table-text" width="80%"><div>{{ $pomo->name }}</div></td>
+                                        <td class="table-text" width="80%"><div>{{ $pomo->name }} --- {{ date('y-m-d H:i', strtotime($pomo->updated_at)) }}</div></td>
 
                                         <!-- Task Delete Button -->
                                         <td width="20%" align="right">
