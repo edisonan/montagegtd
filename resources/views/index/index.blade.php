@@ -140,7 +140,7 @@ $(document).ready(function () {
     <div class="container">
     
     
-    	<div class="col-sm-offset-0 col-sm-6">
+    	<div class="col-sm-offset-0 col-sm-5">
     		
     		@if($tip_type != 0)
 	    		<div class="alert alert-success alert-dismissible" role="alert">
@@ -174,12 +174,12 @@ $(document).ready(function () {
                     @include('common.errors')
                     
                     @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
-                    	<a class="btn btn-lg btn-default btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
+                    	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
                     	<!-- 
                     	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     	 -->
                     @elseif($runing_pomo_status == 1)
-                   		 <a class="btn btn-lg btn-default btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
+                   		 <a class="btn btn-lg btn-primary btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
                     @endif
                     
                     <!-- New Task Form -->
@@ -228,7 +228,7 @@ $(document).ready(function () {
     
     
     
-        <div class="col-sm-offset-0 col-sm-6">
+        <div class="col-sm-offset-0 col-sm-7">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的待办事项
