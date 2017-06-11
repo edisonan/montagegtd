@@ -102,26 +102,21 @@ function html_encode(str)
                     </div>
 
                     <div class="panel-body">
-                        <table class="table table-striped task-table">
-                            <thead>
-                                <th>想法</th>
-                                <th>&nbsp;</th>
-                                <th>&nbsp;</th>
-                            </thead>
-                            <tbody>
-                                @foreach ($notes as $note)
-                                    <tr>
-                                        <td class="table-text"  width="10%">
-                                        	<center><img alt="" width="40px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1"> 
-                                        		{{ $note->user->name }}
-                                        	</center>
-                                        </td>
-                                        
-                                        <td class="table-text"  width="80%"><pre style="white-space: pre-wrap;word-wrap: break-word;" class="preprepre"><?php echo $note->name; ?></pre></td>
-
-                                        <!-- note Delete Button -->
-                                        <td  width="10%">
-                                        	@if($note->user_id == Auth::user()->id )
+                    	@foreach ($notes as $note)
+                    	<div class="col-sm-offset-0 col-sm-12">
+							  <div class="col-sm-offset-0 col-sm-1">
+							    <center>
+							    		<img alt="" width="40px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1">
+							            {{ $note->user->name }}
+							    </center>
+							  </div>
+  
+							<div class="col-sm-offset-0 col-sm-10">
+		    					<?php echo $note->name; ?>
+							</div>
+					
+							<div class="col-sm-offset-0 col-sm-1">
+										@if($note->user_id == Auth::user()->id )
                                             <form action="{{url('note/' . $note->id)}}" method="POST">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
@@ -142,11 +137,10 @@ function html_encode(str)
                                                 </button>
                                             </form>
                                             @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+						  	</div>
+					  </div>
+					  @endforeach
+                    
                     </div>
                 </div>
                  {!! $notes->links() !!}
