@@ -103,7 +103,7 @@ $(document).ready(function () {
                                         	[{{ $feed->category->name }}]
                                         	@endif
                                         	
-                                        	<img alt="" width="100px" src="{{ $feed->favicon}}"><a href="{{ $feed->url }}" title="{{ $feed->feed_desc }}">{{ $feed->feed_name }}</a>
+                                        	<img alt="" width="50px" src="{{ $feed->favicon}}"><a href="{{ $feed->url }}" title="{{ $feed->feed_desc }}">{{ $feed->feed_name }}</a>
                                         	
                                         	</pre>
                                         </td>
