@@ -94,8 +94,10 @@
                                         </td>
                                     </tr>
                                 @endforeach
+                                
                             </tbody>
                         </table>
+                        {!! $articles->links() !!}
                     @endif
                 </div>
             </div>

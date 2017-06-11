@@ -26,19 +26,28 @@ class ArticleRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,string $status)
+    public function forUserByStatus(User $user,string $status,$need_page=false)
     {
-    	return Article::where('user_id', $user->id)
-		    	->where('status',$status)
-		    	->get();
+    	$article = Article::where('user_id', $user->id)
+		    	->where('status',$status);
+    	
+    	if($need_page){
+    		$article->paginate(50);
+    	}
+    	
+		return   	$article->get();
     }
     
-    public function forUserByStatusFeedId(User $user,string $status,$feed_id)
+    public function forUserByStatusFeedId(User $user,string $status,$feed_id,$need_page=false)
     {
-    	return Article::where('user_id', $user->id)
+    	$article = Article::where('user_id', $user->id)
     	->where('status',$status)
-    	->where('feed_id',$feed_id)
-    	->get();
+    	->where('feed_id',$feed_id);
+    	if($need_page){
+    		$article->paginate(50);
+    	}
+    	
+    	return $article->get();
     }
     
     /**

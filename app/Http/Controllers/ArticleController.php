@@ -53,9 +53,9 @@ class ArticleController extends Controller
     	}
     	
     	if($request->has('feed_id')){
-    		$articles = $this->articles->forUserByStatusFeedId($request->user(), $status, $request->feed_id);
+    		$articles = $this->articles->forUserByStatusFeedId($request->user(), $status, $request->feed_id,$need_page=true);
     	} else {
-    		$articles = $this->articles->forUserByStatus($request->user(), $status);
+    		$articles = $this->articles->forUserByStatus($request->user(), $status,$need_page=true);
     	}
     	
         return view('articles.index', [
