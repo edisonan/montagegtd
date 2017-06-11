@@ -86,6 +86,8 @@ class Kernel extends ConsoleKernel
     		$start_time = date('Y-m-d',strtotime('-1 days'));
     		$end_time = date('Y-m-d');
     		
+    		\Log::info('statistics:'.$start_time.'|'.$end_time);
+    		
     		$note_counts = DB::table('notes')->select('user_id,count(*) as count')->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
     		$task_counts = DB::table('tasks')->select('user_id,count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
     		$pomo_counts = DB::table('pomos')->select('user_id,count(*) as count')->where('status',2)->where('updated_at','>', $start_time)->where('updated_at','<=', $end_time)->groupBy('user_id')->count();
