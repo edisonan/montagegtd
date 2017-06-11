@@ -54,7 +54,7 @@
 
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
-                                            <a href="{{ url('goal/'.$feed->id)}}" style="color:blue">✎</span>
+                                            <a href="{{ url('goal/'.$goal->id)}}" style="color:blue">✎</span>
                                         </td>
                                         <td  width="10%"  align='right'>
                                             <form action="{{url('goal/' . $goal->id)}}" method="POST"  class=".form-inline">
