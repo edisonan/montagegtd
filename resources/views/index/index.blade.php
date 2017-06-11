@@ -119,7 +119,7 @@ $(document).ready(function () {
 
 	$(".finish_task").click(function(){
 		task_value = $(this).attr("task_value");
-		$.post("{{ url('feed/task_id') }}"+"/"+task_value,{type:"finish"},function(result){
+		$.post("{{ url('feed') }}"+"/"+task_value,{type:"finish"},function(result){
 			result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
 				alert('处理失败，请稍后再试');
