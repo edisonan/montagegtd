@@ -34,6 +34,7 @@ class TaskRepository
     {
     	return Task::where('user_id', $user->id)
     	->where('status',$status)
+    	->orderBy('is_top', 'desc')
     	->orderBy('priority', 'desc')
     	->orderBy('updated_at', 'desc')
     	->get();
