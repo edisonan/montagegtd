@@ -179,6 +179,8 @@ $(document).ready(function () {
 			$("#pomo_name").val(pomo_value+task_value);
 		} else if(pomo_value.indexOf(task_value)==-1){
 			$("#pomo_name").val(pomo_value+ ' + ' +task_value);
+		} else {
+			$("#pomo_name").val(pomo_value.replace(task_value,''));
 		}
 		
 	});
