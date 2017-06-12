@@ -7,16 +7,17 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$("#check_url").click(function(){
+	$("#check_url").unbind("click").click(function(){
+		$("#processTips").text("处理中");
+		
 		url = $("#url").val();
 		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
 			result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
 				alert('该url未检测到内容，请确认！');
-			} else {
-				alert('检测成功');
 			}
 			$("#feed_name").val(result_arr.result.title);
+			$("#processTips").text("处理完成");
 		});
 	});
 });
@@ -46,7 +47,7 @@ $(document).ready(function () {
 								
                             <div class="col-sm-8">
 	                                <input type="text" name="url" id="url" class="form-control" value="{{ $url }}">
-	                                <a href="javascript:void(0)" id="check_url">check url!</a>
+	                                <a href="javascript:void(0)" id="check_url">检测地址!</a><span id="processTips"></span>
                             </div>
                         </div>
                         

@@ -51,8 +51,9 @@
                 <div class="panel-heading">
                     	新的文章[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
                     	<div style="float:right">
-                    		<a href="{{'feed/checkNewFeed'}}">[更新?]</a>
-                    		<a href="{{'feeds'}}">[增加订阅]</a>
+                    		<a href="{{ url('feed/checkNewFeed')}}">[更新?]</a>
+                    		<a href="{{ url('categorys') }}" target="_blank">[分类管理]</a>
+                    		<a href="{{ url('feeds')}}">[订阅管理]</a>
                     	</div>
                 </div>
 
@@ -66,7 +67,7 @@
 										<h1 class="post-title"><a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a></h1>
 										<div class="post-meta">
 											<span class="author">
-												作者：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
+												来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
 											</span> 
 											• 
 											<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>

@@ -57,7 +57,7 @@ class CategoryController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
-        	'caegory_order' => 'required',
+        	'category_order' => 'required',
         ]);
         
         $note = $request->user()->categorys()->create($request->all());

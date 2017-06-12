@@ -114,10 +114,14 @@
 </script> 
 
 @section('content')
+
+<script src="{{'/js/bootstro.min.js'}}"></script>
+<link href="{{'/css/bootstro.min.css'}}" rel="stylesheet">
+
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$(".finish_task .delete_task").click(function(){
+	$(".finish_task, .delete_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
 		task_type = $(this).attr("task_type");
@@ -184,16 +188,27 @@ $(document).ready(function () {
 		$(this).find(".top_task").show();
 	},function(){
 		$(this).find(".delete_task").hide();
-		if($(this).find(".top_task").attr("task_value") != 1){
+		if($(this).find(".top_task").attr("task_is_top") != 1){
 			$(this).find(".top_task").hide();
 		}
 	});
+
+	$(".new_user_guide").click(function(){
+		 bootstro.start('.bootstro', {stopOnBackdropClick : true, stopOnEsc:true});       
+    });
 });
 </script>
     <div class="container">
     
     
-    	<div class="col-sm-offset-0 col-sm-5">
+    	<div 
+    		class="col-sm-offset-0 col-sm-5 bootstro" 
+    		data-bootstro-step="0"
+    		data-bootstro-placement="bottom"
+    		data-bootstro-nextButtonText="下一步"
+    		data-bootstro-content="使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。"
+    		data-bootstro-finishButton="返回网站，开启高效生活~"
+    	>
     		
     		@if($tip_type != 0)
 	    		<div class="alert alert-success alert-dismissible" role="alert">
@@ -215,6 +230,7 @@ $(document).ready(function () {
                     	@endif
                     	<div style="float:right">
                     		<a href="{{'pomos'}}">[已完成番茄]</a>
+                    		<a href="javascript:void(0)" class="new_user_guide">[?]</a>
                     	</div>
                 </div>
 
@@ -272,12 +288,21 @@ $(document).ready(function () {
     
     
     
-        <div class="col-sm-offset-0 col-sm-7">
+        <div 
+        	class="col-sm-offset-0 col-sm-7 bootstro" 
+        	data-bootstro-step="1"
+    		data-bootstro-placement="bottom"
+    		data-bootstro-prevButtonText="上一步"
+    		data-bootstro-content="在这里创建待办事项，高级功能里面可以增加提醒、优先级设定等功能"
+    		data-bootstro-finishButton="返回网站，开启高效生活~"
+    		
+        >
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的待办事项
                     	<div style="float:right">
                     		<a href="{{'tasks'}}">[已完成待办]</a>
+                    		<a href="javascript:void(0)" class="new_user_guide">[?]</a>
                     	</div>
                 </div>
 
@@ -397,7 +422,7 @@ $(document).ready(function () {
                                         <td align='right'>
                                         	<div>
                                         		<a href="javascript:void(0)" class="delete_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}" style="display: none">x</a> 
-                                        		<a href="javascript:void(0)" class="top_task" task_value="{{ $task->id }}" task_is_top="{{ $task->id }}" task_token="{{ csrf_token() }}" @if($task->is_top !=1) style="display: none"  @endif>👆</a> 
+                                        		<a href="javascript:void(0)" class="top_task" task_value="{{ $task->id }}" task_is_top="{{ $task->is_top }}" task_token="{{ csrf_token() }}" @if($task->is_top !=1) style="display: none"  @endif>👆</a> 
                                         	</div>
                                         </td>
                                     </tr>

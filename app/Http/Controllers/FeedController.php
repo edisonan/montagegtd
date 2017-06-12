@@ -49,6 +49,14 @@ class FeedController extends Controller
     	$feeds = $this->feeds->forUser($request->user(), $need_page=true);
     	$categorys = $this->categorys->forUser($request->user());
     	
+    	if(count($categorys) == 0){
+    		$category = $request->user()->categorys()->create([
+	            'name' => '未分类',
+	        	'category_order' => 0,
+        	]);
+    		$categorys = array($category);
+    	}
+    	
     	$title = $url = '';
     	
     	if($request->has('url')){
