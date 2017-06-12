@@ -117,7 +117,7 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$(".finish_task").click(function(){
+	$(".finish_task .delete_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
 		task_type = $(this).attr("task_type");
@@ -140,6 +140,54 @@ $(document).ready(function () {
 		    }
 		});
 	});
+
+	$(".top_task").click(function(){
+		task_value = $(this).attr("task_value");
+		task_token = $(this).attr("task_token");
+		task_is_top = $(this).attr("task_is_top");
+
+		if(task_is_top != 1){
+			task_is_top = 1;
+		} else {
+			task_is_top = 0;
+		}
+		
+		$.ajax({
+		    url: "{{ url('task') }}"+"/"+task_value,
+		    type: 'POST',
+		    data: {is_top:task_is_top,_token:task_token},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					location.href = '{{url('/index')}}';
+				}
+		    }
+		});
+	});
+
+	$(".task_content").click(function(){
+		task_value = $(this).text();
+		pomo_value = $("#pomo_name").val();
+		
+		if(pomo_value == ''){
+			$("#pomo_name").val(pomo_value+task_value);
+		} else if(pomo_value.indexOf(task_value)==-1){
+			$("#pomo_name").val(pomo_value+ ' + ' +task_value);
+		}
+		
+	});
+
+	$(".task_tr").hover(function(){
+		$(this).find(".delete_task").show();
+		$(this).find(".top_task").show();
+	},function(){
+		$(this).find(".delete_task").hide();
+		if($(this).find(".top_task").attr("task_value") != 1){
+			$(this).find(".top_task").hide();
+		}
+	});
 });
 </script>
     <div class="container">
@@ -157,14 +205,10 @@ $(document).ready(function () {
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	@if($runing_pomo_status != 3)
-                    		@if (count($pomos) > 0)
-                    		开蕃走起
+                    		@if (count($pomos) == 0 && count($tasks) > 0)
+                    			现在还有{{ count($tasks) }}项任务哦，赶紧开始第一个番茄吧
                     		@else
-                    			@if (count($tasks) > 0)
-                    			现在还有{{ count($tasks) }}项任务哦，赶紧开蕃走起吧
-                    			@else
                     			开蕃走起
-                    			@endif
                     		@endif
                     	@else
                     	快来记录一下这个番茄吧
@@ -180,9 +224,6 @@ $(document).ready(function () {
                     
                     @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
                     	<a class="btn btn-lg btn-primary btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
-                    	<!-- 
-                    	<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    	 -->
                     @elseif($runing_pomo_status == 1)
                    		 <a class="btn btn-lg btn-primary btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
                     @endif
@@ -193,34 +234,32 @@ $(document).ready(function () {
 
                         <!-- Pomo Name -->
                         <div class="form-group" @if($runing_pomo_status != 3) style="display:none" @endif id="formdiv1">
-                            <div class="col-sm-9">
-                                <input type="text" name="name" id="pomo-name" class="form-control" value="{{ old('pomo') }}" placeholder="此番茄做了什么？">
+                            <div class="col-sm-9"  style="display: -webkit-inline-box;width: 75%;">
+                                <input type="text" name="name" id="pomo_name" class="form-control" value="{{ old('pomo') }}" placeholder="此做了什么？点击任务名快速添加">
                             </div>
-                            <div class="col-sm-3">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fa fa-btn fa-plus"></i>记录一下
+                            <div class="col-sm-3" style="display: -webkit-inline-box;width: 25%;">
+                                <button type="submit" class="btn btn-success" >
+                                                                                                         记录
                                 </button>
-                                <a href="javascript:void(0)" onclick="discard()">放弃?</a>
+                                <a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
                             </div>
                         </div>
                     </form>
                     
                     @if (count($pomos) > 0)
                     <br/><br/>
-                    <table class="table table-striped task-table">
+                    <table class="table table-striped task-table table-hover">
                             <thead>
-                                <th>今天完成的番茄</th>
+                                <th></th>
                                 <th>&nbsp;</th>
                             </thead>
                             <tbody>
                                 @foreach ($pomos as $pomo)
                                     <tr class="active">
-                                        <td class="table-text" width="80%"><div>{{ $pomo->name }}</div></td>
-
-                                        <!-- Task Delete Button -->
-                                        <td width="20%"  align='right'>
-                                        	{{ $pomo->udated_at }}
+                                    	<td width="5%"  align='left'>
+                                        	<?php echo date('H:i',strtotime($pomo->updated_at));?>
                                         </td>
+                                        <td class="table-text" width="95%"><div>{{ $pomo->name }}</div></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -321,7 +360,7 @@ $(document).ready(function () {
                     
                     
                     @if (count($tasks) > 0)
-                    <table class="table table-striped task-table">
+                    <table class="table table-striped task-table table-hover">
                             <thead>
                                 <th>待办事项</th>
                                 <th>&nbsp;</th>
@@ -330,13 +369,13 @@ $(document).ready(function () {
                                 @foreach ($tasks as $task)
                                     <tr 
 	                                    @if($task->priority == 4) 
-	                                    	class="danger" title="重要紧急事项" 
+	                                    	class="danger task_tr" title="重要紧急事项" 
 	                                    @elseif($task->priority == 3) 
-	                                    	class="warning" title="重要不紧急事项"  
+	                                    	class="warning task_tr" title="重要不紧急事项"  
 	                                    @elseif($task->priority == 2) 
-	                                    	class="info" title="不重要紧急事项" 
+	                                    	class="info task_tr" title="不重要紧急事项" 
 	                                    @else
-	                                    	title="不重要不紧急事项" 
+	                                    	class="task_tr" title="不重要不紧急事项" 
 	                                    @endif
 	                                    
 	                                    id="{{$task->id}}"
@@ -349,14 +388,17 @@ $(document).ready(function () {
 											@if(!empty($task->goal->name))
                                         	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
                                         	@endif
-                                        	{{ $task->name }}
+                                        	<span class="task_content">{{ $task->name }}</span>
                                         	</pre>
                                         </td>
                                         
 
                                         <!-- Task Delete Button -->
-                                        <td  width="1"  align='right'>
-                                        	<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">x</a> 
+                                        <td align='right'>
+                                        	<div>
+                                        		<a href="javascript:void(0)" class="delete_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}" style="display: none">x</a> 
+                                        		<a href="javascript:void(0)" class="top_task" task_value="{{ $task->id }}" task_is_top="{{ $task->id }}" task_token="{{ csrf_token() }}" @if($task->is_top !=1) style="display: none"  @endif>👆</a> 
+                                        	</div>
                                         </td>
                                     </tr>
                                 @endforeach

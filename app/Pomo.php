@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pomo extends Model
 {
-	const DEFAULT_INTERVAL = 1500;//25min
-	const DEFAULT_REST_INTERVAL = 300;//5min
+	const DEFAULT_INTERVAL = 50;//25min
+	const DEFAULT_REST_INTERVAL = 30;//5min
 	
 	
 	const STATUS_INIT = 1;

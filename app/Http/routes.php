@@ -28,6 +28,7 @@ Route::group(['middleware' => ['web']], function () {
         return view('welcome');
     })->middleware('guest');
     
+    Route::get('/home', 'IndexController@index');
     Route::get('/index', 'IndexController@index');
     Route::get('/index/test', 'IndexController@test');
     
