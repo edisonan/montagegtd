@@ -59,47 +59,39 @@
                 <div class="panel-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
-                    
-                    @if (count($articles) > 0)
-                    <table class="table table-striped task-table">
-                            <thead>
-                                <th>文章列表</th>
-                                <th>&nbsp;</th>
-                            </thead>
-                            <tbody>
-                                @foreach ($articles as $article)
-                                    <tr >
-                                        <td class="table-text"  width="90%">
-                                        	<div class="preprepre">
-                                        		<a href="{{ url('article/view/'.$article->id) }}" target="_blank" title="所属订阅：{{ $article->feed->feed_name}}">
-                                        		{{ $article->subject }}
-                                        		&nbsp;&nbsp;{{$article->published}}
-                                        		</a>
-                                        	</pre>
-                                        </td>
-
-                                        <!-- Task Delete Button -->
-                                        <td  width="1"  align='right'>
-                                            <form action="{{url('article/' . $article->id)}}" method="POST"  class=".form-inline">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-												<input type="hidden" name="type"  value="delete"/> 
-                                                <button type="submit" id="delete-task-{{ $article->id }}" class="btn btn-link" title="删除!!!">
-                                                	<!-- 
-                                                    <i class="fa fa-btn fa-trash"></i>
-                                                	 -->
-                                                	 <span style="color:red">×</span>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                                
-                            </tbody>
-                        </table>
-                        {!! $articles->links() !!}
-                    @endif
+                    		@if (count($articles) > 0)
+	                    		@foreach ($articles as $article)
+	                            <article class="post">
+									<div class="post-head">
+										<h1 class="post-title"><a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a></h1>
+										<div class="post-meta">
+											<span class="author">
+												作者：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
+											</span> 
+											• 
+											<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>
+										</div>
+									</div>
+									@if(!empty($article->img_url))
+									<div class="featured-media">
+										<a href="/post/laravel-5-4-is-now-released/">
+											<img src="{{$article->img_url}}" alt="{{ $article->subject }}">
+										</a>
+									</div>
+									@endif
+									<div class="post-content">
+										<p></p>
+										<p>{{ $article->content }}</p>
+										<p></p>
+									</div>
+									<div class="post-permalink">
+										<a href="{{$article->url}}" target="_blank" class="btn btn-default">阅读全文</a>
+									</div>
+									<footer class="post-footer clearfix"></footer>
+								</article>
+								@endforeach
+                        		{!! $articles->links() !!}
+                        @endif
                 </div>
             </div>
 

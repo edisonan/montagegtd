@@ -103,24 +103,26 @@ function html_encode(str)
 
                     <div class="panel-body">
                     	@foreach ($notes as $note)
-                    	<div class="col-sm-offset-0 col-sm-12" style="background-color: rgba(84, 126, 130, 0.03);margin-top: 10px;">
-							  <div class="col-sm-offset-0 col-sm-1">
-							    <center>
-							    		<img alt="" width="40px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1">
-							    </center>
-							  </div>
-  							
-  							<div class="col-sm-offset-0 col-sm-11">
-  								<div class="col-sm-offset-0 col-sm-11" style="height:20px">
-			    					<b>{{ $note->user->name }}</b>
+							<article class="post" style="padding: 0px;">
+								<div class="post-head">
+									<div class="post-meta" style="text-align: left">
+										<div class="col-sm-offset-0 col-sm-1" style="width: 50px;padding-right: 0px;padding-left: 0px;">
+											<img src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1" style="width:30px; height:30px;margin:5px;border-radius: 50%;" class="img-thumbnail avatar"></a>
+										</div>
+										<div class="col-sm-offset-0 col-sm-11">
+											<span class="author">
+												<a href="#" target="_blank">{{ $note->user->name }}</a>
+											</span> 
+											<br/>
+											<time class="post-date" datetime="<?php echo $note->created_at;?>" title="<?php echo $note->created_at;?>"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></time>
+											<br/>
+										</div>
+									</div>
 								</div>
-								
-								<div class="col-sm-offset-0 col-sm-11">
-			    					<?php echo $note->name;?>
+								<div class="post-content col-sm-offset-0 col-sm-12">
+									<?php echo $note->name;?>
 								</div>
-							</div>
-							
-							<div class="col-sm-offset-11 col-sm-1">
+								<div class="col-sm-offset-11 col-sm-1">
 										@if($note->user_id == Auth::user()->id )
                                             <form action="{{url('note/' . $note->id)}}" method="POST">
                                                 {{ csrf_field() }}
@@ -128,9 +130,6 @@ function html_encode(str)
 
                                                 <button type="submit" id="delete-note-{{ $note->id }}" class="btn btn-link" title="删除!!!">
                                                 	<span style="color:red">×</span>
-                                                	<!-- 
-                                                    <i class="fa fa-btn fa-trash"></i>
-                                                	 -->
                                                 </button>
                                             </form>
                                             @else
@@ -143,7 +142,8 @@ function html_encode(str)
                                             </form>
                                             @endif
 						  	</div>
-					  </div>
+								<footer class="post-footer clearfix"></footer>
+							</article>
 					  @endforeach
                     
                     </div>

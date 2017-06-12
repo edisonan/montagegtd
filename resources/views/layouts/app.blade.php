@@ -10,6 +10,8 @@
     <!-- Fonts -->
     <link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
     <link href="https://fonts.css.network/css?family=Lato:100,300,400,700" rel='stylesheet' type='text/css'>
+    
+    <link href="{{'css/screen.min.css'}}" rel='stylesheet' type='text/css'>
 
     <!-- Styles -->
     <link href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
