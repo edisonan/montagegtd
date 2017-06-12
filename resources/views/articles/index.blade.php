@@ -73,16 +73,16 @@
 											<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>
 										</div>
 									</div>
-									@if(!empty($article->img_url))
+									@if(!empty($article->image_url))
 									<div class="featured-media">
 										<a href="/post/laravel-5-4-is-now-released/">
-											<img src="{{$article->img_url}}" alt="{{ $article->subject }}">
+											<img src="{{$article->image_url}}" alt="{{ $article->subject }}">
 										</a>
 									</div>
 									@endif
 									<div class="post-content">
 										<p></p>
-										<p>{{ $article->content }}</p>
+										<p><?php echo App\Http\Utils\CommonUtil::removeXSS($article->content); ?></p>
 										<p></p>
 									</div>
 									<div class="post-permalink">
