@@ -64,6 +64,7 @@ function html_encode(str)
 </script>
 
 <script src="js/recorder/recorder.js"></script>
+<script src="js/base64.js"></script>
 
 <script>
 	window.onload = function(){
@@ -126,18 +127,8 @@ function html_encode(str)
 				audio.controls = true;
 				container.appendChild(audio);
 
-				var link = document.createElement("a");
-			    link.innerHTML = "123";
-			    link.download = "123";
-			    link.href = URL.createObjectURL(blob);
-			    container.appendChild(link);
-
 				var record_file = document.querySelector('#record_file');
-				record_file.val(URL.createObjectURL(blob));
-
-				var record_file = document.querySelector('#record_file2');
-				record_file.val(blob);
-				
+				record_file.val(BASE64.encoder(blob));
 			});
 		});
 	};
@@ -170,8 +161,7 @@ function html_encode(str)
 						        <button id="stop" class="ui-btn ui-btn-primary" disabled>停止</button>
 						        <div id="audio-container"></div>
 						        
-						        <input type="file" name="record_file" id="record_file" style="display: none"/>
-                            	<input type="file" name="record_file2" id="record_file2" style="display: none"/>
+						        <input type="hidden" name="record_file" id="record_file" />
                             	
                             	<br/>
                             	<span>推荐话题:</span>

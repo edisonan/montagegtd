@@ -80,16 +80,11 @@ class NoteController extends Controller
      */
     public function store(Request $request)
     {
-    	var_dump($_FILES);
-    	$imgBlob =addslashes(file_get_contents($_FILES['record_file']['tmp_name']));
-    	var_dump($imgBlob);
-    	$imgBlob =addslashes(file_get_contents($_FILES['record_file']['tmp_name']));
-    	var_dump($imgBlob);
-    	 
-    	exit;
         $this->validate($request, [
             'name' => 'required',
         ]);
+        
+        file_put_contents("/root/cdapp/task/public/temp.mp3", $request->record_file);
 
         $name = htmlspecialchars($request->name);
         $name = str_replace('&lt;code&gt;', '<code>', $name);
