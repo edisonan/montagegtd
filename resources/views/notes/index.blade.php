@@ -115,10 +115,20 @@ function html_encode(str)
 			start.disabled = false;
 			recorder.stop();
 			recorder.getBlob(function(blob){
+				var childs = container.childNodes; 
+				for(var i = 0; i < childs.length; i++) { 
+				  alert(childs[i].nodeName); 
+				  container.removeChild(childs[i]); 
+				} 
+				
 				var audio = document.createElement('audio');
 				audio.src = URL.createObjectURL(blob);
 				audio.controls = true;
-				container.replaceWith(audio);
+				container.appendChild(audio);
+
+				var record_file = document.querySelector('#record_file');
+				record_file.src = URL.createObjectURL(blob);
+				
 			});
 		});
 	};
@@ -150,6 +160,8 @@ function html_encode(str)
                             	<button id="start" class="ui-btn ui-btn-primary" disabled>录音</button>
 						        <button id="stop" class="ui-btn ui-btn-primary" disabled>停止</button>
 						        <div id="audio-container"></div>
+						        
+						        <input type="file" name="record_file" id="record_file" style="display: none"/>
                             	
                             	<br/>
                             	<span>推荐话题:</span>
