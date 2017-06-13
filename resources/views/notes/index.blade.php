@@ -150,7 +150,7 @@ function html_encode(str)
                     @include('common.errors')
 
                     <!-- New note Form -->
-                    <form action="{{ url('note') }}" method="POST" class="form-horizontal" id="add_note_form">
+                    <form action="{{ url('note') }}"  enctype="multipart/form-data" method="POST" class="form-horizontal" id="add_note_form">
                         {{ csrf_field() }}
 
                         <!-- note Name -->
