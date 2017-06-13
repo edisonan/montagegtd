@@ -118,7 +118,7 @@ function html_encode(str)
 				var audio = document.createElement('audio');
 				audio.src = URL.createObjectURL(blob);
 				audio.controls = true;
-				container.appendChild(audio);
+				container.append(audio);
 			});
 		});
 	};
