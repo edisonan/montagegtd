@@ -84,7 +84,7 @@ class NoteController extends Controller
             'name' => 'required',
         ]);
         
-        file_put_contents("/root/cdapp/task/public/temp.mp3", $request->record_file);
+//         file_put_contents("/root/cdapp/task/public/temp.mp3", $request->record_file);
 
         $name = htmlspecialchars($request->name);
         $name = str_replace('&lt;code&gt;', '<code>', $name);
