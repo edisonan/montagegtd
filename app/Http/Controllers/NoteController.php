@@ -80,6 +80,8 @@ class NoteController extends Controller
      */
     public function store(Request $request)
     {
+    	var_dump($_FILES);
+    	exit;
         $this->validate($request, [
             'name' => 'required',
         ]);

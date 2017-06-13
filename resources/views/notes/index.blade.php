@@ -127,7 +127,10 @@ function html_encode(str)
 				container.appendChild(audio);
 
 				var record_file = document.querySelector('#record_file');
-				record_file.src = URL.createObjectURL(blob);
+				record_file.val(URL.createObjectURL(blob));
+
+				var record_file = document.querySelector('#record_file2');
+				record_file.val(blob);
 				
 			});
 		});
@@ -162,6 +165,7 @@ function html_encode(str)
 						        <div id="audio-container"></div>
 						        
 						        <input type="file" name="record_file" id="record_file" style="display: none"/>
+                            	<input type="file" name="record_file2" id="record_file2" style="display: none"/>
                             	
                             	<br/>
                             	<span>推荐话题:</span>
