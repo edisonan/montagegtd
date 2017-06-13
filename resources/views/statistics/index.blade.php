@@ -17,12 +17,12 @@
                 </div>
         </div>
     </div>
-     <script src="http://echarts.baidu.com/build/dist/echarts.js"></script>
+    <script src="{{ url('/js/echarts.min.js') }}"></script>
      <script type="text/javascript">
         // 路径配置
         require.config({
             paths: {
-                echarts: 'http://echarts.baidu.com/build/dist'
+                echarts: '{{ url('/js/') }}'
             }
         });
         

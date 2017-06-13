@@ -68,7 +68,7 @@
 
 	function discard(){
 		if (confirm("确认要放弃咩？")) {
-			location.href = '{{'pomos/discard'}}';
+			location.href = '{{ url("pomos/discard/") }}/{{ $active_pomo->id }}';
 		}
 	}
 	
@@ -247,7 +247,7 @@ $(document).ready(function () {
                     @endif
                     
                     <!-- New Task Form -->
-                    <form action="{{ url('pomo') }}" method="POST" class="form-horizontal">
+                    <form action='{{ url("pomo") }}/{{ $active_pomo->id }}' method="POST" class="form-horizontal">
                         {{ csrf_field() }}
 
                         <!-- Pomo Name -->
@@ -268,7 +268,7 @@ $(document).ready(function () {
                     <br/><br/>
                     <table class="table table-striped task-table table-hover">
                             <thead>
-                                <th></th>
+                                <th colspan=2>今日完成番茄</th>
                                 <th>&nbsp;</th>
                             </thead>
                             <tbody>

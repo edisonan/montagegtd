@@ -54,7 +54,12 @@ class IndexController extends Controller
     	$runing_pomo_status = $request->session()->get('pomo_status', 1);
     	$runing_pomo_remain = 0;
     	 
-    	$pomo_start_time = $request->session()->get('pomo_start_time', time());
+    	$active_pomo = $this->pomos->forUserActivePomo($request->user());
+    	if(!empty($pomo)){
+    		$pomo_start_time = strtotime($pomo->created_time);
+    	} else {
+    		$pomo_start_time = $request->session()->get('pomo_start_time', time());
+    	}
     	
     	//判断是否正在进行中或者休息中，如果尚未完成则进行展示剩余时间
     	if($runing_pomo_status == Pomo::STATUS_PROCESSING || $runing_pomo_status == Pomo::STATUS_RESTING){
@@ -113,6 +118,7 @@ class IndexController extends Controller
             'tasks' => $tasks,
             'pomos' => $pomos,
         	'goals' => $goals,
+        	'active_pomo' => empty($active_pomo)?new Pomo():$active_pomo,
         	'runing_pomo_status' => $runing_pomo_status,
         	'runing_pomo_remain' => $runing_pomo_remain,
         	'tip_type' => $tip_type,

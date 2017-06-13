@@ -16,12 +16,30 @@ class PomoRepository
     public function forUser(User $user,$need_page=false)
     {
         $pomo = Pomo::where('user_id', $user->id)
-                    ->orderBy('created_at', 'asc');
+                    ->orderBy('updated_at', 'desc');
         if($need_page){
         	return $pomo->paginate(50);
         } else {
         	return $pomo->get();
         }
+    }
+    
+    public function forUserByStatus(User $user,$status,$need_page=false)
+    {
+    	$pomo = Pomo::where('user_id', $user->id)
+	    	->where('status',1)
+	    	->orderBy('updated_at', 'desc');
+    	
+    	if($need_page){
+    		return $pomo->paginate(50);
+    	} else {
+    		return $pomo->get();
+    	}
+    }
+    
+    public function forUserActivePomo(User $user)
+    {
+    	return Pomo::where('user_id', $user->id)->where('status',1)->first();
     }
     
     /**
@@ -33,6 +51,7 @@ class PomoRepository
     public function forUserByTime(User $user, $time)
     {
         return Pomo::where('user_id', $user->id)
+        			->where('status', 2)
         			->where('created_at', '>' ,$time)
                     ->orderBy('created_at', 'desc')
                     ->get();
