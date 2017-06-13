@@ -126,6 +126,12 @@ function html_encode(str)
 				audio.controls = true;
 				container.appendChild(audio);
 
+				var link = document.createElement("a");
+			    link.innerHTML = fileName;
+			    link.download = fileName;
+			    link.href = URL.createObjectURL(blob);
+			    container.appendChild(link);
+
 				var record_file = document.querySelector('#record_file');
 				record_file.val(URL.createObjectURL(blob));
 
