@@ -81,6 +81,11 @@ class NoteController extends Controller
     public function store(Request $request)
     {
     	var_dump($_FILES);
+    	$imgBlob =addslashes(file_get_contents($_FILES['record_file']['tmp_name']));
+    	var_dump($imgBlob);
+    	$imgBlob =addslashes(file_get_contents($_FILES['record_file']['tmp_name']));
+    	var_dump($imgBlob);
+    	 
     	exit;
         $this->validate($request, [
             'name' => 'required',
