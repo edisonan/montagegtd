@@ -175,6 +175,8 @@ class NoteController extends Controller
     	if($note->user_id == $request->user()->user_id || $note->status == 2){
 	    	header('Content-type: audio/mp3');
 	    	readfile(config("app.storage_path").$note->record_path);
+    	} else {
+    		echo 'error'.$request->user()->user_id;exit;
     	}
     }
 }

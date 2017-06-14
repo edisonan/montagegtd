@@ -123,7 +123,6 @@ function html_encode(str)
 				
 				var childs = container.childNodes; 
 				for(var i = 0; i < childs.length; i++) { 
-				  alert(childs[i].nodeName); 
 				  container.removeChild(childs[i]); 
 				} 
 				
