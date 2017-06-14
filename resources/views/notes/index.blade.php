@@ -78,11 +78,11 @@ function html_encode(str)
 			},
 			error: function(msg){ //失败回调函数
 // 				alert(msg);
-				start.text('录音(该浏览器暂不支持,请使用chrome/360/firefox等)');
+				start.value ='录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
 			},
 			fix: function(msg){ //不支持H5录音回调函数
 // 				alert(msg);
-				start.text('录音(该浏览器暂不支持,请使用chrome/360/firefox等)');
+				start.value = '录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
 			}
 		});
 
@@ -172,11 +172,11 @@ function html_encode(str)
                         <div class="form-group">
                             <label for="note-name" class="col-sm-2 control-label">你在想什么呢</label>
 
-                            <div class="col-sm-10">
+                            <div class="col-sm-10" >
                             	<textarea class="form-control" rows="4"  name="name" id="note-name" >{{ $add_content }}</textarea>
                             	
-                            	<button id="start" class="ui-btn ui-btn-primary" disabled>录音</button>
-						        <button id="stop" class="ui-btn ui-btn-primary" disabled>停止</button>
+                            	<button id="start" class="ui-btn ui-btn-primary" disabled title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">录音</button>
+						        <button id="stop" class="ui-btn ui-btn-primary" disabled title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">停止</button>
 						        <div id="audio-container"></div>
 						        
 						        <input type="hidden" name="fname" id="fname" />
