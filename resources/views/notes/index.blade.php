@@ -77,7 +77,8 @@ function html_encode(str)
 				start.disabled = false;
 			},
 			error: function(msg){ //失败回调函数
-				alert(msg);
+// 				alert(msg);
+				start.text('录音(该浏览器暂不支持,请使用chrome/360/firefox等)');
 			},
 			fix: function(msg){ //不支持H5录音回调函数
 // 				alert(msg);
