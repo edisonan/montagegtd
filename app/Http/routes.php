@@ -33,9 +33,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/index/test', 'IndexController@test');
     
     Route::get('/notes', 'NoteController@index');
+    Route::post('/notes/upload', 'NoteController@upload');
     Route::get('/notes/add_content/{add_content}', 'NoteController@index');
     Route::post('/note', 'NoteController@store');
     Route::delete('/note/{note}', 'NoteController@destroy');
+    Route::get('/note/getRecord/{note}', 'NoteController@getRecord');
 
     Route::get('/tasks', 'TaskController@index');
     Route::post('/task', 'TaskController@store');

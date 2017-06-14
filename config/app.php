@@ -207,5 +207,7 @@ return [
     	#'OAuth'     => Artdarek\OAuth\Facade\OAuth::class,
     	#'OAuth'     => Jenssegers\OAuth\Facades\OAuth::class,
     ],
+		
+	'storage_path' => env('STORAGE_PATH', 'storage/'),
 
 ];

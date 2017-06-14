@@ -49,7 +49,12 @@
         <div class="col-sm-offset-0 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新的文章[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
+                		@if(count($articles) == 0 && count($recommend_feeds) > 0)
+                			看看大家推荐的订阅源吧~
+                		@else
+                    		新的文章
+                    	@endif
+                    	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
                     	<div style="float:right">
                     		<a href="{{ url('feed/checkNewFeed')}}">[更新?]</a>
                     		<a href="{{ url('categorys') }}" target="_blank">[分类管理]</a>
@@ -60,6 +65,15 @@
                 <div class="panel-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
+                    
+                    		@if(count($articles) == 0 && count($recommend_feeds) > 0)
+		                    	@foreach($recommend_feeds as $recommend_feed)
+		                    	<div class="col-sm-offset-0 col-sm-6"  style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;    padding: 2px;">
+									<span style="color:green;">推荐:</span><a href="{{ url('feeds') }}?url={{ $recommend_feed->url }}" >{{ $recommend_feed->feed_name }}</a>										                    		
+								</div>
+		                    	@endforeach
+                    		@endif
+                    
                     		@if (count($articles) > 0)
 	                    		@foreach ($articles as $article)
 	                            <article class="post">
@@ -92,6 +106,11 @@
 								</article>
 								@endforeach
                         		{!! $articles->links() !!}
+                        @else
+                        	<hr></hr>
+                        	<div class="col-sm-offset-0 col-sm-12" style="    padding: 10px;">
+                        		<b>暂时没有最新文章,可以点击这里多添加自己喜欢的订阅源~~ <a href="{{ url('feeds')}}">[订阅管理]</a></b>
+                        	</div>
                         @endif
                 </div>
             </div>

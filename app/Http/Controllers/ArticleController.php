@@ -11,6 +11,7 @@ use App\Category;
 use App\Repositories\CategoryRepository;
 use App\Article;
 use App\Repositories\ArticleRepository;
+use App\Feed;
 
 class ArticleController extends Controller
 {
@@ -58,10 +59,17 @@ class ArticleController extends Controller
     		$articles = $this->articles->forUserByStatus($request->user(), $status,$need_page=true);
     	}
     	
+    	if(count($articles) == 0){
+    		$recommend_feeds = Feed::where('user_id','!=' , $request->user()->id)->orderBy(\DB::raw('RAND()'))->take(4)->get();;
+    	} else {
+    		$recommend_feeds = array();
+    	}
+    	
         return view('articles.index', [
             'categorys' => $categorys,
         	'articles' => $articles,
         	'status' => $status,
+        	'recommend_feeds' => $recommend_feeds,
         ]);
     }
     

@@ -64,7 +64,6 @@ function html_encode(str)
 </script>
 
 <script src="js/recorder/recorder.js"></script>
-<script src="js/base64.js"></script>
 
 <script>
 	window.onload = function(){
@@ -81,7 +80,8 @@ function html_encode(str)
 				alert(msg);
 			},
 			fix: function(msg){ //不支持H5录音回调函数
-				alert(msg);
+// 				alert(msg);
+				start.text('录音(该浏览器暂不支持,请使用chrome/360/firefox等)');
 			}
 		});
 
@@ -127,8 +127,25 @@ function html_encode(str)
 				audio.controls = true;
 				container.appendChild(audio);
 
-				var record_file = document.querySelector('#record_file');
-				record_file.val(BASE64.encoder(blob));
+				//upload
+				var fd = new FormData();
+				fname = '{{ md5(date('YmdHis').rand(0,99)) }}';
+				fd.append('fname', fname);
+				fd.append('file', blob);
+				fd.append('_token', "{{ csrf_token() }}");
+				
+				$.ajax({
+				    type: 'POST',
+				    url: '{{ url("notes/upload") }}',
+				    data: fd,
+				    processData: false,
+				    contentType: false
+				}).done(function(data) {
+						data_arr = JSON.parse(data);
+						if(data_arr.code == 9999){
+							$("#fname").val(fname);
+						}
+				});
 			});
 		});
 	};
@@ -161,7 +178,7 @@ function html_encode(str)
 						        <button id="stop" class="ui-btn ui-btn-primary" disabled>停止</button>
 						        <div id="audio-container"></div>
 						        
-						        <input type="hidden" name="record_file" id="record_file" />
+						        <input type="hidden" name="fname" id="fname" />
                             	
                             	<br/>
                             	<span>推荐话题:</span>
@@ -220,7 +237,12 @@ function html_encode(str)
 									</div>
 								</div>
 								<div class="post-content col-sm-offset-0 col-sm-12">
+									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
+									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
+									@endif
+									<div>
 									<?php echo $note->name;?>
+									</div>
 								</div>
 								<div class="col-sm-offset-11 col-sm-1">
 										@if($note->user_id == Auth::user()->id )

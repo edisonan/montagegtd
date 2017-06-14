@@ -84,7 +84,20 @@ class NoteController extends Controller
             'name' => 'required',
         ]);
         
-//         file_put_contents("/root/cdapp/task/public/temp.mp3", $request->record_file);
+		if(empty($request->fname)){
+			$record_path = '';
+		} else {
+			$record_name = $request->user()->id . $request->fname . '.mp3';
+			$temp_path = config("app.storage_path") . 'recorders/temp/' . $record_name;
+			$real_path = config("app.storage_path") . 'recorders/' . $record_name;
+			
+			if(!file_exists($temp_path)){
+				$record_path = '';
+			} else {
+				rename($temp_path, $real_path);
+				$record_path = 'recorders/'.$record_name;
+			}
+		}
 
         $name = htmlspecialchars($request->name);
         $name = str_replace('&lt;code&gt;', '<code>', $name);
@@ -92,6 +105,7 @@ class NoteController extends Controller
         $name = nl2br($name);
         $note = $request->user()->notes()->create([
             'name' => $name,
+            'record_path' => $record_path,
             'status' => $request->status,
         ]);
         
@@ -139,5 +153,28 @@ class NoteController extends Controller
         } else {
         	return redirect('/notes');
         }
+    }
+    
+    public function upload(Request $request)
+    {
+    	if($_FILES["file"]["type"] == 'audio/mp3'){
+	    	$record_name = $request->user()->id.$request->fname.'.mp3';
+	    	move_uploaded_file($_FILES["file"]["tmp_name"], config("app.storage_path").'recorders/temp/'.$record_name);
+    	}
+    	
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/notes');
+    	}
+    }
+    
+    public function getRecord(Request $request,Note $note)
+    {
+    	if($note->user_id == $request->user()->user_id || $note->status == 2){
+	    	header('Content-type: audio/mp3');
+	    	readfile(config("app.storage_path").$note->record_path);
+    	}
     }
 }
