@@ -27,7 +27,7 @@ class PomoRepository
     public function forUserByStatus(User $user,$status,$need_page=false)
     {
     	$pomo = Pomo::where('user_id', $user->id)
-	    	->where('status',1)
+	    	->where('status', $status)
 	    	->orderBy('updated_at', 'desc');
     	
     	if($need_page){
