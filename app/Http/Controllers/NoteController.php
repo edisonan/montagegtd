@@ -172,7 +172,7 @@ class NoteController extends Controller
     
     public function getRecord(Request $request,Note $note)
     {
-    	if($note->user_id == Auth::user()->id || $note->status == 2){
+    	if($note->user_id == $request->user()->id || $note->status == 2){
 	    	header('Content-type: audio/mp3');
 	    	readfile(config("app.storage_path").$note->record_path);
     	} else {
