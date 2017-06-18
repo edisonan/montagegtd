@@ -68,6 +68,8 @@ class NoteController extends Controller
     	}
     	
     	foreach ($notes as $key => $note){
+    		$commonUtil = new \App\Http\Utils\CommonUtil();
+    		$note->name = $commonUtil->auto_link_text($note->name);
     		if(!empty($note->noteTagMaps)){
     			foreach ($note->noteTagMaps as $noteTagMap){
     				$url = "/notes?tag_id=".$noteTagMap->tag->id;

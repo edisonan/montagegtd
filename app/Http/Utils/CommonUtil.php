@@ -89,4 +89,17 @@ class CommonUtil{
 	   }  
 	   return $val;  
 	}  
+	
+	public function auto_link_text($text) {
+	    $pattern  = '#\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))#';
+	   $callback = create_function('$matches', '
+	       $url       = array_shift($matches);
+	 
+	       $text = parse_url($url, PHP_URL_SCHEME) . "://" . parse_url($url, PHP_URL_HOST) . parse_url($url, PHP_URL_PATH);
+	 
+	       return sprintf(\'<a rel="nowfollow" href="%s">%s</a>\', $url, $text);
+	   ');
+	 
+	   return preg_replace_callback($pattern, $callback, $text);
+	}
 }

@@ -34,20 +34,6 @@ function addContent($content){
 
 <script>
 	window.onload = function(){
-		//进行过滤
-		var allElements = document.getElementsByTagName('*'); 
-		for (var i=0; i< allElements.length; i++ ) 
-		{ 
-			console.log(allElements[i].className);
-			if (allElements[i].className == "preprepre" ) { 
-				var html = allElements[i].textContent;
-				
-				var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
-				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
-				
-				allElements[i].innerHTML = html;
-			} 
-		}
 		
 		var start = document.querySelector('#start');
 		var stop = document.querySelector('#stop');
@@ -175,7 +161,7 @@ function addContent($content){
                             	<a href="javascript:void(0)"  onclick="addContent('#读书笔记#')">#读书笔记#</a> 
                             	<a href="javascript:void(0)"  onclick="addContent('#分享#')">#分享#</a> 
                             	<a href="javascript:void(0)"  onclick="addContent('#碎碎念#')">#碎碎念#</a> 
-                            	<a href="javascript:void(0)"  onclick='addContent("code")'>代码片段</a>
+                            	<a href="javascript:void(0)"  onclick='addContent("code")'>[代码片段]</a>
                             </div>
                         </div>
 
