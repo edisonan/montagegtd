@@ -49,8 +49,16 @@ class NoteController extends Controller
     	
     	if($request->has('add_content')){
     		$add_content = $request->add_content;
-    		if(\App\Http\Utils\CommonUtil::isUrl($add_content)){
-    			$add_content = '#分享链接# '.$add_content.' '.\App\Http\Utils\CommonUtil::page_title($add_content);
+    		if($request->has('type') && $request->type = 'image'){
+    			$add_image = $add_content;
+    			$add_content = '分享图片';
+    		} else {
+    			if(\App\Http\Utils\CommonUtil::isUrl($add_content)){
+    				$add_content = '#分享链接# '.$add_content.' '.\App\Http\Utils\CommonUtil::page_title($add_content);
+    			}
+    			if(strpos($add_content,'#') != false) {
+    				$add_content = '#分享# '.$add_content;
+    			}
     		}
     	}
     	
@@ -68,6 +76,7 @@ class NoteController extends Controller
     	
         return view('notes.index', [
             'add_content' => $add_content,
+            'add_image' => isset($add_image)?$add_image:'',
             'notes' => $notes,
         ]);
     }
@@ -106,6 +115,7 @@ class NoteController extends Controller
         $note = $request->user()->notes()->create([
             'name' => $name,
             'record_path' => $record_path,
+            'image_path' => $request->has('add_image')?$request->add_image:'',
             'status' => $request->status,
         ]);
         

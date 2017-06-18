@@ -224,6 +224,9 @@ function addContent($content){
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
 									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
 									@endif
+									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
+									<image width="150px" src="{{ $note->image_path }}"/>
+									@endif
 									<div class="preprepre">
 									<?php echo $note->name;?>
 									</div>
