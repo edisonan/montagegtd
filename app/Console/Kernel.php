@@ -60,7 +60,7 @@ class Kernel extends ConsoleKernel
     		
     		foreach ($message_arr as $item){
 	    		$ff_user = new FFClient( $config['key'] , $config['secret'] , $oauth_token , $oauth_token_secret );
-	    		$result = $ff_user -> update($item.rand(0,4));
+	    		$result = $ff_user -> update($item.$imojs[rand(0,4)]);
 	    		
 	    		file_put_contents(env('CRON_LOG'),$result);
     		}
