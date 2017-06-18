@@ -117,9 +117,12 @@ function html_encode(str)
 			start.disabled = false;
 			recorder.stop();
 			recorder.getBlob(function(blob){
+				if($("#note-name").val().indexOf("#分享语音#")==-1){
+					$("#note-name").val("#分享语音#");
+				}
+				
 				var childs = container.childNodes; 
 				for(var i = 0; i < childs.length; i++) { 
-				  alert(childs[i].nodeName); 
 				  container.removeChild(childs[i]); 
 				} 
 				
