@@ -229,7 +229,9 @@ function addContent($content){
 									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
 									@endif
 									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-									<image height="150px" src="{{ $note->image_path }}"/>
+									<a href="{{ $note->image_path }}" title="点击查看原图" target="_blank">
+										<image height="150px" src="{{ $note->image_path }}"/>
+									</a>
 									@endif
 									<div class="preprepre">
 									<?php echo $note->name;?>
