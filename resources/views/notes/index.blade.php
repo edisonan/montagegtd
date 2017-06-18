@@ -163,6 +163,10 @@ function addContent($content){
 						        <div id="audio-container"></div>
 						        
 						        <input type="hidden" name="fname" id="fname" />
+						        @if(isset($add_image))
+						        <input type="hidden" name="add_image" id="add_image" />
+						        <span>预览：</span><img alt="" src="$add_image">
+						        @endif
                             	
                             	<br/>
                             	<span>推荐话题:</span>
