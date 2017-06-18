@@ -163,9 +163,9 @@ function addContent($content){
 						        <div id="audio-container"></div>
 						        
 						        <input type="hidden" name="fname" id="fname" />
-						        @if(isset($add_image))
-						        <input type="hidden" name="add_image" id="add_image" />
-						        <span>预览：</span><img alt="" src="$add_image">
+						        @if(!empty($add_image))
+						        <input type="hidden" name="add_image" id="add_image"  value="{{$add_image}}"/>
+						        <span>预览：</span><img  height="150px" alt="" src="{{$add_image}}">
 						        @endif
                             	
                             	<br/>
@@ -229,7 +229,7 @@ function addContent($content){
 									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
 									@endif
 									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-									<image width="150px" src="{{ $note->image_path }}"/>
+									<image height="150px" src="{{ $note->image_path }}"/>
 									@endif
 									<div class="preprepre">
 									<?php echo $note->name;?>

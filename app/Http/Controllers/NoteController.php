@@ -48,11 +48,16 @@ class NoteController extends Controller
     	$notes = $this->notes->forUserByStatus($request->user(), 2, $need_page=true);
     	
     	if($request->has('add_content')){
-    		$add_content = $request->add_content;
     		if($request->has('type') && $request->type = 'image'){
-    			$add_image = $add_content;
-    			$add_content = '分享图片';
+    			$add_image = $request->add_content;
+    			$img_info = getimagesize($add_image);
+    			if(empty($img_info) && in_array($img_info['mime'], array('image/png','image/gif','image/jpeg'))){
+    				echo '错误的图片类型';exit;
+    			} else {
+    				$add_content = '#分享图片#';
+    			}
     		} else {
+    			$add_content = $request->add_content;
     			if(\App\Http\Utils\CommonUtil::isUrl($add_content)){
     				$add_content = '#分享链接# '.$add_content.' '.\App\Http\Utils\CommonUtil::page_title($add_content);
     			}
@@ -107,6 +112,16 @@ class NoteController extends Controller
 				$record_path = 'recorders/'.$record_name;
 			}
 		}
+		
+		if($request->has('add_image')){
+			$add_image = $request->add_image;
+			$img_info = getimagesize($add_image);
+			if(empty($img_info) && in_array($img_info['mime'], array('image/png','image/gif','image/jpeg'))){
+				echo '错误的图片类型';exit;
+			}
+		} else {
+			$add_image = '';
+		}
 
         $name = htmlspecialchars($request->name);
         $name = str_replace('&lt;code&gt;', '<code>', $name);
@@ -115,7 +130,7 @@ class NoteController extends Controller
         $note = $request->user()->notes()->create([
             'name' => $name,
             'record_path' => $record_path,
-            'image_path' => $request->has('add_image')?$request->add_image:'',
+            'image_path' => $add_image,
             'status' => $request->status,
         ]);
         
