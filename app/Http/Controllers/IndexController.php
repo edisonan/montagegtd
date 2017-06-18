@@ -55,8 +55,8 @@ class IndexController extends Controller
     	$runing_pomo_remain = 0;
     	 
     	$active_pomo = $this->pomos->forUserActivePomo($request->user());
-    	if(!empty($pomo)){
-    		$pomo_start_time = strtotime($pomo->created_time);
+    	if(!empty($active_pomo)){
+    		$pomo_start_time = strtotime($active_pomo->created_time);
     		if($runing_pomo_status == 1){
     			$runing_pomo_status = 3;
     		}
