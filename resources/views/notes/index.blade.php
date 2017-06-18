@@ -28,45 +28,27 @@ function addContent($content){
 	}
 }
 
-window.onload=function(){  
-	var allElements = document.getElementsByTagName('*'); 
-	for (var i=0; i< allElements.length; i++ ) 
-	{ 
-		console.log(allElements[i].className);
-		if (allElements[i].className == "preprepre" ) { 
-			var html = html_encode(allElements[i].textContent);
-			
-			var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
-			html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
-			
-// 			reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
-// 			html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
-			
-			allElements[i].innerHTML = html;
-		} 
-	}
-} 
-
-function html_encode(str)   
-{   
-  var s = "";   
-  if (str.length == 0) return "";   
-  s = str.replace(/&/g, "&gt;");   
-  s = s.replace(/</g, "&lt;");   
-  s = s.replace(/>/g, "&gt;");   
-  s = s.replace(/ /g, "&nbsp;");   
-  s = s.replace(/\'/g, "&#39;");   
-  s = s.replace(/\"/g, "&quot;");   
-  s = s.replace(/\n/g, "<br>");   
-  return s;   
-}
-
 </script>
 
 <script src="js/recorder/recorder.js"></script>
 
 <script>
 	window.onload = function(){
+		//进行过滤
+		var allElements = document.getElementsByTagName('*'); 
+		for (var i=0; i< allElements.length; i++ ) 
+		{ 
+			console.log(allElements[i].className);
+			if (allElements[i].className == "preprepre" ) { 
+				var html = allElements[i].textContent;
+				
+				var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
+				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
+				
+				allElements[i].innerHTML = html;
+			} 
+		}
+		
 		var start = document.querySelector('#start');
 		var stop = document.querySelector('#stop');
 		var container = document.querySelector('#audio-container');
@@ -77,11 +59,9 @@ function html_encode(str)
 				start.disabled = false;
 			},
 			error: function(msg){ //失败回调函数
-// 				alert(msg);
 				start.value ='录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
 			},
 			fix: function(msg){ //不支持H5录音回调函数
-// 				alert(msg);
 				start.value = '录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
 			}
 		});
@@ -244,7 +224,7 @@ function html_encode(str)
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
 									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
 									@endif
-									<div>
+									<div class="preprepre">
 									<?php echo $note->name;?>
 									</div>
 								</div>
