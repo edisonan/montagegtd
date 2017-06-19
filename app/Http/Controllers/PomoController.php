@@ -39,8 +39,6 @@ class PomoController extends Controller
      */
     public function index(Request $request)
     {
-//     	Session::set('variableName', $value);
-    	
         return view('pomos.index', [
             'pomos' => $this->pomos->forUserByStatus($request->user(),2,$need_page=true),
         ]);
@@ -54,8 +52,7 @@ class PomoController extends Controller
      */
     public function start(Request $request)
     {
-    	$request->session()->set('pomo_status', Pomo::STATUS_PROCESSING);
-    	$pomo_start_time = $request->session()->set('pomo_start_time', time());
+    	$request->session()->forget('rest_start_time');
     	
     	$request->user()->pomos()->create([
     		'name' => $request->has('name')?$request->name:'',
@@ -78,13 +75,13 @@ class PomoController extends Controller
      */
     public function discard(Request $request, Pomo $pomo)
     {
-    	$request->session()->set('pomo_status', Pomo::STATUS_INIT);
-    	$pomo_start_time = $request->session()->forget('pomo_start_time');
-    	
-    	//判断是否有权限，并置失败
-    	$this->authorize('destroy', $pomo);
-    	$pomo->status = 3;
-    	$pomo->save();
+    	if($pomo->exists == false){
+    		$request->session()->forget('rest_start_time');
+    	} else {
+    		//判断是否有权限，并置失败
+    		$this->authorize('destroy', $pomo);
+    		$pomo->update(array('status'=>3));
+    	}
     	
     	if ($request->ajax() || $request->wantsJson()) {
     		$resp = $this->responseJson(self::OK_CODE);
@@ -102,8 +99,7 @@ class PomoController extends Controller
      */
     public function store(Request $request, Pomo $pomo)
     {
-    	$pomo_start_time = $request->session()->get('pomo_start_time');
-    	if(isset($pomo_start_time) && !empty($pomo_start_time) && time() > $pomo_start_time + Pomo::DEFAULT_INTERVAL){
+    	if(time() > strtotime($pomo->created_at) + Pomo::DEFAULT_INTERVAL){
 	        $this->validate($request, [
 	            'name' => 'required|max:255',
 	        ]);
@@ -115,8 +111,7 @@ class PomoController extends Controller
 	        ]);
 	        
 	        //auto resting
-	        $request->session()->set('pomo_status', Pomo::STATUS_RESTING);
-	        $request->session()->set('pomo_start_time', time());
+	        $request->session()->set('rest_start_time', time());
     	}
     	
     	if ($request->ajax() || $request->wantsJson()) {
