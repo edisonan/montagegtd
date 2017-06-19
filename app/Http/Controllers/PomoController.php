@@ -83,7 +83,8 @@ class PomoController extends Controller
     	
     	//判断是否有权限，并置失败
     	$this->authorize('destroy', $pomo);
-    	$pomo->update(array('status'=>3));
+    	$pomo->status = 3;
+    	$pomo->save();
     	
     	if ($request->ajax() || $request->wantsJson()) {
     		$resp = $this->responseJson(self::OK_CODE);
