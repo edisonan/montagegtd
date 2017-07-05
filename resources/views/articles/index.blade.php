@@ -142,8 +142,11 @@ $(document).ready(function () {
 									</div>
 									<div class="post-permalink">
 										<a href="{{$article->url}}" target="_blank" class="btn btn-default">阅读全文</a>
-										<a href="javascript:void(0);" class = "set_read" article_id={{$article->id}} target="_blank" class="btn btn-default">设为已读</a>
-										<a href="javascript:void(0);" class = "set_star" article_id={{$article->id}} target="_blank" class="btn btn-default">加入收藏</a>
+										@if($article->status == 'unread')
+										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_read">设为已读</a>
+										@else($article->status != 'star')
+										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_star">加入收藏</a>
+										@endif
 									</div>
 									<footer class="post-footer clearfix"></footer>
 								</article>
