@@ -32,7 +32,7 @@ class ArticleRepository
 		    	->where('status',$status);
     	
     	if($need_page){
-    		return $article->paginate(50);
+    		return $article->paginate(10);
     	} else {
     		return $article->get();
     	}
