@@ -16,6 +16,7 @@ use App\Pomo;
 use App\Statistics;
 use App\Repositories\FeedRepository;
 use App\Feed;
+use App\Http\Utils\SpideUtil;
 
 
 class Kernel extends ConsoleKernel
@@ -150,14 +151,24 @@ class Kernel extends ConsoleKernel
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
     		
-    		$feeds = Feed::get();
+    		$feeds = Feed::where('type',1)->get();
     		$feedRepository = new FeedRepository();
     		foreach ($feeds as $feed){
     			$feedRepository->checkFeed($feed);
     			\Log::info('process feed ! url:'.$feed->url);
     		}
     	})->everyTenMinutes()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
-    	 
+    	
+    	$schedule->call(function () {
+    		date_default_timezone_set("Asia/Shanghai");
+    	
+    		$feeds = Feed::where('type',2)->get();
+    		$spideUtil = new SpideUtil();
+    		foreach ($feeds as $feed){
+    			$spideUtil->processFeed($feed);
+    			\Log::info('process feed ! url:'.$feed->url);
+    		}
+    	})->hourly();
     }
     
      

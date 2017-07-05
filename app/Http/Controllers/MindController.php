@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+use App\Http\Requests;
+use App\Http\Controllers\Controller;
+
+use App\Mind;
+use App\Repositories\MindRepository;
+
+class MindController extends Controller
+{
+    /**
+     * The mind repository instance.
+     *
+     * @var MindRepository
+     */
+    protected $minds;
+    protected $tags;
+
+    /**
+     * Create a new controller instance.
+     *
+     * @param  MindRepository  $minds
+     * @return void
+     */
+    public function __construct(MindRepository $minds)
+    {
+        $this->middleware('auth');
+
+        $this->minds = $minds;
+    }
+
+    /**
+     * Display a list of all of the user's mind.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function index(Request $request,$add_content = '')
+    {
+    	$minds = $this->minds->forUserByStatus($request->user(), 1, 1, $need_page=true);
+    	
+        return view('minds.index', [
+            'minds' => $minds,
+        ]);
+    }
+    
+    /**
+     * Create a new mind.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function store(Request $request)
+    {
+    	$is_root = 1;
+    	if($request->has('parent_mind_id')){
+    		$parentMind = Mind::where('id',$request->parent_mind_id)->where('user_id',$request->user()->id)->first();
+    		if(empty($parentMind)){
+    			redirect('/minds');
+    		}
+    		$is_root = 0;
+    	}
+    	
+        $this->validate($request, [
+            'name' => 'required',
+        ]);
+        
+        $ret = $request->user()->minds()->create([
+            'name' => htmlspecialchars($request->name),
+        	'is_root' => $is_root,
+        ]);
+        
+        if ($request->ajax() || $request->wantsJson()) {
+        	$resp = $this->responseJson(self::OK_CODE);
+        	return response($resp);
+        } else {
+        	return redirect('/minds');
+        }
+    }
+
+    /**
+     * Destroy the given mind.
+     *
+     * @param  Request  $request
+     * @param  Mind  $mind
+     * @return Response
+     */
+    public function destroy(Request $request, Mind $mind)
+    {
+        $this->authorize('destroy', $mind);
+
+        $mind->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+        	$resp = $this->responseJson(self::OK_CODE);
+        	return response($resp);
+        } else {
+        	return redirect('/minds');
+        }
+    }
+    
+    public function view(Request $request, Mind $mind)
+    {
+    	$this->authorize('destroy', $mind);
+    	
+    	$datas = $this->getNodeTreeData($mind);
+    	$jsmind_datas = array();
+    	$jsmind_datas['meta'] = array(
+    		'name'=>$mind->name,
+    		'author'=>$request->user()->name,
+    		'version'=>"1.0",
+    	);
+    	$jsmind_datas['format'] = 'node_tree';
+    	$jsmind_datas['data'] = $datas;
+    	
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return view('minds.view', [
+	            'mind' => $mind,
+	            'jsmind_datas' => json_encode($jsmind_datas),
+	        ]);
+    	}
+    }
+    
+    public function getNodeTreeData($mind){
+    	$data = array();
+    	$data['id'] = $mind->id;
+    	$data['topic'] = $mind->name;
+    	if(count($mind->childrenMinds)){
+    		foreach ($mind->childrenMinds as $childMind){
+    			$data['children'][] = $this->getNodeTreeData($childMind);
+    		}
+    	}
+    	return $data;
+    }
+}

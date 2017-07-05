@@ -28,6 +28,14 @@ Route::group(['middleware' => ['web']], function () {
         return view('welcome');
     })->middleware('guest');
     
+    Route::get('/test', function () {
+    	$feeds = \App\Feed::where('type',2)->get();
+    	$spideUtil = new \App\Http\Utils\SpideUtil();
+    	foreach ($feeds as $feed){
+    		$spideUtil->processFeed($feed);
+    	}
+    })->middleware('guest');
+    
     Route::get('/home', 'IndexController@index');
     Route::get('/index', 'IndexController@index');
     Route::get('/index/test', 'IndexController@test');
@@ -38,6 +46,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/note', 'NoteController@store');
     Route::delete('/note/{note}', 'NoteController@destroy');
     Route::get('/note/getRecord/{note}', 'NoteController@getRecord');
+    
+    Route::get('/minds', 'MindController@index');
+    Route::post('/mind', 'MindController@store');
+    Route::delete('/mind/{mind}', 'MindController@destroy');
+    Route::get('/mind/{mind}', 'MindController@view');
+    Route::post('/mind/{mind}', 'MindController@update');
 
     Route::get('/tasks', 'TaskController@index');
     Route::post('/task', 'TaskController@store');
