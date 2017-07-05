@@ -9,14 +9,12 @@ class SpideUtil{
 	public function processFeed($feed) {
 		echo 123;
 		$result = $this->request($feed['url']);
-		file_put_contents(md5($feed->url), $result);//delete
 		if(empty($result)){
 			return false;
 		}
 		
 		//get list
 		$list = $this->getList($result,$feed->type);
-		print_r($list);//delete
 		if(empty($list)){
 			return false;
 		}
@@ -48,7 +46,6 @@ class SpideUtil{
 				$article->content = $params['content'];
 				$article->save();
 			}
-			exit;
 		}
 	}
 	
