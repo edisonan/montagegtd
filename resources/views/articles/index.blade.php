@@ -4,7 +4,7 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$("#set_star").click(function(){
+	$(".set_star").click(function(){
 		article_id = $(this).attr('article_id');
 		$.get("{{ url('/article/star') }}"+"/"+article_id,{},function(result){
 			result_arr = JSON.parse(result);
@@ -16,7 +16,7 @@ $(document).ready(function () {
 		});
 	});
 
-	$("#set_read").click(function(){
+	$(".set_read").click(function(){
 		article_id = $(this).attr('article_id');
 		$.get("{{ url('/article/read') }}"+"/"+article_id,{status:"read"},function(result){
 			result_arr = JSON.parse(result);
@@ -37,7 +37,7 @@ $(document).ready(function () {
 	});
 	
 	$(".morecon").click(function(){
-		$(this).parent().children("div.text").css("height","auto");
+		$(this).parent().children("div.post-content").css("height","auto");
 		$(this).css("display","none");
 	});
 });
@@ -144,7 +144,8 @@ $(document).ready(function () {
 										<a href="{{$article->url}}" target="_blank" class="btn btn-default">阅读全文</a>
 										@if($article->status == 'unread')
 										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_read">设为已读</a>
-										@else($article->status != 'star')
+										@endif
+										@if($article->status != 'star')
 										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_star">加入收藏</a>
 										@endif
 									</div>
