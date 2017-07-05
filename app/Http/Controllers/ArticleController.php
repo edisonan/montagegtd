@@ -114,6 +114,25 @@ class ArticleController extends Controller
     	}
     }
     
+    public function read(Request $request,Article  $article)
+    {
+    	$this->authorize('destroy', $article);
+    
+    	if(in_array($request->status,array('read','unread'))){
+    		$article->status = 'read';
+    		$article->update();
+    	}
+    	 
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE,$article);
+    		return response($resp);
+    	} else {
+    		return view('articles.view', [
+    				'article' => $article,
+    		]);
+    	}
+    }
+    
     /**
      * Destroy the given task.
      *

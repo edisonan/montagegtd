@@ -1,6 +1,47 @@
 @extends('layouts.app')
 
 @section('content')
+<script type="text/javascript">
+$(document).ready(function () {
+
+	$("#set_star").click(function(){
+		article_id = $(this).attr('article_id');
+		$.get("{{ url('/article/star') }}"+"/"+article_id,{},function(result){
+			result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert("设置失败");
+			} else {
+				$(this).remove();
+			}
+		});
+	});
+
+	$("#set_read").click(function(){
+		article_id = $(this).attr('article_id');
+		$.get("{{ url('/article/read') }}"+"/"+article_id,{status:"read"},function(result){
+			result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert("设置失败");
+			} else {
+				$(this).remove();
+			}
+		});
+	});
+
+	$(".post .post-content").each(function(){
+		height=$(this).height();
+		if(height>80) {
+			$(this).css("height","180");
+			$(this).after("<p class=\"morecon\" >点开更多内容</p>");
+		}
+	});
+	
+	$(".morecon").click(function(){
+		$(this).parent().children("div.text").css("height","auto");
+		$(this).css("display","none");
+	});
+});
+</script>
     <div class="container">
     
     	
@@ -22,6 +63,7 @@
 			    						<li>
 			    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
 			    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+			    							<?php /**
 			    							[
 			    							@if($status == 'unread')
 			    								{{$feed->unread_count}}
@@ -29,10 +71,9 @@
 			    								{{$feed->read_count}}
 			    							@endif
 			    							]
+			    							*/?>
 			    							{{ $feed->feed_name,0,10 }}
 			    							</span>
-			    							
-			    							
 			    							</a>
 			    						</li>
 			    					@endforeach
@@ -101,6 +142,8 @@
 									</div>
 									<div class="post-permalink">
 										<a href="{{$article->url}}" target="_blank" class="btn btn-default">阅读全文</a>
+										<a href="javascript:void(0);" class = "set_read" article_id={{$article->id}} target="_blank" class="btn btn-default">设为已读</a>
+										<a href="javascript:void(0);" class = "set_star" article_id={{$article->id}} target="_blank" class="btn btn-default">加入收藏</a>
 									</div>
 									<footer class="post-footer clearfix"></footer>
 								</article>

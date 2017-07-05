@@ -77,6 +77,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/article', 'ArticleController@store');
     Route::get('/article/view/{article}', 'ArticleController@view');
     Route::get('/article/star/{article}', 'ArticleController@star');
+    Route::get('/article/read/{article}', 'ArticleController@read');
     Route::delete('/article/{article}', 'ArticleController@destroy');
     
     Route::get('/pomos', 'PomoController@index');
