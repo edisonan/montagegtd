@@ -7,7 +7,6 @@ include 'simple_html_dom.php';
 class SpideUtil{
 	
 	public function processFeed($feed) {
-		echo 123;
 		$result = $this->request($feed['url']);
 		if(empty($result)){
 			return false;
@@ -26,7 +25,7 @@ class SpideUtil{
 				$article = new Article();
 				$article->feed_id = $feed->id;
 				$article->user_id = $feed->user_id;
-				$article->status = 1;
+				$article->status = 'unread';
 				$article->url = $item['url'];
 				$article->subject = $item['subject'];
 				$article->published = $item['published'];
