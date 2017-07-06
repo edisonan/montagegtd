@@ -57,11 +57,14 @@ class MindController extends Controller
     public function store(Request $request)
     {
     	$is_root = 1;
+    	$parent_mind_id = 0;
+    	
     	if($request->has('parent_mind_id')){
     		$parentMind = Mind::where('id',$request->parent_mind_id)->where('user_id',$request->user()->id)->first();
     		if(empty($parentMind)){
     			redirect('/minds');
     		}
+    		$parent_mind_id = $request->parent_mind_id;
     		$is_root = 0;
     	}
     	
@@ -69,16 +72,20 @@ class MindController extends Controller
             'name' => 'required',
         ]);
         
-        $ret = $request->user()->minds()->create([
+        $mind = $request->user()->minds()->create([
             'name' => htmlspecialchars($request->name),
+            'parent_mind_id' => $parent_mind_id,
         	'is_root' => $is_root,
         ]);
         
         if ($request->ajax() || $request->wantsJson()) {
-        	$resp = $this->responseJson(self::OK_CODE);
+        	$resp = $this->responseJson(self::OK_CODE,array(
+        			'id'=>$mind->id,
+        			'name'=>$mind->name
+        	));
         	return response($resp);
         } else {
-        	return redirect('/minds');
+        	return redirect('/mind/'.$mind->id);
         }
     }
 
@@ -93,7 +100,7 @@ class MindController extends Controller
     {
         $this->authorize('destroy', $mind);
 
-        $mind->delete();
+        $this->removeMind($mind);
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
@@ -101,6 +108,21 @@ class MindController extends Controller
         } else {
         	return redirect('/minds');
         }
+    }
+    
+    public function update(Request $request, Mind $mind)
+    {
+    	$this->authorize('destroy', $mind);
+    
+    	$mind->name = $request->name;
+    	$mind->update();
+    
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/minds');
+    	}
     }
     
     public function view(Request $request, Mind $mind)
@@ -128,15 +150,25 @@ class MindController extends Controller
     	}
     }
     
-    public function getNodeTreeData($mind){
+    public function getNodeTreeData($mind , $level=0){
     	$data = array();
     	$data['id'] = $mind->id;
     	$data['topic'] = $mind->name;
-    	if(count($mind->childrenMinds)){
+    	if(count($mind->childrenMinds) > 0){
     		foreach ($mind->childrenMinds as $childMind){
-    			$data['children'][] = $this->getNodeTreeData($childMind);
+    			$data['children'][] = $this->getNodeTreeData($childMind, $level+1);
     		}
     	}
     	return $data;
+    }
+    
+    public function removeMind($mind){
+    	if(count($mind->childrenMinds) != 0){
+    		foreach ($mind->childrenMinds as $childMind){
+    			$this->removeMind($childMind);
+    		}
+    	}
+    	$mind->delete();
+    	return true;
     }
 }

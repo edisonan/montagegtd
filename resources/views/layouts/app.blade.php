@@ -58,7 +58,8 @@
                     <!-- Authentication Links -->
                     <li><a href="{{ url('/') }}">做番茄！</a></li>
                     <li><a href="{{ url('/notes') }}">记想法！</a></li>
-                    <li><a href="{{ url('articles') }}">去阅读！</a></li>
+                    <li><a href="{{ url('/articles') }}">去阅读！</a></li>
+                    <li><a href="{{ url('/minds') }}">思维导图！</a></li>
                     
                     @if (Auth::guest())
                         <li><a href="{{ url('/login') }}">登录</a></li>

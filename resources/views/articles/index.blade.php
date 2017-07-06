@@ -1,9 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+        .lazy{width:100%;height:0;background-size:100%;}
+</style>
+
+<script src="/js/lazyload.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+  $(function() {
+     // $("img.lazy").lazyload({
+     //  'load':function(){alert(1)},
+     //  'appear':function(){alert(2)}
+     // });
+	//lazy img
+	$("img.lazy").lazyload();
+  });
+</script>
 <script type="text/javascript">
 $(document).ready(function () {
-
+	
 	$(".set_star").click(function(){
 		article_id = $(this).attr('article_id');
 		$.get("{{ url('/article/star') }}"+"/"+article_id,{},function(result){
@@ -120,7 +135,10 @@ $(document).ready(function () {
 	                    		@foreach ($articles as $article)
 	                            <article class="post">
 									<div class="post-head">
-										<h1 class="post-title"><a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a></h1>
+										<h1 class="post-title">
+											<a href="{{ $article->url }}">[原文]</a>
+											<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
+										</h1>
 										<div class="post-meta">
 											<span class="author">
 												来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
