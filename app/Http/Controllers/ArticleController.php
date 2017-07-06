@@ -46,15 +46,19 @@ class ArticleController extends Controller
      */
     public function index(Request $request)
     {
+    	$page_params = array();
+    	
     	$categorys = $this->categorys->forUser($request->user());
     	if($request->has('status')){
     		$status = $request->status;
     	} else {
     		$status = 'unread';
     	}
+    	$page_params['status'] = $status;
     	
     	if($request->has('feed_id')){
     		$articles = $this->articles->forUserByStatusFeedId($request->user(), $status, $request->feed_id,$need_page=true);
+    		$page_params['feed_id'] = $request->feed_id;
     	} else {
     		$articles = $this->articles->forUserByStatus($request->user(), $status,$need_page=true);
     	}
@@ -69,6 +73,7 @@ class ArticleController extends Controller
             'categorys' => $categorys,
         	'articles' => $articles,
         	'status' => $status,
+        	'page_params' => $page_params,
         	'recommend_feeds' => $recommend_feeds,
         ]);
     }

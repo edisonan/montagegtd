@@ -171,7 +171,7 @@ $(document).ready(function () {
 									<footer class="post-footer clearfix"></footer>
 								</article>
 								@endforeach
-                        		{!! $articles->links() !!}
+                        		{!! $articles->appends($page_params)->links() !!}
                         @else
                         	<hr></hr>
                         	<div class="col-sm-offset-0 col-sm-12" style="    padding: 10px;">
