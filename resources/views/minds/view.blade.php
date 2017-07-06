@@ -29,12 +29,30 @@ $(document).ready(function () {
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	想法-{{$mind->name}} 
-                    	<button onclick="add_node();">add node</button>
-                    	<button onclick="modify_node();">modify node</button>
-                    	<button onclick="show_selected();">get the selected</button>
-                    	<button onclick="remove_node();">remove node</button>
-                    	<button onclick="toggle();">toggle node</button>
-                    	<button onclick="screen_shot();">screen shot</button>
+                    	<button class="btn-primary" onclick="add_node();">
+	                    	<span  class="glyphicon glyphicon-file"></span>
+	                    	<span>add node</span>
+                    	</button>
+                    	<button class="btn-primary" onclick="modify_node();">
+	                    	<span  class="glyphicon glyphicon-pencil"></span>
+	                    	<span>modify node</span>
+                    	</button>
+                    	<button class="btn-primary" onclick="show_selected();">
+	                    	<span  class="glyphicon glyphicon-search"></span>
+	                    	<span>get the selected</span>
+                    	</button>
+                    	<button class="btn-primary" onclick="remove_node();">
+	                    	<span  class="glyphicon glyphicon-remove"></span>
+	                    	<span>remove node</span>
+                    	</button>
+                    	<button class="btn-primary" onclick="toggle();">
+	                    	<span  class="glyphicon glyphicon-fast-forward"></span>
+	                    	<span>toggle node</span>
+                    	</button>
+                    	<button class="btn-primary" onclick="screen_shot();">
+	                    	<span  class="glyphicon glyphicon-camera"></span>
+	                    	<span>screen shot</span>
+                    	</button>
                 </div>
 
                 <div class="panel-body">
@@ -67,9 +85,8 @@ $(document).ready(function () {
             pspace:13           // 节点收缩/展开控制器的尺寸
         },
         shortcut:{
-            enable:true,        // 是否启用快捷键
+            enable:false,        // 是否启用快捷键
             handles:{
-//             	delnode
             },         // 命名的快捷键事件处理器
             mapping:{           // 快捷键映射
                 addchild   : 45,    // <Insert>
@@ -118,56 +135,30 @@ $(document).ready(function () {
     		});
         }
 
-//         //开始写入
-//         task_token = "{{ csrf_token() }}";
-
-//         //执行移除
-//         $.ajax({
-// 		    url: "{{ url('mind') }}",
-// 		    type: 'POST',
-// 		    data: {_token:task_token,name:"New Node",parent_mind_id:selected_id},
-// 		    success: function(result) {
-// 		    	result_arr = JSON.parse(result);
-// 				if(result_arr.code != 9999){
-// 					alert('处理失败，请稍后再试');
-					
-// 				} else {
-// 					var nodeid = result_arr['result']['id'];
-// // 					var topic = result_arr['result']['name'];
-// 					var topic = "New Node";
-					
-// 					console.log(result_arr);
-					
-// 			        var node = _jm.add_node(selected_node, nodeid, topic);
-// 				}
-// 		    }
-// 		});
-
-//         var nodeid = jsMind.util.uuid.newid();
-//         var topic = '* Node_'+nodeid.substr(0,5)+' *';
-//         var node = _jm.add_node(selected_node, nodeid, topic);
     }
 
     function remove_node(){
         var selected_id = get_selected_nodeid();
         if(!selected_id){prompt_info('please select a node first.');return;}
 
-        task_token = "{{ csrf_token() }}";
+        if(confirm("确认删除这个节点和子节点?")){
+        	task_token = "{{ csrf_token() }}";
 
-        //执行移除
-        $.ajax({
-		    url: "{{ url('mind') }}"+"/"+selected_id,
-		    type: 'DELETE',
-		    data: {_token:task_token},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
-				if(result_arr.code != 9999){
-					alert('处理失败，请稍后再试');
-				} else {
-					_jm.remove_node(selected_id);
-				}
-		    }
-		});
+            //执行移除
+            $.ajax({
+    		    url: "{{ url('mind') }}"+"/"+selected_id,
+    		    type: 'DELETE',
+    		    data: {_token:task_token},
+    		    success: function(result) {
+    		    	result_arr = JSON.parse(result);
+    				if(result_arr.code != 9999){
+    					alert('处理失败，请稍后再试');
+    				} else {
+    					_jm.remove_node(selected_id);
+    				}
+    		    }
+    		});
+        }
     }
 
     function toggle(){
