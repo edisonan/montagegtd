@@ -17,6 +17,7 @@ class SpideUtil{
 		if(empty($list)){
 			return false;
 		}
+		print_r($list);
 		foreach ($list as $item){
 			$article = Article::where('feed_id',$feed->id)->where('user_id',$feed->user_id)->where('url',$item['url'])->first();
 			if(empty($article)){
@@ -37,6 +38,7 @@ class SpideUtil{
 					continue;
 				}
 				$params = $this->getContent($result,$feed->type);
+				print_r($params);
 				if(empty($params)){
 					continue;
 				}

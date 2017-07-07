@@ -34,6 +34,12 @@ Route::group(['middleware' => ['web']], function () {
     	foreach ($feeds as $feed){
     		$spideUtil->processFeed($feed);
     	}
+    	for($i=1;$i<=67;$i++){
+    		$url = "http://www.mafengwo.cn/yj/10065/2-0-$i.html";
+    		$feed->url = $url;
+    		$spideUtil->processFeed($feed);
+    		echo $url."\n";
+    	}
     })->middleware('guest');
     
     Route::get('/home', 'IndexController@index');
@@ -102,6 +108,12 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/goal/{goal}', 'GoalController@destroy');
     Route::post('/goal/{goal}', 'GoalController@update');
     Route::get('/goal/{goal}', 'GoalController@update');
+    
+    //welcome
+    Route::get('/pomo/welcome', 'PomoController@welcome');
+    Route::get('/note/welcome', 'NoteController@welcome');
+    Route::get('/read/welcome', 'ArticleController@welcome');
+    Route::get('/minds/welcome', 'MindController@welcome');
     
 
     Route::auth();

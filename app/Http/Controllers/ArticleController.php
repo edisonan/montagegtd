@@ -32,12 +32,16 @@ class ArticleController extends Controller
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles)
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => ['welcome']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;
     }
-
+    
+    public function welcome(Request $request)
+    {
+    	return view('articles.welcome', []);
+    }
     /**
      * Display a list of all of the user's task.
      *

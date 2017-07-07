@@ -27,8 +27,13 @@ class PomoController extends Controller
      */
     public function __construct(PomoRepository $pomos)
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => ['welcome']]);
         $this->pomos = $pomos;
+    }
+    
+    public function welcome(Request $request)
+    {
+    	return view('pomos.welcome', []);
     }
 
     /**

@@ -31,10 +31,15 @@ class NoteController extends Controller
      */
     public function __construct(NoteRepository $notes, TagRepository $tags)
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => ['welcome']]);
 
         $this->notes = $notes;
         $this->tags = $tags;
+    }
+    
+    public function welcome(Request $request)
+    {
+    	return view('notes.welcome', []);
     }
 
     /**

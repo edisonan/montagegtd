@@ -28,9 +28,14 @@ class MindController extends Controller
      */
     public function __construct(MindRepository $minds)
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => ['welcome']]);
 
         $this->minds = $minds;
+    }
+    
+    public function welcome(Request $request)
+    {
+    	return view('minds.welcome', []);
     }
 
     /**

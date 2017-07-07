@@ -53,7 +53,7 @@ $(document).ready(function () {
                     @if (count($minds) > 0)
                     <table class="table table-striped task-table">
                             <thead>
-                                <th>思维列表</th>
+                                <th>想法</th>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>
                             </thead>

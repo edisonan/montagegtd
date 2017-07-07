@@ -8,10 +8,6 @@
 <script src="/js/lazyload.min.js"></script>
 <script type="text/javascript" charset="utf-8">
   $(function() {
-     // $("img.lazy").lazyload({
-     //  'load':function(){alert(1)},
-     //  'appear':function(){alert(2)}
-     // });
 	//lazy img
 	$("img.lazy").lazyload();
   });
@@ -60,7 +56,6 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-    	
     	<div class="col-sm-offset-0 col-sm-3">
     		<div class="panel panel-default">
                 <div class="panel-heading">
@@ -113,7 +108,7 @@ $(document).ready(function () {
                     	@endif
                     	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
                     	<div style="float:right">
-                    		<a href="{{ url('feed/checkNewFeed')}}">[更新?]</a>
+                    		<a href="{{ url('feed/checkNewFeed')}}">更新?</a>
                     		<a href="{{ url('categorys') }}" target="_blank">[分类管理]</a>
                     		<a href="{{ url('feeds')}}">[订阅管理]</a>
                     	</div>
