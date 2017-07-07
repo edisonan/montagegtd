@@ -16,7 +16,7 @@
                 <div class="panel-body">
                 	<div style="margin-bottom: 30px;margin-top: 10px;">
                 		<p>
-                			<b>思维导图</b>是Montage GTD的一项子栏目，这里通过思维导图来总结你的每一个想法，发散思维，认真思考每一个想法！
+                			<b>思维导图</b>是Montage GTD的一项子栏目，这里通过思维导图来总结你的每一个想法，发散思维，认真思考每一个想法！<a href="{{url('/login')}}">马上去体验！</a>
                 		</p>
                 	</div>
 					<img alt="" src="/img/mind.png" class="col-sm-offset-1 col-sm-10">

@@ -9,7 +9,7 @@
         <h3 style="padding-bottom: 20px;">Montage GTD</h3>
         <p class="lead"  style="padding-bottom: 100px;">专业GTD工具，在这里高效完成每一件事情，记录每一个想法，利用碎片化时间，提升一切内容。</p>
         <p>
-	        <a class="btn btn-lg btn-default" href="#" role="button">现在就开始吧</a>
+	        <a class="btn btn-lg btn-default" href="{{url('/login')}}" role="button">现在就开始吧</a>
         </p>
       </div>
       
