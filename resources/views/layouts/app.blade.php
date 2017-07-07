@@ -5,7 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>蒙太奇-专业GTD，剪辑你自己的生活</title>
+    <title>@yield('title','Montage GTD - 高效你的生活')</title>
+    <meta name="description" content="@yield('description')">
+    <meta name="keywords" content="Montage GTD,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
 
     <!-- Fonts -->
     <link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
@@ -27,6 +29,7 @@
         }
     </style>
 </head>
+
 <body id="app-layout">
     <nav class="navbar navbar-default">
         <div class="container">
@@ -42,10 +45,9 @@
 
                 <!-- Branding Image -->
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    	蒙太奇
+                		<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
+                    	Montage GTD
                 </a>
-                
-                
             </div>
 
             <div class="collapse navbar-collapse" id="app-navbar-collapse">
@@ -57,15 +59,15 @@
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Authentication Links -->
                     @if (Auth::guest())
-                    <li><a href="{{ url('/pomo/welcome') }}">做番茄！</a></li>
-                    <li><a href="{{ url('/note/welcome') }}">记想法！</a></li>
-                    <li><a href="{{ url('/read/welcome') }}">去阅读！</a></li>
-                    <li><a href="{{ url('/minds/welcome') }}">思维导图！</a></li>
+                    <li><a href="{{ url('/pomo/welcome') }}">做番茄</a></li>
+                    <li><a href="{{ url('/note/welcome') }}">记想法</a></li>
+                    <li><a href="{{ url('/read/welcome') }}">去阅读</a></li>
+                    <li><a href="{{ url('/minds/welcome') }}">思维导图</a></li>
                     @else
-                    <li><a href="{{ url('/') }}">做番茄！</a></li>
-                    <li><a href="{{ url('/notes') }}">记想法！</a></li>
-                    <li><a href="{{ url('/articles') }}">去阅读！</a></li>
-                    <li><a href="{{ url('/minds') }}">思维导图！</a></li>
+                    <li><a href="{{ url('/') }}">做番茄</a></li>
+                    <li><a href="{{ url('/notes') }}">记想法</a></li>
+                    <li><a href="{{ url('/articles') }}">去阅读</a></li>
+                    <li><a href="{{ url('/minds') }}">思维导图</a></li>
                     @endif
                     
                     @if (Auth::guest())
