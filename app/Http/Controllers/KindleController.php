@@ -62,7 +62,7 @@ class KindleController extends Controller
      */
     public function test(Request $request)
     {
-    	$phindle = new Develpr\Phindle\Phindle(array(
+    	$phindle = new \Develpr\Phindle\Phindle(array(
     			'title' => "Chaos Theory: Randomness is Beautiful",
     			'publisher' => "Develpr",
     			'creator' => 'Kevin Mitchell',
@@ -82,7 +82,7 @@ class KindleController extends Controller
     		/** @var Illuminate\View\View $html */
     		$html = 'okok'.$i;
     		$title = 'titletile'.$i;
-    		$content = new Develpr\Phindle\Content();
+    		$content = new \Develpr\Phindle\Content();
     		$content->setHtml($html);
     		$content->setTitle($title);
     		$phindle->addContent($content);
