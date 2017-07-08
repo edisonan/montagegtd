@@ -19,19 +19,25 @@ $(document).ready(function () {
 
                 <div class="panel-body">
                 	<p>
-					1、中亚用户
+					1、中亚用户,点击<a href="https://www.amazon.cn/gp/digital/fiona/manage?ie=UTF8&ref_=ya_myk&#manageDevices">这里</a>配置
+					<!-- 
+					<img alt="" src="">
+					 -->
 					</p>
 					
 					<p>
-					2、美亚用户
+					2、美亚用户 点击<a href="https://www.amazon.com/mn/dcw/myx.html#/home/devices/1">这里</a>配置
+					<!-- 
+					<img alt="" src="">
+					 -->
 					</p>
 					
 					<p>
-					3、设置推送邮箱，添加到信任列表
+					3、添加 noreply@congcong.us 到信任列表，根据亚马逊生成的邮箱在页面下面设置
 					</p>
 					
 					<p>
-					4、发送测试  
+					4、点击<a href="{{url('kindle/test')}}">测试链接</a>发送请求,查看kindle是否收到测试文件
 					<?php ?>             
 					</p>
                 </div>
