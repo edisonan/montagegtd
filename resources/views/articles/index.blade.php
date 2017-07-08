@@ -108,7 +108,7 @@ $(document).ready(function () {
                     	@endif
                     	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
                     	<div style="float:right">
-                    		<a href="{{ url('feed/checkNewFeed')}}">更新?</a>
+                    		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
                     		<a href="{{ url('categorys') }}" target="_blank">[分类管理]</a>
                     		<a href="{{ url('feeds')}}">[订阅管理]</a>
                     	</div>
@@ -154,7 +154,7 @@ $(document).ready(function () {
 										<p><?php echo App\Http\Utils\CommonUtil::removeXSS($article->content); ?></p>
 										<p></p>
 									</div>
-									<div class="post-permalink">
+									<div class="post-permalink text-right">
 										@if($article->status == 'unread')
 										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_read">设为已读</a>
 										@endif
