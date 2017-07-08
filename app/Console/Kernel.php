@@ -73,7 +73,7 @@ class Kernel extends ConsoleKernel
 	    		file_put_contents(env('CRON_LOG'),$result);
     		}
     		
-    	})->daily()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	})->daily();
     	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
@@ -89,7 +89,7 @@ class Kernel extends ConsoleKernel
 	    			$m->to($user->email, $user->name)->subject('Task Reminder for :'.$task->name);
 	    		});
     		}
-    	})->everyMinute()->appendOutputTo(env('CRON_LOG'));
+    	})->everyMinute();
     	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
@@ -153,7 +153,7 @@ class Kernel extends ConsoleKernel
     			\Log::info($count_info['user_id'].$count_info['total']);
     		}
     	
-    	})->dailyAt('00:30')->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	})->dailyAt('00:30');
     	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
@@ -164,7 +164,7 @@ class Kernel extends ConsoleKernel
     			$feedRepository->checkFeed($feed);
     			\Log::info('process feed ! url:'.$feed->url);
     		}
-    	})->everyTenMinutes()->appendOutputTo(env('CRON_LOG'))->emailOutputTo(env('CRON_EMAIL'));
+    	})->everyTenMinutes();
     	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
