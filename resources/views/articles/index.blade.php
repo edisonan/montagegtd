@@ -44,7 +44,7 @@ $(document).ready(function () {
 		if(height>80) {
 			$(this).css("height","180");
 			$(this).css("overflow","hidden");
-			$(this).parent.children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer; font-size: 2em; \"><img style=\"width:15px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
+			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">点开更多内容</p>");
 			//$(this).parent().children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer;  \"><img style=\"width:20px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
 		}
 	});
