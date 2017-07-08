@@ -44,12 +44,14 @@ $(document).ready(function () {
 		if(height>80) {
 			$(this).css("height","180");
 			$(this).css("overflow","hidden");
-			$(this).parent().children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer;  \"><img style=\"width:20px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
+			$(this).parent.children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer; font-size: 2em; \"><img style=\"width:15px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
+			//$(this).parent().children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer;  \"><img style=\"width:20px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
 		}
 	});
 	
 	$(".morecon").click(function(){
-		$(this).parent().parent().children("div.post-content").css("height","auto");
+		$(this).parent().children("div.post-content").css("height","auto");
+// 		$(this).parent().parent().children("div.post-content").css("height","auto");
 		$(this).css("display","none");
 	});
 });

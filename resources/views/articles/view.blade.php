@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+<script src="/js/lazyload.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+  $(function() {
+	//lazy img
+	$("img.lazy").lazyload();
+  });
+</script>
     <div class="container">
     
         <div class="col-sm-offset-2 col-sm-8">
