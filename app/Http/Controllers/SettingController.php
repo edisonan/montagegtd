@@ -75,13 +75,14 @@ class SettingController extends Controller
     		if(!empty($setting)){
     			echo 'error';exit;
     		}
+    		
     		$setting = new Setting();
     		$setting->user_id = $request->user()->id;
+    		$setting->save($request->all());
     	} else {
     		$this->authorize('destroy', $setting);
+    		$setting->update($request->all());
     	}
-    	
-    	$setting->save($request->all());
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
