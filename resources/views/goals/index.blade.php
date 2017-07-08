@@ -62,7 +62,7 @@
                                                 {{ method_field('DELETE') }}
 
 												<input type="hidden" name="type"  value="delete"/> 
-                                                <button type="submit" id="delete-goal-{{ $goal->id }}" class="btn btn-danger">
+                                                <button type="submit" id="delete-goal-{{ $goal->id }}" class="btn btn-link">
                                                     <img alt=""     style="width: 15px;" src="/img/icon/delete.png">
                                                 </button>
                                             </form>
