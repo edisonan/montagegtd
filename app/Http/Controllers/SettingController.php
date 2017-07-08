@@ -43,7 +43,7 @@ class SettingController extends Controller
     	
     	$setting = $this->settings->forUser($request->user());
     	
-        return view('articles.index', [
+        return view('settings.index', [
             'setting' => $setting,
         ]);
     }
