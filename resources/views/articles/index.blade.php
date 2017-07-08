@@ -44,12 +44,12 @@ $(document).ready(function () {
 		if(height>80) {
 			$(this).css("height","180");
 			$(this).css("overflow","hidden");
-			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">点开更多内容</p>");
+			$(this).parent.children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer; font-size: 2em; \"><img style=\"width:15px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
 		}
 	});
 	
 	$(".morecon").click(function(){
-		$(this).parent().children("div.post-content").css("height","auto");
+		$(this).parent().parent().children("div.post-content").last().css("height","auto");
 		$(this).css("display","none");
 	});
 });
@@ -155,7 +155,6 @@ $(document).ready(function () {
 										<p></p>
 									</div>
 									<div class="post-permalink">
-										<a href="{{$article->url}}" target="_blank" class="btn btn-default">阅读全文</a>
 										@if($article->status == 'unread')
 										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_read">设为已读</a>
 										@endif
