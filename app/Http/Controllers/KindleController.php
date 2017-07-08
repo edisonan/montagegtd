@@ -107,7 +107,7 @@ class KindleController extends Controller
 //     	header("Content-disposition: attachment; filename=\"Chaos_Theory_Randomness_is_Beautiful.mobi\"");
 //     	readfile($path);
     	
-    	\Mail::send('emails.reminder', ['user'=>$user,'setting'=>$setting], function ($m) use ($user,$setting) {
+    	\Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting], function ($m) use ($user,$setting) {
     		$m->from('kindle@congcong.us', 'task.congcong.us');
     		$m->to($setting->kindle_email, $user->name)->subject('Send To Kindle');
     		$m->attach($path);
