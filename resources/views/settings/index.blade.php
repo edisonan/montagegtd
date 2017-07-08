@@ -30,7 +30,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">日目标</label>
 								
                             <div class="col-sm-8">
-	                                <input type="text" name="url" id="url" class="form-control" value="{{ empty($setting->day_pomo_goal)?8:$setting->day_pomo_goal }}">
+	                                <input type="text" name="day_pomo_goal" id="day_pomo_goal" class="form-control" value="{{ empty($setting->day_pomo_goal)?8:$setting->day_pomo_goal }}">
                             </div>
                         </div>
                         
@@ -38,7 +38,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">周目标</label>
 								
                             <div class="col-sm-8">
-	                                <input type="text" name="url" id="url" class="form-control" value="{{ empty($setting->week_pomo_goal)?40:$setting->week_pomo_goal }}">
+	                                <input type="text" name="week_pomo_goal" id="week_pomo_goal" class="form-control" value="{{ empty($setting->week_pomo_goal)?40:$setting->week_pomo_goal }}">
                             </div>
                         </div>
                         
@@ -46,7 +46,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">月目标</label>
 								
                             <div class="col-sm-8">
-	                                <input type="text" name="url" id="url" class="form-control" value="{{ empty($setting->month_pomo_goal)?160:$setting->month_pomo_goal }}">
+	                                <input type="text" name="month_pomo_goal" id="month_pomo_goal" class="form-control" value="{{ empty($setting->month_pomo_goal)?160:$setting->month_pomo_goal }}">
                             </div>
                         </div>
                         
@@ -54,7 +54,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">番茄时间(10-60min 标准:25min)</label>
                             
                             <div class="col-sm-8">
-                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ empty($setting->pomo_time)?25:$setting->pomo_time }}">
+                            	<input type="text" name="pomo_time" id="pomo_time" class="form-control" value="{{ empty($setting->pomo_time)?25:$setting->pomo_time }}">
                             </div>
 							
                         </div>
@@ -63,7 +63,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">番茄休息时间(1-10min 标准:5min)</label>
                             
                             <div class="col-sm-8">
-                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ empty($setting->pomo_rest_time)?5:$setting->pomo_rest_time }}">
+                            	<input type="text" name="pomo_rest_time" id="pomo_rest_time" class="form-control" value="{{ empty($setting->pomo_rest_time)?5:$setting->pomo_rest_time }}">
                             </div>
 							
                         </div>
@@ -72,7 +72,7 @@ $(document).ready(function () {
                             <label for="task-name" class="col-sm-3 control-label">Kindle订阅地址</label>
                             
                             <div class="col-sm-8">
-                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ $setting->kindle_email }}">
+                            	<input type="text" name="kindle_email" id="kindle_email" class="form-control" value="{{ $setting->kindle_email }}">
                             </div>
 							
                         </div>
