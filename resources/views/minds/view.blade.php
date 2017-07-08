@@ -180,7 +180,7 @@ $(document).ready(function () {
     function show_selected(){
         var selected_node = _jm.get_selected_node();
         if(!!selected_node){
-            prompt_info(selected_node.topic);
+            prompt_info('topic:'+selected_node.topic+',content:'+selected_node.data.content);
         }else{
             prompt_info('nothing');
         }
