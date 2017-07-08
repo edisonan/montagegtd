@@ -115,7 +115,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/read/welcome', 'ArticleController@welcome');
     Route::get('/minds/welcome', 'MindController@welcome');
     
-    Route::get('/minds/welcome', 'SettingController@index');
+    Route::get('/settings', 'SettingController@index');
     Route::post('/setting/{setting}', 'SettingController@update');
 
     Route::auth();
