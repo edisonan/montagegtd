@@ -9,6 +9,9 @@ use App\Http\Controllers\Controller;
 use App\Setting;
 use App\Repositories\SettingRepository;
 
+use Develpr\Phindle\Phindle;
+use Develpr\Phindle\Content;
+
 class KindleController extends Controller
 {
     /**
@@ -62,7 +65,7 @@ class KindleController extends Controller
      */
     public function test(Request $request)
     {
-    	$phindle = new \Develpr\Phindle\Phindle(array(
+    	$phindle = new Phindle(array(
     			'title' => "Chaos Theory: Randomness is Beautiful",
     			'publisher' => "Develpr",
     			'creator' => 'Kevin Mitchell',
@@ -82,7 +85,7 @@ class KindleController extends Controller
     		/** @var Illuminate\View\View $html */
     		$html = 'okok'.$i;
     		$title = 'titletile'.$i;
-    		$content = new \Develpr\Phindle\Content();
+    		$content = new Content();
     		$content->setHtml($html);
     		$content->setTitle($title);
     		$phindle->addContent($content);
