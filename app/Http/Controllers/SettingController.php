@@ -43,6 +43,9 @@ class SettingController extends Controller
     	
     	$setting = $this->settings->forUser($request->user());
     	
+    	if(empty($setting)){
+    		$setting = new Setting();
+    	}
         return view('settings.index', [
             'setting' => $setting,
         ]);
@@ -72,6 +75,7 @@ class SettingController extends Controller
     		if(!empty($setting)){
     			echo 'error';exit;
     		}
+    		$setting = new Setting();
     		$setting->user_id = $request->user()->id;
     	} else {
     		$this->authorize('destroy', $article);
