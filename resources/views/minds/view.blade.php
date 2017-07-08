@@ -250,6 +250,8 @@ $(document).ready(function () {
     				}
     		    }
     		});
+        } else {
+            alert('请先选中获取信息');
         }
     }
 </script>
