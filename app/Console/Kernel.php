@@ -158,7 +158,7 @@ class Kernel extends ConsoleKernel
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
     		
-    		$feeds = Feed::where('type',1)->get();
+    		$feeds = Feed::where('type',1)->where('status',1)->get();
     		$feedRepository = new FeedRepository();
     		foreach ($feeds as $feed){
     			$feedRepository->checkFeed($feed);
@@ -169,7 +169,7 @@ class Kernel extends ConsoleKernel
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
     	
-    		$feeds = Feed::where('type',2)->get();
+    		$feeds = Feed::where('type',2)->where('status',1)->get();
     		$spideUtil = new SpideUtil();
     		foreach ($feeds as $feed){
     			$spideUtil->processFeed($feed);
@@ -201,22 +201,33 @@ class Kernel extends ConsoleKernel
     			$now = date('Y-m-d H:i:s');
     			$start_time = date('Y-m-d H:i:s',strtotime($now)-86400);
     			
-    			$articles = Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(100)->get();
+    			$articles = Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(300)->get();
     			$feed_info = array();
+    			
+    			$chapter_count = 0;
+    			$article_count = 0;
+    			
     			foreach($articles as $article)
     			{
     				if(!isset($feed_info[$article->feed_id])){
+    					//文章数清零 章节数加1
+    					$article_count = 0;
+    					$chapter_count++;
+    					$feed_info[$article->feed_id] = $article->feed;
+    					
     					$content = new Content();
     					$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h2>'.$article->feed->feed_name.'</h2>'.$article->feed->feed_desc);
-    					$content->setTitle("订阅:".$article->feed->feed_name);
+    					$content->setTitle(chapter_count.' '.$article->feed->feed_name);
     					$phindle->addContent($content);
-    					
-    					$feed_info[$article->feed_id] = $article->feed;
     				}
+    				//文章数递增 大于20篇时不再执行
+    				if($article_count > 20) continue;
+    				$article_count++;
+    				
     				/** @var Illuminate\View\View $html */
     				$content = new Content();
     				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article->content);
-    				$content->setTitle($article->subject);
+    				$content->setTitle($chapter_count.'.'.$article_count.' '.$article->subject);
     				$content->setPosition($article->id);
     				$phindle->addContent($content);
     			}
@@ -227,13 +238,12 @@ class Kernel extends ConsoleKernel
     			$path = $phindle->getMobiPath();
     			
     			\Log::info('send to kindle:'.$user->id.'|'.count($articles).'|'.$path);
-    			 
     			\Mail::send('emails.kindle', ['setting'=>$setting,'path'=>$path], function ($m) use ($setting,$path) {
     				$m->to($setting->kindle_email, 'user')->subject('Send To Kindle');
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('22:30');
+    	})->dailyAt('22:46');
     }
     
      
