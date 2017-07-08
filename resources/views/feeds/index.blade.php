@@ -117,7 +117,6 @@ $(document).ready(function () {
                             <thead>
                                 <th>订阅列表</th>
                                 <th>&nbsp;</th>
-                                <th>&nbsp;</th>
                             </thead>
                             <tbody>
                                 @foreach ($feeds as $feed)
