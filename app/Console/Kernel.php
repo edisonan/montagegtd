@@ -250,8 +250,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-//     	})->dailyAt('01:34');
-    	})->everyMinute();
+    	})->dailyAt('18:00');
     }
     
      
