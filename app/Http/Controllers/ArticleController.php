@@ -12,6 +12,7 @@ use App\Repositories\CategoryRepository;
 use App\Article;
 use App\Repositories\ArticleRepository;
 use App\Feed;
+use DB;
 
 class ArticleController extends Controller
 {
