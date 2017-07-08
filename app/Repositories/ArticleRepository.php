@@ -29,7 +29,7 @@ class ArticleRepository
     public function forUserByStatus(User $user,string $status,$need_page=false)
     {
     	$article = Article::where('user_id', $user->id)
-		    	->where('status',$status);
+		    	->where('status',$status)->orderBy('published','desc');
     	
     	if($need_page){
     		return $article->paginate(10);
@@ -42,7 +42,7 @@ class ArticleRepository
     {
     	$article = Article::where('user_id', $user->id)
     	->where('status',$status)
-    	->where('feed_id',$feed_id);
+    	->where('feed_id',$feed_id)->orderBy('published','desc');
     	if($need_page){
     		return $article->paginate(10);
     	} else {

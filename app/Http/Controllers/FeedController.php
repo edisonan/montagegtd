@@ -119,7 +119,8 @@ class FeedController extends Controller
     {
         $this->authorize('destroy', $feed);
 
-        $feed->delete();
+        $feed->status = 2;
+        $feed->update();
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
