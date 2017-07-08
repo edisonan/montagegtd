@@ -42,6 +42,31 @@ Route::group(['middleware' => ['web']], function () {
     	}
     })->middleware('guest');
     
+    Route::get('/test2', function () {
+    			$articles = \App\Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(100)->get();
+    			$temp = array();
+    			$content = array();
+    			
+    			$chapter_count = 0;
+    			$article_count = 0;
+    			
+    			foreach($articles as $article)
+    			{
+    				if(!isset($temp[$article->feed_id])){
+    					$content[] = array('title'=>$chapter_count.' '.$article->feed->feed_name);
+    					
+    					$temp[$article->feed_id] = $article->feed_id;
+    					
+    					$chapter_count++;
+    					$article_count = 0;
+    				}
+    				$content[] = array('title'=>$chapter_count.' '.$article_count.$article->subject);
+    				
+    				$article_count++;
+    			}
+    			var_dump($content);
+    })->middleware('guest');
+    
     Route::get('/home', 'IndexController@index');
     Route::get('/index', 'IndexController@index');
     Route::get('/index/test', 'IndexController@test');
