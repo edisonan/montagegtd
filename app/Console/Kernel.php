@@ -227,13 +227,13 @@ class Kernel extends ConsoleKernel
     				
     				if($setting->with_image_push == 1){
     					$spideUtil = new SpideUtil();
-    					$content = $spideUtil->processKindleImgContent($article->content, config("app.storage_path").'/ebooks/temp');
+    					$article_content = $spideUtil->processKindleImgContent($article->content, config("app.storage_path").'/ebooks/temp');
     				} else {
-    					$content = preg_replace("#<img.*>#iUs", "", $article->content); //无图
+    					$article_content = preg_replace("#<img.*>#iUs", "", $article->content); //无图
     				}
     				/** @var Illuminate\View\View $html */
     				$content = new Content();
-    				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$content);
+    				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article_content);
     				$content->setTitle($chapter_count.'.'.$article_count.' '.$article->subject);
     				$content->setPosition($chapter_count*1000+$article_count);
     				$phindle->addContent($content);
@@ -250,7 +250,8 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('01:28');
+//     	})->dailyAt('01:34');
+    	})->everyMinute();
     }
     
      
