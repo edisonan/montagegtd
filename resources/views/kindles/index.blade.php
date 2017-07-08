@@ -20,9 +20,7 @@ $(document).ready(function () {
                 <div class="panel-body">
                 	<p>
 					1、中亚用户,点击<a href="https://www.amazon.cn/gp/digital/fiona/manage?ie=UTF8&ref_=ya_myk&#manageDevices">这里</a>配置
-					<!-- 
-					<img alt="" src="">
-					 -->
+					<img alt="" src="/img/kindle_amazon_cn.jpg">
 					</p>
 					
 					<p>
