@@ -366,8 +366,8 @@ $(document).ready(function () {
 
                             <div class="col-sm-6">
 	                            <select class="form-control" name="goal_id" style="display: -webkit-inline-box;width: 85%;">
+	                            	<option checked></option>
 		                              @foreach ($goals as $goal)
-		                              	<option checked></option>
 									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
 									  @endforeach
 								</select>

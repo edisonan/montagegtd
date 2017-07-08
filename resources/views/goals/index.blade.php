@@ -54,7 +54,7 @@
 
                                         <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
-                                            <a href="{{ url('goal/'.$goal->id)}}" style="color:blue">✎</span>
+                                            <a href="{{ url('goal/'.$goal->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
                                         </td>
                                         <td  width="10%"  align='right'>
                                             <form action="{{url('goal/' . $goal->id)}}" method="POST"  class=".form-inline">
@@ -63,7 +63,7 @@
 
 												<input type="hidden" name="type"  value="delete"/> 
                                                 <button type="submit" id="delete-goal-{{ $goal->id }}" class="btn btn-danger">
-                                                    <i class="fa fa-btn fa-trash"></i>
+                                                    <img alt=""     style="width: 15px;" src="/img/icon/delete.png">
                                                 </button>
                                             </form>
                                         </td>

@@ -202,7 +202,7 @@ function addContent($content){
 										</div>
 										<div class="col-sm-offset-0 col-sm-11">
 											<span class="author">
-												<a href="#" target="_blank">{{ $note->user->name }}</a>
+												<a href="#" target="_blank">{{ $note->user->name }}<img alt=""     style="width: 15px;" src="/img/icon/security.png"></a>
 											</span> 
 											<br/>
 											<time class="post-date" datetime="<?php echo $note->created_at;?>" title="<?php echo $note->created_at;?>"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></time>
@@ -230,7 +230,7 @@ function addContent($content){
                                                 {{ method_field('DELETE') }}
 
                                                 <button type="submit" id="delete-note-{{ $note->id }}" class="btn btn-link" title="删除!!!">
-                                                	<span style="color:red">×</span>
+                                                	<img alt=""     style="width: 15px;" src="/img/icon/pin.png">
                                                 </button>
                                             </form>
                                             @else
