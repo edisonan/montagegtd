@@ -1,0 +1,96 @@
+@extends('layouts.app')
+
+@section('content')
+<script type="text/javascript">
+$(document).ready(function () {
+
+	$("#check_url").click(function(){
+		
+	});
+});
+</script>
+    <div class="container">
+    
+        <div class="col-sm-offset-2 col-sm-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    	设置
+                </div>
+
+                <div class="panel-body">
+                    <!-- Display Validation Errors -->
+                    @include('common.errors')
+
+                    <!-- New Task Form -->
+                    <form action="{{ url('setting/'.$setting->id) }}" method="POST" class="form-horizontal">
+                        {{ csrf_field() }}
+
+                        <!-- Task Name -->
+                        <div class="form-group">
+                            <label for="task-name" class="col-sm-3 control-label">日目标</label>
+								
+                            <div class="col-sm-8">
+	                                <input type="text" name="url" id="url" class="form-control" value="{{ $setting->day_pomo_goal }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="task-name" class="col-sm-3 control-label">周目标</label>
+								
+                            <div class="col-sm-8">
+	                                <input type="text" name="url" id="url" class="form-control" value="{{ $setting->week_pomo_goal }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="task-name" class="col-sm-3 control-label">月目标</label>
+								
+                            <div class="col-sm-8">
+	                                <input type="text" name="url" id="url" class="form-control" value="{{ $setting->month_pomo_goal }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="task_form_div1" >
+                            <label for="task-name" class="col-sm-3 control-label">番茄时间</label>
+                            
+                            <div class="col-sm-8">
+                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ $setting->pomo_time }}">
+                            </div>
+							
+                        </div>
+                        
+                        <div class="form-group" id="task_form_div1" >
+                            <label for="task-name" class="col-sm-3 control-label">番茄休息时间</label>
+                            
+                            <div class="col-sm-8">
+                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ $setting->pomo_rest_time }}">
+                            </div>
+							
+                        </div>
+                        
+                        <div class="form-group" id="task_form_div1" >
+                            <label for="task-name" class="col-sm-3 control-label">Kindle订阅地址</label>
+                            
+                            <div class="col-sm-8">
+                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ $setting->kindle_email }}">
+                            </div>
+							
+                        </div>
+
+                        <!-- Add Task Button -->
+                        <div class="form-group">
+                            <div class="col-sm-offset-3 col-sm-6">
+                                <button type="submit" class="btn btn-default">
+                                    <i class="fa fa-btn fa-plus"></i>提交！
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    
+                </div>
+            </div>
+
+        </div>
+    </div>
+@endsection
