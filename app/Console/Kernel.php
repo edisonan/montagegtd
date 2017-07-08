@@ -201,13 +201,21 @@ class Kernel extends ConsoleKernel
     			$now = date('Y-m-d H:i:s');
     			$start_time = date('Y-m-d H:i:s',strtotime($now)-86400);
     			
-    			$articles = Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->limit(100)->get();
+    			$articles = Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(100)->get();
+    			$feed_info = array();
     			foreach($articles as $article)
     			{
+    				if(!isset($feed_info[$article->feed_id])){
+    					$content = new Content();
+    					$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h2>'.$article->feed->feed_name.'</h2>'.$article->feed->feed_desc);
+    					$content->setTitle($article->feed->feed_name);
+    					$phindle->addContent($content);
+    				}
     				/** @var Illuminate\View\View $html */
     				$content = new Content();
     				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article->content);
     				$content->setTitle($article->subject);
+    				$content->setPosition($article->id);
     				$phindle->addContent($content);
     			}
     			
@@ -223,7 +231,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('20:24');
+    	})->dailyAt('20:40');
     }
     
      
