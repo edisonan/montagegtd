@@ -410,7 +410,7 @@ $(document).ready(function () {
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
                                         	
-											<a href="javascript:void(0)" class="finish_task" task_type="finish" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}"><img alt=""     style="width: 15px;" src="/img/icon/success.png"></a>                                        	
+											<a href="javascript:void(0)" class="finish_task" task_type="finish" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}"><img alt=""     style="width: 15px;" src="/img/icon/unfinished_success.png"></a>                                        	
 											
 											@if(!empty($task->goal->name))
                                         	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
