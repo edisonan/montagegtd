@@ -243,7 +243,7 @@ function addContent($content){
                                             </form>
                                             @endif
 						  	</div>
-								<footer class="post-footer clearfix"></footer>
+								<footer class="post-footer clearfix" style="margin-top: 0px;"></footer>
 							</article>
 					  @endforeach
                     

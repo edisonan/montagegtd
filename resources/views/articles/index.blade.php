@@ -149,7 +149,7 @@ $(document).ready(function () {
 										</a>
 									</div>
 									@endif
-									<div class="post-content">
+									<div class="post-content" style="    margin: 5px 0;">
 										<p></p>
 										<p><?php echo App\Http\Utils\CommonUtil::removeXSS($article->content); ?></p>
 										<p></p>

@@ -410,7 +410,7 @@ $(document).ready(function () {
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
                                         	
-											<a href="javascript:void(0)" class="finish_task" task_type="finish" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}">☐</a>                                        	
+											<a href="javascript:void(0)" class="finish_task" task_type="finish" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}"><img alt=""     style="width: 15px;" src="/img/icon/success.png"></a>                                        	
 											
 											@if(!empty($task->goal->name))
                                         	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
@@ -423,8 +423,8 @@ $(document).ready(function () {
                                         <!-- Task Delete Button -->
                                         <td align='right'>
                                         	<div>
-                                        		<a href="javascript:void(0)" class="delete_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}" style="display: none"><img alt="" src="/img/icon/delete.png"></a> 
-                                        		<a href="javascript:void(0)" class="top_task" task_value="{{ $task->id }}" task_is_top="{{ $task->is_top }}" task_token="{{ csrf_token() }}" @if($task->is_top !=1) style="display: none"  @endif>📌</a> 
+                                        		<a href="javascript:void(0)" class="delete_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}" style="display: none"><img alt=""     style="width: 15px;" src="/img/icon/delete.png"></a> 
+                                        		<a href="javascript:void(0)" class="top_task" task_value="{{ $task->id }}" task_is_top="{{ $task->is_top }}" task_token="{{ csrf_token() }}" @if($task->is_top !=1) style="display: none"  @endif><img alt=""     style="width: 15px;" src="/img/icon/pin.png"></a> 
                                         	</div>
                                         </td>
                                     </tr>

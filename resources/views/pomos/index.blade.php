@@ -13,7 +13,7 @@
 		            @if (count($pomos) > 0)
                         <table class="table table-striped task-table">
                             <thead>
-                                <th>Pomo</th>
+                                <th>完成的工作番茄</th>
                                 <th>&nbsp;</th>
                             </thead>
                             <tbody>
@@ -28,7 +28,7 @@
                                                 {{ method_field('DELETE') }}
 
                                                 <button type="submit" id="delete-pomo-{{ $pomo->id }}" class="btn btn-link">
-                                                    x
+                                                    <img alt=""     style="width: 15px;" src="/img/icon/delete.png">
                                                 </button>
                                             </form>
                                         </td>

@@ -13,8 +13,8 @@
 			            @if (count($tasks) > 0)
                         <table class="table table-striped task-table">
                             <thead>
-                                <th>Task</th>
-                                <th>&nbsp;</th>
+                                <th>完成的待办事项</th>
+                                <th>完成时间</th>
                             </thead>
                             <tbody>
                                 @foreach ($tasks as $task)
@@ -36,7 +36,7 @@
                                         </td>
                                         
                                         <td  width="20%" align="right">
-                                        	{{ date('y-m-d H:i', strtotime($task->updated_at)) }}√
+                                        	{{ date('y-m-d H:i', strtotime($task->updated_at)) }}
                                         </td>
 
                                         <!-- Task Delete Button -->
