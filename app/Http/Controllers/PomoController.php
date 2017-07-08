@@ -104,7 +104,10 @@ class PomoController extends Controller
      */
     public function store(Request $request, Pomo $pomo)
     {
-    	if(time() > strtotime($pomo->created_at) + Pomo::DEFAULT_INTERVAL){
+    	$setting = $request->user()->setting;
+    	$pomo_time = isset($setting->pomo_time)&&!empty($setting->pomo_time)?$setting->pomo_time*60:Pomo::DEFAULT_INTERVAL;
+    	
+    	if(time() > strtotime($pomo->created_at) + $pomo_time){
 	        $this->validate($request, [
 	            'name' => 'required|max:255',
 	        ]);

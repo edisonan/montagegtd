@@ -53,11 +53,15 @@ class IndexController extends Controller
     	//1默认等待中 2进行中 3已经完成 4休息中 5休息结束
     	$runing_pomo_status = Pomo::STATUS_INIT;
     	$runing_pomo_remain = 0;
+    	
+    	$setting = $request->user()->setting;
+    	$pomo_time = isset($setting->pomo_time)&&!empty($setting->pomo_time)?$setting->pomo_time*60:Pomo::DEFAULT_INTERVAL;
+    	$pomo_rest_time = isset($setting->pomo_time)&&!empty($setting->pomo_rest_time)?$setting->pomo_rest_time*60:Pomo::DEFAULT_REST_INTERVAL;
     	 
     	$active_pomo = $this->pomos->forUserActivePomo($request->user());
     	if(!empty($active_pomo)){
     		$pomo_start_time = strtotime($active_pomo->created_at);
-    		$remain_time = $pomo_start_time + Pomo::DEFAULT_INTERVAL - time();
+    		$remain_time = $pomo_start_time + $pomo_time - time();
     		if($remain_time > 0){
     			$runing_pomo_status = Pomo::STATUS_PROCESSING;
     			$runing_pomo_remain = $remain_time;
@@ -67,7 +71,7 @@ class IndexController extends Controller
     	} else {
     		$rest_start_time = $request->session()->get('rest_start_time', 0);
     		if(!empty($rest_start_time)){
-    			$remain_time = $rest_start_time + Pomo::DEFAULT_REST_INTERVAL - time();
+    			$remain_time = $rest_start_time + $pomo_rest_time - time();
     			if($remain_time > 0){
     				$runing_pomo_status = Pomo::STATUS_RESTING;
     				$runing_pomo_remain = $remain_time;
