@@ -233,7 +233,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('22:28');
+    	})->dailyAt('22:30');
     }
     
      
