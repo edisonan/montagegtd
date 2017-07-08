@@ -208,8 +208,10 @@ class Kernel extends ConsoleKernel
     				if(!isset($feed_info[$article->feed_id])){
     					$content = new Content();
     					$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h2>'.$article->feed->feed_name.'</h2>'.$article->feed->feed_desc);
-    					$content->setTitle($article->feed->feed_name);
+    					$content->setTitle("订阅:".$article->feed->feed_name);
     					$phindle->addContent($content);
+    					
+    					$feed_info[$article->feed_id] = $article->feed;
     				}
     				/** @var Illuminate\View\View $html */
     				$content = new Content();
@@ -231,7 +233,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('20:40');
+    	})->dailyAt('22:28');
     }
     
      
