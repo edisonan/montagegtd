@@ -1,6 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
+<script type="text/javascript">
+$(document).ready(function () {
+
+	$(".delete_category").click(function(){
+		category_value = $(this).attr("category_value");
+		category_token = $(this).attr("category_token");
+		category_type = $(this).attr("category_type");
+
+		if (category_type == 'delete' && !confirm("确认要删除此分类咩？")) {
+			return false;
+		}
+		
+		$.ajax({
+		    url: "{{ url('category') }}"+"/"+category_value,
+		    type: 'DELETE',
+		    data: {type:category_type,_token:category_token},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$('#'+category_value).remove();
+				}
+		    }
+		});
+	});
+});
+</script>
     <div class="container">
     
         <div class="col-sm-offset-2 col-sm-8">
@@ -50,34 +78,21 @@
                             <thead>
                                 <th>分类列表</th>
                                 <th>&nbsp;</th>
-                                <th>&nbsp;</th>
                             </thead>
                             <tbody>
                                 @foreach ($categorys as $category)
-                                    <tr >
+                                    <tr id="{{$category->id}}">
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
                                         		{{ $category->name }}
                                         	</pre>
                                         </td>
 
-										<td  width="1"  align='right'>
-                                            <a href="{{ url('category/'.$category->id)}}" style="color:blue">✎</span>
-                                        </td>
-                                        <!-- Task Delete Button -->
                                         <td  width="1"  align='right'>
-                                            <form action="{{url('category/' . $category->id)}}" method="POST"  class=".form-inline">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-												<input type="hidden" name="type"  value="delete"/> 
-                                                <button type="submit" id="delete-task-{{ $category->id }}" class="btn btn-link" title="删除!!!">
-                                                	<!-- 
-                                                    <i class="fa fa-btn fa-trash"></i>
-                                                	 -->
-                                                	 <span style="color:red">×</span>
-                                                </button>
-                                            </form>
+	                                        <a href="{{ url('category/'.$category->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
+	                                        	<a href="javascript:void(0)" class="delete_category" task_type="delete" task_value="{{ $category->id }}" category_token="{{ csrf_token() }}"  style="cursor:pointer;">
+	                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+	                                        	</a> 
                                         </td>
                                     </tr>
                                 @endforeach

@@ -5,25 +5,25 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$(".delete_pomo").click(function(){
-		pomo_value = $(this).attr("pomo_value");
-		pomo_token = $(this).attr("pomo_token");
-		pomo_type = $(this).attr("pomo_type");
+	$(".delete_goal").click(function(){
+		goal_value = $(this).attr("goal_value");
+		goal_token = $(this).attr("goal_token");
+		goal_type = $(this).attr("goal_type");
 
-		if (pomo_type == 'delete' && !confirm("确认要删除此番茄咩？")) {
+		if (goal_type == 'delete' && !confirm("确认要删除此目标咩？")) {
 			return false;
 		}
 		
 		$.ajax({
-		    url: "{{ url('pomo') }}"+"/"+pomo_value,
+		    url: "{{ url('goal') }}"+"/"+goal_value,
 		    type: 'DELETE',
-		    data: {type:pomo_type,_token:pomo_token},
+		    data: {type:goal_type,_token:goal_token},
 		    success: function(result) {
 		    	result_arr = JSON.parse(result);
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
-					$('#'+pomo_value).remove();
+					$('#'+goal_value).remove();
 				}
 		    }
 		});
@@ -70,31 +70,21 @@ $(document).ready(function () {
                             <thead>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>
-                                <th>&nbsp;</th>
                             </thead>
                             <tbody>
                                 @foreach ($goals as $goal)
-                                    <tr>
+                                    <tr id="{{$goal->id}}">
                                         <td class="table-text"  width="80%">
                                         	<div class="preprepre">
                                         	{{ $goal->name }}
                                         	</pre>
                                         </td>
 
-                                        <!-- Task Delete Button -->
-                                        <td  width="1"  align='right'>
-                                            <a href="{{ url('goal/'.$goal->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
-                                        </td>
                                         <td  width="10%"  align='right'>
-                                            <form action="{{url('goal/' . $goal->id)}}" method="POST"  class=".form-inline">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-												<input type="hidden" name="type"  value="delete"/> 
-                                                <button type="submit" id="delete-goal-{{ $goal->id }}" class="btn btn-link">
-                                                    <img alt=""     style="width: 15px;" src="/img/icon/delete.png">
-                                                </button>
-                                            </form>
+                                        	<a href="{{ url('goal/'.$goal->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
+                                        	<a href="javascript:void(0)" class="delete_goal" task_type="delete" task_value="{{ $goal->id }}" goal_token="{{ csrf_token() }}"  style="cursor:pointer;">
+                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+                                        	</a> 
                                         </td>
                                     </tr>
                                 @endforeach

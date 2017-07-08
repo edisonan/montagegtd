@@ -20,8 +20,33 @@ $(document).ready(function () {
 			$("#processTips").text("处理完成");
 		});
 	});
+
+	$(".delete_feed").click(function(){
+		feed_value = $(this).attr("feed_value");
+		feed_token = $(this).attr("feed_token");
+		feed_type = $(this).attr("feed_type");
+
+		if (feed_type == 'delete' && !confirm("确认要删除此订阅咩？")) {
+			return false;
+		}
+		
+		$.ajax({
+		    url: "{{ url('feed') }}"+"/"+feed_value,
+		    type: 'DELETE',
+		    data: {type:feed_type,_token:feed_token},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$('#'+feed_value).remove();
+				}
+		    }
+		});
+	});
 });
 </script>
+
     <div class="container">
     
         <div class="col-sm-offset-2 col-sm-8">
@@ -96,7 +121,7 @@ $(document).ready(function () {
                             </thead>
                             <tbody>
                                 @foreach ($feeds as $feed)
-                                    <tr >
+                                    <tr id="{{$feed->id}}">
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
                                         	
@@ -110,23 +135,11 @@ $(document).ready(function () {
                                         </td>
 
 										<td  width="1"  align='right'>
-                                            <a href="{{ url('feed/'.$feed->id)}}" style="color:blue">✎</span>
-                                        </td>
+                                            <a href="{{ url('feed/'.$feed->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
                                         
-                                        <!-- Task Delete Button -->
-                                        <td  width="1"  align='right'>
-                                            <form action="{{url('feed/' . $feed->id)}}" method="POST"  class=".form-inline">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-												<input type="hidden" name="type"  value="delete"/> 
-                                                <button type="submit" id="delete-task-{{ $feed->id }}" class="btn btn-link" title="删除!!!">
-                                                	<!-- 
-                                                    <i class="fa fa-btn fa-trash"></i>
-                                                	 -->
-                                                	 <span style="color:red">×</span>
-                                                </button>
-                                            </form>
+                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" task_value="{{ $feed->id }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
+                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+                                        	</a> 
                                         </td>
                                     </tr>
                                 @endforeach
