@@ -105,6 +105,7 @@ $(document).ready(function () {
                     	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
                     	<div style="float:right">
                     		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
+                    		<a href="{{ url('kindles') }}" target="_blank">[Kindle订阅]</a>
                     		<a href="{{ url('categorys') }}" target="_blank">[分类管理]</a>
                     		<a href="{{ url('feeds')}}">[订阅管理]</a>
                     	</div>
