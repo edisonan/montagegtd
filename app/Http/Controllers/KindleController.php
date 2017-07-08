@@ -108,7 +108,7 @@ class KindleController extends Controller
 //     	readfile($path);
     	
     	\Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting,'path'=>$path], function ($m) use ($user,$setting,$path) {
-    		$m->from('kindle@congcong.us', 'task.congcong.us');
+//     		$m->from('kindle@congcong.us', 'task.congcong.us');
     		$m->to($setting->kindle_email, $user->name)->subject('Send To Kindle');
     		$m->attach($path);
     	});
