@@ -131,14 +131,15 @@ class SpideUtil{
 	{
 		$filename = get_image_filename($url, $store_dir);
 		if (file_exists($filename)) return; //存在时不下载
-		$curl = new Curl\Curl();
-		$curl->setHeader('X-Requested-With', 'XMLHttpRequest');
-		$curl->setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:40.0) Gecko/20100101 Firefox/40.0');
-		$curl->setHeader('Accept-Language', 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3');
-		$curl->setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
+// 		$curl = new Curl\Curl();
+// 		$curl->setHeader('X-Requested-With', 'XMLHttpRequest');
+// 		$curl->setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:40.0) Gecko/20100101 Firefox/40.0');
+// 		$curl->setHeader('Accept-Language', 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3');
+// 		$curl->setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
 		@mkdir($store_dir, 0755, true);
-		$curl->get($url);
-		$data = $curl->response;
+// 		$curl->get($url);
+// 		$data = $curl->response;
+		$data = $this->request($url);
 		file_put_contents($filename, $data);
 		try {
 			$image = new \Eventviva\ImageResize($filename);
