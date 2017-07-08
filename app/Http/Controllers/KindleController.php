@@ -66,6 +66,13 @@ class KindleController extends Controller
      */
     public function test(Request $request)
     {
+    	$user = $request->user();
+    	$setting = $user->setting;
+    	
+    	if(isset($setting->kindle_email) && !empty($setting->kindle_email)){
+    		echo 'empty kindle_email';exit;
+    	}
+    	
     	$phindle = new Phindle(array(
     			'title' => "Chaos Theory: Randomness is Beautiful",
     			'publisher' => "Develpr",
@@ -95,9 +102,17 @@ class KindleController extends Controller
     	$phindle->process();
     	$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
     	
-    	header('Content-Type: application/octet-stream');
-    	header("Content-Transfer-Encoding: Binary");
-    	header("Content-disposition: attachment; filename=\"Chaos_Theory_Randomness_is_Beautiful.mobi\"");
-    	readfile($path);
+//     	header('Content-Type: application/octet-stream');
+//     	header("Content-Transfer-Encoding: Binary");
+//     	header("Content-disposition: attachment; filename=\"Chaos_Theory_Randomness_is_Beautiful.mobi\"");
+//     	readfile($path);
+    	
+    	\Mail::send('emails.reminder', ['user'=>$user,'setting'=>$setting], function ($m) use ($user,$setting) {
+    		$m->from('kindle@congcong.us', 'task.congcong.us');
+    		$m->to($setting->kindle_email, $user->name)->subject('Send To Kindle');
+    		$m->attach($path);
+    	});
+    	
+    	echo 'success!';exit;
     }
 }
