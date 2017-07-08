@@ -206,7 +206,7 @@ class Kernel extends ConsoleKernel
     			{
     				/** @var Illuminate\View\View $html */
     				$content = new Content();
-    				$content->setHtml($article->content);
+    				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article->content);
     				$content->setTitle($article->subject);
     				$phindle->addContent($content);
     			}
@@ -223,7 +223,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('20:19');
+    	})->dailyAt('20:24');
     }
     
      
