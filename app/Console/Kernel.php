@@ -233,7 +233,7 @@ class Kernel extends ConsoleKernel
     				}
     				/** @var Illuminate\View\View $html */
     				$content = new Content();
-    				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article_content);
+    				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article_content.'<a href="'.$article->url.'">查看原文</a>');
     				$content->setTitle($chapter_count.'.'.$article_count.' '.$article->subject);
     				$content->setPosition($chapter_count*1000+$article_count);
     				$phindle->addContent($content);
