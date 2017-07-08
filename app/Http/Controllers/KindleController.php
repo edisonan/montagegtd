@@ -74,7 +74,7 @@ class KindleController extends Controller
     	}
     	
     	$phindle = new Phindle(array(
-    			'title' => "Chaos Theory: Randomness is Beautiful",
+    			'title' => "Montage GTD - Test File",
     			'publisher' => "Develpr",
     			'creator' => 'Kevin Mitchell',
     			'language' => OpfRenderer::LANGUAGE_ENGLISH_US,
@@ -87,7 +87,7 @@ class KindleController extends Controller
     			'kindlegenPath' => '/usr/local/bin/kindlegen', //The path to the kindlegen utility
     			'downloadImages' => true, //Should images be downloaded from the web if found in your html?
     	));
-    	$phindle->setAttribute('isbn', '4222222222222222');
+    	
     	for($i = 0; $i < 3; $i++)
     	{
     		/** @var Illuminate\View\View $html */
@@ -102,13 +102,7 @@ class KindleController extends Controller
     	$phindle->process();
     	$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
     	
-//     	header('Content-Type: application/octet-stream');
-//     	header("Content-Transfer-Encoding: Binary");
-//     	header("Content-disposition: attachment; filename=\"Chaos_Theory_Randomness_is_Beautiful.mobi\"");
-//     	readfile($path);
-    	
     	\Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting,'path'=>$path], function ($m) use ($user,$setting,$path) {
-//     		$m->from('kindle@congcong.us', 'task.congcong.us');
     		$m->to($setting->kindle_email, $user->name)->subject('Send To Kindle');
     		$m->attach($path);
     	});

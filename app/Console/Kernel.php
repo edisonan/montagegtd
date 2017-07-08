@@ -17,6 +17,12 @@ use App\Statistics;
 use App\Repositories\FeedRepository;
 use App\Feed;
 use App\Http\Utils\SpideUtil;
+use App\Setting;
+use App\Repositories\SettingRepository;
+
+use Develpr\Phindle\Phindle;
+use Develpr\Phindle\Content;
+use Develpr\Phindle\OpfRenderer;
 
 
 class Kernel extends ConsoleKernel
@@ -169,6 +175,52 @@ class Kernel extends ConsoleKernel
     			\Log::info('process feed ! url:'.$feed->url);
     		}
     	})->hourly();
+    	
+    	$schedule->call(function () {
+    		date_default_timezone_set("Asia/Shanghai");
+    		
+    		$settings = Setting::where('start_kindle',1)->get();
+    		
+    		foreach ($settings as $setting){
+    			$user = $setting->user;
+    			$phindle = new Phindle(array(
+    					'title' => $user->id."Montage GTD每日订阅推送".date('Y-m-d'),
+    					'publisher' => "Montage GTD",
+    					'creator' => $user->name,
+    					'language' => OpfRenderer::LANGUAGE_ZH,
+    					'subject' => 'Montage GTD每日订阅', //@see https://www.bisg.org/complete-bisac-subject-headings-2013-edition
+    					'description' => 'Montage GTD每日订阅推送'.date('Y-m-d'),
+    					'path'	=> config("app.storage_path") . '/ebooks', //The path that temp files will be stored, as well as the location of the final ebook mobi file
+    					'isbn'  => '4242424242424242',
+    					'staticResourcePath' => config("app.storage_path").'static/', //The absolute path to your static resources referenced in html (images, css, etc)
+    					'cover'	=> '/images/cover.jpg' , //The relative path of your cover image
+    					'kindlegenPath' => '/usr/local/bin/kindlegen', //The path to the kindlegen utility
+    					'downloadImages' => true, //Should images be downloaded from the web if found in your html?
+    			));
+    			
+    			$now = date('Y-m-d H:i:s');
+    			$start_time = date('Y-m-d H:i:s',strtotime($now)-86400);
+    			
+    			$articles = Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->get();
+    			foreach($articles as $article)
+    			{
+    				/** @var Illuminate\View\View $html */
+    				$content = new Content();
+    				$content->setHtml($article->content);
+    				$content->setTitle($article->subject);
+    				$phindle->addContent($content);
+    			}
+    			
+    			//This is where all of the magic happens and the mobi file is actually generated
+    			$phindle->process();
+    			$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
+    			 
+    			\Mail::send('emails.kindle', ['setting'=>$setting,'path'=>$path], function ($m) use ($setting,$path) {
+    				$m->to($setting->kindle_email, 'user')->subject('Send To Kindle');
+    				$m->attach($path);
+    			});
+    		}
+    	})->dailyAt('18:33');
     }
     
      
