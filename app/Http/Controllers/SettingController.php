@@ -70,7 +70,7 @@ class SettingController extends Controller
     		'kindle_email' => 'email',
     	]);
     	
-    	if(empty($setting)){
+    	if(empty($setting->user_id)){
     		$setting = $this->settings->forUser($request->user());
     		if(!empty($setting)){
     			echo 'error';exit;
@@ -78,7 +78,7 @@ class SettingController extends Controller
     		$setting = new Setting();
     		$setting->user_id = $request->user()->id;
     	} else {
-    		$this->authorize('destroy', $article);
+    		$this->authorize('destroy', $setting);
     	}
     	
     	$setting->save($request);
