@@ -74,33 +74,34 @@ class KindleController extends Controller
     	}
     	
     	$phindle = new Phindle(array(
-    			'title' => "Montage GTD - Test File",
-    			'publisher' => "Develpr",
-    			'creator' => 'Kevin Mitchell',
-    			'language' => OpfRenderer::LANGUAGE_ENGLISH_US,
-    			'subject' => 'Computers', //@see https://www.bisg.org/complete-bisac-subject-headings-2013-edition
-    			'description' => 'A wonderfully random ebook',
+    			'title' => "Montage GTD - 测试文件",
+    			'publisher' => "Montage GTD",
+    			'creator' => $user->name,
+    			'language' => 'zh-CN',
+    			'subject' => 'Test', //@see https://www.bisg.org/complete-bisac-subject-headings-2013-edition
+    			'description' => '这是一个测试文件!',
     			'path'	=> config("app.storage_path") . '/ebooks', //The path that temp files will be stored, as well as the location of the final ebook mobi file
-    			'isbn'  => '4242424242424242',
-    			'staticResourcePath' => config("app.storage_path").'static/', //The absolute path to your static resources referenced in html (images, css, etc)
+    			'isbn'  => '666666666666666',
+    			'staticResourcePath' => config("app.storage_path").'/ebooks/static', //The absolute path to your static resources referenced in html (images, css, etc)
     			'cover'	=> '/images/14086750705_419447b9e1_b.jpg' , //The relative path of your cover image
     			'kindlegenPath' => '/usr/local/bin/kindlegen', //The path to the kindlegen utility
     			'downloadImages' => true, //Should images be downloaded from the web if found in your html?
     	));
     	
-    	for($i = 0; $i < 3; $i++)
-    	{
-    		/** @var Illuminate\View\View $html */
-    		$html = 'okok'.$i;
-    		$title = 'titletile'.$i;
-    		$content = new Content();
-    		$content->setHtml($html);
-    		$content->setTitle($title);
-    		$phindle->addContent($content);
-    	}
-    	//This is where all of the magic happens and the mobi file is actually generated
+    	
+    	$title = '测试文件';
+    	$html = '<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$title.'</h3>当你收到此测试文件，说明你的配置正确，快来Montage GTD订阅你喜欢的文档吧!Montage GTD是个综合性的网站，在这里你还可以更高效的完成每一件事，快来体验吧。';
+    	
+    	$content = new Content();
+    	$content->setHtml($html);
+    	$content->setTitle($title);
+    	$phindle->addContent($content);
+    	
     	$phindle->process();
-    	$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
+//     	$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
+    	$path = $phindle->getMobiPath();
+    	
+    	\Log::info('send to kindle test:'.$user->id.'|'.count($articles).'|'.$path);
     	
     	\Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting,'path'=>$path], function ($m) use ($user,$setting,$path) {
     		$m->to($setting->kindle_email, $user->name)->subject('Send To Kindle');
