@@ -217,7 +217,8 @@ class Kernel extends ConsoleKernel
     					
     					$content = new Content();
     					$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h2>'.$article->feed->feed_name.'</h2>'.$article->feed->feed_desc);
-    					$content->setTitle(chapter_count.' '.$article->feed->feed_name);
+    					$content->setTitle($chapter_count.' '.$article->feed->feed_name);
+    					$content->setPosition($chapter_count*1000+$article_count);
     					$phindle->addContent($content);
     				}
     				//文章数递增 大于20篇时不再执行
@@ -228,7 +229,7 @@ class Kernel extends ConsoleKernel
     				$content = new Content();
     				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article->content);
     				$content->setTitle($chapter_count.'.'.$article_count.' '.$article->subject);
-    				$content->setPosition($article->id);
+    				$content->setPosition($chapter_count*1000+$article_count);
     				$phindle->addContent($content);
     			}
     			
@@ -243,7 +244,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('22:46');
+    	})->dailyAt('00:08');
     }
     
      
