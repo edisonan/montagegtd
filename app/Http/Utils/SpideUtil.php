@@ -18,7 +18,6 @@ class SpideUtil{
 		if(empty($list)){
 			return false;
 		}
-		print_r($list);
 		foreach ($list as $item){
 			$article = Article::where('feed_id',$feed->id)->where('user_id',$feed->user_id)->where('url',$item['url'])->first();
 			if(empty($article)){
@@ -83,7 +82,7 @@ class SpideUtil{
 				return $params;
 			}
 			$params['content'] = $article->innertext;
-			$params['content'] = str_replace(array("data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==","data-src","_j_lazyload"), array("/img/grey.gif","data-original","lazy"), $params['content']);
+			$params['content'] = str_replace(array("src=\"data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==\"","data-src","_j_lazyload"), array("","src","lazy"), $params['content']);
 		}
 		return $params;
 	}
