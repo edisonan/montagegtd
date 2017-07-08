@@ -8,7 +8,8 @@
         "php": ">=5.5.9",
         "laravel/framework": "5.2.*",
         "arandilopez/laravel-feed-parser": "0.1.*",
-        "develpr/phindle": "dev-dev"
+        "develpr/phindle": "dev-dev",
+        "eventviva/php-image-resize": "~1.5"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

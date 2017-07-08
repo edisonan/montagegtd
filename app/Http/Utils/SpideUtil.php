@@ -2,6 +2,7 @@
 namespace App\Http\Utils;
 
 use App\Article;
+use function GuzzleHttp\json_encode;
 include 'simple_html_dom.php';
 
 class SpideUtil{
@@ -101,5 +102,60 @@ class SpideUtil{
 			$try_count++;
 		}
 		return $result;
+	}
+	
+	public function processKindleImgContent($content,$path){
+		preg_match_all('#<img src="(.*?)"#is', $content, $matches);
+		$img_urls = $matches[1];
+		
+		\Log::info(json_encode($img_urls));
+		
+		$args = array();
+		foreach ($img_urls as $img_url) {
+			$args[] = '/images/temp/';
+		}
+		
+		$content = str_replace($img_urls, array_map('get_image_filename', $img_urls, $args), $content);
+		$content = str_replace('<img', '<img style="margin:0 auto;display:block;height:300px"', $content);
+		
+		foreach ($img_urls as $img_url) {
+			download($img_url, config("app.storage_path").'/ebooks/static' . "/images/temp/");
+		}
+		
+		return $content;
+	}
+	
+	//获取图片本地存储路径
+	public function get_image_filename($url, $local_prefix = "")
+	{
+		$arr = parse_url($url);
+		$basename = basename($arr['path']);
+		if (strpos($basename, '.') === false) {
+			return $local_prefix . $basename . '.jpg';
+		} else {
+			return $local_prefix . $basename;
+		}
+	}
+	//下载图片
+	public function download($url, $store_dir)
+	{
+		$filename = get_image_filename($url, $store_dir);
+		if (file_exists($filename)) return; //存在时不下载
+		$curl = new Curl\Curl();
+		$curl->setHeader('X-Requested-With', 'XMLHttpRequest');
+		$curl->setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:40.0) Gecko/20100101 Firefox/40.0');
+		$curl->setHeader('Accept-Language', 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3');
+		$curl->setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
+		@mkdir($store_dir, 0755, true);
+		$curl->get($url);
+		$data = $curl->response;
+		file_put_contents($filename, $data);
+		try {
+			$image = new \Eventviva\ImageResize($filename);
+			$image->resizeToWidth(200);
+			$image->save($filename);
+		} catch (Exception $e) {
+		}
+		return $filename;
 	}
 }
