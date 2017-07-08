@@ -240,7 +240,10 @@ $(document).ready(function () {
 								</div>
 								<div class="post-content col-sm-offset-0 col-sm-12">
 									<div class="preprepre">
+									
+									@if($note->status != 2)
 									<img alt=""     style="width: 15px;    margin-right: 10px;" src="/img/icon/security.png">
+									@endif
 									
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
 									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>

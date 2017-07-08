@@ -66,7 +66,7 @@ class NoteController extends Controller
     			if(\App\Http\Utils\CommonUtil::isUrl($add_content)){
     				$add_content = '#分享链接# '.$add_content.' '.\App\Http\Utils\CommonUtil::page_title($add_content);
     			}
-    			if(strpos($add_content,'#') !== false) {
+    			if(strpos($add_content,'#') === false) {
     				$add_content = '#分享# '.$add_content;
     			}
     		}
