@@ -101,7 +101,7 @@ class KindleController extends Controller
 //     	$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
     	$path = $phindle->getMobiPath();
     	
-    	\Log::info('send to kindle test:'.$user->id.'|'.count($articles).'|'.$path);
+    	\Log::info('send to kindle test:'.$user->id.'|'.$path);
     	
     	\Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting,'path'=>$path], function ($m) use ($user,$setting,$path) {
     		$m->to($setting->kindle_email, $user->name)->subject('Send To Kindle');
