@@ -115,7 +115,7 @@ class SpideUtil{
 			$args[] = '/images/temp/';
 		}
 		
-		$content = str_replace($img_urls, array_map('\App\Http\Utils\SpideUtil::get_image_filename', $img_urls, $args), $content);
+		$content = str_replace($img_urls, array_map('get_image_filename', $img_urls, $args), $content);
 		$content = str_replace('<img', '<img style="margin:0 auto;display:block;height:300px"', $content);
 		
 		foreach ($img_urls as $img_url) {
@@ -125,17 +125,7 @@ class SpideUtil{
 		return $content;
 	}
 	
-	//获取图片本地存储路径
-	public static function get_image_filename($url, $local_prefix = "")
-	{
-		$arr = parse_url($url);
-		$basename = basename($arr['path']);
-		if (strpos($basename, '.') === false) {
-			return $local_prefix . $basename . '.jpg';
-		} else {
-			return $local_prefix . $basename;
-		}
-	}
+	
 	//下载图片
 	public function download($url, $store_dir)
 	{

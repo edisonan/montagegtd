@@ -66,6 +66,18 @@ if (!defined('MAX_FILE_SIZE')) {
     define('MAX_FILE_SIZE', 600000);	
 }
 
+//获取图片本地存储路径
+function get_image_filename($url, $local_prefix = "")
+{
+	$arr = parse_url($url);
+	$basename = basename($arr['path']);
+	if (strpos($basename, '.') === false) {
+		return $local_prefix . $basename . '.jpg';
+	} else {
+		return $local_prefix . $basename;
+	}
+}
+
 // helper functions
 // -----------------------------------------------------------------------------
 // get html dom from file
