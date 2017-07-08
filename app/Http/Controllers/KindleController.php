@@ -69,7 +69,7 @@ class KindleController extends Controller
     	$user = $request->user();
     	$setting = $user->setting;
     	
-    	if(isset($setting->kindle_email) && !empty($setting->kindle_email)){
+    	if(!isset($setting->kindle_email) || empty($setting->kindle_email)){
     		echo 'empty kindle_email';exit;
     	}
     	
