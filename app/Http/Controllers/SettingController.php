@@ -81,7 +81,7 @@ class SettingController extends Controller
     		$this->authorize('destroy', $setting);
     	}
     	
-    	$setting->save($request->attributes);
+    	$setting->save($request->all());
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
