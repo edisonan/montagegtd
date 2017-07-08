@@ -16,6 +16,7 @@ use App\Pomo;
 use App\Statistics;
 use App\Repositories\FeedRepository;
 use App\Feed;
+use App\Article;
 use App\Http\Utils\SpideUtil;
 use App\Setting;
 use App\Repositories\SettingRepository;
@@ -222,7 +223,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('18:33');
+    	})->dailyAt('20:19');
     }
     
      
