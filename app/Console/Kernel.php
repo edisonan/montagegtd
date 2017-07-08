@@ -179,7 +179,7 @@ class Kernel extends ConsoleKernel
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
     		
-    		$settings = Setting::where('start_kindle',1)->get();
+    		$settings = Setting::where('is_start_kindle',1)->get();
     		
     		foreach ($settings as $setting){
     			$user = $setting->user;

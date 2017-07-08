@@ -62,6 +62,17 @@ $(document).ready(function () {
 							
                         </div>
                         
+                        <div class="form-group" id="task_form_div1" >
+                            <label for="task-name" class="col-sm-3 control-label">是否开启推送</label>
+                            
+							<label class="radio-inline">
+								  <input type="radio" name="is_start_kindle" id="inlineRadio1" value="0" {{ empty($setting->is_start_kindle) ?'checked':'' }}><span>不开启</span>
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="is_start_kindle" id="inlineRadio2" value="1" {{ $setting->is_start_kindle == 1 ?'checked':'' }}><span>开启</span>
+								</label>
+                        </div>
+                        
                         <input type="hidden" name="page_info" value="kindle_page">
 
                         <!-- Add Task Button -->
