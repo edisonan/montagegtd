@@ -257,11 +257,11 @@ $(document).ready(function () {
 								</div>
 								<div class="col-sm-offset-11 col-sm-1 text-right">
 										@if($note->user_id == Auth::user()->id )
-											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="display: none">
+											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="cursor:pointer;">
 											<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
 											</a> 
                                             @else
-                                            <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" style="display: none">
+                                            <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" style="cursor:pointer;">
 											<img alt=""     style="width: 15px;" src="/img/icon/like.png">
 											</a> 
                                             @endif

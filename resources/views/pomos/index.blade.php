@@ -53,7 +53,9 @@ $(document).ready(function () {
                                         <!-- Task Delete Button -->
                                         <td width="20%" align="right">
                                         	
-                                        	<a href="javascript:void(0)" class="delete_pomo" task_type="delete" task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}" style="display: none"><img alt=""     style="width: 15px;" src="/img/icon/delete.png"></a> 
+                                        	<a href="javascript:void(0)" class="delete_pomo" task_type="delete" task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}"  style="cursor:pointer;">
+                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+                                        	</a> 
                                         	<!-- 
                                             <form action="{{url('pomo/' . $pomo->id)}}" method="POST">
                                                 {{ csrf_field() }}
