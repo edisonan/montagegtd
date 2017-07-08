@@ -60,6 +60,12 @@ class ArticleController extends Controller
     	}
     	$page_params['status'] = $status;
     	
+    	$temp_counts = Article::select('feed_id',DB::raw('count(*) as total'))->groupBy('feed_id')->get();
+    	$counts_info = array();
+    	foreach ($temp_counts as $temp_count){
+    		$counts_info[$temp_count['feed_id']] = $temp_count['total'];
+    	}
+    	
     	if($request->has('feed_id')){
     		$articles = $this->articles->forUserByStatusFeedId($request->user(), $status, $request->feed_id,$need_page=true);
     		$page_params['feed_id'] = $request->feed_id;
@@ -78,6 +84,7 @@ class ArticleController extends Controller
         	'articles' => $articles,
         	'status' => $status,
         	'page_params' => $page_params,
+        	'counts_info' => $counts_info,
         	'recommend_feeds' => $recommend_feeds,
         ]);
     }

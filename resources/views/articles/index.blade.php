@@ -74,15 +74,9 @@ $(document).ready(function () {
 			    						<li>
 			    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
 			    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
-			    							<?php /**
 			    							[
-			    							@if($status == 'unread')
-			    								{{$feed->unread_count}}
-			    							@else
-			    								{{$feed->read_count}}
-			    							@endif
+			    							<?php echo isset($counts_info[$feed->id])?$counts_info[$feed->id]:0;?>
 			    							]
-			    							*/?>
 			    							{{ $feed->feed_name,0,10 }}
 			    							</span>
 			    							</a>
