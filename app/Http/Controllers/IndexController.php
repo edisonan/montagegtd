@@ -77,7 +77,7 @@ class IndexController extends Controller
     	
     	$tasks = $this->tasks->forUserByStatus($request->user(), 1);
     	$pomos = $this->pomos->forUserByTime($request->user(), date('Y-m-d H:i:s',strtotime(date('Y-m-d'))));
-    	$goals = $this->goals->forUser($request->user());
+    	$goals = $this->goals->forUserByStatus($request->user(),1,false);
     	
     	foreach ($tasks as $key => $task){
     		if(!empty($task->taskTagMaps)){
