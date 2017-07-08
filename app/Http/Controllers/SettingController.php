@@ -88,7 +88,12 @@ class SettingController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/settings');
+        	if($request->has('page_info') && $request->page_info == 'kindle_page'){
+        		return redirect('/settings');
+        	} else {
+        		return redirect('/kindles');
+        	}
+        	
         }
     }
 }
