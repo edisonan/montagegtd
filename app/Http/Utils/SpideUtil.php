@@ -108,7 +108,7 @@ class SpideUtil{
 		preg_match_all('#<img src="(.*?)"#is', $content, $matches);
 		$img_urls = $matches[1];
 		
-		\Log::info(json_encode($img_urls));
+		\Log::info(\json_encode($img_urls));
 		
 		$args = array();
 		foreach ($img_urls as $img_url) {
