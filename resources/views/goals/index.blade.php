@@ -1,6 +1,35 @@
 @extends('layouts.app')
 
 @section('content')
+
+<script type="text/javascript">
+$(document).ready(function () {
+
+	$(".delete_pomo").click(function(){
+		pomo_value = $(this).attr("pomo_value");
+		pomo_token = $(this).attr("pomo_token");
+		pomo_type = $(this).attr("pomo_type");
+
+		if (pomo_type == 'delete' && !confirm("确认要删除此番茄咩？")) {
+			return false;
+		}
+		
+		$.ajax({
+		    url: "{{ url('pomo') }}"+"/"+pomo_value,
+		    type: 'DELETE',
+		    data: {type:pomo_type,_token:pomo_token},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$('#'+pomo_value).remove();
+				}
+		    }
+		});
+	});
+});
+</script>
     <div class="container">
             <!-- Current Goals -->
                 <div class="panel panel-default">

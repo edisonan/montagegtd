@@ -122,6 +122,34 @@ function addContent($content){
 </script>
 
 @section('content')
+<script type="text/javascript">
+$(document).ready(function () {
+
+	$(".delete_note").click(function(){
+		note_value = $(this).attr("note_value");
+		note_token = $(this).attr("note_token");
+		note_type = $(this).attr("note_type");
+
+		if (note_type == 'delete' && !confirm("确认要删除此笔记咩？")) {
+			return false;
+		}
+		
+		$.ajax({
+		    url: "{{ url('note') }}"+"/"+note_value,
+		    type: 'DELETE',
+		    data: {type:note_type,_token:note_token},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$('#'+note_value).remove();
+				}
+		    }
+		});
+	});
+});
+</script>
     <div class="container">
         <div class="col-sm-offset-0 col-sm-12">
             <div class="panel panel-default">
@@ -194,7 +222,7 @@ function addContent($content){
 
                     <div class="panel-body">
                     	@foreach ($notes as $note)
-							<article class="post" style="padding: 0px;">
+							<article class="post" style="padding: 0px;" id="{{$note->id}}">
 								<div class="post-head">
 									<div class="post-meta" style="text-align: left">
 										<div class="col-sm-offset-0 col-sm-1" style="width: 50px;padding-right: 0px;padding-left: 0px;">
@@ -202,7 +230,7 @@ function addContent($content){
 										</div>
 										<div class="col-sm-offset-0 col-sm-11">
 											<span class="author">
-												<a href="#" target="_blank">{{ $note->user->name }}<img alt=""     style="width: 15px;" src="/img/icon/security.png"></a>
+												<a href="#" target="_blank">{{ $note->user->name }}
 											</span> 
 											<br/>
 											<time class="post-date" datetime="<?php echo $note->created_at;?>" title="<?php echo $note->created_at;?>"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></time>
@@ -211,36 +239,31 @@ function addContent($content){
 									</div>
 								</div>
 								<div class="post-content col-sm-offset-0 col-sm-12">
+									<div class="preprepre">
+									<img alt=""     style="width: 15px;    margin-right: 10px;" src="/img/icon/security.png">
+									
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
 									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
 									@endif
+									
 									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
 									<a href="{{ $note->image_path }}" title="点击查看原图" target="_blank">
 										<image height="150px" src="{{ $note->image_path }}"/>
 									</a>
 									@endif
-									<div class="preprepre">
+									
 									<?php echo $note->name;?>
 									</div>
 								</div>
-								<div class="col-sm-offset-11 col-sm-1">
+								<div class="col-sm-offset-11 col-sm-1 text-right">
 										@if($note->user_id == Auth::user()->id )
-                                            <form action="{{url('note/' . $note->id)}}" method="POST">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-                                                <button type="submit" id="delete-note-{{ $note->id }}" class="btn btn-link" title="删除!!!">
-                                                	<img alt=""     style="width: 15px;" src="/img/icon/pin.png">
-                                                </button>
-                                            </form>
+											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="display: none">
+											<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+											</a> 
                                             @else
-                                            <form action="{{url('note/like/' . $note->id)}}" method="POST">
-                                                {{ csrf_field() }}
-
-                                                <button type="button" id="like-note-{{ $note->id }}" class="btn btn-info">
-                                                    <i class="fa fa-btn fa-thumbs-o-up"></i>
-                                                </button>
-                                            </form>
+                                            <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $task->id }}" note_token="{{ csrf_token() }}" style="display: none">
+											<img alt=""     style="width: 15px;" src="/img/icon/like.png">
+											</a> 
                                             @endif
 						  	</div>
 								<footer class="post-footer clearfix" style="margin-top: 0px;"></footer>

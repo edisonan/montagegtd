@@ -1,6 +1,35 @@
 @extends('layouts.app')
 
 @section('content')
+
+<script type="text/javascript">
+$(document).ready(function () {
+
+	$(".delete_pomo").click(function(){
+		pomo_value = $(this).attr("pomo_value");
+		pomo_token = $(this).attr("pomo_token");
+		pomo_type = $(this).attr("pomo_type");
+
+		if (pomo_type == 'delete' && !confirm("确认要删除此番茄咩？")) {
+			return false;
+		}
+		
+		$.ajax({
+		    url: "{{ url('pomo') }}"+"/"+pomo_value,
+		    type: 'DELETE',
+		    data: {type:pomo_type,_token:pomo_token},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$('#'+pomo_value).remove();
+				}
+		    }
+		});
+	});
+});
+</script>
     <div class="container">
 
             <!-- Finish Pomos -->
@@ -18,11 +47,14 @@
                             </thead>
                             <tbody>
                                 @foreach ($pomos as $pomo)
-                                    <tr>
+                                    <tr id="{{$pomo->id}}">
                                         <td class="table-text" width="80%"><div>【{{ date('y-m-d H:i', strtotime($pomo->updated_at)) }}】{{ $pomo->name }} </div></td>
 
                                         <!-- Task Delete Button -->
                                         <td width="20%" align="right">
+                                        	
+                                        	<a href="javascript:void(0)" class="delete_pomo" task_type="delete" task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}" style="display: none"><img alt=""     style="width: 15px;" src="/img/icon/delete.png"></a> 
+                                        	<!-- 
                                             <form action="{{url('pomo/' . $pomo->id)}}" method="POST">
                                                 {{ csrf_field() }}
                                                 {{ method_field('DELETE') }}
@@ -31,6 +63,7 @@
                                                     <img alt=""     style="width: 15px;" src="/img/icon/delete.png">
                                                 </button>
                                             </form>
+                                             -->
                                         </td>
                                     </tr>
                                 @endforeach
