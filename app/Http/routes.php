@@ -117,6 +117,7 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/settings', 'SettingController@index');
     Route::post('/setting/{setting}', 'SettingController@update');
+    Route::post('/setting', 'SettingController@update');
 
     Route::auth();
 
