@@ -49,7 +49,7 @@ $(document).ready(function () {
 
     <div class="container">
     
-        <div class="col-sm-offset-2 col-sm-8">
+        <div class="col-sm-offset-0 col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的订阅
