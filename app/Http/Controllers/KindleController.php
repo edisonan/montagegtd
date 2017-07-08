@@ -11,6 +11,7 @@ use App\Repositories\SettingRepository;
 
 use Develpr\Phindle\Phindle;
 use Develpr\Phindle\Content;
+use Develpr\Phindle\OpfRenderer;
 
 class KindleController extends Controller
 {
@@ -69,7 +70,7 @@ class KindleController extends Controller
     			'title' => "Chaos Theory: Randomness is Beautiful",
     			'publisher' => "Develpr",
     			'creator' => 'Kevin Mitchell',
-    			'language' => Develpr\Phindle\OpfRenderer::LANGUAGE_ENGLISH_US,
+    			'language' => OpfRenderer::LANGUAGE_ENGLISH_US,
     			'subject' => 'Computers', //@see https://www.bisg.org/complete-bisac-subject-headings-2013-edition
     			'description' => 'A wonderfully random ebook',
     			'path'	=> config("app.storage_path") . '/ebooks', //The path that temp files will be stored, as well as the location of the final ebook mobi file
