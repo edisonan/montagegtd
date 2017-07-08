@@ -227,7 +227,7 @@ class Kernel extends ConsoleKernel
     				
     				if($setting->with_image_push == 1){
     					$spideUtil = new SpideUtil();
-    					$content = $spideUtil->processKindleContent($article->content, config("app.storage_path").'/ebooks/temp');
+    					$content = $spideUtil->processKindleImgContent($article->content, config("app.storage_path").'/ebooks/temp');
     				} else {
     					$content = preg_replace("#<img.*>#iUs", "", $article->content); //无图
     				}
@@ -250,7 +250,7 @@ class Kernel extends ConsoleKernel
     				$m->attach($path);
     			});
     		}
-    	})->dailyAt('01:26');
+    	})->dailyAt('01:28');
     }
     
      
