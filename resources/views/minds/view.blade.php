@@ -221,14 +221,5 @@ $(document).ready(function () {
     		});
         }
     }
-
-    function show_selected(){
-        var selected_node = _jm.get_selected_node();
-        if(!!selected_node){
-            prompt_info(selected_node.topic);
-        }else{
-            prompt_info('nothing');
-        }
-    }
 </script>
 @endsection
