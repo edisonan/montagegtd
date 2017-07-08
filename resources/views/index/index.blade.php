@@ -423,7 +423,7 @@ $(document).ready(function () {
                                         <!-- Task Delete Button -->
                                         <td align='right'>
                                         	<div>
-                                        		<a href="javascript:void(0)" class="delete_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}" style="display: none">x</a> 
+                                        		<a href="javascript:void(0)" class="delete_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}" style="display: none"><img alt="" src="/img/icon/delete.png"></a> 
                                         		<a href="javascript:void(0)" class="top_task" task_value="{{ $task->id }}" task_is_top="{{ $task->is_top }}" task_token="{{ csrf_token() }}" @if($task->is_top !=1) style="display: none"  @endif>📌</a> 
                                         	</div>
                                         </td>
