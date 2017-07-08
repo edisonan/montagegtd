@@ -17,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
         'App\Pomo' => 'App\Policies\PomoPolicy',
         'App\Note' => 'App\Policies\NotePolicy',
     	'App\Mind' => 'App\Policies\MindPolicy',
+    	'App\Setting' => 'App\Policies\SettingPolicy',
     	'App\Goal' => 'App\Policies\GoalPolicy',
     	'App\Feed' => 'App\Policies\FeedPolicy',
     	'App\Category' => 'App\Policies\CategoryPolicy',
