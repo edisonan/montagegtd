@@ -87,6 +87,16 @@ $(document).ready(function () {
 								  <input type="radio" name="is_start_kindle" id="inlineRadio2" value="1" {{ $setting->is_start_kindle == 1 ?'checked':'' }}><span>开启</span>
 								</label>
                         </div>
+                        <div class="form-group" id="task_form_div1" >
+                            <label for="task-name" class="col-sm-3 control-label">是否带图推送</label>
+                            
+							<label class="radio-inline">
+								  <input type="radio" name="with_image_push" id="inlineRadio1" value="0" {{ empty($setting->is_start_kindle) ?'checked':'' }}><span>不开启</span>
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="with_image_push" id="inlineRadio2" value="1" {{ $setting->is_start_kindle == 1 ?'checked':'' }}><span>开启</span>
+								</label>
+                        </div>
 
                         <!-- Add Task Button -->
                         <div class="form-group">
