@@ -119,7 +119,13 @@ class MindController extends Controller
     {
     	$this->authorize('destroy', $mind);
     
-    	$mind->name = $request->name;
+    	if($request->has('name')){
+    		$mind->name = $request->name;
+    	}
+    	
+    	if($request->has('content')){
+    		$mind->content = $request->content;
+    	}
     	$mind->update();
     
     	if ($request->ajax() || $request->wantsJson()) {

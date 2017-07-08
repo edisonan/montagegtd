@@ -58,7 +58,11 @@ $(document).ready(function () {
                 <div class="panel-body">
 					<div id="jsmind_container" class="col-sm-offset-0 col-sm-10">
 					</div>
-					<div id="jsmind_container" class="col-sm-offset-0 col-sm-2">
+					<div id="" class="col-sm-offset-0 col-sm-2">
+						<span id="mind_name" class="col-sm-offset-0 col-sm-2"></span>
+						<textarea rows="3" cols="3" id="mind_content"></textarea>
+						<input type="hidden" id="mind_id">
+						<button class="btn btn-primary" onclick="mind_update()">保存</button>>
 					</div>
                 </div>
             </div>
@@ -180,8 +184,9 @@ $(document).ready(function () {
     function show_selected(){
         var selected_node = _jm.get_selected_node();
         if(!!selected_node){
-            console.log(selected_node.data);
-            prompt_info('topic:'+selected_node.topic+',content:'+selected_node.data.data);
+        	$("#mind_content").val(selected_node.data.data);
+        	$("#mind_id").val(selected_node.id);
+        	$("#mind_name").val('描述:'+selected_node.topic);
         }else{
             prompt_info('nothing');
         }
@@ -217,6 +222,31 @@ $(document).ready(function () {
     				} else {
     					// modify the topic
     		            _jm.update_node(selected_id, name);
+    				}
+    		    }
+    		});
+        }
+    }
+
+    function mind_update(){
+    	var content = $("#mind_content").val();
+    	var selected_id = $("#mind_id").val();
+    	
+        if (selected_id != null && selected_id != "" && content != null && content != "")
+        {
+        	task_token = "{{ csrf_token() }}";
+        	
+        	$.ajax({
+    		    url: "{{ url('mind') }}"+"/"+selected_id,
+    		    type: 'POST',
+    		    data: {_token:task_token,content:content},
+    		    success: function(result) {
+    		    	result_arr = JSON.parse(result);
+    				if(result_arr.code != 9999){
+    					alert('处理失败，请稍后再试');
+    				} else {
+    					// modify the topic
+    					location.href="";
     				}
     		    }
     		});
