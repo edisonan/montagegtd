@@ -261,7 +261,7 @@ $(document).ready(function () {
 											<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
 											</a> 
                                             @else
-                                            <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $task->id }}" note_token="{{ csrf_token() }}" style="display: none">
+                                            <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" style="display: none">
 											<img alt=""     style="width: 15px;" src="/img/icon/like.png">
 											</a> 
                                             @endif
