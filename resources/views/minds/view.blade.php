@@ -1,6 +1,6 @@
 @extends('layouts.app')
 <link type="text/css" rel="stylesheet" href="{{ url('/css/jsmind.css')}}" />
-<script type="text/javascript" src="{{ url('/js/jsmind.js')}}"></script>
+<script type="text/javascript" src="{{ url('/js/jsmind.js?20170709')}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
 
 @section('content')
