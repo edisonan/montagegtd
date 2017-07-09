@@ -456,30 +456,6 @@
             }
         },
 
-        //add self
-        ajax_get_new_node_id:function(parentid, topic){
-          console.log(parentid);
-          console.log(topic);
-          if(parentid != '' && topic != ''){
-              task_token = "{{ csrf_token() }}";
-
-            	$.ajax({
-        		    url: "{{ url('mind') }}",
-        		    type: 'POST',
-        		    data: {_token:task_token,name:topic,parent_mind_id:parentid},
-        		    success: function(result) {
-        		    	result_arr = JSON.parse(result);
-          				if(result_arr.code != 9999){
-                    return false;
-          				} else {
-                    return result_arr['result']['id'];
-          				}
-        		    }
-        		});
-          } else {
-            return false;
-          }
-        },
     };
 
     jm.format = {
@@ -1687,7 +1663,34 @@
             for(var i=0;i<l;i++){
                 this.event_handles[i](type,data);
             }
+        },
+        
+        //add self start
+        ajax_get_new_node_id:function(parentid, topic){
+          console.log(parentid);
+          console.log(topic);
+          if(parentid != '' && topic != ''){
+              task_token = $('#mind_token').val();
+
+            	$.ajax({
+        		    url: "/mind",
+        		    type: 'POST',
+        		    data: {_token:task_token,name:topic,parent_mind_id:parentid},
+        		    success: function(result) {
+        		    	result_arr = JSON.parse(result);
+          				if(result_arr.code != 9999){
+                    return false;
+          				} else {
+                    return result_arr['result']['id'];
+          				}
+        		    }
+        		});
+          } else {
+            return false;
+          }
         }
+        //add self end
+        
 
     };
 

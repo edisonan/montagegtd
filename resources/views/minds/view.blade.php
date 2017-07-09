@@ -69,6 +69,7 @@ $(document).ready(function () {
 						<span id="mind_name" class="col-sm-12">详细描述:{{$mind->name}}</span>
 						<textarea  class="col-sm-12" id="mind_content"  style="margin: 0px; height: 189px; width: 151px;" id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
+						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-primary col-sm-12" onclick="mind_update()">保存</button>
 					</div>
                 </div>
