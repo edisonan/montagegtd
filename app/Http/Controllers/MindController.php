@@ -128,7 +128,7 @@ class MindController extends Controller
     	}
     	$mind->update();
     
-    	if ($request->ajax() || $request->wantsJson()) {
+    	if ($request->ajax() || $request->wantsJson() || $request->has('json_wants')) {
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {

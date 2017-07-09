@@ -1664,7 +1664,7 @@
                 this.event_handles[i](type,data);
             }
         },
-        
+
         //add self start
         ajax_get_new_node_id:function(parentid, topic){
           console.log(parentid);
@@ -1672,7 +1672,7 @@
           if(parentid != '' && topic != ''){
               var task_token = document.getElementById("mind_token").value;
 
-              jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid},function(result) {
+              jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result) {
         		    	result_arr = JSON.parse(result);
           				if(result_arr.code != 9999){
 		                    return false;
@@ -1685,7 +1685,7 @@
           }
         }
         //add self end
-        
+
 
     };
 
