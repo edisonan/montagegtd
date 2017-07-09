@@ -1672,14 +1672,16 @@
           if(parentid != '' && topic != ''){
               var task_token = document.getElementById("mind_token").value;
 
-              jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result) {
-        		    	result_arr = JSON.parse(result);
+              var temp = jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result) {
+        		    	var result_arr = result;
           				if(result_arr.code != 9999){
 		                    return false;
 		          		} else {
-		                    return result_arr['result']['id'];
+		          			console.log(result_arr.result.id);
+		                    return result_arr.result.id;
           				}
         		    });
+              console.log(temp);
           } else {
             return false;
           }
