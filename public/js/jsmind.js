@@ -2452,7 +2452,7 @@
         		    type: 'POST',
         		    data: {_token:task_token,name:topic},
         		    success: function(result) {
-        		    	result_arr = JSON.parse(result);
+        		    	var result_arr = jm.util.json.string2json(result);
         				if(result_arr.code != 9999){
         					alert('处理失败，请稍后再试');
         				} else {
@@ -2860,7 +2860,7 @@
         		    type: 'DELETE',
         		    data: {_token:task_token},
         		    success: function(result) {
-        		    	result_arr = JSON.parse(result);
+        		    	var result_arr = jm.util.json.string2json(result);
         				if(result_arr.code != 9999){
         					alert('处理失败，请稍后再试');
         				} else {
