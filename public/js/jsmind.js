@@ -1665,29 +1665,6 @@
             }
         },
 
-        //add self start
-        ajax_get_new_node_id:function(parentid, topic){
-          console.log(parentid);
-          console.log(topic);
-          if(parentid != '' && topic != ''){
-              var task_token = document.getElementById("mind_token").value;
-              
-                var nodeid = false;
-	       		$.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result){
-		   			var result_arr = jm.util.json.string2json(result);
-		   			if(result_arr.code != 9999){
-		   				return false;
-		   			} else {
-		   				nodeid = result_arr.result.id;
-		   			}
-		   		});
-              return nodeid;
-          } else {
-            return false;
-          }
-        }
-        //add self end
-
 
     };
 
@@ -2415,6 +2392,12 @@
                 this.reset_node_custom_style(this.selected_node);
             }
             if(!!node){
+            	//***********************add self start
+            	$("#mind_content").val(node.data.content);
+            	$("#mind_id").val(node.id);
+            	$("#mind_name").html('详细描述:'+node.topic);
+            	//***********************add self end
+            	
                 this.selected_node = node;
                 node._data.view.element.className += ' selected';
                 this.clear_node_custom_style(node);
@@ -2462,6 +2445,31 @@
                 var view_data = node._data.view;
                 var element = view_data.element;
                 var topic = this.e_editor.value;
+                
+                var task_token = document.getElementById("mind_token").value;
+                $.ajax({
+        		    url: "/mind"+"/"+node.id,
+        		    type: 'POST',
+        		    data: {_token:task_token,name:topic},
+        		    success: function(result) {
+        		    	result_arr = JSON.parse(result);
+        				if(result_arr.code != 9999){
+        					alert('处理失败，请稍后再试');
+        				} else {
+        					element.style.zIndex = 'auto';
+        	                element.removeChild(this.e_editor);
+        	                if(jm.util.text.is_empty(topic) || node.topic === topic){
+        	                    if(this.opts.support_html){
+        	                        $h(element,node.topic);
+        	                    }else{
+        	                        $t(element,node.topic);
+        	                    }
+        	                }else{
+        	                    this.jm.update_node(node.id,topic);
+        	                }
+        				}
+        		    }
+        		});
                 element.style.zIndex = 'auto';
                 element.removeChild(this.e_editor);
                 if(jm.util.text.is_empty(topic) || node.topic === topic){
@@ -2777,27 +2785,60 @@
         handle_addchild: function(_jm,e){
             var selected_node = _jm.get_selected_node();
             if(!!selected_node){
-                var nodeid = jm.util.uuid.newid();
-                var node = _jm.add_node(selected_node, nodeid, 'New Node');
-                if(!!node){
-                    _jm.select_node(nodeid);
-                    _jm.begin_edit(nodeid);
-                }
+//            	var nodeid = jm.util.uuid.newid();
+//            	var node = _jm.add_node(selected_node, nodeid, 'New Node');
+//            	if(!!node){
+//            		_jm.select_node(nodeid);
+//            		_jm.begin_edit(nodeid);
+//            	}
+//                var nodeid = jm.util.uuid.newid();
+            	
+            	//***********************add self start
+            	var task_token = document.getElementById("mind_token").value;
+                var parentid = selected_node.id;
+	       		$.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result){
+		   			var result_arr = jm.util.json.string2json(result);
+		   			if(result_arr.code != 9999){
+		   				alert('请求失败网络异常')
+		   			} else {
+		   				nodeid = result_arr.result.id;
+		   				var node = _jm.add_node(selected_node, nodeid, 'New Node');
+		                if(!!node){
+		                    _jm.select_node(nodeid);
+		                    _jm.begin_edit(nodeid);
+		                }
+		   			}
+		   		});
+	       	//***********************add self end
             }
         },
         handle_addbrother:function(_jm,e){
             var selected_node = _jm.get_selected_node();
             if(!!selected_node && !selected_node.isroot){
-                //var nodeid = jm.util.uuid.newid();
+            	
+//                var nodeid = jm.util.uuid.newid();
+//            	var node = _jm.insert_node_after(selected_node, nodeid, 'New Node');
+//                if(!!node){
+//                    _jm.select_node(nodeid);
+//                    _jm.begin_edit(nodeid);
+//                }
                 //***********************add self start
+                var task_token = document.getElementById("mind_token").value;
                 var parentid = selected_node.parent.id;
-                var nodeid = _jm.ajax_get_new_node_id(parentid,"New Node");
-                //***********************add self end
-                var node = _jm.insert_node_after(selected_node, nodeid, 'New Node');
-                if(!!node){
-                    _jm.select_node(nodeid);
-                    _jm.begin_edit(nodeid);
-                }
+	       		$.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result){
+		   			var result_arr = jm.util.json.string2json(result);
+		   			if(result_arr.code != 9999){
+		   				alert('请求失败网络异常')
+		   			} else {
+		   				nodeid = result_arr.result.id;
+		   				var node = _jm.insert_node_after(selected_node, nodeid, 'New Node');
+		                if(!!node){
+		                    _jm.select_node(nodeid);
+		                    _jm.begin_edit(nodeid);
+		                }
+		   			}
+		   		});
+              //***********************add self end
             }
         },
         handle_editnode:function(_jm,e){
@@ -2810,7 +2851,26 @@
             var selected_node = _jm.get_selected_node();
             if(!!selected_node && !selected_node.isroot){
                 _jm.select_node(selected_node.parent);
-                _jm.remove_node(selected_node);
+                
+              //***********************add self start
+                var task_token = document.getElementById("mind_token").value;
+              //执行移除
+                $.ajax({
+        		    url: "/mind/"+"/"+selected_node.id,
+        		    type: 'DELETE',
+        		    data: {_token:task_token},
+        		    success: function(result) {
+        		    	result_arr = JSON.parse(result);
+        				if(result_arr.code != 9999){
+        					alert('处理失败，请稍后再试');
+        				} else {
+        					_jm.remove_node(selected_node);
+        				}
+        		    }
+        		});
+              //***********************add self end
+                
+//                _jm.remove_node(selected_node);
             }
         },
         handle_toggle:function(_jm,e){
