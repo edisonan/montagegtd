@@ -2793,7 +2793,7 @@
             if(!!selected_node && !selected_node.isroot){
                 //var nodeid = jm.util.uuid.newid();
                 //***********************add self start
-                var parentid = node_after.parent.id;
+                var parentid = selected_node.parent.id;
                 var nodeid = _jm.ajax_get_new_node_id(parentid,"New Node");
                 //***********************add self end
                 var node = _jm.insert_node_after(selected_node, nodeid, 'New Node');
