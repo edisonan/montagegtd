@@ -109,7 +109,7 @@ $(document).ready(function () {
                             _jm.begin_edit(nodeid);
                         }
                     }
-                },handle_addbrother:function(_jm,e){
+                },addbrother:function(_jm,e){
                     alert(123);
                     var selected_node = _jm.get_selected_node();
                     if(!!selected_node && !selected_node.isroot){
