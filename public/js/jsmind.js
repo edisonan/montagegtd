@@ -1672,15 +1672,16 @@
           if(parentid != '' && topic != ''){
               var task_token = document.getElementById("mind_token").value;
               
+                var nodeid = false;
 	       		$.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result){
 		   			var result_arr = jm.util.json.string2json(result);
 		   			if(result_arr.code != 9999){
 		   				return false;
 		   			} else {
-		   				return result_arr.result.id;
+		   				nodeid = result_arr.result.id;
 		   			}
 		   		});
-              return false;
+              return nodeid;
           } else {
             return false;
           }
