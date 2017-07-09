@@ -1670,9 +1670,9 @@
           console.log(parentid);
           console.log(topic);
           if(parentid != '' && topic != ''){
-              task_token = document.getElementById("mind_token").value;
+              var task_token = document.getElementById("mind_token").value;
 
-              jm.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid},function(result) {
+              jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid},function(result) {
         		    	result_arr = JSON.parse(result);
           				if(result_arr.code != 9999){
 		                    return false;
