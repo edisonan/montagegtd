@@ -2,6 +2,13 @@
 <link type="text/css" rel="stylesheet" href="{{ url('/css/jsmind.css')}}" />
 <script type="text/javascript" src="{{ url('/js/jsmind.js')}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
+<style type="text/css">
+button, input, optgroup, select, textarea {
+    margin: 0;
+    font: inherit;
+    /* color: inherit; */
+}
+</style>
 
 @section('content')
 <script type="text/javascript">
@@ -184,7 +191,7 @@ $(document).ready(function () {
     function show_selected(){
         var selected_node = _jm.get_selected_node();
         if(!!selected_node){
-        	$("#mind_content").val(selected_node.data.data);
+        	$("#mind_content").val(selected_node.data.content);
         	$("#mind_id").val(selected_node.id);
         	$("#mind_name").html('描述:'+selected_node.topic);
         }else{
