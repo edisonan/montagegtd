@@ -1,9 +1,10 @@
 @extends('layouts.app')
+
+
+@section('content')
 <link type="text/css" rel="stylesheet" href="{{ url('/css/jsmind.css')}}" />
 <script type="text/javascript" src="{{ url('/js/jsmind.js').'?'.time()}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
-
-@section('content')
 <style type="text/css">
 button, input, optgroup, select, textarea {
     margin: 0;
