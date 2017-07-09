@@ -2438,7 +2438,7 @@
                 var element = view_data.element;
                 var topic = this.e_editor.value;
                 element.style.zIndex = 'auto';
-//                element.removeChild(this.e_editor);
+                element.removeChild(this.e_editor);
                 if(jm.util.text.is_empty(topic) || node.topic === topic){
                     if(this.opts.support_html){
                         $h(element,node.topic);
@@ -2446,7 +2446,7 @@
                         $t(element,node.topic);
                     }
                 }else{
-//                    this.jm.update_node(node.id,topic);
+                    this.jm.update_node(node.id,topic);
                 }
             }
         },
