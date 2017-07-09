@@ -2856,7 +2856,7 @@
                 var task_token = document.getElementById("mind_token").value;
               //执行移除
                 $.ajax({
-        		    url: "/mind/"+"/"+selected_node.id,
+        		    url: "/mind"+"/"+selected_node.id,
         		    type: 'DELETE',
         		    data: {_token:task_token},
         		    success: function(result) {
