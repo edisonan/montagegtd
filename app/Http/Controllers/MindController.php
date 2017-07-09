@@ -83,7 +83,7 @@ class MindController extends Controller
         	'is_root' => $is_root,
         ]);
         
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($request->ajax() || $request->wantsJson() || $request->has('json_wants')) {
         	$resp = $this->responseJson(self::OK_CODE,array(
         			'id'=>$mind->id,
         			'name'=>$mind->name
