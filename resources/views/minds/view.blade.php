@@ -96,7 +96,7 @@ $(document).ready(function () {
             pspace:13           // 节点收缩/展开控制器的尺寸
         },
         shortcut:{
-            enable:false,        // 是否启用快捷键
+            enable:true,        // 是否启用快捷键
             handles:{
             	handle_addchild: function(_jm,e){
                 	alert(123);
