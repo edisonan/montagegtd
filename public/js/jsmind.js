@@ -1672,16 +1672,18 @@
           if(parentid != '' && topic != ''){
               var task_token = document.getElementById("mind_token").value;
 
-              var temp = jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result) {
+              var temp = null;
+              jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result) {
         		    	var result_arr = result;
           				if(result_arr.code != 9999){
 		                    return false;
 		          		} else {
 		          			console.log(result_arr.result.id);
-		                    return result_arr.result.id;
+		          			temp = result_arr.result.id;
           				}
         		    });
               console.log(temp);
+              return temp;
           } else {
             return false;
           }
