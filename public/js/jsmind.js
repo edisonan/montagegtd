@@ -1673,16 +1673,27 @@
               var task_token = document.getElementById("mind_token").value;
 
               var temp = null;
-              jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},Test);
-              Test(function(result) {
-        		    	var result_arr = result;
-          				if(result_arr.code != 9999){
-		                    return false;
-		          		} else {
-		          			console.log(result_arr.result.id);
-		          			temp = result_arr.result.id;
-          				}
-        	  });
+//              jm.util.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},Test);
+//              Test(function(result) {
+//        		    	var result_arr = result;
+//          				if(result_arr.code != 9999){
+//		                    return false;
+//		          		} else {
+//		          			console.log(result_arr.result.id);
+//		          			temp = result_arr.result.id;
+//          				}
+//        	  });
+              
+              var url = '';
+       		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
+   			result_arr = JSON.parse(result);
+   			if(result_arr.code != 9999){
+   				alert('该url未检测到内容，请确认！');
+   			} else {
+   				alert('检测成功');
+   			}
+   			$("#feed_name").val(result_arr.result.title);
+   		});
               console.log(temp);
               return temp;
           } else {
