@@ -61,7 +61,7 @@ class ArticleController extends Controller
     	}
     	$page_params['status'] = $status;
     	
-    	$temp_counts = Article::select('feed_id',DB::raw('count(*) as total'))->groupBy('feed_id')->get();
+    	$temp_counts = Article::select('feed_id',DB::raw('count(*) as total'))->where('status',$status)->groupBy('feed_id')->get();
     	$counts_info = array();
     	foreach ($temp_counts as $temp_count){
     		$counts_info[$temp_count['feed_id']] = $temp_count['total'];

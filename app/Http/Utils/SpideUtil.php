@@ -115,7 +115,7 @@ class SpideUtil{
 		}
 		
 		$content = str_replace($img_urls, array_map('get_image_filename', $img_urls, $args), $content);
-// 		$content = str_replace('<img', '<img style="margin:0 auto;display:block;height:300px"', $content);
+		$content = str_replace('<img', '<img style="margin:0 auto;display:block;height:300px"', $content);
 		
 		foreach ($img_urls as $img_url) {
 			$this->download($img_url, config("app.storage_path").'/ebooks/static' . "/images/temp/");
