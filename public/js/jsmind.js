@@ -2446,7 +2446,7 @@
                         $t(element,node.topic);
                     }
                 }else{
-                    this.jm.update_node(node.id,topic);
+//                    this.jm.update_node(node.id,topic);
                 }
             }
         },
