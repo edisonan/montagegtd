@@ -2,6 +2,8 @@
 <link type="text/css" rel="stylesheet" href="{{ url('/css/jsmind.css')}}" />
 <script type="text/javascript" src="{{ url('/js/jsmind.js')}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
+
+@section('content')
 <style type="text/css">
 button, input, optgroup, select, textarea {
     margin: 0;
@@ -9,8 +11,6 @@ button, input, optgroup, select, textarea {
     /* color: inherit; */
 }
 </style>
-
-@section('content')
 <script type="text/javascript">
 $(document).ready(function () {
 
