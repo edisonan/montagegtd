@@ -1670,21 +1670,16 @@
           console.log(parentid);
           console.log(topic);
           if(parentid != '' && topic != ''){
-              task_token = $('#mind_token').val();
+              task_token = document.getElementById('mind_token').val;
 
-            	$.ajax({
-        		    url: "/mind",
-        		    type: 'POST',
-        		    data: {_token:task_token,name:topic,parent_mind_id:parentid},
-        		    success: function(result) {
+              jm.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid},function(result) {
         		    	result_arr = JSON.parse(result);
           				if(result_arr.code != 9999){
-                    return false;
-          				} else {
-                    return result_arr['result']['id'];
+		                    return false;
+		          		} else {
+		                    return result_arr['result']['id'];
           				}
-        		    }
-        		});
+        		    });
           } else {
             return false;
           }
