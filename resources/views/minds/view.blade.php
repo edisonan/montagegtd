@@ -98,29 +98,6 @@ $(document).ready(function () {
         shortcut:{
             enable:true,        // 是否启用快捷键
             handles:{
-            	handle_addchild: function(_jm,e){
-                	alert(123);
-                    var selected_node = _jm.get_selected_node();
-                    if(!!selected_node){
-                        var nodeid = jm.util.uuid.newid();
-                        var node = _jm.add_node(selected_node, nodeid, 'New Node');
-                        if(!!node){
-                            _jm.select_node(nodeid);
-                            _jm.begin_edit(nodeid);
-                        }
-                    }
-                },addbrother:function(_jm,e){
-                    alert(123);
-                    var selected_node = _jm.get_selected_node();
-                    if(!!selected_node && !selected_node.isroot){
-                        var nodeid = jm.util.uuid.newid();
-                        var node = _jm.insert_node_after(selected_node, nodeid, 'New Node');
-                        if(!!node){
-                            _jm.select_node(nodeid);
-                            _jm.begin_edit(nodeid);
-                        }
-                    }
-                }
         		
             },// 命名的快捷键事件处理器
             mapping:{           // 快捷键映射

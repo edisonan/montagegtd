@@ -1,13 +1,13 @@
 /*
  * Released under BSD License
  * Copyright (c) 2014-2016 hizzgdev@163.com
- * 
+ *
  * Project Home:
  *   https://github.com/hizzgdev/jsmind/
  */
 
 (function($w){
-    'use strict';       
+    'use strict';
     // set 'jsMind' as the library name.
     // __name__ should be a const value, Never try to change it easily.
     var __name__ = 'jsMind';
@@ -455,6 +455,31 @@
                 }
             }
         },
+
+        //add self
+        ajax_get_new_node_id:function(parentid, topic){
+          console.log(parentid);
+          console.log(topic);
+          if(parentid != '' && topic != ''){
+              task_token = "{{ csrf_token() }}";
+
+            	$.ajax({
+        		    url: "{{ url('mind') }}",
+        		    type: 'POST',
+        		    data: {_token:task_token,name:topic,parent_mind_id:parentid},
+        		    success: function(result) {
+        		    	result_arr = JSON.parse(result);
+          				if(result_arr.code != 9999){
+                    return false;
+          				} else {
+                    return result_arr['result']['id'];
+          				}
+        		    }
+        		});
+          } else {
+            return false;
+          }
+        },
     };
 
     jm.format = {
@@ -746,7 +771,7 @@
                 }else{ // Internet Explorer
                     xml_doc = new ActiveXObject('Microsoft.XMLDOM');
                     xml_doc.async = false;
-                    xml_doc.loadXML(xml); 
+                    xml_doc.loadXML(xml);
                 }
                 return xml_doc;
             },
@@ -1088,7 +1113,7 @@
                 line_width:opts.view.line_width,
                 line_color:opts.view.line_color
             };
-            // create instance of function provider 
+            // create instance of function provider
             this.data = new jm.data_provider(this);
             this.layout = new jm.layout_provider(this, opts_layout);
             this.view = new jm.view_provider(this, opts_view);
@@ -1165,7 +1190,7 @@
                 var nodeid = this.view.get_binded_nodeid(element);
                 if(!!nodeid){
                     this.toggle_node(nodeid);
-                } 
+                }
             }
         },
 
@@ -2147,7 +2172,7 @@
         is_expand:function(node){
             return node.expanded;
         },
-        
+
         is_visible:function(node){
             var layout_data = node._data.layout;
             if(('visible' in layout_data) && !layout_data.visible){
@@ -2534,7 +2559,7 @@
                 y:parseInt(vd.element.style.top)-this.e_panel.scrollTop,
             };
         },
-        
+
         restore_location:function(node){
             var vd = node._data.view;
             this.e_panel.scrollLeft = parseInt(vd.element.style.left)-vd._saved_location.x;
@@ -2691,7 +2716,7 @@
             ctx.strokeStyle = this.opts.line_color;
             ctx.lineWidth = this.opts.line_width;
             ctx.lineCap = 'round';
-            
+
             jm.util.canvas.bezierto(
                 ctx,
                 pin.x + offset.x,
@@ -2763,7 +2788,11 @@
         handle_addbrother:function(_jm,e){
             var selected_node = _jm.get_selected_node();
             if(!!selected_node && !selected_node.isroot){
-                var nodeid = jm.util.uuid.newid();
+                //var nodeid = jm.util.uuid.newid();
+                //***********************add self start
+                var parentid = node_after.parent.id;
+                var nodeid = _jm.ajax_get_new_node_id(parentid,"New Node");
+                //***********************add self end
                 var node = _jm.insert_node_after(selected_node, nodeid, 'New Node');
                 if(!!node){
                     _jm.select_node(nodeid);
