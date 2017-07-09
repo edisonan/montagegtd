@@ -2801,7 +2801,7 @@
 		   			if(result_arr.code != 9999){
 		   				alert('请求失败网络异常')
 		   			} else {
-		   				nodeid = result_arr.result.id;
+		   				var nodeid = result_arr.result.id;
 		   				var node = _jm.add_node(selected_node, nodeid, 'New Node');
 		                if(!!node){
 		                    _jm.select_node(nodeid);
@@ -2830,7 +2830,7 @@
 		   			if(result_arr.code != 9999){
 		   				alert('请求失败网络异常')
 		   			} else {
-		   				nodeid = result_arr.result.id;
+		   				var nodeid = result_arr.result.id;
 		   				var node = _jm.insert_node_after(selected_node, nodeid, 'New Node');
 		                if(!!node){
 		                    _jm.select_node(nodeid);
