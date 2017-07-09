@@ -2796,7 +2796,7 @@
             	//***********************add self start
             	var task_token = document.getElementById("mind_token").value;
                 var parentid = selected_node.id;
-	       		$.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result){
+	       		$.post('/mind',{_token:task_token,name:"New Topic",parent_mind_id:parentid,json_wants:1},function(result){
 		   			var result_arr = jm.util.json.string2json(result);
 		   			if(result_arr.code != 9999){
 		   				alert('请求失败网络异常')
@@ -2825,7 +2825,7 @@
                 //***********************add self start
                 var task_token = document.getElementById("mind_token").value;
                 var parentid = selected_node.parent.id;
-	       		$.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid,json_wants:1},function(result){
+	       		$.post('/mind',{_token:task_token,name:"New Topic",parent_mind_id:parentid,json_wants:1},function(result){
 		   			var result_arr = jm.util.json.string2json(result);
 		   			if(result_arr.code != 9999){
 		   				alert('请求失败网络异常')
