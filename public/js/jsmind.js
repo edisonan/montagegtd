@@ -1670,7 +1670,7 @@
           console.log(parentid);
           console.log(topic);
           if(parentid != '' && topic != ''){
-              task_token = document.getElementById('mind_token').val;
+              task_token = document.getElementById("mind_token").value;
 
               jm.ajax.post('/mind',{_token:task_token,name:topic,parent_mind_id:parentid},function(result) {
         		    	result_arr = JSON.parse(result);
