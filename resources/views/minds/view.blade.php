@@ -8,7 +8,7 @@
 button, input, optgroup, select, textarea {
     margin: 0;
     font: inherit;
-    /* color: inherit; */
+    color: black;
 }
 </style>
 <script type="text/javascript">
