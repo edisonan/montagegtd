@@ -66,10 +66,10 @@ $(document).ready(function () {
 					<div id="jsmind_container" class="col-sm-offset-0 col-sm-10">
 					</div>
 					<div id="" class="col-sm-offset-0 col-sm-2">
-						<span id="mind_name" class="col-sm-12">描述Topic</span>
-						<textarea  class="col-sm-12" id="mind_content"  style="margin: 0px; height: 189px; width: 151px;" id="mind_content"></textarea>
-						<input type="hidden" id="mind_id">
-						<button class="btn btn-primary" onclick="mind_update()">保存</button>
+						<span id="mind_name" class="col-sm-12">详细描述:{{$mind->name}}</span>
+						<textarea  class="col-sm-12" id="mind_content"  style="margin: 0px; height: 189px; width: 151px;" id="mind_content">{{$mind->content}}</textarea>
+						<input type="hidden" id="mind_id" value="{{$mind->id}}">
+						<button class="btn btn-primary col-sm-12" onclick="mind_update()">保存</button>
 					</div>
                 </div>
             </div>
