@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 use App\Setting;
+use App\KindleLog;
 use App\Repositories\SettingRepository;
 
 use Develpr\Phindle\Phindle;
