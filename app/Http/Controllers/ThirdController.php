@@ -56,7 +56,7 @@ class ThirdController extends Controller
     	$aurl = $o -> getAuthorizeURL( $keys['oauth_token'] ,false , $config['callback']);
     	
     	$request->session()->set('temp', $keys);
-    	return redirect((string)$aurl);
+    	return redirect((string)$aurl)->with('message', 'IT WORKS!');
     }
 
     /**
@@ -112,7 +112,7 @@ class ThirdController extends Controller
     	$third = $this->third->forUserSource($request->user(),'fanfou');
     	
     	if(empty($third)){
-    		return redirect('third/fanfouIndex');
+    		return redirect('third/fanfouIndex')->with('message', 'IT WORKS!');
     	}
     	
     	$oauth_token = $third['token_value'];

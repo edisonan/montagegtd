@@ -12,7 +12,9 @@ $(document).ready(function () {
     <div class="container">
     
         <div class="col-sm-offset-2 col-sm-8">
+            @include('common.success')
             <div class="panel panel-default">
+            	 
                 <div class="panel-heading">
                     	设置
                 </div>

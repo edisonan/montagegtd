@@ -161,7 +161,7 @@ class NoteController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/notes');
+        	return redirect('/notes')->with('message', 'IT WORKS!');
         }
         
     }
@@ -183,7 +183,7 @@ class NoteController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/notes');
+        	return redirect('/notes')->with('message', 'IT WORKS!');
         }
     }
     
@@ -198,7 +198,7 @@ class NoteController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/notes');
+    		return redirect('/notes')->with('message', 'IT WORKS!');
     	}
     }
     

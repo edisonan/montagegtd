@@ -133,11 +133,23 @@ class ArticleController extends Controller
     
     public function read(Request $request,Article  $article)
     {
-    	$this->authorize('destroy', $article);
-    
-    	if(in_array($request->status,array('read','unread'))){
-    		$article->status = 'read';
-    		$article->update();
+    	if($request->has('ids')){
+			$id_arr = explode(',', $request->ids);
+			foreach ($id_arr as $id){
+				$article = Article::where('id',$id)->where('user_id',$request->user()->id)->first();
+				if(empty($article)){
+					continue;
+				} else {
+					$article->status = 'read';
+	    			$article->update();
+				}
+			}
+    	} else {
+	    	$this->authorize('destroy', $article);
+	    	if(in_array($request->status,array('read','unread'))){
+	    		$article->status = 'read';
+	    		$article->update();
+	    	}
     	}
     	 
     	if ($request->ajax() || $request->wantsJson()) {
@@ -167,7 +179,7 @@ class ArticleController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/articles');
+        	return redirect('/articles')->with('message', 'IT WORKS!');
         }
     }
 }

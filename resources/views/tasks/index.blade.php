@@ -2,6 +2,7 @@
 
 @section('content')
     <div class="container">
+    		@include('common.success')
             <!-- Current Tasks -->
                 <div class="panel panel-default">
                     <div class="panel-heading">

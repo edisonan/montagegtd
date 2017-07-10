@@ -71,7 +71,7 @@ class GoalController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/goals');
+        	return redirect('/goals')->with('message', 'IT WORKS!');
         }
     }
 
@@ -99,7 +99,7 @@ class GoalController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/goals');
+        	return redirect('/goals')->with('message', 'IT WORKS!');
         }
     }
     
@@ -117,7 +117,7 @@ class GoalController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/goals');
+    		return redirect('/goals')->with('message', 'IT WORKS!');
     	}
     }
 }

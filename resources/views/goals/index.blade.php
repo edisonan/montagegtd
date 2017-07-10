@@ -32,6 +32,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
             <!-- Current Goals -->
+            	@include('common.success')
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         	技能列表

@@ -201,7 +201,7 @@ $(document).ready(function () {
 });
 </script>
     <div class="container">
-    
+    	@include('common.success')
     
     	<div 
     		class="col-sm-offset-0 col-sm-5 bootstro" 

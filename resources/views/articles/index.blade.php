@@ -39,6 +39,18 @@ $(document).ready(function () {
 		});
 	});
 
+	$("#marked_all_read").click(function(){
+		var ids = $(this).attr('ids');
+		$.get("{{ url('/article/reads') }}",{ids:ids,status:"read"},function(result){
+			result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert("设置失败");
+			} else {
+				location.href="";
+			}
+		});
+	});
+
 	$(".post .post-content").each(function(){
 		height=$(this).height();
 		if(height>80) {
@@ -59,6 +71,7 @@ $(document).ready(function () {
     <div class="container">
     
     	<div class="col-sm-offset-0 col-sm-3">
+    		@include('common.success')
     		<div class="panel panel-default">
                 <div class="panel-heading">
                 	订阅分类
@@ -79,7 +92,7 @@ $(document).ready(function () {
 			    							[
 			    							<?php echo isset($counts_info[$feed->id])?$counts_info[$feed->id]:0;?>
 			    							]
-			    							{{ $feed->feed_name,0,10 }}
+			    							{{ $feed->feed_name,0,8 }}
 			    							</span>
 			    							</a>
 			    						</li>
@@ -124,7 +137,9 @@ $(document).ready(function () {
                     		@endif
                     
                     		@if (count($articles) > 0)
+                    			<?php $article_ids = array();?>
 	                    		@foreach ($articles as $article)
+	                    		<?php $article_ids[] = $article->id;?>
 	                            <article class="post">
 									<div class="post-head">
 										<h1 class="post-title">
@@ -163,10 +178,14 @@ $(document).ready(function () {
 								</article>
 								@endforeach
                         		{!! $articles->appends($page_params)->links() !!}
+                        		
+                        		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
+                        		<button class="col-sm-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_ids);?>">Marked All Read</button>
+                        		@endif
                         @else
                         	<hr></hr>
                         	<div class="col-sm-offset-0 col-sm-12" style="    padding: 10px;">
-                        		<b>暂时没有最新文章,可以点击这里多添加自己喜欢的订阅源~~ <a href="{{ url('feeds')}}">[订阅管理]</a></b>
+                        		<b>暂时没有最新文章,可以点击这里多添加自己喜欢的订阅源~~ </b>
                         	</div>
                         @endif
                 </div>

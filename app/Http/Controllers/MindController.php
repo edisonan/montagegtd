@@ -67,7 +67,7 @@ class MindController extends Controller
     	if($request->has('parent_mind_id')){
     		$parentMind = Mind::where('id',$request->parent_mind_id)->where('user_id',$request->user()->id)->first();
     		if(empty($parentMind)){
-    			redirect('/minds');
+    			redirect('/minds')->with('message', 'IT WORKS!');
     		}
     		$parent_mind_id = $request->parent_mind_id;
     		$is_root = 0;
@@ -90,7 +90,7 @@ class MindController extends Controller
         	));
         	return response($resp);
         } else {
-        	return redirect('/mind/'.$mind->id);
+        	return redirect('/mind/'.$mind->id)->with('message', 'IT WORKS!');
         }
     }
 
@@ -111,7 +111,7 @@ class MindController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/minds');
+        	return redirect('/minds')->with('message', 'IT WORKS!');
         }
     }
     
@@ -132,7 +132,7 @@ class MindController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/minds');
+    		return redirect('/minds')->with('message', 'IT WORKS!');
     	}
     }
     

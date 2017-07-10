@@ -46,6 +46,7 @@ $(document).ready(function () {
     <div class="container">
     
         <div class="col-sm-offset-0 col-sm-12">
+        	@include('common.success')
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	思维导图
@@ -55,12 +56,12 @@ $(document).ready(function () {
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
-                    <!-- New Task Form -->
+                    <!-- New mind Form -->
                     <form action="{{ url('mind') }}" method="POST" class="form-horizontal">
                         {{ csrf_field() }}
 
-                        <!-- Task Name -->
-                        <div class="form-group" id="task_form_div1" >
+                        <!-- mind Name -->
+                        <div class="form-group" id="mind_form_div1" >
                             <div class="col-sm-9" style="display: -webkit-inline-box;width: 75%;">
                             	<input type="text" name="name" id="name" class="form-control" value="">
                             </div>
@@ -72,36 +73,47 @@ $(document).ready(function () {
                         </div>
                         
                     </form>
-                    
-                    
-                    @if (count($minds) > 0)
-                    <table class="table table-striped task-table">
-                            <thead>
-                                <th>想法</th>
-                                <th>&nbsp;</th>
-                            </thead>
-                            <tbody>
-                                @foreach ($minds as $mind)
-                                    <tr >
-                                        <td class="table-text"  width="90%">
-                                        	<div class="preprepre">
-                                        		<a href="{{url('mind/' . $mind->id)}}" title="">{{ $mind->name }}</a>
-                                        	</pre>
-                                        </td>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    	导图列表
+                </div>
 
-                                        <!-- Task Delete Button -->
-                                        <td  width="1"  align='right'>
-                                        <a href="{{ url('mind/'.$mind->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
-                                        	<a href="javascript:void(0)" class="delete_mind" task_type="delete" task_value="{{ $mind->id }}" mind_token="{{ csrf_token() }}"  style="cursor:pointer;">
-                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
-                                        	</a> 
-                                        </td>
-                                    </tr>
+                <div class="panel-body">
+                
+                 		@if (count($minds) > 0)
+                                @foreach ($minds as $mind)
+                                	<div calss="col-sm-12" id="{{$mind->id}}">
+                                		<div class="col-sm-3  text-center">
+                                			<div>
+                                				<img alt="" src="/img/cover.jpg" width="150px">
+                                			</div>
+                                			<div style="margin-top: -30px;">
+                                				<a href="{{url('mind/' . $mind->id)}}" title="">
+	                                				<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+	                                					{{ $mind->name }}
+	                                				</span>
+                                				</a>
+                                			</div>
+                                			<div class="text-left col-sm-6"  style="display: -webkit-inline-box;">
+		                                		<a href="{{ url('mind/'.$mind->id)}}" style="color:blue">
+		                                			<img alt="" style="width: 15px;" src="/img/icon/edit.png">
+		                                		</a>
+                                			</div>
+                                			<div class="text-right col-sm-6">
+		                                		<a href="javascript:void(0)" class="delete_mind" mind_type="delete" mind_value="{{ $mind->id }}" mind_token="{{ csrf_token() }}"  style="cursor:pointer;" class="text-right">
+		                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+		                                        </a> 
+	                                        </div>
+                                		</div>
+                                	</div>
                                 @endforeach
-                            </tbody>
-                        </table>
-                         {!! $minds->links() !!}
-                    @endif
+                        
+                         		{!! $minds->links() !!}
+                    	@endif
+
                 </div>
             </div>
 

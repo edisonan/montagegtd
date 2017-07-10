@@ -119,7 +119,7 @@ class TaskController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/index');
+        	return redirect('/index')->with('message', 'IT WORKS!');
         }
     }
 
@@ -147,7 +147,7 @@ class TaskController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/index');
+        	return redirect('/index')->with('message', 'IT WORKS!');
         }
     }
     
@@ -161,7 +161,7 @@ class TaskController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/index');
+    		return redirect('/index')->with('message', 'IT WORKS!');
     	}
     }
     

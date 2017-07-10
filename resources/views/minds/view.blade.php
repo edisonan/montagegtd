@@ -34,6 +34,7 @@ $(document).ready(function () {
     <div class="container">
     
         <div class="col-sm-offset-0 col-sm-12">
+        	@include('common.success')
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	想法-{{$mind->name}} 
@@ -117,8 +118,10 @@ $(document).ready(function () {
     };
 
     var _jm = new jsMind(options);
+
     // 让 _jm 显示这个 mind 即可
     _jm.show(mind); 
+    _jm.select_node({{$mind->id}});
 
     function add_node(){
         var selected_node = _jm.get_selected_node(); // as parent of new node
@@ -244,6 +247,8 @@ $(document).ready(function () {
     	
         if (selected_id != null && selected_id != "" && content != null && content != "")
         {
+        	var selected_node = _jm.get_node(selected_id);
+        	
         	task_token = "{{ csrf_token() }}";
         	
         	$.ajax({
@@ -255,8 +260,8 @@ $(document).ready(function () {
     				if(result_arr.code != 9999){
     					alert('处理失败，请稍后再试');
     				} else {
-    					// modify the topic
-    					location.href="";
+    					selected_node.data.content = content;
+    					_jm.select_node(selected_id);
     				}
     		    }
     		});

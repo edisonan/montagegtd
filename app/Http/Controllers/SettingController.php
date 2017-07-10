@@ -91,9 +91,9 @@ class SettingController extends Controller
         	return response($resp);
         } else {
         	if($request->has('page_info') && $request->page_info == 'kindle_page'){
-        		return redirect('/kindles');
+        		return redirect('/kindles')->with('message', 'IT WORKS!');
         	} else {
-        		return redirect('/settings');
+        		return redirect('/settings')->with('message', 'IT WORKS!');
         	}
         	
         }

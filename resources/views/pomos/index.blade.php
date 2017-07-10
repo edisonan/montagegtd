@@ -31,7 +31,7 @@ $(document).ready(function () {
 });
 </script>
     <div class="container">
-
+			@include('common.success')
             <!-- Finish Pomos -->
                 <div class="panel panel-default">
                     <div class="panel-heading">

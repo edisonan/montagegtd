@@ -20,7 +20,7 @@ $(document).ready(function () {
 		    success: function(result) {
 		    	result_arr = JSON.parse(result);
 				if(result_arr.code != 9999){
-					alert('处理失败，请稍后再试');
+					alert(result_arr.msg);
 				} else {
 					$('#'+category_value).remove();
 				}
@@ -32,6 +32,9 @@ $(document).ready(function () {
     <div class="container">
     
         <div class="col-sm-offset-0 col-sm-12">
+        	
+        	@include('common.success')
+        	
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	新的分类
@@ -41,28 +44,28 @@ $(document).ready(function () {
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
-                    <!-- New Task Form -->
+                    <!-- New category Form -->
                     <form action="{{ url('category') }}" method="POST" class="form-horizontal">
                         {{ csrf_field() }}
 
-                        <!-- Task Name -->
+                        <!-- category Name -->
                         <div class="form-group">
-                            <label for="task-name" class="col-sm-3 control-label">分类名称</label>
+                            <label for="category-name" class="col-sm-3 control-label">分类名称</label>
 								
                             <div class="col-sm-8">
-	                               <input type="text" name="name" id="name" class="form-control" value="{{ old('task') }}">
+	                               <input type="text" name="name" id="name" class="form-control" value="{{ old('category') }}">
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="task-name" class="col-sm-3 control-label">分类排序</label>
+                            <label for="category-name" class="col-sm-3 control-label">分类排序</label>
 								
                             <div class="col-sm-8">
-	                               <input type="text" name="category_order" id="category_order" class="form-control" value="">
+	                               <input type="text" name="category_order" id="category_order" class="form-control" value="0">
                             </div>
                         </div>
 
-                        <!-- Add Task Button -->
+                        <!-- Add category Button -->
                         <div class="form-group">
                             <div class="col-sm-offset-3 col-sm-6">
                                 <button type="submit" class="btn btn-default">
@@ -74,7 +77,7 @@ $(document).ready(function () {
                     
                     
                     @if (count($categorys) > 0)
-                    <table class="table table-striped task-table">
+                    <table class="table table-striped category-table">
                             <thead>
                                 <th>分类列表</th>
                                 <th>&nbsp;</th>
@@ -90,7 +93,7 @@ $(document).ready(function () {
 
                                         <td  width="1"  align='right'>
 	                                        <a href="{{ url('category/'.$category->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
-	                                        	<a href="javascript:void(0)" class="delete_category" task_type="delete" task_value="{{ $category->id }}" category_token="{{ csrf_token() }}"  style="cursor:pointer;">
+	                                        	<a href="javascript:void(0)" class="delete_category" category_type="delete" category_value="{{ $category->id }}" category_token="{{ csrf_token() }}"  style="cursor:pointer;">
 	                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
 	                                        	</a> 
                                         </td>

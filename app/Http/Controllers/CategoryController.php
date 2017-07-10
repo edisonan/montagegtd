@@ -66,7 +66,7 @@ class CategoryController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/categorys');
+        	return redirect('/categorys')->with('message', 'IT WORKS!');
         }
         
     }
@@ -82,17 +82,18 @@ class CategoryController extends Controller
     {
         $this->authorize('destroy', $category);
         
-        if(empty($category->feeds())){
+        if(empty($category->feeds) || count($category->feeds) == 0){
         	$category->delete();
         } else {
-        	echo 'This category has Feeds!cannot delete!';exit;
+        	$resp = $this->responseJson(1000,null,'This category has Feeds!cannot delete!');
+        	return response($resp);
         }
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/categorys');
+        	return redirect('/categorys')->with('message', 'IT WORKS!');
         }
     }
     
@@ -115,7 +116,7 @@ class CategoryController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/categorys');
+    		return redirect('/categorys')->with('message', 'IT WORKS!');
     	}
     }
 }
