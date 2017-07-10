@@ -134,7 +134,7 @@ class ArticleController extends Controller
     	}
     	
     	if ($request->ajax() || $request->wantsJson()) {
-    		$resp = $this->responseJson(self::OK_CODE,$article);
+    		$resp = $this->responseJson(self::OK_CODE,$articleSub->article);
     		return response($resp);
     	} else {
     		return view('articles.view', [
