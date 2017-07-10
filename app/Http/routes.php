@@ -54,12 +54,13 @@ Route::group(['middleware' => ['web']], function () {
     })->middleware('guest');
     
     Route::get('/test4', function () {
-    	$articles = \App\Article::select('id','user_id','status')->get();
+    	$articles = \App\Article::select('id','user_id','status','feed_id')->get();
     	foreach ($articles as $article){
     		$articleSub = new \App\ArticleSub();
     		$articleSub->user_id = $article->user_id;
     		$articleSub->status = $article->status;
     		$articleSub->article_id = $article->id;
+    		$articleSub->feed_id = $article->feed_id;
     		$articleSub->save();
     	}
     })->middleware('guest');
