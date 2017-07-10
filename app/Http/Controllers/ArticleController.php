@@ -61,6 +61,8 @@ class ArticleController extends Controller
      */
     public function index(Request $request)
     {
+    	DB::connection()->disableQueryLog();
+    	 
     	$page_params = array();
     	
     	$categorys = $this->categorys->forUser($request->user());
