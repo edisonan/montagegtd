@@ -147,6 +147,12 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/kindles', 'KindleController@index');
     Route::get('/kindle/test', 'KindleController@test');
+    
+    Route::get('/things', 'ThingController@index');
+    Route::post('/thing', 'ThingController@store');
+    Route::delete('/thing/{thing}', 'ThingController@destroy');
+    Route::post('/thing/{thing}', 'ThingController@update');
+    Route::get('/thing/{thing}', 'ThingController@update');
 
     Route::auth();
 

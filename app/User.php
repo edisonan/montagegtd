@@ -11,6 +11,7 @@ use App\Note;
 use App\Third;
 use App\Goal;
 use App\Setting;
+use App\Thing;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -93,6 +94,11 @@ class User extends Authenticatable
     public function minds()
     {
     	return $this->hasMany(Mind::class);
+    }
+    
+    public function things()
+    {
+    	return $this->hasMany(Thing::class);
     }
     
     public function setting()
