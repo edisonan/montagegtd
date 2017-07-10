@@ -19,6 +19,7 @@ use App\Feed;
 use App\Article;
 use App\Http\Utils\SpideUtil;
 use App\Setting;
+use App\KindleLog;
 use App\Repositories\SettingRepository;
 
 use Develpr\Phindle\Phindle;
@@ -183,6 +184,12 @@ class Kernel extends ConsoleKernel
     		$settings = Setting::where('is_start_kindle',1)->get();
     		foreach ($settings as $setting){
     			$user = $setting->user;
+    			$kindleLog = new KindleLog();
+    			$kindleLog->user_id = $user->id;
+    			$kindleLog->type = 2;
+    			$kindleLog->status = 1;
+    			$kindleLog->save();
+    			
     			$phindle = new Phindle(array(
     					'title' => "Montage GTD每日订阅推送".date('Y-m-d'),
     					'publisher' => "Montage GTD ".$user->id,
@@ -244,11 +251,18 @@ class Kernel extends ConsoleKernel
 //     			$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
     			$path = $phindle->getMobiPath();
     			
+    			$kindleLog->path = $path;
+    			$kindleLog->status = 2;
+    			$kindleLog->save();
+    			
     			\Log::info('send to kindle:'.$user->id.'|'.count($articles).'|'.$path);
     			\Mail::send('emails.kindle', ['setting'=>$setting,'path'=>$path], function ($m) use ($setting,$path) {
     				$m->to($setting->kindle_email, 'user')->subject('Send To Kindle');
     				$m->attach($path);
     			});
+    			
+    			$kindleLog->status = 3;
+    			$kindleLog->save();
     		}
     	})->dailyAt('18:00');
     }
