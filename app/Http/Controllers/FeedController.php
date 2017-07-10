@@ -100,7 +100,7 @@ class FeedController extends Controller
         	$feed = new Feed();
         	$feed->feed_name = $request->feed_name;
         	$feed->url = $request->url;
-        	$feed->category = $request->category;
+        	$feed->category_id = $request->category_id;
         	$feed->save();
         }
 
