@@ -105,4 +105,14 @@ class User extends Authenticatable
     {
     	return $this->hasOne(Setting::class);
     }
+    
+    public function feedSubs()
+    {
+    	return $this->hasMany(FeedSub::class);
+    }
+    
+    public function articleSubs()
+    {
+    	return $this->hasMany(ArticleSub::class);
+    }
 }

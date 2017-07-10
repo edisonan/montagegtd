@@ -16,25 +16,25 @@
 $(document).ready(function () {
 	
 	$(".set_star").click(function(){
-		article_id = $(this).attr('article_id');
-		$.get("{{ url('/article/star') }}"+"/"+article_id,{},function(result){
+		article_sub_id = $(this).attr('article_sub_id');
+		$.get("{{ url('/article/star') }}"+"/"+article_sub_id,{},function(result){
 			result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
 				alert("设置失败");
 			} else {
-				$(this).remove();
+				alert("收藏成功");
 			}
 		});
 	});
 
 	$(".set_read").click(function(){
-		article_id = $(this).attr('article_id');
-		$.get("{{ url('/article/read') }}"+"/"+article_id,{status:"read"},function(result){
+		article_sub_id = $(this).attr('article_sub_id');
+		$.get("{{ url('/article/read') }}"+"/"+article_sub_id,{status:"read"},function(result){
 			result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
 				alert("设置失败");
 			} else {
-				$(this).remove();
+				alert("设置已读成功");
 			}
 		});
 	});
@@ -85,7 +85,8 @@ $(document).ready(function () {
 			    				{{ $category->name }}
 			    				@if(count($category->feeds)>0)
 			    					<ul>
-			    					@foreach($category->feeds as $feed)
+			    					@foreach($category->feedSubs as $feedSub)
+			    						<?php $feed = $feedSub->feed;?>
 			    						<li>
 			    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
 			    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
@@ -128,7 +129,7 @@ $(document).ready(function () {
                     <!-- Display Validation Errors -->
                     @include('common.errors')
                     
-                    		@if(count($articles) == 0 && count($recommend_feeds) > 0)
+                    		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
 		                    	@foreach($recommend_feeds as $recommend_feed)
 		                    	<div class="col-sm-offset-0 col-sm-6"  style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;    padding: 2px;">
 									<span style="color:green;">推荐:</span><a href="{{ url('feeds') }}?url={{ $recommend_feed->url }}" >{{ $recommend_feed->feed_name }}</a>										                    		
@@ -136,10 +137,10 @@ $(document).ready(function () {
 		                    	@endforeach
                     		@endif
                     
-                    		@if (count($articles) > 0)
-                    			<?php $article_ids = array();?>
-	                    		@foreach ($articles as $article)
-	                    		<?php $article_ids[] = $article->id;?>
+                    		@if (count($articleSubs) > 0)
+                    			<?php $article_sub_ids = array();?>
+	                    		@foreach ($articleSubs as $articleSub)
+	                    		<?php $article = $articleSub->article;$article_sub_ids[] = $articleSub->id;?>
 	                            <article class="post">
 									<div class="post-head">
 										<h1 class="post-title">
@@ -156,7 +157,7 @@ $(document).ready(function () {
 									</div>
 									@if(!empty($article->image_url))
 									<div class="featured-media">
-										<a href="/post/laravel-5-4-is-now-released/">
+										<a href="#">
 											<img src="{{$article->image_url}}" alt="{{ $article->subject }}">
 										</a>
 									</div>
@@ -168,19 +169,19 @@ $(document).ready(function () {
 									</div>
 									<div class="post-permalink text-right">
 										@if($article->status == 'unread')
-										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_read">设为已读</a>
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read">设为已读</a>
 										@endif
 										@if($article->status != 'star')
-										<a href="javascript:void(0);"  article_id="{{$article->id}}" class="btn btn-default set_star">加入收藏</a>
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_star">加入收藏</a>
 										@endif
 									</div>
 									<footer class="post-footer clearfix"></footer>
 								</article>
 								@endforeach
-                        		{!! $articles->appends($page_params)->links() !!}
+                        		{!! $articleSubs->appends($page_params)->links() !!}
                         		
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        		<button class="col-sm-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_ids);?>">Marked All Read</button>
+                        		<button class="col-sm-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @else
                         	<hr></hr>

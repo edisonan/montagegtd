@@ -231,8 +231,8 @@ $(document).ready(function () {
                     	快来记录一下这个番茄吧
                     	@endif
                     	<div style="float:right">
-                    		<a href="{{'things'}}" target="_blank">[随便记记?]</a>
-                    		<a href="{{'pomos'}}">[历史]</a>
+                    		<a href="{{'pomos'}}">[历史番]</a>
+                    		<a href="{{'things'}}" target="_blank">[刚做完?]</a>
                     		<a href="javascript:void(0)" class="new_user_guide">[?]</a>
                     	</div>
                 </div>

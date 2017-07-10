@@ -14,24 +14,24 @@ class Category extends Model
 			'user_id' => 'int',
 	];
 
-	public function feeds()
+	public function feedSubs()
 	{
-		return $this->hasMany(Feed::class)->orderBy('created_at');
+		return $this->hasMany(FeedSub::class)->orderBy('created_at');
 	}
 
 	public function getUnreadCountAttribute()
 	{
-		return DB::table('feeds')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
+		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
 	}
 
 	public function getReadCountAttribute()
 	{
-		return DB::table('feeds')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
+		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
 	}
 
 	public function getTotalCountAttribute()
 	{
-		return DB::table('feeds')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->count();
+		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->count();
 	}
 	
 	public function user()

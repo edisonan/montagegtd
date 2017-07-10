@@ -23,6 +23,9 @@ class AuthServiceProvider extends ServiceProvider
     	'App\Category' => 'App\Policies\CategoryPolicy',
     	'App\Article' => 'App\Policies\ArticlePolicy',
     	'App\Thing' => 'App\Policies\ThingPolicy',
+    	'App\FeedSub' => 'App\Policies\FeedSubPolicy',
+    	'App\ArticleSub' => 'App\Policies\ArticleSubPolicy',
+    	'App\KindleLog' => 'App\Policies\KindleLogPolicy',
     ];
 
     /**

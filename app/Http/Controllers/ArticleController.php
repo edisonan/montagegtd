@@ -13,6 +13,8 @@ use App\Article;
 use App\Repositories\ArticleRepository;
 use App\Feed;
 use DB;
+use App\Repositories\FeedSubRepository;
+use App\Repositories\ArticleSubRepository;
 
 class ArticleController extends Controller
 {
@@ -24,6 +26,10 @@ class ArticleController extends Controller
     protected $categorys;
     
     protected $articles;
+    
+    protected $feedSubs;
+    
+    protected $articleSubs;
 
     /**
      * Create a new controller instance.
@@ -31,12 +37,14 @@ class ArticleController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct( CategoryRepository $categorys, ArticleRepository $articles)
+    public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
     {
         $this->middleware('auth', ['except' => ['welcome']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;
+        $this->articleSubs = $articleSubs;
+        $this->articleSubs = $articleSubs;
     }
     
     public function welcome(Request $request)
@@ -61,20 +69,20 @@ class ArticleController extends Controller
     	}
     	$page_params['status'] = $status;
     	
-    	$temp_counts = Article::select('feed_id',DB::raw('count(*) as total'))->where('status',$status)->groupBy('feed_id')->get();
+    	$temp_counts = ArticleSub::select('feed_id',DB::raw('count(*) as total'))->where('status',$status)->groupBy('feed_id')->get();
     	$counts_info = array();
     	foreach ($temp_counts as $temp_count){
     		$counts_info[$temp_count['feed_id']] = $temp_count['total'];
     	}
     	
     	if($request->has('feed_id')){
-    		$articles = $this->articles->forUserByStatusFeedId($request->user(), $status, $request->feed_id,$need_page=true);
+    		$articleSubs = $this->articleSubs->forUserByStatusFeedId($request->user(), $status, $request->feed_id,$need_page=true);
     		$page_params['feed_id'] = $request->feed_id;
     	} else {
-    		$articles = $this->articles->forUserByStatus($request->user(), $status,$need_page=true);
+    		$articleSubs = $this->articles->forUserByStatus($request->user(), $status,$need_page=true);
     	}
     	
-    	if(count($articles) == 0){
+    	if(count($articleSubs) == 0){
     		$recommend_feeds = Feed::where('user_id','!=' , $request->user()->id)->orderBy(\DB::raw('RAND()'))->take(4)->get();;
     	} else {
     		$recommend_feeds = array();
@@ -82,7 +90,7 @@ class ArticleController extends Controller
     	
         return view('articles.index', [
             'categorys' => $categorys,
-        	'articles' => $articles,
+        	'articleSubs' => $articleSubs,
         	'status' => $status,
         	'page_params' => $page_params,
         	'counts_info' => $counts_info,
@@ -92,12 +100,12 @@ class ArticleController extends Controller
     
     public function view(Request $request,Article  $article)
     {
-    	$this->authorize('destroy', $article);
+//     	$this->authorize('destroy', $article);
     	
-    	if($article->status == 'unread'){
-    		$article->status = 'read';
-    		$article->update();
-    	}
+//     	if($article->status == 'unread'){
+//     		$article->status = 'read';
+//     		$article->update();
+//     	}
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE,$article);
@@ -109,16 +117,16 @@ class ArticleController extends Controller
         }
     }
     
-    public function star(Request $request,Article  $article)
+    public function star(Request $request,ArticleSub  $articleSub)
     {
-    	$this->authorize('destroy', $article);
+    	$this->authorize('destroy', $articleSub);
     	 
-    	if($article->status == 'star'){
-    		$article->status = 'read';
-    		$article->update();
+    	if($articleSub->status == 'star'){
+    		$articleSub->status = 'read';
+    		$articleSub->update();
     	} else {
-    		$article->status = 'star';
-    		$article->update();
+    		$articleSub->status = 'star';
+    		$articleSub->update();
     	}
     	
     	if ($request->ajax() || $request->wantsJson()) {
@@ -126,38 +134,38 @@ class ArticleController extends Controller
     		return response($resp);
     	} else {
     		return view('articles.view', [
-    			'article' => $article,
+    			'article' => $articleSub->article,
     		]);
     	}
     }
     
-    public function read(Request $request,Article  $article)
+    public function read(Request $request,ArticleSub  $articleSub)
     {
     	if($request->has('ids')){
 			$id_arr = explode(',', $request->ids);
 			foreach ($id_arr as $id){
-				$article = Article::where('id',$id)->where('user_id',$request->user()->id)->first();
-				if(empty($article)){
+				$articleSub = ArticleSub::where('id',$id)->where('user_id',$request->user()->id)->first();
+				if(empty($articleSub)){
 					continue;
 				} else {
-					$article->status = 'read';
-	    			$article->update();
+					$articleSub->status = 'read';
+	    			$articleSub->update();
 				}
 			}
     	} else {
-	    	$this->authorize('destroy', $article);
+	    	$this->authorize('destroy', $articleSub);
 	    	if(in_array($request->status,array('read','unread'))){
-	    		$article->status = 'read';
-	    		$article->update();
+	    		$articleSub->status = 'read';
+	    		$articleSub->update();
 	    	}
     	}
     	 
     	if ($request->ajax() || $request->wantsJson()) {
-    		$resp = $this->responseJson(self::OK_CODE,$article);
+    		$resp = $this->responseJson(self::OK_CODE,$articleSub->article);
     		return response($resp);
     	} else {
     		return view('articles.view', [
-    				'article' => $article,
+    				'article' => $articleSub->article,
     		]);
     	}
     }
@@ -169,11 +177,11 @@ class ArticleController extends Controller
      * @param  Task  $task
      * @return Response
      */
-    public function destroy(Request $request, Article $article)
+    public function destroy(Request $request, ArticleSub $articleSub)
     {
-        $this->authorize('destroy', $article);
+        $this->authorize('destroy', $articleSub);
 
-        $article->delete();
+        $articleSub->delete();
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
