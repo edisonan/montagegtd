@@ -26,7 +26,7 @@ class FeedSubRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,$status,$is_root,$need_page=false)
+    public function forUserByStatus(User $user,$status,$need_page=false)
     {
     	$note = FeedSub::where('status', $status)
     	->where('user_id', $user->id)

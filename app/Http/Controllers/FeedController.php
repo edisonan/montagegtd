@@ -50,7 +50,7 @@ class FeedController extends Controller
      */
     public function index(Request $request)
     {
-    	$feedSubs = $this->feedSubs->forUser($request->user(), $need_page=true);
+    	$feedSubs = $this->feedSubs->forUserByStatus($request->user(),1, $need_page=true);
     	$categorys = $this->categorys->forUser($request->user());
     	
     	if(count($categorys) == 0){
