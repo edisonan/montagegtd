@@ -149,7 +149,7 @@ class FeedController extends Controller
     	
     	if($request->method() == 'GET'){
     		$categorys = $this->categorys->forUser($request->user());
-    		return view('feeds.update',array('feed'=>$feed,'categorys'=>$categorys));
+    		return view('feeds.update',array('feedSub'=>$feedSub,'categorys'=>$categorys));
     	}
     	
     	$this->validate($request, [

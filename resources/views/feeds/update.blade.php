@@ -34,26 +34,14 @@ $(document).ready(function () {
                     @include('common.errors')
 
                     <!-- New Task Form -->
-                    <form action="{{ url('feed/'.$feed->id) }}" method="POST" class="form-horizontal">
+                    <form action="{{ url('feed/'.$feedSub->id) }}" method="POST" class="form-horizontal">
                         {{ csrf_field() }}
 
-                        <!-- Task Name -->
-                        <!-- 
-                        
-                        <div class="form-group">
-                            <label for="task-name" class="col-sm-3 control-label">订阅地址</label>
-								
-                            <div class="col-sm-8">
-	                                <input type="text" name="url" id="url" class="form-control" value="{{ $feed->url }}">
-	                                <a href="javascript:void(0)" id="check_url">check url!</a>
-                            </div>
-                        </div>
-                         -->
                         <div class="form-group" id="task_form_div1" >
                             <label for="task-name" class="col-sm-3 control-label">订阅名称</label>
                             
                             <div class="col-sm-8">
-                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ $feed->feed_name }}">
+                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ $feedSub->feed_name }}">
                             </div>
 							
                         </div>
@@ -67,7 +55,7 @@ $(document).ready(function () {
                             	@else
 	                            <select class="form-control" name="category_id">
 		                              @foreach ($categorys as $category)
-									  	<option value="{{ $category->id }}" @if($feed->category_id == $category->id) checked @endif>{{ $category->name }}</option>
+									  	<option value="{{ $category->id }}" @if($feedSub->category_id == $category->id) checked @endif>{{ $category->name }}</option>
 									  @endforeach
 								</select>
 								@endif
