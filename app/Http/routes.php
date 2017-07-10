@@ -42,6 +42,28 @@ Route::group(['middleware' => ['web']], function () {
     	}
     })->middleware('guest');
     
+    Route::get('/test3', function () {
+    	$feeds = \App\Feed::get();
+    	foreach ($feeds as $feed){
+    		$feedSub = new \App\FeedSub();
+    		$feedSub->user_id = $feed->user_id;
+    		$feedSub->category_id = $feed->category_id;
+    		$feedSub->feed_id = $feed->id;
+    		$feedSub->save();
+    	}
+    })->middleware('guest');
+    
+    Route::get('/test4', function () {
+    	$articles = \App\Article::select('id','user_id')->get();
+    	foreach ($articles as $article){
+    		$articleSub = new \App\ArticleSub();
+    		$articleSub->user_id = $article->user_id;
+    		$articleSub->status = $article->status;
+    		$articleSub->article_id = $article->id;
+    		$articleSub->save();
+    	}
+    })->middleware('guest');
+    
     Route::get('/test2', function () {
     			$articles = \App\Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(100)->get();
     			$temp = array();
