@@ -73,6 +73,12 @@ class KindleController extends Controller
     		echo 'empty kindle_email';exit;
     	}
     	
+    	$kindleLog = new KindleLog();
+    	$kindleLog->user_id = $request->user()->id;
+    	$kindleLog->type = 1;
+    	$kindleLog->status = 1;
+    	$kindleLog->save();
+    	
     	$phindle = new Phindle(array(
     			'title' => "Montage GTD - 测试文件",
     			'publisher' => "Montage GTD",
@@ -101,6 +107,10 @@ class KindleController extends Controller
 //     	$path = config("app.storage_path") . '/ebooks/' . $phindle->getAttribute('uniqueId') . '.mobi';
     	$path = $phindle->getMobiPath();
     	
+    	$kindleLog->path = $path;
+    	$kindleLog->status = 2;
+    	$kindleLog->save();
+    	
     	\Log::info('send to kindle test:'.$user->id.'|'.$path);
     	
     	\Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting,'path'=>$path], function ($m) use ($user,$setting,$path) {
@@ -108,6 +118,8 @@ class KindleController extends Controller
     		$m->attach($path);
     	});
     	
+    	$kindleLog->status = 3;
+    	$kindleLog->save();
     	echo 'success!';exit;
     }
 }
