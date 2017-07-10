@@ -83,7 +83,7 @@ $(document).ready(function () {
 			    			@foreach($categorys as $category)
 			    			<li role="presentation" class="">
 			    				{{ $category->name }}
-			    				@if(count($category->feeds)>0)
+			    				@if(count($category->feedSubs)>0)
 			    					<ul>
 			    					@foreach($category->feedSubs as $feedSub)
 			    						<?php $feed = $feedSub->feed;?>
