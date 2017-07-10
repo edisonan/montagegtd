@@ -123,9 +123,9 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/feed', 'FeedController@store');
     Route::get('/feed/checkNewFeed', 'FeedController@checkNewFeed');
     Route::get('/feed/checkFeedUrl', 'FeedController@checkFeedUrl');
-    Route::delete('/feed/{feed}', 'FeedController@destroy');
-    Route::post('/feed/{feed}', 'FeedController@update');
-    Route::get('/feed/{feed}', 'FeedController@update');
+    Route::delete('/feed/{feedSub}', 'FeedController@destroy');
+    Route::post('/feed/{feedSub}', 'FeedController@update');
+    Route::get('/feed/{feedSub}', 'FeedController@update');
     
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');

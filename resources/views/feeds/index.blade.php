@@ -113,20 +113,21 @@ $(document).ready(function () {
                     </form>
                     
                     
-                    @if (count($feeds) > 0)
+                    @if (count($feedSubs) > 0)
                     <table class="table table-striped task-table">
                             <thead>
                                 <th>订阅列表</th>
                                 <th>&nbsp;</th>
                             </thead>
                             <tbody>
-                                @foreach ($feeds as $feed)
-                                    <tr id="{{$feed->id}}">
+                                @foreach ($feedSubs as $feedSub)
+                                	<?php $feed = $feedSub->feed;?>
+                                    <tr id="{{$feedSub->id}}">
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
                                         	
-                                        	@if(!empty($feed->category->name))
-                                        	[{{ $feed->category->name }}]
+                                        	@if(!empty($feedSub->category->name))
+                                        	[{{ $feedSub->category->name }}]
                                         	@endif
                                         	
                                         	<img alt="" width="50px" src="{{ $feed->favicon}}"><a href="{{ $feed->url }}" title="{{ $feed->feed_desc }}">{{ $feed->feed_name }}</a>
@@ -135,9 +136,9 @@ $(document).ready(function () {
                                         </td>
 
 										<td  width="1"  align='right'>
-                                            <a href="{{ url('feed/'.$feed->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
+                                            <a href="{{ url('feed/'.$feedSub->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
                                         
-                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" task_value="{{ $feed->id }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
+                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" task_value="{{ $feedSub->id }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
                                         		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
                                         	</a> 
                                         </td>
@@ -145,7 +146,7 @@ $(document).ready(function () {
                                 @endforeach
                             </tbody>
                         </table>
-                         {!! $feeds->links() !!}
+                         {!! $feedSubs->links() !!}
                     @endif
                 </div>
             </div>
