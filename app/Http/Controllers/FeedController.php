@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 
 use App\Feed;
 use App\Repositories\FeedRepository;
+use App\FeedSub;
+use App\Repositories\FeedSubRepository;
 use App\Category;
 use App\Repositories\CategoryRepository;
 use App\Article;
@@ -22,6 +24,7 @@ class FeedController extends Controller
      * @var NoteRepository
      */
     protected $feeds;
+    protected $feedSubs;
     protected $categorys;
 
     /**
@@ -30,11 +33,12 @@ class FeedController extends Controller
      * @param  TaskRepository  $tasks
      * @return void
      */
-    public function __construct(CategoryRepository $categorys, FeedRepository $feeds)
+    public function __construct(CategoryRepository $categorys,FeedSubRepository $feedSubs, FeedRepository $feeds)
     {
         $this->middleware('auth');
 
         $this->feeds = $feeds;
+        $this->feedSubs = $feedSubs;
         $this->categorys = $categorys;
     }
 
@@ -46,7 +50,7 @@ class FeedController extends Controller
      */
     public function index(Request $request)
     {
-    	$feeds = $this->feeds->forUser($request->user(), $need_page=true);
+    	$feedSubs = $this->feedSubs->forUser($request->user(), $need_page=true);
     	$categorys = $this->categorys->forUser($request->user());
     	
     	if(count($categorys) == 0){
@@ -65,7 +69,7 @@ class FeedController extends Controller
     	}
     	
         return view('feeds.index', [
-            'feeds' => $feeds,
+            'feedSubs' => $feedSubs,
         	'categorys' => $categorys,
         	'url' => $url,
         	'title' => $title,
@@ -90,10 +94,19 @@ class FeedController extends Controller
         if(empty($category)){
         	echo 'error:'.$request->category_id;exit;
         }
+        
+        $feed = Feed::where('url',$request->url)->first();
+        if(empty($feed)){
+        	$feed = new Feed();
+        	$feed->feed_name = $request->feed_name;
+        	$feed->url = $request->url;
+        	$feed->category = $request->category;
+        	$feed->save();
+        }
 
-        $feed = $request->user()->feeds()->create([
-            'feed_name' => $request->feed_name,
-        	'url' => $request->url,
+        $feedSub = $request->user()->feedSubs()->create([
+        	'feed_id' => $feed->id,
+        	'feed_name' => $request->feed_name,
         	'category_id' => $request->category_id,
         ]);
         
@@ -115,12 +128,12 @@ class FeedController extends Controller
      * @param  Task  $task
      * @return Response
      */
-    public function destroy(Request $request, Feed $feed)
+    public function destroy(Request $request, FeedSub $feedSub)
     {
-        $this->authorize('destroy', $feed);
+        $this->authorize('destroy', $feedSub);
 
-        $feed->status = 2;
-        $feed->update();
+        $feedSub->status = 2;
+        $feedSub->update();
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
@@ -130,9 +143,9 @@ class FeedController extends Controller
         }
     }
     
-    public function update(Request $request, Feed $feed)
+    public function update(Request $request, FeedSub $feedSub)
     {
-    	$this->authorize('destroy', $feed);
+    	$this->authorize('destroy', $feedSub);
     	
     	if($request->method() == 'GET'){
     		$categorys = $this->categorys->forUser($request->user());
@@ -141,7 +154,6 @@ class FeedController extends Controller
     	
     	$this->validate($request, [
     			'feed_name' => 'required',
-    			'url' => 'required',
     			'category_id' => 'required',
     	]);
     	
@@ -150,7 +162,7 @@ class FeedController extends Controller
     		echo 'error:'.$request->category_id;exit;
     	}
     
-    	$feed->update($request->all());
+    	$feedSub->update($request->all());
     
     	if ($request->ajax() || $request->wantsJson()) {
     		$resp = $this->responseJson(self::OK_CODE);
@@ -162,12 +174,12 @@ class FeedController extends Controller
     
     public function checkNewFeed(Request $request)
     {
-    	$feeds = Feed::where('user_id',$request->user()->id)->orderBy('updated_at', 'asc')->take(15)->get();
+    	$feedSubs = FeedSub::where('user_id',$request->user()->id)->orderBy('updated_at', 'asc')->take(15)->get();
     	
-    	if (! empty($feeds)) {
-    		foreach ($feeds as $feed) {
+    	if (! empty($feedSubs)) {
+    		foreach ($feedSubs as $feedSub) {
     			//update feed, see update function
-    			$this->feeds->checkFeed($feed);
+    			$this->feeds->checkFeed($feedSub->feed);
     		}
     	}
     	

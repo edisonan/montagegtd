@@ -38,6 +38,8 @@ $(document).ready(function () {
                         {{ csrf_field() }}
 
                         <!-- Task Name -->
+                        <!-- 
+                        
                         <div class="form-group">
                             <label for="task-name" class="col-sm-3 control-label">订阅地址</label>
 								
@@ -46,7 +48,7 @@ $(document).ready(function () {
 	                                <a href="javascript:void(0)" id="check_url">check url!</a>
                             </div>
                         </div>
-                        
+                         -->
                         <div class="form-group" id="task_form_div1" >
                             <label for="task-name" class="col-sm-3 control-label">订阅名称</label>
                             

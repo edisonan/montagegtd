@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\User;
 use App\Feed;
 use App\Article;
+use App\FeedSub;
+use App\ArticleSub;
 use ArandiLopez\Feed\Factories\FeedFactory; //use SimplePie to parse RSS feeds, see: https://github.com/arandilopez/laravel-feed-parser
 
 
@@ -68,6 +70,7 @@ class FeedRepository
     
     	//only add articles and update feed when results are found
     	if (!empty($simplePieInstance)) {
+    		$feedSubs = FeedSub::where('feed_id',$Feed->id)->get();
     
     		foreach ($simplePieInstance->get_items() as $item) {
     			//count the number of items that already exist in the database with the item url and feed_id
@@ -99,6 +102,17 @@ class FeedRepository
     
     				//save article content to database
     				$article->save();
+    				
+    				foreach ($feedSubs as $feedSub){
+    					$articleSub = ArticleSub::where('user_id',$feedSub->user_id)->where('article_id',$article->id)->first();
+    					if(empty($articleSub)){
+    						$articleSub = new ArticleSub();
+    						$articleSub->user_id = $feedSub->user_id;
+    						$articleSub->article_id = $article->id;
+    						$articleSub->status = 'unread';
+    						$articleSub->save();
+    					}
+    				}
     
     				\Log::info("Article Title:".$item->get_title());
     			}
