@@ -8,6 +8,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 use App\Pomo;
+use App\Thing;
 use App\Repositories\PomoRepository;
 
 class PomoController extends Controller
@@ -117,6 +118,13 @@ class PomoController extends Controller
 	            'name' => $request->name,
 	        	'status'=> 2,
 	        ]);
+	        
+	        $thing = new Thing();
+	        $thing->user_id = $request->user()->id;
+	        $thing->name = $pomo->name;
+	        $thing->end_time = $pomo->created_at;
+	        $thing->start_time = date('Y-m-d H:i:s');
+	        $thing->save();
 	        
 	        //auto resting
 	        $request->session()->set('rest_start_time', time());

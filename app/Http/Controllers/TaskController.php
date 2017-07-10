@@ -13,6 +13,7 @@ use App\TaskTagMap;
 use App\Repositories\TaskRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\GoalRepository;
+use App\Thing;
 
 class TaskController extends Controller
 {
@@ -138,6 +139,12 @@ class TaskController extends Controller
         
         if($request->type == 'finish'){
         	$params['status'] = 2;
+        	
+        	$thing = new Thing();
+        	$thing->user_id = $request->user()->id;
+        	$thing->name = $task->name;
+        	$thing->start_time = date('Y-m-d H:i:s');
+        	$thing->save();
         } else {
         	$params['status'] = 3;
         }
