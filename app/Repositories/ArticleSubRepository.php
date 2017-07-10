@@ -33,7 +33,7 @@ class ArticleSubRepository
     	->orderBy('created_at', 'desc');
     	
     	if($need_page){
-    		return $note->paginate(50);
+    		return $note->paginate(5);
     	} else {
     		return $note->get();
     	}
