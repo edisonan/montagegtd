@@ -111,7 +111,7 @@ $(document).ready(function () {
         <div class="col-sm-offset-0 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                		@if(count($articles) == 0 && count($recommend_feeds) > 0)
+                		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
                 			看看大家推荐的订阅源吧~
                 		@else
                     		新的文章
