@@ -12,7 +12,7 @@ class FeedSub extends Model
      *
      * @var array
      */
-    protected $fillable = ['feed_id','status'];
+    protected $fillable = ['feed_id','status','feed_name','category_id'];
     
     /**
      * The attributes that should be cast to native types.
