@@ -139,6 +139,7 @@ $(document).ready(function () {
                     
                     		@if (count($articleSubs) > 0)
                     			<?php $article_sub_ids = array();?>
+                    			<?php echo count($articleSubs);exit;?>
 	                    		@foreach ($articleSubs as $articleSub)
 	                    		<?php $article = $articleSub->article;$article_sub_ids[] = $articleSub->id;?>
 	                            <article class="post">
