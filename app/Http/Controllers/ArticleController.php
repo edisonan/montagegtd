@@ -81,7 +81,7 @@ class ArticleController extends Controller
     		$articleSubs = $this->articleSubs->forUserByStatusFeedId($request->user(), $status, $request->feed_id,$need_page=true);
     		$page_params['feed_id'] = $request->feed_id;
     	} else {
-    		$articleSubs = $this->articles->forUserByStatus($request->user(), $status,$need_page=true);
+    		$articleSubs = $this->articleSubs->forUserByStatus($request->user(), $status,$need_page=true);
     	}
     	
     	if(count($articleSubs) == 0){
