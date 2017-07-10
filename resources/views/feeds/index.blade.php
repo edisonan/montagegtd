@@ -138,7 +138,7 @@ $(document).ready(function () {
 										<td  width="1"  align='right'>
                                             <a href="{{ url('feed/'.$feedSub->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
                                         
-                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" task_value="{{ $feedSub->id }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
+                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" feed_value="{{ $feedSub->id }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
                                         		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
                                         	</a> 
                                         </td>
