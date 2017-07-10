@@ -12,6 +12,8 @@ use App\Repositories\CategoryRepository;
 use App\Article;
 use App\Repositories\ArticleRepository;
 use App\Feed;
+use App\ArticleSub;
+use App\FeedSub;
 use DB;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
