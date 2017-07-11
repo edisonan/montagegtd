@@ -50,7 +50,7 @@ class FeedController extends Controller
      */
     public function index(Request $request)
     {
-    	$feedSubs = $this->feedSubs->forUserByStatus($request->user(),1, $need_page=true);
+    	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);
     	$categorys = $this->categorys->forUser($request->user());
     	
     	if(count($categorys) == 0){
@@ -101,9 +101,17 @@ class FeedController extends Controller
         	$feed->feed_name = $request->feed_name;
         	$feed->url = $request->url;
         	$feed->category_id = $request->category_id;
+        	$feed->sub_count = 1;
+        	$feed->save();
+        } else {
+        	//如果未锁定，那么更改Feed的名称
+        	if(empty($feed->lock_name) && $feed->name != $request->feed_name){
+        		$feed->feed_name = $request->feed_name;
+        	}
+        	$feed->sub_count = $feed->sub_count + 1;
         	$feed->save();
         }
-
+		
         $feedSub = $request->user()->feedSubs()->create([
         	'feed_id' => $feed->id,
         	'feed_name' => $request->feed_name,

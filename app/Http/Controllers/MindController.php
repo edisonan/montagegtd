@@ -165,7 +165,7 @@ class MindController extends Controller
     	$data = array();
     	$data['id'] = $mind->id;
     	$data['topic'] = $mind->name;
-    	$data['content'] = $mind->content;
+    	$data['content'] = nl2br($mind->content);
     	if(count($mind->childrenMinds) > 0){
     		foreach ($mind->childrenMinds as $childMind){
     			$data['children'][] = $this->getNodeTreeData($childMind, $level+1);

@@ -61,8 +61,6 @@ class ArticleController extends Controller
      */
     public function index(Request $request)
     {
-    	DB::connection()->disableQueryLog();
-    	 
     	$page_params = array();
     	
     	$categorys = $this->categorys->forUser($request->user());
@@ -104,13 +102,6 @@ class ArticleController extends Controller
     
     public function view(Request $request,Article  $article)
     {
-//     	$this->authorize('destroy', $article);
-    	
-//     	if($article->status == 'unread'){
-//     		$article->status = 'read';
-//     		$article->update();
-//     	}
-
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE,$article);
         	return response($resp);

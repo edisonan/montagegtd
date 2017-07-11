@@ -231,7 +231,7 @@ $(document).ready(function () {
 										</div>
 										<div class="col-sm-offset-0 col-sm-11">
 											<span class="author">
-												<a href="#" target="_blank">{{ $note->user->name }}
+												<a href="#" target="_blank">{{ $note->user->name }}</a>
 											</span> 
 											<br/>
 											<time class="post-date" datetime="<?php echo $note->created_at;?>" title="<?php echo $note->created_at;?>"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></time>

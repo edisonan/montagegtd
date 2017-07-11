@@ -2,6 +2,7 @@
 namespace App\Http\Utils;
 
 use App\Article;
+use App\ArticleSub;
 use function GuzzleHttp\json_encode;
 include 'simple_html_dom.php';
 
@@ -18,6 +19,9 @@ class SpideUtil{
 		if(empty($list)){
 			return false;
 		}
+		//获取该Feed的订阅者
+		$feedSubs = FeedSub::where('feed_id',$feed->id)->get();
+		
 		foreach ($list as $item){
 			$article = Article::where('feed_id',$feed->id)->where('user_id',$feed->user_id)->where('url',$item['url'])->first();
 			if(empty($article)){
@@ -29,6 +33,19 @@ class SpideUtil{
 				$article->subject = $item['subject'];
 				$article->published = $item['published'];
 				$article->save();
+			}
+			
+			foreach ($feedSubs as $feedSub){
+				$articleSub = ArticleSub::where('user_id',$feedSub->user_id)->where('article_id',$article->id)->first();
+				if(empty($articleSub)){
+					$articleSub = new ArticleSub();
+					$articleSub->feed_id = $feedSub->feed_id;
+					$articleSub->user_id = $feedSub->user_id;
+					$articleSub->article_id = $article->id;
+					$articleSub->status = 'unread';
+					$article->published = $item['published'];
+					$articleSub->save();
+				}
 			}
 			
 			//get content

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Feed extends Model
 {
-	protected $fillable = ['feed_name','feed_desc','url','favicon','user_id','category_id','type','orders','status'];
+	protected $fillable = ['feed_name','feed_desc','url','favicon','user_id','category_id','type','orders','status','sub_count'];
 	protected $table = 'feeds';
 	protected $appends = array('unread_count', 'read_count', 'total_count');
 	protected $casts = [

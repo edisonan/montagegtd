@@ -57,25 +57,25 @@ class FeedRepository
     	->get();
     }
     
-    public function checkFeed(Feed $Feed)
+    public function checkFeed(Feed $feed)
     {
     	//set previous week
     	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     
-    	\Log::info("Check Feed:".$Feed->url);
+    	\Log::info("Check Feed:".$feed->url);
     	 
     	$feedFactory = new FeedFactory(['cache.enabled' => false]);
-    	$feeder = $feedFactory->make($Feed->url);
+    	$feeder = $feedFactory->make($feed->url);
     	$simplePieInstance = $feeder->getRawFeederObject();
     
     	//only add articles and update feed when results are found
     	if (!empty($simplePieInstance)) {
-    		$feedSubs = FeedSub::where('feed_id',$Feed->id)->get();
+    		$feedSubs = FeedSub::where('feed_id',$feed->id)->get();
     
     		foreach ($simplePieInstance->get_items() as $item) {
     			//count the number of items that already exist in the database with the item url and feed_id
-    			$results_url = Article::where(['user_id'=>$Feed->user_id, 'feed_id' => $Feed->id, 'url' => $item->get_permalink()])->count();
-    			$results_title = Article::where(['user_id'=>$Feed->user_id, 'feed_id' => $Feed->id, 'subject' => $item->get_title()])->count();
+    			$results_url = Article::where(['user_id'=>$feed->user_id, 'feed_id' => $feed->id, 'url' => $item->get_permalink()])->count();
+    			$results_title = Article::where(['user_id'=>$feed->user_id, 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
     			$date = $item->get_date('Y-m-j H:i:s');
     
     			//add new article if no results are found and article date is no older than one week
@@ -83,14 +83,14 @@ class FeedRepository
     				$article = new Article;
     
     				//get article content
-    				$article->feed_id = $Feed->id;
+    				$article->feed_id = $feed->id;
     				$article->status = 'unread';
     				$article->url = $item->get_permalink();
     				$article->subject = $item->get_title();
     				$article->content = $item->get_description();
     				$article->published = $item->get_date('Y-m-j H:i:s');
     
-    				$article->user_id = $Feed->user_id;
+    				$article->user_id = $feed->user_id;
     
     				//get URL of first image
     				//TODO: replace with SimplePie str_get_html function, see: http://stackoverflow.com/questions/9865130/getting-image-url-from-rss-feed-using-simplepie
@@ -107,10 +107,12 @@ class FeedRepository
     					$articleSub = ArticleSub::where('user_id',$feedSub->user_id)->where('article_id',$article->id)->first();
     					if(empty($articleSub)){
     						$articleSub = new ArticleSub();
-    						$articleSub->user_id = $feedSub->user_id;
-    						$articleSub->article_id = $article->id;
-    						$articleSub->status = 'unread';
-    						$articleSub->save();
+							$articleSub->feed_id = $feedSub->feed_id;
+							$articleSub->user_id = $feedSub->user_id;
+							$articleSub->article_id = $article->id;
+							$articleSub->status = 'unread';
+							$article->published = $item['published'];
+							$articleSub->save();
     					}
     				}
     
@@ -119,9 +121,9 @@ class FeedRepository
     		}
     
     		//update feed updated_at record
-    		Feed::where('id', $Feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
-    		Feed::where('id', $Feed->id)->update(['feed_desc' => $simplePieInstance->get_description()]);
-    		Feed::where('id', $Feed->id)->update(['favicon' => $simplePieInstance->get_image_url()]);
+    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
+    		Feed::where('id', $feed->id)->update(['feed_desc' => $simplePieInstance->get_description()]);
+    		Feed::where('id', $feed->id)->update(['favicon' => $simplePieInstance->get_image_url()]);
     	}
     }
 }

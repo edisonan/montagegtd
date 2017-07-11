@@ -69,7 +69,7 @@ $(document).ready(function () {
 					</div>
 					<div id="" class="col-sm-offset-0 col-sm-2">
 						<span id="mind_name" class="col-sm-12">详细描述:{{$mind->name}}</span>
-						<textarea  class="col-sm-12" id="mind_content"  style="margin: 0px; height: 189px; width: 151px;" id="mind_content">{{$mind->content}}</textarea>
+						<textarea  class="col-sm-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; width: 151px;" id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-primary col-sm-12" onclick="mind_update()">保存</button>
@@ -212,7 +212,7 @@ $(document).ready(function () {
     function screen_shot(){
         _jm.screenshot.shootDownload();
     }
-
+    
     function modify_node(){
         var selected_id = get_selected_nodeid();
         if(!selected_id){prompt_info('please select a node first.');return;}
@@ -239,6 +239,10 @@ $(document).ready(function () {
     		    }
     		});
         }
+    }
+
+    function mind_content_focus(){
+        _jm.select_clear();
     }
 
     function mind_update(){

@@ -208,14 +208,15 @@ class Kernel extends ConsoleKernel
     			$now = date('Y-m-d H:i:s');
     			$start_time = date('Y-m-d H:i:s',strtotime($now)-86400);
     			
-    			$articles = Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(300)->get();
+    			$articleSubs = ArticleSub::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(300)->get();
     			$feed_info = array();
     			
     			$chapter_count = 0;
     			$article_count = 0;
     			
-    			foreach($articles as $article)
+    			foreach($articleSubs as $articleSub)
     			{
+    				$article = $articleSub->article;
     				if(!isset($feed_info[$article->feed_id])){
     					//文章数清零 章节数加1
     					$article_count = 0;
@@ -255,7 +256,7 @@ class Kernel extends ConsoleKernel
     			$kindleLog->status = 2;
     			$kindleLog->save();
     			
-    			\Log::info('send to kindle:'.$user->id.'|'.count($articles).'|'.$path);
+    			\Log::info('send to kindle:'.$user->id.'|'.count($articleSubs).'|'.$path);
     			\Mail::send('emails.kindle', ['setting'=>$setting,'path'=>$path], function ($m) use ($setting,$path) {
     				$m->to($setting->kindle_email, 'user')->subject('Send To Kindle');
     				$m->attach($path);
