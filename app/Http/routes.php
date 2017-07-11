@@ -49,6 +49,7 @@ Route::group(['middleware' => ['web']], function () {
     		$feedSub->user_id = $feed->user_id;
     		$feedSub->category_id = $feed->category_id;
     		$feedSub->feed_id = $feed->id;
+    		$feedSub->feed_name = $feed->name;
     		$feedSub->save();
     	}
     })->middleware('guest');
@@ -61,6 +62,7 @@ Route::group(['middleware' => ['web']], function () {
     		$articleSub->status = $article->status;
     		$articleSub->article_id = $article->id;
     		$articleSub->feed_id = $article->feed_id;
+    		$articleSub->published = $article->published;
     		$articleSub->save();
     	}
     })->middleware('guest');
