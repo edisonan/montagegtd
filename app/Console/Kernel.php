@@ -20,6 +20,7 @@ use App\Article;
 use App\Http\Utils\SpideUtil;
 use App\Setting;
 use App\KindleLog;
+use App\ArticleSub;
 use App\Repositories\SettingRepository;
 
 use Develpr\Phindle\Phindle;
