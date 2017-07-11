@@ -49,13 +49,13 @@ Route::group(['middleware' => ['web']], function () {
     		$feedSub->user_id = $feed->user_id;
     		$feedSub->category_id = $feed->category_id;
     		$feedSub->feed_id = $feed->id;
-    		$feedSub->feed_name = $feed->name;
+    		$feedSub->feed_name = $feed->feed_name;
     		$feedSub->save();
     	}
     })->middleware('guest');
     
     Route::get('/test4', function () {
-    	$articles = \App\Article::select('id','user_id','status','feed_id')->get();
+    	$articles = \App\Article::select('id','user_id','status','feed_id','published')->get();
     	foreach ($articles as $article){
     		$articleSub = new \App\ArticleSub();
     		$articleSub->user_id = $article->user_id;

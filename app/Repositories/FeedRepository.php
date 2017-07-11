@@ -74,8 +74,8 @@ class FeedRepository
     
     		foreach ($simplePieInstance->get_items() as $item) {
     			//count the number of items that already exist in the database with the item url and feed_id
-    			$results_url = Article::where(['user_id'=>$feed->user_id, 'feed_id' => $feed->id, 'url' => $item->get_permalink()])->count();
-    			$results_title = Article::where(['user_id'=>$feed->user_id, 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
+    			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => $item->get_permalink()])->count();
+    			$results_title = Article::where([ 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
     			$date = $item->get_date('Y-m-j H:i:s');
     
     			//add new article if no results are found and article date is no older than one week
@@ -111,7 +111,7 @@ class FeedRepository
 							$articleSub->user_id = $feedSub->user_id;
 							$articleSub->article_id = $article->id;
 							$articleSub->status = 'unread';
-							$article->published = $item['published'];
+							$articleSub->published = $article->published;
 							$articleSub->save();
     					}
     				}

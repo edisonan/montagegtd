@@ -86,7 +86,7 @@ $(document).ready(function () {
 			    				@if(count($category->feedSubs)>0)
 			    					<ul>
 			    					@foreach($category->feedSubs as $feedSub)
-			    						<?php $feed = $feedSub->feed;?>
+			    						<?php $feed = $feedSub->feed;if(empty($feed)) continue;?>
 			    						<li>
 			    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
 			    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
@@ -140,7 +140,7 @@ $(document).ready(function () {
                     		@if (count($articleSubs) > 0)
                     			<?php $article_sub_ids = array();?>
 	                    		@foreach ($articleSubs as $articleSub)
-	                    		<?php $article = $articleSub->article;$article_sub_ids[] = $articleSub->id;?>
+	                    		<?php $article = $articleSub->article;if(empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
 	                            <article class="post">
 									<div class="post-head">
 										<h1 class="post-title">

@@ -98,6 +98,7 @@ class FeedController extends Controller
         $feed = Feed::where('url',$request->url)->first();
         if(empty($feed)){
         	$feed = new Feed();
+        	$feed->user_id = $request->user()->id;
         	$feed->feed_name = $request->feed_name;
         	$feed->url = $request->url;
         	$feed->category_id = $request->category_id;
@@ -142,6 +143,10 @@ class FeedController extends Controller
 
         $feedSub->status = 2;
         $feedSub->update();
+        
+        $feed = $feedSub->feed;
+        $feed->sub_count = $feed->sub_count-1;
+        $feed->save();
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);
