@@ -95,6 +95,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/home', 'IndexController@index');
     Route::get('/index', 'IndexController@index');
     Route::get('/index/test', 'IndexController@test');
+    Route::get('/index/feedback', 'IndexController@feedback');
+    Route::post('/index/feedbackStore', 'IndexController@feedbackStore');
     
     Route::get('/notes', 'NoteController@index');
     Route::post('/notes/upload', 'NoteController@upload');

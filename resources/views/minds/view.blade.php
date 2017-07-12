@@ -73,6 +73,7 @@ $(document).ready(function () {
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-primary col-sm-12" onclick="mind_update()">保存</button>
+						<div id="mind_content_show"></div>
 					</div>
                 </div>
             </div>
@@ -197,6 +198,7 @@ $(document).ready(function () {
     function show_selected(){
         var selected_node = _jm.get_selected_node();
         if(!!selected_node){
+        	$("#mind_content_show").html(selected_node.data.content);
         	$("#mind_content").val(selected_node.data.content);
         	$("#mind_id").val(selected_node.id);
         	$("#mind_name").html('描述:'+selected_node.topic);

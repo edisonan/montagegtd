@@ -125,6 +125,32 @@ class IndexController extends Controller
         ]);
     }
     
+    public function feedback(Request $request)
+    {
+    	return view('index.feedback',[
+    		'from'=>$request->has('from')?$request->from:'',
+    	]);
+    }
+    
+    public function feedbackStore(Request $request){
+    	$this->validate($request, [
+    			'name' => 'required',
+    			'content' => 'required',
+    	]);
+    	
+    	$feedback = new \App\Feedback();
+    	$feedback->from = $request->from;
+    	$feedback->content = $request->content;
+    	$feedback->save();
+    	
+    	if ($request->ajax() || $request->wantsJson() || $request->has('json_wants')) {
+    		$resp = $this->responseJson(self::OK_CODE,array());
+    		return response($resp);
+    	} else {
+    		redirect('/feedback')->with('message', 'IT WORKS!');
+    	}
+    }
+    
     public function test(Request $request)
     {
     	 return view('index.test');

@@ -68,6 +68,7 @@
                     <li><a href="{{ url('/notes') }}">记想法</a></li>
                     <li><a href="{{ url('/articles') }}">去阅读</a></li>
                     <li><a href="{{ url('/minds') }}">思维导图</a></li>
+                    <li><a href="{{ url('index/feedback') }}">添加反馈</a></li>
                     @endif
                     
                     @if (Auth::guest())

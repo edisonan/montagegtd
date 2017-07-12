@@ -125,7 +125,7 @@ class FeedController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/feeds');
+        	return redirect('/feeds')->with('message', 'IT WORKS!');
         }
         
     }
@@ -152,7 +152,7 @@ class FeedController extends Controller
         	$resp = $this->responseJson(self::OK_CODE);
         	return response($resp);
         } else {
-        	return redirect('/feeds');
+        	return redirect('/feeds')->with('message', 'IT WORKS!');
         }
     }
     
@@ -181,7 +181,7 @@ class FeedController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/feeds');
+    		return redirect('/feeds')->with('message', 'IT WORKS!');
     	}
     }
     
@@ -200,7 +200,7 @@ class FeedController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/articles');
+    		return redirect('/articles')->with('message', 'IT WORKS!');
     	}
     	
     }

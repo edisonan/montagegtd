@@ -303,7 +303,7 @@
 
         _download:function(){
             var c = this.canvas_elem;
-            var name = this.jm.mind.name+'.png';
+            var name = this.jm.mind.name+'-build_by_task_congcong_us.png';
 
             if (navigator.msSaveBlob && (!!c.msToBlob)) {
                 var blob = c.msToBlob();
