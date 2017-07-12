@@ -93,7 +93,7 @@ class PomoController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/index')->with('message', 'IT WORKS!');
+    		return redirect('/index');
     	}
     }
 
@@ -134,7 +134,7 @@ class PomoController extends Controller
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);
     	} else {
-    		return redirect('/index')->with('message', 'IT WORKS!');
+    		return redirect('/index');
     	}
     }
 
