@@ -2393,7 +2393,7 @@
             }
             if(!!node){
             	//***********************add self start
-            	$("#mind_content_show").html(selected_node.data.content);
+            	$("#mind_content_show").html(node.data.content);
             	$("#mind_content").val(node.data.content);
             	$("#mind_id").val(node.id);
             	$("#mind_name").html('详细描述:'+node.topic);
