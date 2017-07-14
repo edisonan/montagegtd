@@ -87,7 +87,7 @@ $(document).ready(function () {
         container:'jsmind_container',
         editable:true,
         theme:'primary',
-        mode :'full',           // 显示模式
+        mode :'side',           // 显示模式
         support_html : true,    // 是否支持节点里的HTML元素
         view:{
             hmargin:100,        // 思维导图距容器外框的最小水平距离
