@@ -124,7 +124,9 @@ class MindController extends Controller
     	}
     	
     	if($request->has('content')){
-    		$mind->content = $request->content;
+    		 $content = str_replace(array("\r\n", "\r", "\n"), "<br/>", $request->content);
+    		 $content = str_replace ("'",'',$content);
+    		 $mind->content = $content;
     	}
     	$mind->update();
     
