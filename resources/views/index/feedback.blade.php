@@ -30,8 +30,7 @@
                             <label for="task-name" class="col-sm-3 control-label">反馈内容</label>
 								
                             <div class="col-sm-8">
-	                               <textarea type="text" name="content" id="category_order" class="form-control" value="">
-	                               </textarea>
+	                               <textarea type="text" name="content" id="category_order" class="form-control" value=""></textarea>
                             </div>
                         </div>
 

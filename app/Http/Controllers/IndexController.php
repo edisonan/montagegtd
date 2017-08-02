@@ -134,7 +134,6 @@ class IndexController extends Controller
     
     public function feedbackStore(Request $request){
     	$this->validate($request, [
-    			'name' => 'required',
     			'content' => 'required',
     	]);
     	
@@ -147,7 +146,7 @@ class IndexController extends Controller
     		$resp = $this->responseJson(self::OK_CODE,array());
     		return response($resp);
     	} else {
-    		redirect('/feedback')->with('message', 'IT WORKS!');
+    		redirect('/index/feedback')->with('message', 'IT WORKS!');
     	}
     }
     
