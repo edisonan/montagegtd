@@ -116,6 +116,24 @@ class ArticleController extends Controller
         ]);
     }
     
+    public function list(Request $request)
+    {
+    	$page_params = array();
+    	 
+    	if($request->has('feed_id')){
+    		$articles = $this->articles->forUserByStatusFeedId($request->user(), $request->feed_id,$need_page=true);
+    		$page_params['feed_id'] = $request->feed_id;
+    	} else {
+    		echo 'error param';exit;
+    	}
+    	$feed = Feed::where('id',$request->feed_id)->get();
+    	return view('articles.list', [
+    			'articles' => $articles,
+    			'feed' => $feed,
+    			'page_params' => $page_params,
+    	]);
+    }
+    
     public function view(Request $request,Article  $article)
     {
         if ($request->ajax() || $request->wantsJson()) {

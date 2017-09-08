@@ -3,6 +3,42 @@
 @section('content')
 <style>
         .lazy{width:100%;height:0;background-size:100%;}
+       
+        .product-container {  
+	      width: 260px;  
+	      margin: 5px auto;  
+	      border-radius: 10px;  
+	      background: #f6f8f7;  
+	  	}
+	      .name {  
+		        border-bottom: 1px solid @gray-light;  
+		        font-size: 20px;  
+		        padding: 2px;  
+	      }  
+	      
+	      .interest {  
+		        color: #1da427;  
+		        font-size: 70px;  
+		        font-weight: bold;  
+		        padding: 0px;  
+		        margin-bottom: -30px;  
+	      }  
+	      
+	      .percent {  
+		         	 font-size: 31px;  
+		   }
+	      
+	      .intro {  
+	        	padding: 5px;  
+	      }  
+	      
+	      .strong {  
+		        padding: 3px;  
+		        font-size: 17px;  
+		        color: @white;  
+		        background: #326c84;  
+		        border-radius: 0 0 10px 10px;  
+	      }  
 </style>
 
 <script src="/js/lazyload.min.js"></script>
@@ -111,7 +147,7 @@ $(document).ready(function () {
             <div class="panel panel-default">
                 <div class="panel-heading">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-                			看看大家推荐的订阅源吧~
+                			暂无文章,看看大家推荐的订阅源吧~
                 		@else
                     		新的文章
                     	@endif
@@ -127,14 +163,6 @@ $(document).ready(function () {
                 <div class="panel-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
-                    
-                    		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-		                    	@foreach($recommend_feeds as $recommend_feed)
-		                    	<div class="col-sm-offset-0 col-sm-6"  style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;    padding: 2px;">
-									<span style="color:green;">推荐:</span><a href="{{ url('feeds') }}?url={{ $recommend_feed->url }}" >{{ $recommend_feed->feed_name }}</a>										                    		
-								</div>
-		                    	@endforeach
-                    		@endif
                     
                     		@if (count($articleSubs) > 0)
                     			<?php $article_sub_ids = array();?>
@@ -183,11 +211,23 @@ $(document).ready(function () {
                         		<button class="col-sm-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @else
-                        	<hr></hr>
-                        	<div class="col-sm-offset-0 col-sm-12" style="    padding: 10px;">
-                        		<b>暂时没有最新文章,可以点击这里多添加自己喜欢的订阅源~~ </b>
-                        	</div>
                         @endif
+                        
+                        @if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
+		                    	@foreach($recommend_feeds as $recommend_feed)
+                    			<div class="col-sm-offset-0 col-sm-6">
+							        <div class="product-container">  
+							          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
+							          <div class="intro text-right">更新于:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}</div>  
+							        </div>  
+                    			</div>
+								<!-- 
+		                    	<div class="col-sm-offset-0 col-sm-6"  style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;    padding: 2px;">
+									<span style="color:green;">推荐:</span><a href="{{ url('feeds') }}?url={{ $recommend_feed->url }}" >{{ $recommend_feed->feed_name }}</a>										                    		
+								</div>
+								 -->
+		                    	@endforeach
+                    	@endif
                 </div>
             </div>
 

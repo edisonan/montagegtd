@@ -133,6 +133,7 @@ Route::group(['middleware' => ['web']], function () {
     
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');
+    Route::get('/article/list', 'ArticleController@list');
     Route::get('/article/view/{article}', 'ArticleController@view');
     Route::get('/article/star/{articleSub}', 'ArticleController@star');
     Route::get('/article/read/{articleSub}', 'ArticleController@read');
