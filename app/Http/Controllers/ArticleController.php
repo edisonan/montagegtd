@@ -121,7 +121,7 @@ class ArticleController extends Controller
     	$page_params = array();
     	 
     	if($request->has('feed_id')){
-    		$articles = $this->articles->forUserByStatusFeedId($request->user(), $request->feed_id,$need_page=true);
+    		$articles = $this->articles->forUserByFeedId($request->user(), $request->feed_id,$need_page=true);
     		$page_params['feed_id'] = $request->feed_id;
     	} else {
     		echo 'error param';exit;
