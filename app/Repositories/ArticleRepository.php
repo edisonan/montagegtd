@@ -52,8 +52,7 @@ class ArticleRepository
     
     public function forUserByFeedId(User $user,$feed_id,$need_page=false)
     {
-    	$article = Article::where('user_id', $user->id)
-    	->where('feed_id',$feed_id)->orderBy('published','desc');
+    	$article = Article::where('feed_id',$feed_id)->orderBy('published','desc');
     	if($need_page){
     		return $article->paginate(10);
     	} else {
