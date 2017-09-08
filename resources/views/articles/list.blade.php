@@ -81,7 +81,7 @@ $(document).ready(function () {
 									<footer class="post-footer clearfix"></footer>
 								</article>
 								@endforeach
-                        		{!! $articleSubs->appends($page_params)->links() !!}
+                        		{!! $articles->appends($page_params)->links() !!}
                         @else
                         @endif
                         
