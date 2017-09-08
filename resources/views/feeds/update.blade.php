@@ -46,6 +46,14 @@ $(document).ready(function () {
 							
                         </div>
                         
+                        <div class="form-group">
+                            <label for="task-name" class="col-sm-3 control-label">订阅排序</label>
+								
+                            <div class="col-sm-8">
+	                               <input type="text" name="feed_order" id="feed_order" class="form-control" value="{{ $feedSub->feed_order }}">
+                            </div>
+                        </div>
+                        
                         <div class="form-group" "form-group" id="task_form_div4" >
                             <label for="task-name" class="col-sm-3 control-label">所属分类</label>
 

@@ -72,7 +72,7 @@ class ArticleController extends Controller
     	}
     	$page_params['status'] = $status;
     	
-    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order desc,f.updated_at desc', [':user_id'=>$request->user()->id]);
+    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order desc,f.feed_order desc', [':user_id'=>$request->user()->id]);
     	
     	$temp_counts = ArticleSub::select('feed_id',DB::raw('count(*) as total'))->where('user_id',$request->user()->id)->where('status',$status)->groupBy('feed_id')->get();
     	$counts_info = array();
