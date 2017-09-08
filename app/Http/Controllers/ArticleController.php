@@ -63,7 +63,8 @@ class ArticleController extends Controller
     {
     	$page_params = array();
     	
-    	$categorys = $this->categorys->forUser($request->user());
+//     	$categorys = $this->categorys->forUser($request->user());
+		
     	if($request->has('status')){
     		$status = $request->status;
     	} else {
@@ -71,10 +72,25 @@ class ArticleController extends Controller
     	}
     	$page_params['status'] = $status;
     	
-    	$temp_counts = ArticleSub::select('feed_id',DB::raw('count(*) as total'))->where('status',$status)->groupBy('feed_id')->get();
+    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order desc,f.updated_at desc', [':user_id'=>$request->user()->id]);
+    	
+    	$temp_counts = ArticleSub::select('feed_id',DB::raw('count(*) as total'))->where('user_id',$request->user()->id)->where('status',$status)->groupBy('feed_id')->get();
     	$counts_info = array();
     	foreach ($temp_counts as $temp_count){
     		$counts_info[$temp_count['feed_id']] = $temp_count['total'];
+    	}
+    	
+    	$nav_infos = array();
+    	foreach ($category_feed_infos as $item){
+    		$nav_infos[$item['category_id']]['category_info'] = $item;
+    		
+    		$feed = array(
+    			'feed_id' => $item['feed_id'],	
+    			'feed_name' => $item['feed_name'],	
+    			'feed_count' => isset($counts_info[$item['feed_id']])?$counts_info[$item['feed_id']]:0,	
+    		);
+    		
+    		$nav_infos[$item['category_id']]['list'][] = $feed;
     	}
     	
     	if($request->has('feed_id')){
@@ -91,7 +107,7 @@ class ArticleController extends Controller
     	}
     	
         return view('articles.index', [
-            'categorys' => $categorys,
+            'nav_infos' => $nav_infos,
         	'articleSubs' => $articleSubs,
         	'status' => $status,
         	'page_params' => $page_params,

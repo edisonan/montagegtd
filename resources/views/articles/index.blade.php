@@ -79,21 +79,20 @@ $(document).ready(function () {
 
                 <div class="panel-body">
 		    		<ul class="nav nav-pills nav-stacked">
-		    			@if(count($categorys)>0)
-			    			@foreach($categorys as $category)
+		    			@if(count($nav_infos)>0)
+			    			@foreach($nav_infos as $nav_id=>$nav_info)
 			    			<li role="presentation" class="">
-			    				{{ $category->name }}
-			    				@if(count($category->feedSubs)>0)
+			    				{{ $nav_info['category_info']['category_name'] }}
+			    				@if(count($nav_info['list'])>0)
 			    					<ul>
-			    					@foreach($category->feedSubs as $feedSub)
-			    						<?php $feed = $feedSub->feed;if(empty($feed)) continue;?>
+			    					@foreach($nav_info['list'] as $item)
 			    						<li>
-			    							<a href="{{ url('articles?feed_id='.$feed->id.'&status='.$status) }}">
+			    							<a href="{{ url('articles?feed_id='.$item['feed_id'].'&status='.$status) }}">
 			    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
 			    							[
-			    							<?php echo isset($counts_info[$feed->id])?$counts_info[$feed->id]:0;?>
+			    							<?php echo $item['feed_count']?>
 			    							]
-			    							{{ $feed->feed_name,0,8 }}
+			    							{{ $item['feed_name'],0,8 }}
 			    							</span>
 			    							</a>
 			    						</li>
