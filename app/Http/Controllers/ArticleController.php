@@ -126,7 +126,9 @@ class ArticleController extends Controller
     	} else {
     		echo 'error param';exit;
     	}
-    	$feed = Feed::where('id',$request->feed_id)->get();
+    	
+    	$feed = Feed::where('id',$request->feed_id)->first();
+    	
     	return view('articles.list', [
     			'articles' => $articles,
     			'feed' => $feed,
