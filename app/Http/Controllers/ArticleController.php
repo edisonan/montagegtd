@@ -82,7 +82,7 @@ class ArticleController extends Controller
     	
     	$nav_infos = array();
     	foreach ($category_feed_infos as $item){
-    		$nav_infos[$item->category_id]['category_info'] = $item;
+    		$nav_infos[$item->category_id]['category_info'] = array('category_name'=>$item->category_name,'category_id'=>$item->category_id);
     		
     		$feed = array(
     			'feed_id' => $item->feed_id,	
