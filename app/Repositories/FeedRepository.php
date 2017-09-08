@@ -97,7 +97,10 @@ class FeedRepository
     				$description =  $item->get_description();
     				preg_match('/<img.+src=[\'"](?P<src>.+?)[\'"].*>/i', $description, $image);
     				if (array_key_exists('src', $image)) {
-    					$article->image_url = $image['src'];
+    					$arr = getimagesize($image['src']);
+    					if(!empty($arr) && $arr[0] > 50 && $arr[1] > 50){
+	    					$article->image_url = $image['src'];
+    					}
     				}
     
     				//save article content to database

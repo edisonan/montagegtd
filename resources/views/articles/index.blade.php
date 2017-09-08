@@ -53,7 +53,7 @@ $(document).ready(function () {
 
 	$(".post .post-content").each(function(){
 		height=$(this).height();
-		if(height>80 && height < 500) {
+		if(height>80 && height < 1000) {
 			$(this).css("height","180");
 			$(this).css("overflow","hidden");
 			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">点开更多内容</p>");
