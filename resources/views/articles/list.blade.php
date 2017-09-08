@@ -15,7 +15,7 @@ $(document).ready(function () {
 	$(".post .post-content").each(function(){
 		height=$(this).height();
 		if(height > 1000) {
-			$(this).css("height","180");
+			$(this).css("height","360");
 			$(this).css("overflow","hidden");
 			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">点开更多内容</p>");
 			//$(this).parent().children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer;  \"><img style=\"width:20px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
