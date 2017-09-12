@@ -99,7 +99,7 @@ Sortable.create('foo{{ $nav_info['category_info']['category_id'] }}', {
                             <label for="task-name" class="col-sm-3 control-label">所属分类</label>
 
                             <div class="col-sm-6">
-                            	@if(count($categorys) == 0)
+                            	@if(count($nav_infos) == 0)
                             	所有订阅必须有分类，您当前尚未建立分类，请前往建立后再新增订阅！[<a href="{{ url('categorys') }}" target="_blank">分类设置</a>]
                             	@else
 	                            <select class="form-control" name="category_id">
