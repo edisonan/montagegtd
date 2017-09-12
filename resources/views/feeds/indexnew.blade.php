@@ -48,7 +48,7 @@ $(document).ready(function () {
 });
 
 @foreach ($nav_infos as $nav_info)
-Sortable.create('foo{{ $nav_info['category_info']['category_id'] }}', {
+Sortable.create(foo{{ $nav_info['category_info']['category_id'] }}, {
 	  group: 'foo{{ $nav_info['category_info']['category_id'] }}',
 	  animation: 100
 });
