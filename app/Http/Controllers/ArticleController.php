@@ -93,6 +93,10 @@ class ArticleController extends Controller
     		$nav_infos[$item->category_id]['list'][] = $feed;
     	}
     	
+    	foreach ($nav_infos as $key=>$val){
+    		$nav_infos[$key]['list'] = $this->sortFeed($nav_infos[$key]['list']);
+    	}
+    	
     	if($request->has('feed_id')){
     		$articleSubs = $this->articleSubs->forUserByStatusFeedId($request->user(), $status, $request->feed_id,$need_page=true);
     		$page_params['feed_id'] = $request->feed_id;
@@ -183,6 +187,16 @@ class ArticleController extends Controller
 	    			$articleSub->update();
 				}
 			}
+    	} else if($request->has('feed_id')) {
+    		$articleSubs = ArticleSub::where('user_id',$request->user()->id)->where('status','unread')->where('feed_id',$request->feed_id)->get();
+    		foreach ($articleSubs as $articleSub){
+	    		if(empty($articleSub)){
+	    			continue;
+	    		} else {
+	    			$articleSub->status = 'read';
+	    			$articleSub->update();
+	    		}
+    		}
     	} else {
 	    	$this->authorize('destroy', $articleSub);
 	    	if(in_array($request->status,array('read','unread'))){
@@ -220,5 +234,15 @@ class ArticleController extends Controller
         } else {
         	return redirect('/articles')->with('message', 'IT WORKS!');
         }
+    }
+    
+    private function sortCategory($feeds){
+    	foreach ($feeds as $key=>$feed){
+    		if($feed['count'] == 0){
+    			$feeds[] = $feed;
+	    		unset($feeds[$key]);
+    		}
+    	}
+    	return $feeds;
     }
 }
