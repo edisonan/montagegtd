@@ -3,7 +3,7 @@
 
 
 @section('content')
-<script src="//cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.1/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.0/Sortable.min.js"></script>
 
 <script type="text/javascript">
 $(document).ready(function () {
