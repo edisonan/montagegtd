@@ -76,6 +76,48 @@ class FeedController extends Controller
         ]);
     }
     
+    public function indexnew(Request $request)
+    {
+//     	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);
+//     	$categorys = $this->categorys->forUser($request->user());
+
+    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order desc,f.feed_order desc', [':user_id'=>$request->user()->id]);
+    	
+    	$nav_infos = array();
+    	foreach ($category_feed_infos as $item){
+    		$nav_infos[$item->category_id]['category_info'] = array('category_name'=>$item->category_name,'category_id'=>$item->category_id);
+    	
+    		$feed = array(
+    				'feed_id' => $item->feed_id,
+    				'feed_name' => $item->feed_name,
+    				'feed_count' => isset($counts_info[$item->feed_id])?$counts_info[$item->feed_id]:0,
+    		);
+    	
+    		$nav_infos[$item->category_id]['list'][] = $feed;
+    	}
+    	
+    	if(count($nav_infos) == 0){
+    		$category = $request->user()->categorys()->create([
+    				'name' => '未分类',
+    				'category_order' => 0,
+    		]);
+    		$nav_infos = array('category_info'=>array('category_name'=>$category->name,'category_id'=>$item->category_id),'list'=>array());
+    	}
+    	 
+    	$title = $url = '';
+    	 
+    	if($request->has('url')){
+    		$url = $request->url;
+    		$title = \App\Http\Utils\CommonUtil::page_title($request->url);
+    	}
+    	 
+    	return view('feeds.indexnew', [
+    			'nav_infos' => $nav_infos,
+    			'url' => $url,
+    			'title' => $title,
+    	]);
+    }
+    
     /**
      * Create a new note.
      *

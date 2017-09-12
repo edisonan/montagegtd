@@ -124,6 +124,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/category/{category}', 'CategoryController@destroy');
     
     Route::get('/feeds', 'FeedController@index');
+    Route::get('/feeds/new', 'FeedController@indexnew');
     Route::post('/feed', 'FeedController@store');
     Route::get('/feed/checkNewFeed', 'FeedController@checkNewFeed');
     Route::get('/feed/checkFeedUrl', 'FeedController@checkFeedUrl');
