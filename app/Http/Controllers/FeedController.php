@@ -14,6 +14,7 @@ use App\Repositories\FeedSubRepository;
 use App\Category;
 use App\Repositories\CategoryRepository;
 use App\Article;
+use DB;
 
 
 class FeedController extends Controller
