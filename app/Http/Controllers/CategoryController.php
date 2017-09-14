@@ -57,8 +57,9 @@ class CategoryController extends Controller
     {
         $this->validate($request, [
             'name' => 'required',
-        	'category_order' => 'required',
         ]);
+        
+        $arr = array('name'=>$request,'category_order'=>$this->categorys->forLastCategoryOrder($request->user()));
         
         $note = $request->user()->categorys()->create($request->all());
 
@@ -107,11 +108,34 @@ class CategoryController extends Controller
     	
     	$this->validate($request, [
     			'name' => 'required',
-    			'category_order' => 'required',
     	]);
     
     	$category->update($request->all());
     
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/categorys')->with('message', 'IT WORKS!');
+    	}
+    }
+    
+    public function sort(Request $request)
+    {
+    	$this->validate($request, [
+    		'category_ids' => 'required',
+    	]);
+    	
+    	$category_ids_arr = explode(',', $request->category_ids);
+
+    	$sort = 0;
+    	foreach ($category_ids_arr as $category_id){
+    		$category = $this->categorys->forCategoryId($request->user(), $category_id);
+    		if(!empty($category)){
+		    	$category->update(array('category_order' => $sort++));
+    		}
+    	}
+    	
     	if ($request->ajax() || $request->wantsJson()) {
     		$resp = $this->responseJson(self::OK_CODE);
     		return response($resp);

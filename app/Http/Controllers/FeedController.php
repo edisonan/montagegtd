@@ -77,12 +77,12 @@ class FeedController extends Controller
         ]);
     }
     
-    public function indexnew(Request $request)
+    public function setting(Request $request)
     {
 //     	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);
 //     	$categorys = $this->categorys->forUser($request->user());
 
-    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name,f.id as feed_sub_id from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order desc,f.feed_order desc', [':user_id'=>$request->user()->id]);
+    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name,f.id as feed_sub_id from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order asc,f.feed_order asc', [':user_id'=>$request->user()->id]);
     	
     	$nav_infos = array();
     	foreach ($category_feed_infos as $item){
@@ -103,7 +103,7 @@ class FeedController extends Controller
     				'name' => '未分类',
     				'category_order' => 0,
     		]);
-    		$nav_infos = array('category_info'=>array('category_name'=>$category->name,'category_id'=>$item->category_id),'list'=>array());
+    		$nav_infos[] = array('category_info'=>array('category_name'=>$category->name,'category_id'=>$category->id),'list'=>array());
     	}
     	 
     	$title = $url = '';
@@ -113,7 +113,7 @@ class FeedController extends Controller
     		$title = \App\Http\Utils\CommonUtil::page_title($request->url);
     	}
     	 
-    	return view('feeds.indexnew', [
+    	return view('feeds.setting', [
     			'nav_infos' => $nav_infos,
     			'url' => $url,
     			'title' => $title,
@@ -278,5 +278,40 @@ class FeedController extends Controller
     	return response($resp);
     }
     
+    public function sort(Request $request, FeedSub $feedSub)
+    {
+    	$this->validate($request, [
+    			'feed_sub_ids' => 'required',
+    	]);
+    	 
+    	$feed_sub_ids_arr = explode(',', $request->feed_sub_ids);
+    	
+    	$sort = 0;
+    	foreach ($feed_sub_ids_arr as $feed_sub_id){
+    		$feedSub = $this->feedSubs->forUserByFeedSubId($request->user(), $feed_sub_id, 1);
+    		if(!empty($feedSub)){
+    			$feedSub->update(array('feed_order' => $sort++));
+    		}
+    	}
+    	
+    	if(!empty($request->change_feed_sub_id) && !empty($request->change_feed_sub_category)){
+    		$category = Category::where('user_id',$request->user()->id)->where("id", $request->change_feed_sub_category)->first();
+    		var_dump($category);
+    		if(!empty($category)){
+    			$feedSub = FeedSub::where('user_id',$request->user()->id)->where("id", $request->change_feed_sub_id)->first();
+	    		var_dump($feedSub);
+    			if(!empty($feedSub)){
+	    			$feedSub->update(array('category_id'=>$request->change_feed_sub_category));
+    			}
+    		}
+    	}
+    
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE);
+    		return response($resp);
+    	} else {
+    		return redirect('/feeds')->with('message', 'IT WORKS!');
+    	}
+    }
     
 }

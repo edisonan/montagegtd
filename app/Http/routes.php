@@ -122,15 +122,17 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/category/{category}', 'CategoryController@update');
     Route::get('/category/{category}', 'CategoryController@update');
     Route::delete('/category/{category}', 'CategoryController@destroy');
+    Route::post('/categorys/sort', 'CategoryController@sort');
     
     Route::get('/feeds', 'FeedController@index');
-    Route::get('/feeds/new', 'FeedController@indexnew');
+    Route::get('/feeds/setting', 'FeedController@setting');
     Route::post('/feed', 'FeedController@store');
     Route::get('/feed/checkNewFeed', 'FeedController@checkNewFeed');
     Route::get('/feed/checkFeedUrl', 'FeedController@checkFeedUrl');
     Route::delete('/feed/{feedSub}', 'FeedController@destroy');
     Route::post('/feed/{feedSub}', 'FeedController@update');
     Route::get('/feed/{feedSub}', 'FeedController@update');
+    Route::post('/feeds/sort', 'FeedController@sort');
     
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');

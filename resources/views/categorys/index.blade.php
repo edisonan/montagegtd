@@ -57,14 +57,6 @@ $(document).ready(function () {
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="category-name" class="col-sm-3 control-label">分类排序</label>
-								
-                            <div class="col-sm-8">
-	                               <input type="text" name="category_order" id="category_order" class="form-control" value="0">
-                            </div>
-                        </div>
-
                         <!-- Add category Button -->
                         <div class="form-group">
                             <div class="col-sm-offset-3 col-sm-6">

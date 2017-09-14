@@ -48,6 +48,21 @@ class CategoryRepository
     {
     	return Category::where('user_id', $user->id)
     	->where('id',$category_id)
-    	->get();
+    	->first();
+    }
+    
+    /**
+     * 获取最后一条排序
+     * @param User $user
+     */
+    public function forLastCategoryOrder(User $user)
+    {
+    	$category = Category::where('user_id', $user->id)->orderBy('category_order','desc')->first();
+    	if(empty($category)){
+    		return 0;
+    	} else {
+    		return $category->category_order;
+    	}
+    	
     }
 }
