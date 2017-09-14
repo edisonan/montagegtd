@@ -20,6 +20,12 @@ class FeedSubRepository
                     ->get();
     }
     
+    public function forUserByFeedId(User $user,$feed_id,$status)
+    {
+        return FeedSub::where('user_id', $user->id)->where('feed_id', $feed_id)->where('status',$status)
+                    ->first();
+    }
+    
     /**
      * Get all of the notes for a given user.
      *

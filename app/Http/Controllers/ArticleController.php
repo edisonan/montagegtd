@@ -236,9 +236,9 @@ class ArticleController extends Controller
         }
     }
     
-    private function sortCategory($feeds){
+    private function sortFeed($feeds){
     	foreach ($feeds as $key=>$feed){
-    		if($feed['count'] == 0){
+    		if($feed['feed_count'] == 0){
     			$feeds[] = $feed;
 	    		unset($feeds[$key]);
     		}

@@ -82,7 +82,7 @@ class FeedController extends Controller
 //     	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);
 //     	$categorys = $this->categorys->forUser($request->user());
 
-    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order desc,f.feed_order desc', [':user_id'=>$request->user()->id]);
+    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name,f.id as feed_sub_id from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order desc,f.feed_order desc', [':user_id'=>$request->user()->id]);
     	
     	$nav_infos = array();
     	foreach ($category_feed_infos as $item){
@@ -92,6 +92,7 @@ class FeedController extends Controller
     				'feed_id' => $item->feed_id,
     				'feed_name' => $item->feed_name,
     				'feed_count' => isset($counts_info[$item->feed_id])?$counts_info[$item->feed_id]:0,
+    				'feed_sub_id' => $item->feed_sub_id,
     		);
     	
     		$nav_infos[$item->category_id]['list'][] = $feed;
@@ -148,6 +149,12 @@ class FeedController extends Controller
         	$feed->sub_count = 1;
         	$feed->save();
         } else {
+	        $feedSub = $this->feedSubs->forUser($request->user(),$feed->id,1);
+	        
+	        if(!empty($feedSub)){
+	        	echo 'error:has exist feed!';exit;
+	        }
+	        
         	//如果未锁定，那么更改Feed的名称
         	if(empty($feed->lock_name) && $feed->name != $request->feed_name){
         		$feed->feed_name = $request->feed_name;

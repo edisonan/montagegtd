@@ -1,26 +1,10 @@
 @extends('layouts.app')
 
-
-
 @section('content')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.0/Sortable.min.js"></script>
 
 <script type="text/javascript">
 $(document).ready(function () {
-
-	$("#check_url").unbind("click").click(function(){
-		$("#processTips").text("处理中");
-		
-		url = $("#url").val();
-		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
-			result_arr = JSON.parse(result);
-			if(result_arr.code != 9999){
-				alert('该url未检测到内容，请确认！');
-			}
-			$("#feed_name").val(result_arr.result.title);
-			$("#processTips").text("处理完成");
-		});
-	});
 
 	$(".delete_feed").click(function(){
 		feed_value = $(this).attr("feed_value");
@@ -31,7 +15,7 @@ $(document).ready(function () {
 			return false;
 		}
 		
-		$.ajax({
+	$.ajax({
 		    url: "{{ url('feed') }}"+"/"+feed_value,
 		    type: 'DELETE',
 		    data: {type:feed_type,_token:feed_token},
@@ -51,92 +35,72 @@ $(document).ready(function () {
 
     <div class="container">
     
-        <div class="col-sm-offset-0 col-sm-12">
+        <div class="col-md-offset-0 col-md-12">
         	@include('common.success')
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新的订阅
-                    	<div style="float:right">
-                    		[<a href="{{ url('categorys') }}" target="_blank">分类设置</a>]
-                    	</div>
+                    	订阅管理
                 </div>
 
                 <div class="panel-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
-
-                    <!-- New Task Form -->
-                    <form action="{{ url('feed') }}" method="POST" class="form-horizontal">
-                        {{ csrf_field() }}
-
-                        <!-- Task Name -->
-                        <div class="form-group">
-                            <label for="task-name" class="col-sm-3 control-label">订阅地址</label>
-								
-                            <div class="col-sm-8">
-	                                <input type="text" name="url" id="url" class="form-control" value="{{ $url }}">
-	                                <a href="javascript:void(0)" id="check_url">检测地址!</a><span id="processTips"></span>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group" id="task_form_div1" >
-                            <label for="task-name" class="col-sm-3 control-label">订阅名称</label>
-                            
-                            <div class="col-sm-8">
-                            	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{  $title }}">
-                            </div>
-							
-                        </div>
-                        
-                        <div class="form-group" "form-group" id="task_form_div4" >
-                            <label for="task-name" class="col-sm-3 control-label">所属分类</label>
-
-                            <div class="col-sm-6">
-                            	@if(count($nav_infos) == 0)
-                            	所有订阅必须有分类，您当前尚未建立分类，请前往建立后再新增订阅！[<a href="{{ url('categorys') }}" target="_blank">分类设置</a>]
-                            	@else
-	                            <select class="form-control" name="category_id">
-		                              @foreach ($nav_infos as $nav_info)
-									  	<option value="{{ $nav_info['category_info']['category_id'] }}">{{ $nav_info['category_info']['category_id'] }}</option>
-									  @endforeach
-								</select>
-								@endif
-                            </div>
-                        </div>
-
-                        <!-- Add Task Button -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-3 col-sm-6">
-                                <button type="submit" class="btn btn-default">
-                                    <i class="fa fa-btn fa-plus"></i>提交！
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                    
                     
                     @if (count($nav_infos) > 0)
-                    	@foreach ($nav_infos as $nav_info)
-                                <ul id="foo{{ $nav_info['category_info']['category_id'] }}">
-                                	@foreach($nav_info['list'] as $feed)
-                                	<li>{{ $feed['feed_name'] }}</li>
-                                	@endforeach
-  								</ul>	
-                        @endforeach
+                    	<div id="multi">
+                    		@foreach ($nav_infos as $nav_info)
+                                <div id="categorys{{ $nav_info['category_info']['category_id'] }}" class="tile" category_id="{{ $nav_info['category_info']['category_id'] }}">
+                    					<div class="tile__name">{{ $nav_info['category_info']['category_name'] }}</div>
+                                		@foreach($nav_info['list'] as $feed)
+	                                	<div class="tile__list col-md-12">
+	                                			<div class="col-md-12" curr_category_id="{{ $nav_info['category_info']['category_id'] }}"> 
+	                                				
+		                                			<div class="col-md-6" style="display: -webkit-inline-box;border-radius:25px;">
+		                                				<span class="glyphicon glyphicon-move">{{ $feed['feed_name'] }}</span>
+		                                			</div>
+		                                			
+		                                			<div class="col-md-6 text-right">
+		                                				<a href="{{ url('feed/'.$feed['feed_sub_id'])}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
+			                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" feed_value="{{ $feed['feed_sub_id'] }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
+			                                        		<img alt="" style="width: 15px;" src="/img/icon/delete.png">
+				                        				</a> 
+			                            			</div>
+			                            			
+			                            		</div>
+	                                	</div>
+                                		@endforeach
+  								</div>
+                        	@endforeach
+                    	</div>
                     @endif
+                    
                 </div>
             </div>
 
         </div>
     </div>
     <script type="text/javascript">
-    @foreach ($nav_infos as $nav_info)
-var foo{{ $nav_info['category_info']['category_id'] }} =  document.getElementById('foo{{ $nav_info['category_info']['category_id'] }}');
-Sortable.create(foo{{ $nav_info['category_info']['category_id'] }}, {
-	  group: 'foo{{ $nav_info['category_info']['category_id'] }}',
-	  animation: 100
-});
-@endforeach
+		var multi =  document.getElementById('multi');
+		Sortable.create(multi, {
+			  animation: 150, // ms, animation speed moving items when sorting, `0` — without animation
+			  handle: ".tile__name", // Restricts sort start click/touch to the specified element
+			  draggable: ".tile", // Specifies which items inside the element should be sortable
+			  onEnd: function (evt){
+				     var item = evt.item; // the current dragged HTMLElement
+				     console.log($('#'+item.id).attr("category_id"));
+			  }
+		});
+	
+		[].forEach.call(multi.getElementsByClassName('tile__list'), function (el){
+			Sortable.create(el, {
+				group: 'photo',
+				animation: 150, // Specifies which items inside the element should be sortable
+				onEnd: function (evt){
+					     var item = evt.item; // the current dragged HTMLElement
+					     console.log(item);
+				}
+			});
+		});
 
-</script>
+	</script>
 @endsection
