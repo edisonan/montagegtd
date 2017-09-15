@@ -212,7 +212,6 @@ $(document).ready(function () {
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
                         		<button class="col-sm-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
-                        @else
                         @endif
                         
                         
@@ -223,15 +222,16 @@ $(document).ready(function () {
 	                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
 	                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
 	                        	</div>
+	                        @endif
 	                        @if(count($recommend_feeds) > 0)
 	                        		<div class="text-center col-sm-12">
-	                        			推荐订阅:
+	                        			还可以逛逛其他的资源~
 	                        		</div>
 			                    	@foreach($recommend_feeds as $recommend_feed)
 	                    			<div class="col-sm-offset-0 col-sm-6">
 								        <div class="product-container">  
 								          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
-								          <div class="intro text-right">更新于:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}</div>  
+								          <div class="intro text-right">最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}</div>  
 								        </div>  
 	                    			</div>
 			                    	@endforeach
