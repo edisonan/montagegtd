@@ -87,7 +87,11 @@ $(document).ready(function () {
 			if(result_arr.code != 9999){
 				alert("设置失败");
 			} else {
-				location.href="";
+				@if(!empty($next_recommend_feed))
+					location.href="";
+				@else
+					location.href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}";
+				@endif
 			}
 		});
 	});
@@ -217,13 +221,7 @@ $(document).ready(function () {
                         
                         
                         @if(count($articleSubs) == 0)
-                        
-	                        @if(!empty($next_recommend_feed))
-	                        	<div class="text-right col-sm-12">
-	                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
-	                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
-	                        	</div>
-	                        @elseif(count($recommend_feeds) > 0)
+	                        @if(count($recommend_feeds) > 0)
 	                        		<div class="text-right col-sm-12">
 	                        			推荐订阅:
 	                        		</div>
