@@ -63,8 +63,6 @@ class ArticleController extends Controller
     {
     	$page_params = array();
     	
-//     	$categorys = $this->categorys->forUser($request->user());
-		
     	if($request->has('status')){
     		$status = $request->status;
     	} else {
@@ -81,6 +79,7 @@ class ArticleController extends Controller
     	}
     	
     	$nav_infos = array();
+    	$next_recommend_feed = array();
     	foreach ($category_feed_infos as $item){
     		$nav_infos[$item->category_id]['category_info'] = array('category_name'=>$item->category_name,'category_id'=>$item->category_id);
     		
@@ -89,6 +88,14 @@ class ArticleController extends Controller
     			'feed_name' => $item->feed_name,	
     			'feed_count' => isset($counts_info[$item->feed_id])?$counts_info[$item->feed_id]:0,	
     		);
+    		
+    		if($feed['feed_count'] != 0 && empty($next_recommend_feed)){
+    			if($request->has('feed_id')){
+    				$request->feed_id != $feed['feed_id'] ? $next_recommend_feed = $feed : '';
+    			} else {
+    				$next_recommend_feed = $feed;
+    			}
+    		}
     		
     		$nav_infos[$item->category_id]['list'][] = $feed;
     	}
@@ -117,6 +124,7 @@ class ArticleController extends Controller
         	'page_params' => $page_params,
         	'counts_info' => $counts_info,
         	'recommend_feeds' => $recommend_feeds,
+        	'next_recommend_feed' => $next_recommend_feed,
         ]);
     }
     
@@ -156,7 +164,7 @@ class ArticleController extends Controller
     {
     	$this->authorize('destroy', $articleSub);
     	 
-    	if($articleSub->status == 'star'){
+    	if(!$articleSub->active){
     		$articleSub->status = 'read';
     		$articleSub->update();
     	} else {
@@ -174,7 +182,29 @@ class ArticleController extends Controller
     	}
     }
     
-    public function read(Request $request,ArticleSub  $articleSub)
+    public function read_later(Request $request,ArticleSub $articleSub)
+    {
+    	$this->authorize('destroy', $articleSub);
+    
+    	if($articleSub->status == 'star'){
+    		$articleSub->status = 'read';
+    		$articleSub->update();
+    	} else {
+    		$articleSub->status = 'star';
+    		$articleSub->update();
+    	}
+    	 
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE,$articleSub->article);
+    		return response($resp);
+    	} else {
+    		return view('articles.view', [
+    				'article' => $articleSub->article,
+    		]);
+    	}
+    }
+    
+    public function status(Request $request,ArticleSub  $articleSub)
     {
     	if($request->has('ids')){
 			$id_arr = explode(',', $request->ids);
@@ -199,8 +229,8 @@ class ArticleController extends Controller
     		}
     	} else {
 	    	$this->authorize('destroy', $articleSub);
-	    	if(in_array($request->status,array('read','unread'))){
-	    		$articleSub->status = 'read';
+	    	if(in_array($request->status,array('read','unread', 'read_later', 'star'))){
+	    		$articleSub->status = $request->status;
 	    		$articleSub->update();
 	    	}
     	}

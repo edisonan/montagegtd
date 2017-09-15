@@ -138,9 +138,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/article', 'ArticleController@store');
     Route::get('/article/list', 'ArticleController@list');
     Route::get('/article/view/{article}', 'ArticleController@view');
-    Route::get('/article/star/{articleSub}', 'ArticleController@star');
-    Route::get('/article/read/{articleSub}', 'ArticleController@read');
-    Route::get('/article/reads', 'ArticleController@read');
+    Route::get('/articles/status/{articleSub}', 'ArticleController@status');
+    Route::get('/articles/allstatus', 'ArticleController@status');
     Route::delete('/article/{article}', 'ArticleController@destroy');
     
     Route::get('/pomos', 'PomoController@index');

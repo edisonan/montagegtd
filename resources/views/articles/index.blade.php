@@ -51,33 +51,38 @@
 <script type="text/javascript">
 $(document).ready(function () {
 	
-	$(".set_star").click(function(){
+	$(".set_star,.set_read,.set_read_later").click(function(){
 		article_sub_id = $(this).attr('article_sub_id');
-		$.get("{{ url('/article/star') }}"+"/"+article_sub_id,{},function(result){
-			result_arr = JSON.parse(result);
-			if(result_arr.code != 9999){
-				alert("设置失败");
-			} else {
-				alert("收藏成功");
-			}
-		});
-	});
+		active = $(this).hasClass("active");
 
-	$(".set_read").click(function(){
-		article_sub_id = $(this).attr('article_sub_id');
-		$.get("{{ url('/article/read') }}"+"/"+article_sub_id,{status:"read"},function(result){
+		if($(this).hasClass("set_star")){
+			status = active?"read":"star";
+		} else if($(this).hasClass("set_read")){
+			status = active?"unread":"star";
+		} else if($(this).hasClass("set_read_later")){
+			status = active?"unread":"read_later";
+		} else {
+			return '';
+		}
+
+		item = $(this);
+		$.get("{{ url('/articles/status') }}"+"/"+article_sub_id,{"status":status},function(result){
 			result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
 				alert("设置失败");
 			} else {
-				alert("设置已读成功");
+				if(active){
+					item.removeClass("active");
+				} else {
+					item.addClass("active");
+				}
 			}
 		});
 	});
 
 	$("#marked_all_read").click(function(){
 		var ids = $(this).attr('ids');
-		$.get("{{ url('/article/reads') }}",{ids:ids,status:"read"},function(result){
+		$.get("{{ url('/articles/allstatus') }}",{"ids":ids,"status":"read"},function(result){
 			result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
 				alert("设置失败");
@@ -93,13 +98,11 @@ $(document).ready(function () {
 			$(this).css("height","360");
 			$(this).css("overflow","hidden");
 			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">点开更多内容</p>");
-			//$(this).parent().children("div.post-permalink").children("a").last().after("<a class=\"morecon btn btn-primary\" style=\"cursor:pointer;  \"><img style=\"width:20px;\" src=\"/img/icon/pull.png\">点开更多内容</a>");
 		}
 	});
 	
 	$(".morecon").click(function(){
 		$(this).parent().children("div.post-content").css("height","auto");
-// 		$(this).parent().parent().children("div.post-content").css("height","auto");
 		$(this).css("display","none");
 	});
 });
@@ -154,7 +157,7 @@ $(document).ready(function () {
                 		@else
                     		新的文章
                     	@endif
-                    	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>]
+                    	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>][<a href="{{ url('articles?status=read_later') }}">稍后阅读</a>]
                     	<div style="float:right">
                     		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
                     		<a href="{{ url('kindles') }}" target="_blank">[订阅到Kindle]</a>
@@ -197,12 +200,9 @@ $(document).ready(function () {
 										<p></p>
 									</div>
 									<div class="post-permalink text-right">
-										@if($article->status == 'unread')
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read">设为已读</a>
-										@endif
-										@if($article->status != 'star')
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_star">加入收藏</a>
-										@endif
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read @if($articleSub->status == 'read') active @endif">Read</a>
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_star @if($articleSub->status == 'star') active @endif">Star</a>
 									</div>
 									<footer class="post-footer clearfix"></footer>
 								</article>
@@ -215,7 +215,15 @@ $(document).ready(function () {
                         @else
                         @endif
                         
-                        @if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
+                        @if(!empty($next_recommend_feed))
+                        	<div>
+                        		这个订阅还有{{next_recommend_feed['feed_count']}}篇文章:
+                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{next_recommend_feed['feed_name']}}</a>
+                        	</div>
+                        @else if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
+                        		<div>
+                        			推荐订阅:
+                        		</div>
 		                    	@foreach($recommend_feeds as $recommend_feed)
                     			<div class="col-sm-offset-0 col-sm-6">
 							        <div class="product-container">  
@@ -223,11 +231,6 @@ $(document).ready(function () {
 							          <div class="intro text-right">更新于:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}</div>  
 							        </div>  
                     			</div>
-								<!-- 
-		                    	<div class="col-sm-offset-0 col-sm-6"  style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;    padding: 2px;">
-									<span style="color:green;">推荐:</span><a href="{{ url('feeds') }}?url={{ $recommend_feed->url }}" >{{ $recommend_feed->feed_name }}</a>										                    		
-								</div>
-								 -->
 		                    	@endforeach
                     	@endif
                 </div>
