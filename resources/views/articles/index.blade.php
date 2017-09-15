@@ -217,8 +217,8 @@ $(document).ready(function () {
                         
                         @if(!empty($next_recommend_feed))
                         	<div>
-                        		这个订阅还有{{next_recommend_feed['feed_count']}}篇文章:
-                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{next_recommend_feed['feed_name']}}</a>
+                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
+                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
                         	</div>
                         @else if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
                         		<div>
