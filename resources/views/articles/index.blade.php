@@ -224,7 +224,7 @@ $(document).ready(function () {
 	                        	</div>
 	                        @endif
 	                        @if(count($recommend_feeds) > 0)
-	                        		<div class="text-center col-sm-12">
+	                        		<div class="text-center col-sm-12 post-head">
 	                        			还可以逛逛其他的资源~
 	                        		</div>
 			                    	@foreach($recommend_feeds as $recommend_feed)
