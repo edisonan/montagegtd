@@ -215,24 +215,28 @@ $(document).ready(function () {
                         @else
                         @endif
                         
-                        @if(!empty($next_recommend_feed))
-                        	<div>
-                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
-                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
-                        	</div>
-                        @else if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-                        		<div>
-                        			推荐订阅:
-                        		</div>
-		                    	@foreach($recommend_feeds as $recommend_feed)
-                    			<div class="col-sm-offset-0 col-sm-6">
-							        <div class="product-container">  
-							          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
-							          <div class="intro text-right">更新于:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}</div>  
-							        </div>  
-                    			</div>
-		                    	@endforeach
-                    	@endif
+                        
+                        @if(count($articleSubs) == 0)
+                        
+	                        @if(!empty($next_recommend_feed))
+	                        	<div class="text-right col-sm-12">
+	                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
+	                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
+	                        	</div>
+	                        @elseif(count($recommend_feeds) > 0)
+	                        		<div class="text-right col-sm-12">
+	                        			推荐订阅:
+	                        		</div>
+			                    	@foreach($recommend_feeds as $recommend_feed)
+	                    			<div class="col-sm-offset-0 col-sm-6">
+								        <div class="product-container">  
+								          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
+								          <div class="intro text-right">更新于:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}</div>  
+								        </div>  
+	                    			</div>
+			                    	@endforeach
+	                    	@endif
+	                    @endif
                 </div>
             </div>
 
