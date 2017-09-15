@@ -10,6 +10,10 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	订阅管理
+                    	<div style="float:right">
+                    		<a href="{{'/feeds'}}">[添加订阅]</a>
+                    		<a href="{{'/articles'}}">[继续阅读]</a>
+                    	</div>
                 </div>
 
                 <div class="panel-body">
@@ -20,16 +24,20 @@
                     	<div id="multi">
                     		@foreach ($nav_infos as $nav_info)
                                 <div id="{{ $nav_info['category_info']['category_id'] }}" class="tile category_id_info">
-                    					<div class="tile__name">{{ $nav_info['category_info']['category_name'] }}</div>
+                    					<legend class="tile__name">{{ $nav_info['category_info']['category_name'] }}</legend>
                     					
                                 		@foreach($nav_info['list'] as $feed)
 	                                			<div class="tile__list col-md-12"> 
 		                                				<div class="feed_sub_id_info" ori_category_id="{{ $nav_info['category_info']['category_id'] }}" id="{{ $feed['feed_sub_id'] }}">
-			                                				{{ $feed['feed_name'] }}
-			                                				<a href="{{ url('feed/'.$feed['feed_sub_id'])}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
-				                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" feed_value="{{ $feed['feed_sub_id'] }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
-				                                        		<img alt="" style="width: 15px;" src="/img/icon/delete.png">
-					                        				</a> 
+			                                				<span class="col-md-6">
+				                                				 {{ $feed['feed_name'] }}
+			                                				</span>
+			                                				<span class="col-md-5 text-right">
+				                                				<a href="{{ url('feed/'.$feed['feed_sub_id'])}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
+					                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" feed_value="{{ $feed['feed_sub_id'] }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
+					                                        		<img alt="" style="width: 15px;" src="/img/icon/delete.png">
+						                        				</a> 
+			                                				</span>
 		                                				</div>
 			                            		</div>
                                 		@endforeach

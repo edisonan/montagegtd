@@ -82,7 +82,7 @@ class FeedController extends Controller
 //     	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);
 //     	$categorys = $this->categorys->forUser($request->user());
 
-    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name,f.id as feed_sub_id from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order asc,f.feed_order asc', [':user_id'=>$request->user()->id]);
+    	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name,f.id as feed_sub_id from feed_subs f right join categories c on f.category_id = c.id where c.user_id = :user_id2 and f.user_id = :user_id  and f.status =1 order by c.category_order asc,f.feed_order asc', [':user_id'=>$request->user()->id,':user_id2'=>$request->user()->id]);
     	
     	$nav_infos = array();
     	foreach ($category_feed_infos as $item){
