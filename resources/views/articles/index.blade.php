@@ -224,13 +224,12 @@ $(document).ready(function () {
 	                    		@foreach ($articleSubs as $articleSub)
 	                    		<?php $article = $articleSub->article;if(empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
 	                            <article class="post">
+									@if(!empty($article->subject))
 									<div class="post-head">
-										@if(!empty($article->subject))
 										<h1 class="post-title">
 											<a href="{{ $article->url }}">[原文]</a>
 											<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
 										</h1>
-										@endif
 										<div class="post-meta">
 											<span class="author">
 												来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
@@ -239,6 +238,7 @@ $(document).ready(function () {
 											<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>
 										</div>
 									</div>
+									@endif
 									@if(!empty($article->image_url))
 									<!-- 
 									<div class="featured-media">
