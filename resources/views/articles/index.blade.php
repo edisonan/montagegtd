@@ -225,10 +225,12 @@ $(document).ready(function () {
 	                    		<?php $article = $articleSub->article;if(empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
 	                            <article class="post">
 									<div class="post-head">
+										@if(!empty($article->subject))
 										<h1 class="post-title">
 											<a href="{{ $article->url }}">[原文]</a>
 											<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
 										</h1>
+										@endif
 										<div class="post-meta">
 											<span class="author">
 												来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>

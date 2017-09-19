@@ -146,8 +146,10 @@ class FeedRepository
     
     	$config = config('services.fanfou');
     	
+    	$user = new User();
+    	$user->id = $feed->user_id;
     	$thirdRepository = new ThirdRepository();
-    	$third = $thirdRepository->forUserSource( $feed->user());
+    	$third = $thirdRepository->forUserSource( $user);
     	if(empty($third)){
     		return ;
     	}
@@ -157,44 +159,42 @@ class FeedRepository
     	
     	$ff_user = new FFClient( $config['key'] , $config['secret'] , $oauth_token , $oauth_token_secret );
     	
-    	$items = $ff_user->friends_timeline();
+    	$items = $ff_user->friends_timeline(1,50);
+    	$items = json_decode($items,true);
     	
-    	print_r($items);exit;
-    		foreach ($items as $item) {
+    	foreach ($items as $item) {
     			//count the number of items that already exist in the database with the item url and feed_id
-    			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => $item->get_permalink()])->count();
-    			$results_title = Article::where([ 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
-    			$date = $item->get_date('Y-m-j H:i:s');
+    			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => 'http://fanfou.com/statuses/'.$item['id']])->count();
+//     			$results_title = Article::where([ 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
+    			$date = $item['created_at'];
     
     			//add new article if no results are found and article date is no older than one week
-    			if ($results_url == 0 && $results_title == 0 && ! (strtotime($date) < strtotime($previousweek))) {
+    			if ($results_url == 0  && ! (strtotime($date) < strtotime($previousweek))) {
     				$article = new Article;
+    				
+    				$content = $item['text'];
+    				
+    				if(isset($item['photo'])){
+    					$content = "<a href='{$item['photo']['url']}'><img width='150px' src='{$item['photo']['thumburl']}'/></a>$content";
+    				}
+    				
+    				if(isset($item['user'])){
+    					$content = "<a href='http://fanfou.com/{$item['user']['unique_id']}'>@{$item['user']['name']}</a>$content";
+    				}
     
     				//get article content
     				$article->feed_id = $feed->id;
     				$article->status = 'unread';
-    				$article->url = $item->get_permalink();
-    				$article->subject = $item->get_title();
-    				$article->content = $item->get_description();
-    				$article->published = $item->get_date('Y-m-j H:i:s');
+    				$article->url = 'http://fanfou.com/statuses/'.$item['id'];
+    				$article->subject = '';
+    				$article->content = $item['text'];
+    				$article->published = $item['created_at'];
     
     				$article->user_id = $feed->user_id;
     
     				//get URL of first image
     				//TODO: replace with SimplePie str_get_html function, see: http://stackoverflow.com/questions/9865130/getting-image-url-from-rss-feed-using-simplepie
-    				$description =  $item->get_description();
-    				preg_match('/<img.+src=[\'"](?P<src>.+?)[\'"].*>/i', $description, $image);
-    				if (array_key_exists('src', $image)) {
-    					try {
-    						$arr = @getimagesize($image['src']);
-    						if(!empty($arr) && $arr[0] > 50 && $arr[1] > 50){
-    							$article->image_url = $image['src'];
-    						}
-    					} catch (Exception $e) {
-    						\Log::info("getimagesize error:".$image['src']);
-    					}
-    				}
-    
+    				$description =  $item['text'];
     				//save article content to database
     				$article->save();
     
