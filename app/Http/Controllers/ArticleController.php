@@ -117,8 +117,8 @@ class ArticleController extends Controller
     		$recommend_feeds = array();
     	}
     	
-    	$unable_img = isset($_COOKIE['unable_img'])?(boolean)$_COOKIE['unable_img']:"false";
-    	$unable_desc = isset($_COOKIE['unable_desc'])?(boolean)$_COOKIE['unable_desc']:"false";
+    	$unable_img = isset($_COOKIE['unable_img'])?$_COOKIE['unable_img']:"false";
+    	$unable_desc = isset($_COOKIE['unable_desc'])?$_COOKIE['unable_desc']:"false";
     	
         return view('articles.index', [
             'nav_infos' => $nav_infos,
