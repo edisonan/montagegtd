@@ -218,8 +218,10 @@ class ArticleController extends Controller
 				if(empty($articleSub)){
 					continue;
 				} else {
-					$articleSub->status = 'read';
-	    			$articleSub->update();
+					if($articleSub->status == 'unread'){
+						$articleSub->status = 'read';
+						$articleSub->update();
+					}
 				}
 			}
     	} else if($request->has('feed_id')) {
