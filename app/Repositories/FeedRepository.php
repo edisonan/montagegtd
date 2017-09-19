@@ -174,13 +174,14 @@ class FeedRepository
     				
     				$content = $item['text'];
     				
-    				if(isset($item['photo'])){
-    					$content = "<a href='{$item['photo']['url']}'><img width='150px' src='{$item['photo']['thumburl']}'/></a>$content";
-    				}
-    				
     				if(isset($item['user'])){
     					$content = "<a href='http://fanfou.com/{$item['user']['unique_id']}'>@{$item['user']['name']}</a>$content";
     				}
+    				
+    				if(isset($item['photo'])){
+    					$content = "$content<a href='{$item['photo']['url']}'><img width='150px' src='{$item['photo']['thumburl']}'/></a>";
+    				}
+    				
     
     				//get article content
     				$article->feed_id = $feed->id;
