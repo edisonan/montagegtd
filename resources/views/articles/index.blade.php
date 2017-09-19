@@ -201,7 +201,7 @@ $(document).ready(function () {
             <div class="panel panel-default">
                 <div class="panel-heading">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-                			暂无文章,看看大家推荐的订阅源吧~
+                			无文章,来看其他订阅源吧~
                 		@else
                     		新的文章
                     	@endif
