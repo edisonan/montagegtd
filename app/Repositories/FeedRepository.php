@@ -175,11 +175,11 @@ class FeedRepository
     				$content = $item['text'];
     				
     				if(isset($item['user'])){
-    					$content = "<a href='http://fanfou.com/{$item['user']['unique_id']}'>@{$item['user']['name']}</a>$content";
+    					$content = "<a href='http://fanfou.com/{$item['user']['unique_id']}'>@{$item['user']['name']}</a> &nbsp; $content";
     				}
     				
     				if(isset($item['photo'])){
-    					$content = "$content<a href='{$item['photo']['largeurl']}' target='_blank'><img width='250px' src='{$item['photo']['imageurl']}'/></a>";
+    					$content = "$content<br><a href='{$item['photo']['largeurl']}' target='_blank'><img width='250px' src='{$item['photo']['imageurl']}'/></a>";
     				}
     				
     
