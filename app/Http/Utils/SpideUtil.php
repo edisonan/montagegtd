@@ -95,7 +95,7 @@ class SpideUtil{
 		$params = array();
 		
 		if($type == 2){
-			$article = $html->find(".view_con",0);
+			$article = @$html->find(".view_con",0);
 			if(empty($article)){
 				return $params;
 			}
