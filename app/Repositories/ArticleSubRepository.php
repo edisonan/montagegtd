@@ -26,25 +26,25 @@ class ArticleSubRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,string $status,$need_page=false)
+    public function forUserByStatus(User $user,string $status,$need_page=false,$page_size=20)
     {
     	$article = ArticleSub::where('user_id', $user->id)
 		    	->where('status',$status)->orderBy('published','desc');
     	
     	if($need_page){
-    		return $article->paginate(10);
+    		return $article->paginate($page_size);
     	} else {
     		return $article->get();
     	}
     }
     
-    public function forUserByStatusFeedId(User $user,string $status,$feed_id,$need_page=false)
+    public function forUserByStatusFeedId(User $user,string $status,$feed_id,$need_page=false,$page_size=20)
     {
     	$article = ArticleSub::where('user_id', $user->id)
     	->where('status',$status)
     	->where('feed_id',$feed_id)->orderBy('published','desc');
     	if($need_page){
-    		return $article->paginate(10);
+    		return $article->paginate($page_size);
     	} else {
     		return $article->get();
     	}
