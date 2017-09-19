@@ -162,7 +162,6 @@ class FeedRepository
     	$items = $ff_user->friends_timeline(1,50);
     	$items = json_decode($items,true);
     	
-    	print_r($items);
     	foreach ($items as $item) {
     			//count the number of items that already exist in the database with the item url and feed_id
     			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => 'http://fanfou.com/statuses/'.$item['id']])->count();
@@ -188,7 +187,7 @@ class FeedRepository
     				$article->status = 'unread';
     				$article->url = 'http://fanfou.com/statuses/'.$item['id'];
     				$article->subject = '';
-    				$article->content = $item['text'];
+    				$article->content = $content;
     				$article->published = date('Y-m-d H:i:s',strtotime($item['created_at']));
     
     				$article->user_id = $feed->user_id;
