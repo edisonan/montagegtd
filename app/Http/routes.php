@@ -29,17 +29,12 @@ Route::group(['middleware' => ['web']], function () {
     })->middleware('guest');
     
     Route::get('/test', function () {
-    	$feeds = \App\Feed::where('type',2)->get();
-    	$spideUtil = new \App\Http\Utils\SpideUtil();
-    	foreach ($feeds as $feed){
-    		$spideUtil->processFeed($feed);
-    	}
-    	for($i=1;$i<=67;$i++){
-    		$url = "http://www.mafengwo.cn/yj/10065/2-0-$i.html";
-    		$feed->url = $url;
-    		$spideUtil->processFeed($feed);
-    		echo $url."\n";
-    	}
+        	$feeds = App\Feed::where('type',3)->where('status',1)->get();
+    		$feedRepository = new App\Repositories\FeedRepository();
+    		foreach ($feeds as $feed){
+    			$feedRepository->checkFanfouFeed($feed);
+    			\Log::info('process feed ! url:'.$feed->url);
+    		}
     })->middleware('guest');
     
     Route::get('/test3', function () {
