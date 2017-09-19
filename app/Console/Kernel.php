@@ -168,6 +168,7 @@ class Kernel extends ConsoleKernel
     		}
     	})->everyTenMinutes();
     	
+    	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");
     	
@@ -178,6 +179,17 @@ class Kernel extends ConsoleKernel
     			\Log::info('process feed ! url:'.$feed->url);
     		}
     	})->hourly();
+    	
+//     	$schedule->call(function () {
+//     		date_default_timezone_set("Asia/Shanghai");
+    	
+//     		$feeds = Feed::where('type',3)->where('status',1)->get();
+//     		$feedRepository = new FeedRepository();
+//     		foreach ($feeds as $feed){
+//     			$feedRepository->checkFanfouFeed($feed);
+//     			\Log::info('process feed ! url:'.$feed->url);
+//     		}
+//     	})->everyTenMinutes();
     	
     	$schedule->call(function () {
     		date_default_timezone_set("Asia/Shanghai");

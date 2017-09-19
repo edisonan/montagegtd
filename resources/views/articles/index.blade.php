@@ -111,11 +111,10 @@ $(document).ready(function () {
 	$("#unable_img").click(function(){
 		if($("#unable_img").is(':checked')){
 			$.cookie('unable_img', true); 
-			console.log($.cookie("unable_img"));
 		} else {
 			$.cookie('unable_img', false); 
-			console.log($.cookie("unable_img"));
 		}
+		location.href="";
 	});
 	
 	$(".post img").click(function(){
@@ -144,6 +143,7 @@ $(document).ready(function () {
 		} else {
 			$.cookie('unable_desc', false); 
 		}
+		location.href="";
 	});
 	
 	if($.cookie("unable_desc") != null && $.cookie("unable_desc")=="true"){
