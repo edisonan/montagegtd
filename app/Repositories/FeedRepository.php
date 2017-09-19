@@ -179,7 +179,7 @@ class FeedRepository
     				}
     				
     				if(isset($item['photo'])){
-    					$content = "$content<a href='{$item['photo']['largeurl']}' target='_blank'><img width='150px' src='{$item['photo']['thumburl']}'/></a>";
+    					$content = "$content<a href='{$item['photo']['largeurl']}' target='_blank'><img width='250px' src='{$item['photo']['imageurl']}'/></a>";
     				}
     				
     
