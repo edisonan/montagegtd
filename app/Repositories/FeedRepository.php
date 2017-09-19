@@ -212,7 +212,7 @@ class FeedRepository
     					}
     				}
     
-    				\Log::info("Article Title:".$item->get_title());
+//     				\Log::info("Article Title:".$item->get_title());
     			}
     		}
     
