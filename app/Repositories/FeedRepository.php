@@ -167,7 +167,7 @@ class FeedRepository
     			//count the number of items that already exist in the database with the item url and feed_id
     			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => 'http://fanfou.com/statuses/'.$item['id']])->count();
 //     			$results_title = Article::where([ 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
-    			$date = $item['created_at'];
+    			$date = date('Y-m-d H:i:s',strtotime($item['created_at']));
     
     			//add new article if no results are found and article date is no older than one week
     			if ($results_url == 0  && ! (strtotime($date) < strtotime($previousweek))) {
@@ -189,7 +189,7 @@ class FeedRepository
     				$article->url = 'http://fanfou.com/statuses/'.$item['id'];
     				$article->subject = '';
     				$article->content = $item['text'];
-    				$article->published = $item['created_at'];
+    				$article->published = date('Y-m-d H:i:s',strtotime($item['created_at']));
     
     				$article->user_id = $feed->user_id;
     
@@ -218,7 +218,7 @@ class FeedRepository
     
     		//update feed updated_at record
     		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
-    		Feed::where('id', $feed->id)->update(['feed_desc' => $simplePieInstance->get_description()]);
-    		Feed::where('id', $feed->id)->update(['favicon' => $simplePieInstance->get_image_url()]);
+    		Feed::where('id', $feed->id)->update(['feed_desc' => '']);
+    		Feed::where('id', $feed->id)->update(['favicon' => '']);
     	}
 }
