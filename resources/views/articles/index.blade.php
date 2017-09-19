@@ -41,6 +41,7 @@
 	      }  
 </style>
 
+<script src="/js/jquery.cookie.js"></script>
 <script src="/js/lazyload.min.js"></script>
 <script type="text/javascript" charset="utf-8">
   $(function() {
@@ -50,7 +51,7 @@
 </script>
 <script type="text/javascript">
 $(document).ready(function () {
-	
+
 	$(".set_star,.set_read,.set_read_later").click(function(){
 		article_sub_id = $(this).attr('article_sub_id');
 		active = $(this).hasClass("active");
@@ -105,6 +106,53 @@ $(document).ready(function () {
 		$(this).parent().children("div.post-content").css("height","auto");
 		$(this).css("display","none");
 	});
+
+	//处理屏蔽图片
+	$("#unable_img").click(function(){
+		if($("#unable_img").is(':checked')){
+			$.cookie('unable_img', true); 
+			console.log($.cookie("unable_img"));
+		} else {
+			$.cookie('unable_img', false); 
+			console.log($.cookie("unable_img"));
+		}
+	});
+	
+	$(".post img").click(function(){
+		if($(this).attr("orignal_src") != null){
+			$(this).attr("src", $(this).attr("orignal_src"));//修改图片路径
+		}
+	});
+	if($.cookie("unable_img") != null && $.cookie("unable_img")=="true"){
+		$("#unable_img").prop('checked', true);
+		
+		$(".post img").each(function(){
+			if($(this).attr("src") != null && $(this).attr("src")!="" && $(this).attr("src") != "/img/unable_img.png") {
+			    $(this).attr("orignal_src",$(this).attr("src"));//修改图片路径
+			    $(this).attr("src","/img/unable_img.png");//修改图片路径
+			}
+		    
+		    $(this).parent("a").attr("orignal_href", $(this).parent("a").attr("href"));//修改链接路径
+		    $(this).parent("a").attr("href","javascript:void(0)");//修改链接路径
+		});
+	}
+	
+	//处理一目十行
+	$("#unable_desc").click(function(){
+		if($("#unable_desc").is(':checked')){
+			$.cookie('unable_desc', true); 
+		} else {
+			$.cookie('unable_desc', false); 
+		}
+	});
+	
+	if($.cookie("unable_desc") != null && $.cookie("unable_desc")=="true"){
+		$("#unable_desc").prop('checked', true);
+		
+// 		$(".post-content").each(function(){
+// 			$(this).css("display","none");
+// 		});
+	}
 });
 </script>
     <div class="container">
@@ -159,6 +207,8 @@ $(document).ready(function () {
                     	@endif
                     	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>][<a href="{{ url('articles?status=read_later') }}">稍后阅读</a>]
                     	<div style="float:right">
+                    		<input type="checkbox" value="" id="unable_desc"/>一目十行
+                    		<input type="checkbox" value="" id="unable_img"/>屏图
                     		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
                     		<a href="{{ url('kindles') }}" target="_blank">[订阅到Kindle]</a>
                     		<a href="{{ url('feeds')}}">[添加订阅]</a>
@@ -188,15 +238,26 @@ $(document).ready(function () {
 										</div>
 									</div>
 									@if(!empty($article->image_url))
+									<!-- 
 									<div class="featured-media">
 										<a href="#">
 											<img src="{{$article->image_url}}" alt="{{ $article->subject }}">
 										</a>
 									</div>
+									 -->
 									@endif
+									
+									@if($unable_desc == "false")
 									<div class="post-content" style="    margin: 5px 0;">
 										<p></p>
-										<p><?php echo App\Http\Utils\CommonUtil::removeXSS($article->content); ?></p>
+										<p><?php 
+											$content = $article->content; 
+											if($unable_img == "true"){ 
+												$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
+											} 
+											echo App\Http\Utils\CommonUtil::removeXSS($content); 
+											?>
+										</p>
 										<p></p>
 									</div>
 									<div class="post-permalink text-right">
@@ -205,6 +266,7 @@ $(document).ready(function () {
 										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_star @if($articleSub->status == 'star') active @endif">Star</a>
 									</div>
 									<footer class="post-footer clearfix"></footer>
+									@endif
 								</article>
 								@endforeach
                         		{!! $articleSubs->appends($page_params)->links() !!}

@@ -117,6 +117,9 @@ class ArticleController extends Controller
     		$recommend_feeds = array();
     	}
     	
+    	$unable_img = isset($_COOKIE['unable_img'])?(boolean)$_COOKIE['unable_img']:"false";
+    	$unable_desc = isset($_COOKIE['unable_desc'])?(boolean)$_COOKIE['unable_desc']:"false";
+    	
         return view('articles.index', [
             'nav_infos' => $nav_infos,
         	'articleSubs' => $articleSubs,
@@ -125,6 +128,8 @@ class ArticleController extends Controller
         	'counts_info' => $counts_info,
         	'recommend_feeds' => $recommend_feeds,
         	'next_recommend_feed' => $next_recommend_feed,
+        	'unable_img' => $unable_img,
+        	'unable_desc' => $unable_desc,
         ]);
     }
     
