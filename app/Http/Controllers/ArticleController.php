@@ -41,7 +41,7 @@ class ArticleController extends Controller
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
     {
-        $this->middleware('auth', ['except' => ['welcome']]);
+        $this->middleware('auth', ['except' => ['welcome','view']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;

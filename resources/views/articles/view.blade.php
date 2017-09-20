@@ -23,6 +23,10 @@
                     	<a href="{{ $article->url }}" target="">
                     	{{ $article->subject }}
                     	</a>
+                    	<div style="float:right">
+                    		<a href="{{'/feeds'}}">[添加订阅]</a>
+                    		<a href="{{'/articles'}}">[继续阅读]</a>
+                    	</div>
                 </div>
 
                 <div class="panel-body">
