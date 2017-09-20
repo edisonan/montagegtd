@@ -8,9 +8,9 @@
     <title>@yield('title','Montage GTD - 高效你的生活')</title>
     <meta name="description" content="@yield('description')">
     <meta name="keywords" content="Montage GTD,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
-    
-    <meta name="referrer" content="never">
-
+    @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
+    	<meta name="referrer" content="never">
+    @endif
     <!-- Fonts -->
     <link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
     <link href="https://fonts.css.network/css?family=Lato:100,300,400,700" rel='stylesheet' type='text/css'>
