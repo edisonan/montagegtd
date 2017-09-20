@@ -21,7 +21,7 @@
                     	</span>
                      -->
                     	<a href="{{ $article->url }}" target="">
-                    	{{ $article->subject }}
+                    	
                     	</a>
                     	<div style="float:right">
                     		<a href="{{'/feeds'}}">[添加订阅]</a>
@@ -30,8 +30,33 @@
                 </div>
 
                 <div class="panel-body">
-
-                    <?php echo  $article->content; ?>
+					<article class="post">
+						@if(!empty($article->subject))
+						<div class="post-head">
+							<h1 class="post-title">
+								<a href="{{ $article->url }}">[原文]</a>
+								<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
+							</h1>
+							<div class="post-meta">
+								<span class="author">
+									来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
+								</span> 
+								• 
+								<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>
+							</div>
+						</div>
+						@endif
+						
+						<div class="post-content" style="    margin: 5px 0;">
+							<p></p>
+							<p>											
+								<?php echo  App\Http\Utils\CommonUtil::removeXSS($article->content); ?>
+							</p>
+							<p></p>
+						</div>
+						<footer class="post-footer clearfix"></footer>
+					</article>
+                    
                     
                 </div>
             </div>
