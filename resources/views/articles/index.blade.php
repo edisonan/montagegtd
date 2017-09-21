@@ -153,6 +153,22 @@ $(document).ready(function () {
 // 			$(this).css("display","none");
 // 		});
 	}
+
+	var ua =  navigator.userAgent;
+	isAndroid = /Android/i.test(ua);
+	isBlackBerry = /BlackBerry/i.test(ua);
+	isWindowPhone = /IEMobile/i.test(ua);
+	isIOS = /iPhone|iPad|iPod/i.test(ua);
+	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
+	if(isMobile){
+		$(".category_item").each(function(){
+			$(this).css("display","none");
+		});
+	}
+
+	$(".category_items").click(function(){
+		$(this).find(".category_item").css("display","");
+	});
 });
 </script>
     <div class="container">
@@ -172,10 +188,10 @@ $(document).ready(function () {
 		    		<ul class="nav nav-pills nav-stacked">
 		    			@if(count($nav_infos)>0)
 			    			@foreach($nav_infos as $nav_id=>$nav_info)
-			    			<li role="presentation" class="">
+			    			<li role="presentation" class="category_items">
 			    				{{ $nav_info['category_info']['category_name'] }}
 			    				@if(count($nav_info['list'])>0)
-			    					<ul>
+			    					<ul class="category_item">
 			    					@foreach($nav_info['list'] as $item)
 			    						<li>
 			    							<a href="{{ url('articles?feed_id='.$item['feed_id'].'&status='.$status) }}">
