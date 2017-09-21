@@ -161,12 +161,12 @@ $(document).ready(function () {
 	isIOS = /iPhone|iPad|iPod/i.test(ua);
 	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
 	if(isMobile){
-		$(".category_item").each(function(){
+		$("ul .category_item").each(function(){
 			$(this).css("display","none");
 		});
 	}
 
-	$(".category_items").click(function(){
+	$("ul .category_items").click(function(){
 		$(this).find(".category_item").toggle();
 	});
 });
