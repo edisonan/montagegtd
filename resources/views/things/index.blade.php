@@ -96,12 +96,15 @@ $(document).ready(function () {
                                     <tr id="{{$thing->id}}">
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
+                                        		{{ $thing->name }}  
+                                        		<small>
+                                        		于
                                         		{{ $thing->start_time }}
                                         		
                                         		@if(!empty($thing->end_time))
                                         		- {{ $thing->end_time }}
                                         		@endif
-                                        		&nbsp;&nbsp;&nbsp;&nbsp;{{ $thing->name }}
+                                        		</small>
                                         	</pre>
                                         </td>
 

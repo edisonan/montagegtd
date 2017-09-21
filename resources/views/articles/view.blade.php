@@ -1,4 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.article')
+
+@section('title', $article->subject.' - Montage GTD')
 
 @section('content')
 <script src="/js/lazyload.min.js"></script>
@@ -19,10 +21,11 @@
                     	<a href="{{ url('article/star/'.$article->id) }}">★</a>
                     	<a href="{{ url('article/star/'.$article->id) }}">☆</a>
                     	</span>
-                     -->
                     	<a href="{{ $article->url }}" target="">
-                    	
+                    		全文
                     	</a>
+                     -->
+                    	<a href="#share">去分享</a>
                     	<div style="float:right">
                     		<a href="{{'/feeds'}}">[添加订阅]</a>
                     		<a href="{{'/articles'}}">[继续阅读]</a>
@@ -54,10 +57,13 @@
 							</p>
 							<p></p>
 						</div>
-						<footer class="post-footer clearfix"></footer>
+						<footer class="post-footer clearfix">
+							<div style="float: right">
+								<a id="share" name="share"></a>
+								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"></wb:share-button>
+							</div>
+						</footer>
 					</article>
-                    
-                    
                 </div>
             </div>
 

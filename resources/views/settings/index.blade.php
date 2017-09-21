@@ -11,7 +11,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-        <div class="col-sm-offset-2 col-sm-8">
+        <div class="col-sm-12">
             @include('common.success')
             <div class="panel panel-default">
             	 

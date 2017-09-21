@@ -9,10 +9,10 @@
         	@include('common.success')
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	订阅管理
+                    	分类展示
                     	<div style="float:right">
                     		<a href="{{'/feeds'}}">[添加订阅]</a>
-                    		<a href="{{'/articles'}}">[继续阅读]</a>
+                    		<a href="{{'/articles'}}">[返回]</a>
                     	</div>
                 </div>
 

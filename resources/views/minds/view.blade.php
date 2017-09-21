@@ -63,6 +63,10 @@ $(document).ready(function () {
 	                    	<span  class="glyphicon glyphicon-camera"></span>
 	                    	<span>screen shot</span>
                     	</button>
+                    	
+                    	<div style="float:right">
+                    		<a href="{{'/minds'}}">[返回]</a>
+                    	</div>
                 </div>
 
                 <div class="panel-body">

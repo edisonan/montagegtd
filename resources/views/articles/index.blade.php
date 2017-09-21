@@ -163,6 +163,7 @@ $(document).ready(function () {
                 <div class="panel-heading">
                 	订阅分类
                 	<div style="float:right">
+                		<a href="{{ url('kindles') }}">[Send2Kindle]</a>
                     	<a href="{{'/feeds/setting'}}">[管理]</a>
                     </div>
                 </div>
@@ -201,16 +202,18 @@ $(document).ready(function () {
             <div class="panel panel-default">
                 <div class="panel-heading">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-                			无文章,来看其他订阅源吧~
+                			无文章,看看其他订阅源吧~
                 		@else
                     		新的文章
                     	@endif
-                    	[<a href="{{ url('articles') }}">未读</a>][<a href="{{ url('articles?status=read') }}">已读</a>][<a href="{{ url('articles?status=star') }}">加星</a>][<a href="{{ url('articles?status=read_later') }}">稍后阅读</a>]
+                    	[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">未读</a>]
+                    	[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">已读</a>]
+                    	[<a href="{{ url('articles?status=star&feed_id='.$feed_id) }}">加星</a>]
+                    	[<a href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}">稍后阅读</a>]
                     	<div style="float:right">
                     		<input type="checkbox" value="" id="unable_desc"/>一目十行
                     		<input type="checkbox" value="" id="unable_img"/>屏图
                     		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
-                    		<a href="{{ url('kindles') }}" target="_blank">[订阅到Kindle]</a>
                     		<a href="{{ url('feeds')}}">[添加订阅]</a>
                     	</div>
                 </div>
@@ -263,6 +266,7 @@ $(document).ready(function () {
 										<p></p>
 									</div>
 									<div class="post-permalink text-right">
+										<a href="{{ url('article/view/'.$article->id) }}#share" class="btn btn-default" target="_blank">ShareAndView</a>
 										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
 										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read @if($articleSub->status == 'read') active @endif">Read</a>
 										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_star @if($articleSub->status == 'star') active @endif">Star</a>
@@ -282,20 +286,22 @@ $(document).ready(function () {
                         @if(count($articleSubs) == 0)
                         
 	                        @if(!empty($next_recommend_feed))
-	                        	<div class="text-center col-sm-12">
+	                        	<div class="text-center col-sm-12" style="    font-size: 20px;">
 	                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
 	                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
 	                        	</div>
 	                        @endif
+	                        
 	                        @if(count($recommend_feeds) > 0)
-	                        		<div class="text-center col-sm-12 post-head">
+	                        		<div class="text-center col-sm-12" style="    font-size: 20px;">
 	                        			还可以逛逛其他的资源~
 	                        		</div>
+	                        		
 			                    	@foreach($recommend_feeds as $recommend_feed)
 	                    			<div class="col-sm-offset-0 col-sm-6">
 								        <div class="product-container">  
 								          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
-								          <div class="intro text-right">最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}</div>  
+								          <div class="intro text-right">最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }} &nbsp;&nbsp; <a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >去阅读</a></div>  
 								        </div>  
 	                    			</div>
 			                    	@endforeach

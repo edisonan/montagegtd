@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html xmlns:wb="http://open.weibo.com/wb">
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -30,6 +31,8 @@
             margin-right: 6px;
         }
     </style>
+    <!-- weibo -->
+    <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 </head>
 
 <body id="app-layout">
@@ -48,7 +51,7 @@
                 <!-- Branding Image -->
                 <a class="navbar-brand" href="{{ url('/') }}">
                 		<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
-                    	<span style="color:#429c4e">Montage GTD</span>
+                    	Montage GTD
                 </a>
             </div>
 
@@ -61,25 +64,25 @@
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Authentication Links -->
                     @if (Auth::guest())
-                    <li><a href="{{ url('/pomo/welcome') }}" style="color:#584029">做番茄</a></li>
-                    <li><a href="{{ url('/note/welcome') }}" style="color:#4CA1D7">记想法</a></li>
-                    <li><a href="{{ url('/read/welcome') }}" style="color:#F7AA55">去阅读</a></li>
-                    <li><a href="{{ url('/minds/welcome') }}" style="color:#0F959D">思维导图</a></li>
+                    <li><a href="{{ url('/pomo/welcome') }}">做番茄</a></li>
+                    <li><a href="{{ url('/note/welcome') }}">记想法</a></li>
+                    <li><a href="{{ url('/read/welcome') }}">去阅读</a></li>
+                    <li><a href="{{ url('/minds/welcome') }}">思维导图</a></li>
                     @else
-                    <li><a href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
-                    <li><a href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
-                    <li><a href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
-                    <li><a href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
-                    <li><a href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
+                    <li><a href="{{ url('/') }}">做番茄</a></li>
+                    <li><a href="{{ url('/notes') }}">记想法</a></li>
+                    <li><a href="{{ url('/articles') }}">去阅读</a></li>
+                    <li><a href="{{ url('/minds') }}">思维导图</a></li>
+                    <li><a href="{{ url('index/feedback') }}">添加反馈</a></li>
                     @endif
                     
                     @if (Auth::guest())
-                        <li><a href="{{ url('/login') }}" style="color:#E85205">登录</a></li>
-                        <li><a href="{{ url('/register') }}" style="color:#9BD6C5">注册</a></li>
+                        <li><a href="{{ url('/login') }}">登录</a></li>
+                        <li><a href="{{ url('/register') }}">注册</a></li>
                     @else
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                                <span style="color:#9BD6C5">{{ Auth::user()->name }}</span> <span class="caret"></span>
+                                {{ Auth::user()->name }} <span class="caret"></span>
                             </a>
 
                             <ul class="dropdown-menu" role="menu">

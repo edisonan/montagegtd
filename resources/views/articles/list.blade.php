@@ -34,13 +34,10 @@ $(document).ready(function () {
         <div class="col-sm-offset-0 col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新的文章
-                    	[<a href="{{ url('feeds') }}?url={{ $feed->url }}">订阅此源</a>]
+                    	{{ $feed->feed_name }}
+                    	
                     	<div style="float:right">
-                    		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
-                    		<a href="{{ url('kindles') }}" target="_blank">[Kindle订阅]</a>
-                    		<a href="{{ url('categorys') }}" target="_blank">[分类管理]</a>
-                    		<a href="{{ url('feeds')}}">[订阅管理]</a>
+                    		[<a href="{{ url('feeds') }}?url={{ $feed->url }}">订阅此源</a>]
                     	</div>
                 </div>
 

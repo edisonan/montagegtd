@@ -48,7 +48,7 @@ $(document).ready(function () {
                             <tbody>
                                 @foreach ($pomos as $pomo)
                                     <tr id="{{$pomo->id}}">
-                                        <td class="table-text" width="80%"><div>【{{ date('y-m-d H:i', strtotime($pomo->updated_at)) }}】{{ $pomo->name }} </div></td>
+                                        <td class="table-text" width="80%"><div>{{ $pomo->name }} <small>{{ date('y-m-d H:i', strtotime($pomo->updated_at)) }}</small></div></td>
 
                                         <!-- Task Delete Button -->
                                         <td width="20%" align="right">

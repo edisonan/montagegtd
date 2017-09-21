@@ -67,8 +67,12 @@ class SpideUtil{
 	}
 	
 	public function getList($result,$type){
-		$html = str_get_html($result);
+		$html = @str_get_html($result);
 		$list = array();
+		
+		if(empty($html)){
+			return $list;
+		}
 		
 		if($type == 2){
 			$articles = $html->find(".post-item");
@@ -91,8 +95,11 @@ class SpideUtil{
 	}
 	
 	public function getContent($result,$type){
-		$html = str_get_html($result);
+		$html = @str_get_html($result);
 		$params = array();
+		if(empty($html)){
+			return $params;
+		}
 		
 		if($type == 2){
 			$article = @$html->find(".view_con",0);

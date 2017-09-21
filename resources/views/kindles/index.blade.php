@@ -11,41 +11,51 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-    	<div class="col-sm-offset-2 col-sm-8">
+    	<div class="col-sm-12">
     		@include('common.success')
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	配置说明
+                    	<div style="float:right">
+                    		<a href="{{'/articles'}}">[返回]</a>
+                    	</div>
                 </div>
 
                 <div class="panel-body">
-                	<p>
-					1、中亚用户,点击<a href="https://www.amazon.cn/gp/digital/fiona/manage?ie=UTF8&ref_=ya_myk&#manageDevices">这里</a>配置
-					<img alt=""  class="col-sm-12" src="/img/kindle_amazon_cn.jpg">
-					<img alt=""  class="col-sm-12" src="/img/kindle_amazon_cn2.jpg">
-					</p>
-					
-					<p>
-					2、美亚用户 点击<a href="https://www.amazon.com/mn/dcw/myx.html#/home/devices/1">这里</a>配置
-					<!-- 
-					<img alt="" src="">
-					 -->
-					</p>
-					
-					<p>
-					3、添加 noreply@congcong.us 到信任列表，根据亚马逊生成的邮箱在页面下面设置
-					</p>
-					
-					<p>
-					4、点击<a href="{{url('kindle/test')}}">测试链接</a>发送请求,查看kindle是否收到测试文件
-					<?php ?>             
-					</p>
+                	<div style="float:left">
+                		<img alt=""  class="" src="/img/kindle.jpg">
+                	</div>
+                	<div>
+                		<p>
+						步骤:
+						</p>
+						
+	                	<p>
+						1、中亚用户,点击<a href="https://www.amazon.cn/gp/digital/fiona/manage?ie=UTF8&ref_=ya_myk&#manageDevices">这里</a>配置,<a href="/img/kindle_amazon_cn.jpg" target="_blank">图示1</a> <a href="/img/kindle_amazon_cn2.jpg" target="_blank">图示2</a>
+						
+						</p>
+						
+						<p>
+						2、美亚用户 点击<a href="https://www.amazon.com/mn/dcw/myx.html#/home/devices/1">这里</a>配置
+						<!-- 
+						<img alt="" src="">
+						 -->
+						</p>
+						
+						<p>
+						3、添加 noreply@congcong.us 到信任列表，根据亚马逊生成的邮箱在页面下面设置
+						</p>
+						
+						<p>
+						4、点击<a href="{{url('kindle/test')}}">测试链接</a>发送请求,查看kindle是否收到测试文件
+						</p>
+                	</div>
                 </div>
             </div>
 
         </div>
     
-        <div class="col-sm-offset-2 col-sm-8">
+        <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     	设置您的亚马逊邮箱

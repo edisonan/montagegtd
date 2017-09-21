@@ -55,7 +55,7 @@ $(document).ready(function () {
                 <div class="panel-heading">
                     	新的订阅
                     	<div style="float:right">
-                    		[<a href="{{ url('categorys') }}" target="_blank">分类设置</a>]
+                    		[<a href="{{ url('categorys') }}">分类设置</a>]
                     	</div>
                 </div>
 
