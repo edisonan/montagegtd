@@ -41,6 +41,7 @@
 	  
       <footer class="footer  text-center">
         <p>&copy; 2016 Congcong, Inc.</p>
+        <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"></wb:share-button>
       </footer>
 
     </div> <!-- /container -->

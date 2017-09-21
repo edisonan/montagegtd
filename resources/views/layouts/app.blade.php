@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html xmlns:wb="http://open.weibo.com/wb">
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -30,6 +31,7 @@
             margin-right: 6px;
         }
     </style>
+    <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 </head>
 
 <body id="app-layout">
