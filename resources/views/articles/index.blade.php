@@ -161,12 +161,12 @@ $(document).ready(function () {
 	isIOS = /iPhone|iPad|iPod/i.test(ua);
 	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
 	if(isMobile){
-		$("ul .category_item").each(function(){
+		$(".category_item").each(function(){
 			$(this).css("display","none");
 		});
 	}
 
-	$("ul .category_items").click(function(){
+	$(".category_items").click(function(){
 		$(this).find(".category_item").toggle();
 	});
 });
@@ -188,8 +188,10 @@ $(document).ready(function () {
 		    		<ul class="nav nav-pills nav-stacked">
 		    			@if(count($nav_infos)>0)
 			    			@foreach($nav_infos as $nav_id=>$nav_info)
-			    			<li role="presentation" class="category_items">
+			    			<li role="presentation">
+			    				<span class="category_items">
 			    				{{ $nav_info['category_info']['category_name'] }}
+			    				</span>
 			    				@if(count($nav_info['list'])>0)
 			    					<ul class="category_item">
 			    					@foreach($nav_info['list'] as $item)
