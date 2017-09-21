@@ -223,6 +223,7 @@ class ArticleController extends Controller
 				} else {
 					if($articleSub->status == 'unread'){
 						$articleSub->status = 'read';
+						$articleSub->updated_at = date('Y-m-d H:i:s');
 						$articleSub->update();
 					}
 				}
@@ -234,6 +235,7 @@ class ArticleController extends Controller
 	    			continue;
 	    		} else {
 	    			$articleSub->status = 'read';
+	    			$articleSub->updated_at = date('Y-m-d H:i:s');
 	    			$articleSub->update();
 	    		}
     		}
@@ -241,6 +243,7 @@ class ArticleController extends Controller
 	    	$this->authorize('destroy', $articleSub);
 	    	if(in_array($request->status,array('read','unread', 'read_later', 'star'))){
 	    		$articleSub->status = $request->status;
+	    		$articleSub->updated_at = date('Y-m-d H:i:s');
 	    		$articleSub->update();
 	    	}
     	}
