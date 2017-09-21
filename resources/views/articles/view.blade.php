@@ -25,9 +25,11 @@
                     		全文
                     	</a>
                      -->
-                    	<a href="#share">去分享</a>
+                     {{$article->feed->feed_name}}
                     	<div style="float:right">
-                    		<a href="{{'/feeds'}}">[添加订阅]</a>
+                    		@if(!$is_feed)
+                    		<a href="{{ '/feeds?url='.$article->feed->url }}">[添加订阅]</a>
+                    		@endif
                     		<a href="{{'/articles'}}">[继续阅读]</a>
                     	</div>
                 </div>

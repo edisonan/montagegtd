@@ -158,12 +158,25 @@ class ArticleController extends Controller
     
     public function view(Request $request,Article  $article)
     {
+    	if(empty($article)){
+    		echo 'error article';exit;
+    	}
+    	
+    	$is_feed = false;
+    	if(\Auth::check()){
+    		$articleSub = $this->articleSubs->forUserByStatusFeedId($request->user(), '1', $article->feed->id);
+    		if(count($articleSub) > 0){
+    			$is_feed = true;
+    		}
+    	}
+    	
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE,$article);
         	return response($resp);
         } else {
         	return view('articles.view', [
     			'article' => $article,
+        		'is_feed' => $is_feed,
     		]);
         }
     }
