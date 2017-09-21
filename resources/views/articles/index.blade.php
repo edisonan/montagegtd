@@ -167,7 +167,7 @@ $(document).ready(function () {
 	}
 
 	$(".category_items").click(function(){
-		$(this).find(".category_item").toggle();
+		$(this).parent().find(".category_item").toggle();
 	});
 });
 </script>
