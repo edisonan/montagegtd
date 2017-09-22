@@ -23,7 +23,7 @@ $(document).ready(function () {
 
                 <div class="panel-body">
                 	<div style="float:left">
-                		<img alt=""  class="" src="/img/kindle.jpg">
+                		<img alt=""  class="" src="/img/kindle.jpg" width="150px">
                 	</div>
                 	<div>
                 		<p>
