@@ -62,7 +62,7 @@
 						<footer class="post-footer clearfix">
 							<div style="float: right">
 								<a id="share" name="share"></a>
-								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"></wb:share-button>
+								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="<?php echo $_SERVER['REQUEST_URI'];?>" pic="{{ $article->image_url }}"></wb:share-button>
 							</div>
 						</footer>
 					</article>

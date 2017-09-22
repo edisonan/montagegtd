@@ -41,7 +41,7 @@
 	  
       <footer class="footer  text-center">
         <p>&copy; 2016 Congcong, Inc.</p>
-        <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"></wb:share-button>
+        <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"  title="蒙太奇MontageGTD-高效你的生活" url="http://task.congcong.us" pic="http://task.congcong.us/favicon.ico"></wb:share-button>
       </footer>
 
     </div> <!-- /container -->
