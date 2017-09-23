@@ -224,11 +224,11 @@ $(document).ready(function () {
                 		@else
                 			@if($status == 'unread')
                 			未读
-                			@else if($status == 'read')
+                			@elseif($status == 'read')
                 			已读
-                			@else if($status == 'star')
+                			@elseif($status == 'star')
                 			收藏
-                			@else if($status == 'read_later')
+                			@elseif($status == 'read_later')
                 			稍后阅读
                 			@endif
                     		文章
