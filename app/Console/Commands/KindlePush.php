@@ -13,6 +13,7 @@ use Develpr\Phindle\Content;
 use App\ArticleSub;
 use App\Http\Utils\SpideUtil;
 use App\Repositories\SettingRepository;
+use App\Repositories\ArticleSubRepository;
 
 use Log;
 use Mail;
@@ -45,16 +46,23 @@ class KindlePush extends Command
      */
     public function handle()
     {
-    		$settings = Setting::where('is_start_kindle',1)->get();
+    		$settingRepository = new SettingRepository();
+    		$articleSubRepository = new ArticleSubRepository();
+    		
+    		//get start push list
+    		$settings = $settingRepository->getStartList();
+    		
     		foreach ($settings as $setting){
     			$user = $setting->user;
     			
+    			//start record push log
     			$kindleLog = new KindleLog();
     			$kindleLog->user_id = $user->id;
     			$kindleLog->type = 2;
     			$kindleLog->status = 1;
     			$kindleLog->save();
     			
+    			//init phindle
     			$phindle = new Phindle(array(
     					'title' => "Montage GTD每日订阅推送".date('Y-m-d'),
     					'publisher' => "Montage GTD ".$user->id,
@@ -70,20 +78,24 @@ class KindlePush extends Command
     					'downloadImages' => true, //Should images be downloaded from the web if found in your html?
     			));
     			
-    			$now = date('Y-m-d H:i:s');
-    			$start_time = date('Y-m-d H:i:s',strtotime($now)-86400);
+    			$start_time = date('Y-m-d H:i:s',strtotime(date('Y-m-d H:i:s'))-86400);
+    			$end_time = date('Y-m-d H:i:s');
     			
-    			$articleSubs = ArticleSub::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(300)->get();
+    			
     			$feed_info = array();
     			
     			$chapter_count = 0;
     			$article_count = 0;
     			
+    			//get recent publish list
+    			$articleSubs = $articleSubRepository->getRecentPublishList($user, 'unread', $start_time, $end_time, 300);
     			foreach($articleSubs as $articleSub)
     			{
     				$article = $articleSub->article;
+    				
+    				//new chapter process
     				if(!isset($feed_info[$article->feed_id])){
-    					//文章数清零 章节数加1
+    					//article count set 0,chapter count +1,save chapter info
     					$article_count = 0;
     					$chapter_count++;
     					$feed_info[$article->feed_id] = $article->feed;
@@ -94,17 +106,19 @@ class KindlePush extends Command
     					$content->setPosition($chapter_count*1000+$article_count);
     					$phindle->addContent($content);
     				}
-    				//文章数递增 大于20篇时不再执行
+    				
+    				//article count +1 ,until article count > 20, break it!
     				if($article_count > 20) continue;
     				$article_count++;
     				
+    				//if need with image, do something img
     				if($setting->with_image_push == 1){
     					$spideUtil = new SpideUtil();
     					$article_content = $spideUtil->processKindleImgContent($article->content, config("app.storage_path").'/ebooks/temp');
     				} else {
     					$article_content = preg_replace("#<img.*>#iUs", "", $article->content); //无图
     				}
-    				/** @var Illuminate\View\View $html */
+    				
     				$content = new Content();
     				$content->setHtml('<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>'.$article->subject.'</h3>'.$article_content.'<a href="'.$article->url.'">查看原文</a>');
     				$content->setTitle($chapter_count.'.'.$article_count.' '.$article->subject);
@@ -112,14 +126,17 @@ class KindlePush extends Command
     				$phindle->addContent($content);
     			}
     			
+    			//do something build mobi file
     			$phindle->process();
     			
+    			// get mobi file path
     			$path = $phindle->getMobiPath();
     			
     			$kindleLog->path = $path;
     			$kindleLog->status = 2;
     			$kindleLog->save();
     			
+    			//send to kindle address
     			Log::info('send to kindle:'.$user->id.'|'.count($articleSubs).'|'.$path);
     			Mail::send('emails.kindle', ['setting'=>$setting,'path'=>$path], function ($m) use ($setting,$path) {
     				$m->to($setting->kindle_email, 'user')->subject('Send To Kindle');

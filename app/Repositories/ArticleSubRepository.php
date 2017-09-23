@@ -50,4 +50,8 @@ class ArticleSubRepository
     	}
     }
     
+    public function getRecentPublishList(User $user,string $status,$start_time,$end_time,$limit){
+    	return ArticleSub::where('user_id',$user->id)->where('status',$status)->where('published','<',$end_time)->where('published','>',$start_time)->orderBy('feed_id')->limit($limit)->get();
+    }
+    
 }

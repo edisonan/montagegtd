@@ -33,5 +33,10 @@ class SettingRepository
                     ->get();
     }
     
+    public function getStartList()
+    {
+    	return Setting::where('is_start_kindle',1)->get();
+    }
+    
     
 }

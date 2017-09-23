@@ -35,12 +35,13 @@ class TaskReminder extends Command
      */
     public function handle()
     {
+    	$taskRepository = new TaskRepository();
+    	
     	$start_time = date('Y-m-d H:i:s');
     	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+60);
     	
-    	$taskRepository = new TaskRepository();
+    	//get need remind task list
     	$tasks = $taskRepository->forUserByRemindTime($start_time, $end_time);
-    	
     	foreach ($tasks as $task){
     		$user = $task->user;
     		Mail::send('emails.reminder', ['user' => $user, 'task'=>$task], function ($m) use ($user, $task) {
