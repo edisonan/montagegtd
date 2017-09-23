@@ -121,7 +121,7 @@ class FeedRepository
     				//save article content to database
     				$article->save();
     				
-    				\Log::info("Save Article:".$article->url.'|'.$article->content);
+    				\Log::info("Save Article:".$article->url);
     				
     				foreach ($feedSubs as $feedSub){
     					$articleSub = ArticleSub::where('user_id',$feedSub->user_id)->where('article_id',$article->id)->first();
@@ -137,8 +137,6 @@ class FeedRepository
 							\Log::info("Save ArticleSub:".$articleSub->user_id.'|'.$articleSub->article_id);
     					}
     				}
-    
-    				\Log::info("Article Title:".$item->get_title());
     			}
     		}
     
@@ -152,9 +150,9 @@ class FeedRepository
     public function checkFanfouFeed(Feed $feed)
     {
     	//set previous week
-    	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
+//     	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     
-    	\Log::info("Check Feed:".$feed->url);
+    	\Log::info("Check Feed:".$feed->id.'|'.$feed->url);
     	
     	$feedSubs = FeedSub::where('feed_id',$feed->id)->get();
     
@@ -215,6 +213,8 @@ class FeedRepository
     				$description =  $item['text'];
     				//save article content to database
     				$article->save();
+    				
+    				\Log::info("Save Article:".$article->url);
     
     				foreach ($feedSubs as $feedSub){
     					$articleSub = ArticleSub::where('user_id',$feedSub->user_id)->where('article_id',$article->id)->first();
@@ -226,6 +226,8 @@ class FeedRepository
     						$articleSub->status = 'unread';
     						$articleSub->published = $article->published;
     						$articleSub->save();
+    						
+    						\Log::info("Save ArticleSub:".$articleSub->user_id.'|'.$articleSub->article_id);
     					}
     				}
     

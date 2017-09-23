@@ -59,9 +59,9 @@ class Kernel extends ConsoleKernel
     	$schedule->command('fanfou_publish')->daily();
     	$schedule->command('task_reminder')->everyMinute();
     	$schedule->command('statistics_cron')->dailyAt('00:30');
-    	$schedule->command('feed_common')->everyMinute();
-//     	$schedule->command('feed_type2')->hourly();
-//     	$schedule->command('feed_type3')->everyTenMinutes();
+    	$schedule->command('feed_common')->everyTenMinutes();
+    	$schedule->command('feed_type2')->hourly();
+    	$schedule->command('feed_type3')->everyTenMinutes();
     	$schedule->command('kindle_push')->dailyAt('18:00');
     }
 }
