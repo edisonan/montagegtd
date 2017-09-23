@@ -220,9 +220,18 @@ $(document).ready(function () {
             <div class="panel panel-default">
                 <div class="panel-heading">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-                			无文章,看看其他订阅源吧~
+                			尚无文章
                 		@else
-                    		新的文章
+                			@if($status == 'unread')
+                			未读
+                			@else if($status == 'read')
+                			已读
+                			@else if($status == 'star')
+                			收藏
+                			@else if($status == 'read_later')
+                			稍后阅读
+                			@endif
+                    		文章
                     	@endif
                     	[<a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}">未读</a>]
                     	[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">已读</a>]
