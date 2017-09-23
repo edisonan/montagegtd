@@ -70,10 +70,7 @@ class FeedRepository
     
     public function checkFeed(Feed $feed)
     {
-    	//set previous week
-    	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
-    
-    	\Log::info("Check Feed:".$feed->url);
+    	\Log::info("Check Feed:".$feed->id.'|'.$feed->url);
     	 
     	$feedFactory = new FeedFactory(['cache.enabled' => false]);
     	$feeder = $feedFactory->make($feed->url);
@@ -82,6 +79,9 @@ class FeedRepository
     	//only add articles and update feed when results are found
     	if (!empty($simplePieInstance)) {
     		$feedSubs = FeedSub::where('feed_id',$feed->id)->get();
+    		
+    		//set previous week
+    		$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     
     		foreach ($simplePieInstance->get_items() as $item) {
     			//count the number of items that already exist in the database with the item url and feed_id
@@ -121,6 +121,8 @@ class FeedRepository
     				//save article content to database
     				$article->save();
     				
+    				\Log::info("Save Article:".$article->url.'|'.$article->content);
+    				
     				foreach ($feedSubs as $feedSub){
     					$articleSub = ArticleSub::where('user_id',$feedSub->user_id)->where('article_id',$article->id)->first();
     					if(empty($articleSub)){
@@ -131,6 +133,8 @@ class FeedRepository
 							$articleSub->status = 'unread';
 							$articleSub->published = $article->published;
 							$articleSub->save();
+							
+							\Log::info("Save ArticleSub:".$articleSub->user_id.'|'.$articleSub->article_id);
     					}
     				}
     
