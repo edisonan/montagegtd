@@ -176,6 +176,9 @@ class FeedRepository
     			//count the number of items that already exist in the database with the item url and feed_id
     			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => 'http://fanfou.com/statuses/'.$item['id']])->count();
 //     			$results_title = Article::where([ 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
+				if(isset($item['repost_status'])){
+					$item = $item['repost_status'];
+				}
     			$date = date('Y-m-d H:i:s',strtotime($item['created_at']));
     
     			//add new article if no results are found and article date is no older than one week
