@@ -203,7 +203,7 @@ class StatisticsController extends Controller
     	$mind_bar_statistics['series'][] = array(
     			'name'=>'笔记量',
     			'type'=>'bar',
-    			'data'=>array_values($mind_arr),
+    			'data'=>array_values($mind_arr), 
     	);
     	
     	$count_pie_statistics = $pie_basic_arr;
