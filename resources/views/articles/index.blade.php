@@ -224,7 +224,7 @@ $(document).ready(function () {
                 		@else
                     		新的文章
                     	@endif
-                    	[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">未读</a>]
+                    	[<a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}">未读</a>]
                     	[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">已读</a>]
                     	[<a href="{{ url('articles?status=star&feed_id='.$feed_id) }}">加星</a>]
                     	[<a href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}">稍后阅读</a>]
