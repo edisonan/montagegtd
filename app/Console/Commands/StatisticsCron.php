@@ -12,7 +12,6 @@ use App\ArticleSub;
 use App\Statistics;
 
 use Log;
-use App\Mind;
 
 /**
  * statistics pomo note task etc.
