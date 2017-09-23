@@ -32,6 +32,16 @@ class FeedRepository
     }
     
     /**
+     * get feed list by type and status
+     * @param unknown $type
+     * @param unknown $status
+     */
+    public function getListByTypeStatus($type, $status)
+    {
+    	return Feed::where('type',$type)->where('status',$status)->get();
+    }
+    
+    /**
      * Get all of the tasks for a given user.
      *
      * @param  User  $user

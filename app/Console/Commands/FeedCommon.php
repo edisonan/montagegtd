@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+
+use App\Repositories\FeedRepository;
+use App\Feed;
+
+use Log;
+
+/**
+ * get new article from common feed
+ * @author edison.an
+ *
+ */
+class FeedCommon extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'feed_common';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Common Feed get New Article';
+
+    /**
+     * Execute the console command.
+     *
+     * @return mixed
+     */
+    public function handle()
+    {
+    	$feedRepository = new FeedRepository();
+    	$feeds = $feedRepository->getListByTypeStatus(1, 1);
+    	
+    	foreach ($feeds as $feed){
+    		$feedRepository->checkFeed($feed);
+    		Log::info('process feed ! url:'.$feed->url);
+    	}
+    }
+}
