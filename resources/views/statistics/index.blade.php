@@ -13,6 +13,8 @@
                     	<div id="pomo_main" style="height:400px"></div>
                     	<div id="task_main" style="height:400px"></div>
                     	<div id="note_main" style="height:400px"></div>
+                    	<div id="article_main" style="height:400px"></div>
+                    	<div id="mind_main" style="height:400px"></div>
                     </div>
                 </div>
         </div>
@@ -51,6 +53,18 @@
              	var option =  eval('(' +' <?php echo $note_bar_statistics;?>' + ')');
              	// 为echarts对象加载数据 
                 myNoteChart.setOption(option); 
+
+             // 基于准备好的dom，初始化echarts图表
+                var myMindChart = ec.init(document.getElementById('note_main')); 
+             	var option =  eval('(' +' <?php echo $mind_bar_statistics;?>' + ')');
+             	// 为echarts对象加载数据 
+                myMindChart.setOption(option); 
+
+             // 基于准备好的dom，初始化echarts图表
+                var myArticleChart = ec.init(document.getElementById('note_main')); 
+             	var option =  eval('(' +' <?php echo $article_bar_statistics;?>' + ')');
+             	// 为echarts对象加载数据 
+                myArticleChart.setOption(option); 
 
                 var myPieChart = ec.init(document.getElementById('pie_main')); 
              	var option =  eval('(' +' <?php echo $count_pie_statistics;?>' + ')');
