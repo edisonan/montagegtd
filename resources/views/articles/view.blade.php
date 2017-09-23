@@ -25,7 +25,9 @@
                     		全文
                     	</a>
                      -->
+                     <a href="{{ url('article/list') }}?feed_id={{$article->feed->id}}"> 
                      {{$article->feed->feed_name}}
+                     </a>
                     	<div style="float:right">
                     		@if(!$is_feed)
                     		<a href="{{ '/feeds?url='.$article->feed->url }}">[添加订阅]</a>

@@ -62,11 +62,13 @@ $(document).ready(function () {
 										</div>
 									</div>
 									@if(!empty($article->image_url))
+									<!-- 
 									<div class="featured-media">
 										<a href="#">
 											<img src="{{$article->image_url}}" alt="{{ $article->subject }}">
 										</a>
 									</div>
+									 -->
 									@endif
 									<div class="post-content" style="    margin: 5px 0;">
 										<p></p>
