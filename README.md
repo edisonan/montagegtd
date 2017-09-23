@@ -1,5 +1,7 @@
 # Montage GTD 一个基于Laravel 集RSS阅读、思维导图、番茄工作法于一体的GTD Web site
 
+![avatar](public/img/index.jpg)
+
 ## 快速体验
 
 访问   [https://task.congcong.us](https://task.congcong.us)
@@ -11,6 +13,7 @@
 基于Laravel 5.2框架
 
 ## 实现功能
+
 
 ### 番茄工作法 待办事项
 通过番茄工作法合理的安排工作与休息，极大提高你的工作效率，另外这里有完善的待办管理，你可以定义优先级，还可以设置deadline、设置提醒时间，让你每个任务都不落下，每个任务都顺利完成！
