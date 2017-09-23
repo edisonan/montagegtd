@@ -42,7 +42,7 @@ class Kernel extends ConsoleKernel
         Commands\FeedType2::class,
         Commands\FeedType3::class,
         Commands\KindlePush::class,
-//         Commands\Statistics::class,
+        Commands\StatisticsCron::class,
         Commands\TaskReminder::class,
     ];
 
@@ -58,7 +58,7 @@ class Kernel extends ConsoleKernel
     	
     	$schedule->command('fanfou_publish')->daily();
     	$schedule->command('task_reminder')->everyMinute();
-    	$schedule->command('statistics')->dailyAt('00:30');
+    	$schedule->command('statistics_cron')->dailyAt('00:30');
     	$schedule->command('feed_common')->everyTenMinutes();
     	$schedule->command('feed_type2')->hourly();
     	$schedule->command('feed_type3')->everyTenMinutes();

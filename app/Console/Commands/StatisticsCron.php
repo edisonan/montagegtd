@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 use App\Note;
 use App\Task;
 use App\Pomo;
-use App\Statistics;
+use App\StatisticsCron;
 
 use Log;
 
@@ -16,14 +16,14 @@ use Log;
  * @author edison.an
  *
  */
-class Statistics extends Command
+class StatisticsCron extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'statistics';
+    protected $signature = 'statistics_cron';
 
     /**
      * The console command description.
@@ -56,11 +56,11 @@ class Statistics extends Command
     	foreach ($note_counts as $count_info){
     		$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'note', 'date_type' => $date_type, 'statistic_date' => $start_time];
     		 
-    		$statistics = Statistics::where($param_arr)->first();
+    		$statistics = StatisticsCron::where($param_arr)->first();
     		$param_arr['total'] = $count_info['total'];
     		 
     		if(empty($statistics)) {
-    			$statistics = new Statistics();
+    			$statistics = new StatisticsCron();
     			$statistics->create($param_arr);
     		} else {
     			$statistics->update($param_arr);
@@ -71,11 +71,11 @@ class Statistics extends Command
     	foreach ($task_counts as $count_info){
     		$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'task', 'date_type' => $date_type, 'statistic_date' => $start_time];
     		 
-    		$statistics = Statistics::where($param_arr)->first();
+    		$statistics = StatisticsCron::where($param_arr)->first();
     		$param_arr['total'] = $count_info['total'];
     		 
     		if(empty($statistics)) {
-    			$statistics = new Statistics();
+    			$statistics = new StatisticsCron();
     			$statistics->create($param_arr);
     		} else {
     			$statistics->update($param_arr);
@@ -86,11 +86,11 @@ class Statistics extends Command
     	foreach ($pomo_counts as $count_info){
     		$param_arr = ['user_id'=>$count_info['user_id'], 'data_type' => 'pomo', 'date_type' => $date_type, 'statistic_date' => $start_time];
     		 
-    		$statistics = Statistics::where($param_arr)->first();
+    		$statistics = StatisticsCron::where($param_arr)->first();
     		$param_arr['total'] = $count_info['total'];
     		 
     		if(empty($statistics)) {
-    			$statistics = new Statistics();
+    			$statistics = new StatisticsCron();
     			$statistics->create($param_arr);
     		} else {
     			$statistics->update($param_arr);
