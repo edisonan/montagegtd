@@ -114,7 +114,7 @@ class ArticleController extends Controller
     	}
     	
     	if(count($articleSubs) == 0){
-    		$recommend_feeds = Feed::where('user_id','!=' , $request->user()->id)->orderBy(\DB::raw('RAND()'))->take(8)->get();
+    		$recommend_feeds = Feed::where('user_id','!=' , $request->user()->id)->where('updated_at','>',date('Y-m-d'))->orderBy(\DB::raw('RAND()'))->take(8)->get();
     	} else {
     		$recommend_feeds = array();
     	}
