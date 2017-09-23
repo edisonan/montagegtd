@@ -139,9 +139,9 @@ class FeedRepository
     		}
     
     		//update feed updated_at record
-    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
-    		Feed::where('id', $feed->id)->update(['feed_desc' => $simplePieInstance->get_description()]);
-    		Feed::where('id', $feed->id)->update(['favicon' => $simplePieInstance->get_image_url()]);
+    		if(count($simplePieInstance->get_items()) > 0){
+	    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s'),'feed_desc' => $simplePieInstance->get_description(),'favicon' => $simplePieInstance->get_image_url()]);
+    		}
     	}
     }
     
@@ -227,8 +227,8 @@ class FeedRepository
     		}
     
     		//update feed updated_at record
-    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
-    		Feed::where('id', $feed->id)->update(['feed_desc' => '']);
-    		Feed::where('id', $feed->id)->update(['favicon' => '']);
+    		if(count($items) > 0){
+	    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
+    		}
     	}
 }
