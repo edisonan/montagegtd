@@ -37,6 +37,13 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         // Commands\Inspire::class,
+        Commands\FanfouPublish::class,
+        Commands\FeedCommon::class,
+        Commands\FeedType2::class,
+        Commands\FeedType3::class,
+        Commands\KindlePush::class,
+        Commands\Statistics::class,
+        Commands\TaskReminder::class,
     ];
 
     /**
