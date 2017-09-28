@@ -63,10 +63,11 @@
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Authentication Links -->
                     @if (Auth::guest())
-                    <li><a href="{{ url('/pomo/welcome') }}" style="color:#584029">做番茄</a></li>
-                    <li><a href="{{ url('/note/welcome') }}" style="color:#4CA1D7">记想法</a></li>
-                    <li><a href="{{ url('/read/welcome') }}" style="color:#F7AA55">去阅读</a></li>
-                    <li><a href="{{ url('/minds/welcome') }}" style="color:#0F959D">思维导图</a></li>
+                    <li><a href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
+                    <li><a href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
+                    <li><a href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
+                    <li><a href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
+                    <li><a href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
                     @else
                     <li><a href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
                     <li><a href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
@@ -113,5 +114,9 @@ var _hmt = _hmt || [];
   s.parentNode.insertBefore(hm, s);
 })();
 </script>
+<footer class="footer  text-center">
+        <p>&copy; 2016 Congcong, Inc.<a href="mailto:accacc@126.com?subject=MontageGTDFeedBack">遇到问题?联系我~</a></p>
+        <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"  title="蒙太奇MontageGTD-高效你的生活" url="http://task.congcong.us" pic="http://task.congcong.us/favicon.ico"></wb:share-button>
+</footer>
 </body>
 </html>

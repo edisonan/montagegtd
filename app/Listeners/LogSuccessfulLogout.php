@@ -25,8 +25,8 @@ class LogSuccessfulLogout
      */
     public function handle(Logout $event)
     {
-        $name = $event->user->name;
-        $email = $event->user->email;
-        Log::info('Logout Successful: '.$name.' '.$email);
+//         $name = $event->user->name;
+//         $email = $event->user->email;
+//         Log::info('Logout Successful: '.$name.' '.$email);
     }
 }

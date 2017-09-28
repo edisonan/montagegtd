@@ -149,7 +149,7 @@ class FeedController extends Controller
         	$feed->sub_count = 1;
         	$feed->save();
         } else {
-	        $feedSub = $this->feedSubs->forUser($request->user(),$feed->id,1);
+	        $feedSub = $this->feedSubs->forUserByFeedId($request->user(),$feed->id,1);
 	        
 	        if(!empty($feedSub)){
 	        	echo 'error:has exist feed!';exit;
@@ -169,7 +169,19 @@ class FeedController extends Controller
         	'category_id' => $request->category_id,
         ]);
         
-        $this->feeds->checkFeed($feed);
+        $articles = Article::where('feed_id',$feed->id)->orderBy('published','desc')->take(30)->get();
+        if(!empty($articles)){
+        	foreach ($articles as $article){
+        		$articleSub = new \App\ArticleSub();
+        		$articleSub->feed_id = $feed->id;
+        		$articleSub->user_id = $request->user()->id;
+        		$articleSub->article_id = $article->id;
+        		$articleSub->status = 'unread';
+        		$articleSub->save();
+        	}
+        } else {
+	        $this->feeds->checkFeed($feed);
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE);

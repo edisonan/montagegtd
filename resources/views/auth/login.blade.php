@@ -7,7 +7,16 @@
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="panel panel-default">
-                <div class="panel-heading">登录</div>
+                <div class="panel-heading">
+                	@if(isset($_SERVER['HTTP_REFERER']))
+                		登陆后将返至上页<a title="{{ $_SERVER['HTTP_REFERER'] }}" href="javascript:void(0)">?</a>
+                	@else
+                		登录
+                	@endif
+                	<div style="float: right">
+                		<a class="" href="{{ url('/register') }}"><b>[一键注册]</b></a>
+                	</div>
+                </div>
                 <div class="panel-body">
                     <form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
                         {!! csrf_field() !!}

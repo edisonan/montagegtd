@@ -114,5 +114,9 @@ var _hmt = _hmt || [];
   s.parentNode.insertBefore(hm, s);
 })();
 </script>
+<footer class="footer  text-center">
+        <p>&copy; 2016 Congcong, Inc.<a href="mailto:accacc@126.com?subject=MontageGTDFeedBack">遇到问题?联系我~</a></p>
+        <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"  title="蒙太奇MontageGTD-高效你的生活" url="http://task.congcong.us" pic="http://task.congcong.us/favicon.ico"></wb:share-button>
+</footer>
 </body>
 </html>
