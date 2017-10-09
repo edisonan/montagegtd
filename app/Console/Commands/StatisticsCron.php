@@ -11,6 +11,8 @@ use App\Mind;
 use App\ArticleSub;
 use App\Statistics;
 
+use DB;
+
 use Log;
 
 /**

@@ -150,7 +150,7 @@ class FeedRepository
     public function checkFanfouFeed(Feed $feed)
     {
     	//set previous week
-//     	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
+    	$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     
     	\Log::info("Check Feed:".$feed->id.'|'.$feed->url);
     	
