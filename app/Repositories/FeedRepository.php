@@ -186,6 +186,9 @@ class FeedRepository
     	$items = $ff_user->friends_timeline(1,50);
     	$items = json_decode($items,true);
     	
+    	if(empty($items)) {
+    		return false;
+    	}
     	foreach ($items as $item) {
 				if(isset($item['repost_status'])){
 					$item = $item['repost_status'];
