@@ -128,6 +128,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/feed/{feedSub}', 'FeedController@update');
     Route::get('/feed/{feedSub}', 'FeedController@update');
     Route::post('/feeds/sort', 'FeedController@sort');
+    Route::get('/feeds/explorer', 'FeedController@explorer');
     
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');

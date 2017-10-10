@@ -31,6 +31,18 @@ class FeedRepository
         }
     }
     
+    public function forIsRecommend($is_recommend,$need_page=false)
+    {
+    	$feed = Feed::where('is_recommend', $is_recommend)
+    	->orderBy('recommend_order', 'asc');
+    
+    	if($need_page){
+    		return $feed->paginate(50);
+    	} else {
+    		return $feed->get();
+    	}
+    }
+    
     /**
      * get feed list by type and status
      * @param unknown $type

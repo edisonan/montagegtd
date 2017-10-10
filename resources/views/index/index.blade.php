@@ -270,7 +270,6 @@ $(document).ready(function () {
                     <table class="table table-striped task-table table-hover">
                             <thead>
                                 <th colspan=2>今日完成番茄</th>
-                                <th>&nbsp;</th>
                             </thead>
                             <tbody>
                                 @foreach ($pomos as $pomo)
@@ -278,7 +277,7 @@ $(document).ready(function () {
                                     	<td width="5%"  align='left'>
                                         	<?php echo date('H:i',strtotime($pomo->updated_at));?>
                                         </td>
-                                        <td class="table-text" width="95%"><div>{{ $pomo->name }}</div></td>
+                                        <td class="table-text" width="100%"><div>{{ $pomo->name }}</div></td>
                                     </tr>
                                 @endforeach
                             </tbody>

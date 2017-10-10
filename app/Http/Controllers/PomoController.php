@@ -121,6 +121,7 @@ class PomoController extends Controller
 	        
 	        $thing = new Thing();
 	        $thing->user_id = $request->user()->id;
+	        $thing->type = 3;
 	        $thing->name = $pomo->name;
 	        $thing->end_time = $pomo->created_at;
 	        $thing->start_time = date('Y-m-d H:i:s');

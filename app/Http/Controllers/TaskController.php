@@ -142,6 +142,7 @@ class TaskController extends Controller
         	
         	$thing = new Thing();
         	$thing->user_id = $request->user()->id;
+        	$thing->type = 2;
         	$thing->name = $task->name;
         	$thing->start_time = date('Y-m-d H:i:s');
         	$thing->save();

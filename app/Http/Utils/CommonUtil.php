@@ -102,4 +102,24 @@ class CommonUtil{
 	 
 	   return preg_replace_callback($pattern, $callback, $text);
 	}
+	
+	public static function formatTime($startTime, $endTime = '')
+	{
+		$format_time = '';
+		if(!empty($startTime) && !empty($endTime)){
+			$return_str = '';
+			$startFormat = date('m月d日', strtotime($startTime));
+			$endFormat = date('m月d日', strtotime($endTime));
+			
+			if($startFormat == $endFormat){
+				return $startFormat.' '.date('h时i分', strtotime($startTime)).'至'.date('h时i分', strtotime($endTime));
+			} else {
+				return $startFormat.' '.date('h时i分', strtotime($startTime)).'至'.$endFormat.' '.date('h时i分', strtotime($endTime));
+			}
+		} else if(!empty($startTime)){
+			return $startFormat.' '.date('Y年m月d日 h时i分', strtotime($startTime));
+		} else {
+			return false;
+		}
+	}
 }

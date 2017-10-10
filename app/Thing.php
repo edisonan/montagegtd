@@ -12,7 +12,7 @@ class Thing extends Model
      *
      * @var array
      */
-    protected $fillable = ['name','status','start_time','end_time'];
+    protected $fillable = ['name','status','start_time','end_time','type'];
     
     /**
      * The attributes that should be cast to native types.

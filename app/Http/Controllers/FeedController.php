@@ -78,6 +78,19 @@ class FeedController extends Controller
         ]);
     }
     
+    /**
+     * 
+     * @param Request $request
+     */
+    public function explorer(Request $request)
+    {
+    	$feeds = $this->feeds->forIsRecommend(1, $need_page=true);
+    	
+        return view('feeds.explorer', [
+            'feeds' => $feeds,
+        ]);
+    }
+    
     public function setting(Request $request)
     {
 //     	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);

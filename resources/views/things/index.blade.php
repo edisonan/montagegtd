@@ -38,7 +38,7 @@ $(document).ready(function () {
         	
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    	新完成事情记录
+                    	新增事情记录
                 </div>
 
                 <div class="panel-body">
@@ -83,42 +83,36 @@ $(document).ready(function () {
                             </div>
                         </div>
                     </form>
-                    
-                    
-                    @if (count($things) > 0)
-                    <table class="table table-striped thing-table">
-                            <thead>
-                                <th>事情列表</th>
-                                <th>&nbsp;</th>
-                            </thead>
-                            <tbody>
-                                @foreach ($things as $thing)
-                                    <tr id="{{$thing->id}}">
-                                        <td class="table-text"  width="90%">
-                                        	<div class="preprepre">
-                                        		{{ $thing->name }}  
-                                        		<small>
-                                        		于
-                                        		{{ $thing->start_time }}
-                                        		
-                                        		@if(!empty($thing->end_time))
-                                        		- {{ $thing->end_time }}
-                                        		@endif
-                                        		</small>
-                                        	</pre>
-                                        </td>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    	新完成事情记录
+                </div>
 
-                                        <td  width="1"  align='right'>
-	                                        <a href="{{ url('thing/'.$thing->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
-	                                        	<a href="javascript:void(0)" class="delete_thing" thing_type="delete" thing_value="{{ $thing->id }}" thing_token="{{ csrf_token() }}"  style="cursor:pointer;">
-	                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
-	                                        	</a> 
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                         {!! $things->links() !!}
+                <div class="panel-body">
+                	@if (count($things) > 0)
+                    
+                    	<div>
+		                    @foreach ($things as $thing)
+			                    <div>
+				                    <img alt=""     style="width: 15px;" src="/img/icon/thing{{ $thing->type }}.png">
+				                    {{ $thing->name }}  
+				                    <a href="{{ url('thing/'.$thing->id)}}" style="color:blue">
+				                    	<img alt=""     style="width: 15px;" src="/img/icon/edit.png">
+				                    </a>
+				                    <a href="javascript:void(0)" class="delete_thing" thing_type="delete" thing_value="{{ $thing->id }}" thing_token="{{ csrf_token() }}"  style="cursor:pointer;">
+				                    	<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+				                    </a>
+				                    <div style="float:right">
+					                    <?php echo \App\Http\Utils\CommonUtil::formatTime($thing->start_time, $thing->end_time);?>
+				                    </div>
+			                    </div>
+		                    @endforeach
+                    	</div>
+                    
+                        {!! $things->links() !!}
                     @endif
                 </div>
             </div>
