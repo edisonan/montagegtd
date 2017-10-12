@@ -173,7 +173,7 @@ class StatisticsController extends Controller
     		$count_arr['article_count']['value'] = $count_arr['article_count']['value'] + $statistic->total;
     	}
     	$article_bar_statistics = $bar_basic_arr;
-    	$article_bar_statistics['legend']['data'] = array('笔记量');
+    	$article_bar_statistics['legend']['data'] = array('阅读量');
     	$article_bar_statistics['xAxis'][] = array(
     			'type'=>'category',
     			'data'=>array_keys($article_arr),
@@ -192,7 +192,7 @@ class StatisticsController extends Controller
     		$count_arr['mind_count']['value'] = $count_arr['mind_count']['value'] + $statistic->total;
     	}
     	$mind_bar_statistics = $bar_basic_arr;
-    	$mind_bar_statistics['legend']['data'] = array('笔记量');
+    	$mind_bar_statistics['legend']['data'] = array('导图量');
     	$mind_bar_statistics['xAxis'][] = array(
     			'type'=>'category',
     			'data'=>array_keys($mind_arr),
