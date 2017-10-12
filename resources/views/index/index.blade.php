@@ -242,9 +242,9 @@ $(document).ready(function () {
                     @include('common.errors')
                     
                     @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
-                    	<a class="btn btn-lg btn-default btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
+                    	<a class="btn btn-lg btn-outline-primary btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
                     @elseif($runing_pomo_status == 1)
-                   		 <a class="btn btn-lg btn-default btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
+                   		 <a class="btn btn-lg btn-outline-primary btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
                     @endif
                     
                     <!-- New Task Form -->
@@ -378,7 +378,7 @@ $(document).ready(function () {
                         <!-- Add Task Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-default">
+                                <button type="submit" class="btn btn-outline-primary">
                                     <i class="fa fa-btn fa-plus"></i>添加上去！
                                 </button>
                             </div>

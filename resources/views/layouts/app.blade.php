@@ -61,8 +61,8 @@
 	        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			 	<span class="navbar-toggler-icon"></span>
 			</button>
-	        <div class="collapse navbar-collapse" id="navbarNav"  style="float:right">
-	          <ul class="navbar-nav" >
+	        <div class="collapse navbar-collapse" id="navbarNav">
+	          <ul class="navbar-nav  ml-auto" >
 	          		@if (Auth::guest())
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
