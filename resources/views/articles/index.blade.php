@@ -329,15 +329,16 @@ $(document).ready(function () {
 	                        		<div class="text-center col-md-12" style="    font-size: 20px;">
 	                        			还可以逛逛其他的资源~
 	                        		</div>
-	                        		
-			                    	@foreach($recommend_feeds as $recommend_feed)
-	                    			<div class="col-md-offset-0 col-md-6">
-								        <div class="product-container">  
-								          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
-								          <div class="intro text-right">最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }} &nbsp;&nbsp; <a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >去阅读</a></div>  
-								        </div>  
-	                    			</div>
-			                    	@endforeach
+	                        		<div class="row">
+				                    	@foreach($recommend_feeds as $recommend_feed)
+		                    			<div class="col-md-offset-0 col-md-6">
+									        <div class="product-container">  
+									          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
+									          <div class="intro text-right">最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }} &nbsp;&nbsp; <a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >去阅读</a></div>  
+									        </div>  
+		                    			</div>
+				                    	@endforeach
+	                        		</div>
 	                    	@endif
 	                    @endif
                 </div>
