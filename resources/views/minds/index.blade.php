@@ -52,7 +52,7 @@ $(document).ready(function () {
                     	思维导图
                 </div>
 
-                <div class="card-body">
+                <div class="card-body row">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 

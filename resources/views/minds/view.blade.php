@@ -69,7 +69,7 @@ $(document).ready(function () {
                     	</div>
                 </div>
 
-                <div class="card-body">
+                <div class="card-body row">
 					<div id="jsmind_container" class="col-md-offset-0 col-md-10">
 					</div>
 					<div id="" class="col-md-offset-0 col-md-2">
