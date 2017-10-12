@@ -295,14 +295,14 @@ $(document).ready(function () {
 									</div>
 									<div class="post-permalink text-right">
 										<!-- 
-										<a href="{{ url('article/view/'.$article->id) }}#share" class="btn btn-default" target="_blank">ShareAndView</a>
+										<a href="{{ url('article/view/'.$article->id) }}#share" class="btn btn-primary-outline" target="_blank">ShareAndView</a>
 										 -->
 										 <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="{{ url('article/view/'.$article->id) }}" pic="{{ $article->image_url }}">
 										 分享
 										 </wb:share-button>
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_read @if($articleSub->status == 'read') active @endif">Read</a>
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-default set_star @if($articleSub->status == 'star') active @endif">Star</a>
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-primary-outline set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-primary-outline set_read @if($articleSub->status == 'read') active @endif">Read</a>
+										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-primary-outline set_star @if($articleSub->status == 'star') active @endif">Star</a>
 									</div>
 									<footer class="post-footer clearfix"></footer>
 									@endif
@@ -311,7 +311,7 @@ $(document).ready(function () {
                         		{!! $articleSubs->appends($page_params)->links() !!}
                         		
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        		<button class="col-md-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+                        		<button class="col-md-12 btn btn-primary-outline" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @endif
                         
