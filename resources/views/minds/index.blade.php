@@ -52,7 +52,7 @@ $(document).ready(function () {
                     	思维导图
                 </div>
 
-                <div class="card-body row">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
@@ -81,7 +81,7 @@ $(document).ready(function () {
                     	导图列表
                 </div>
 
-                <div class="card-body">
+                <div class="card-body row">
                 
                  		@if (count($minds) > 0)
                                 @foreach ($minds as $mind)
