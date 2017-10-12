@@ -82,7 +82,6 @@
 	                        <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}" style="color:#E85205">登录</a></li>
 	                        <li class="nav-item"><a class="nav-link" href="{{ url('/register') }}" style="color:#9BD6C5">注册</a></li>
 	                    @else
-	                    	<!-- 
 	                        <li class="nav-item dropdown">
 	                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
 	                                <span style="color:#9BD6C5">{{ Auth::user()->name }}</span> <span class="caret"></span>
@@ -94,22 +93,19 @@
 	                                <a class="dropdown-item"  href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a>
 	                            </div>
 	                        </li>
-	                    	 -->
-	                         <li class="nav-item"><a class="nav-link" href="{{ url('statistics') }}" style="color:#E85205">统计</a></li>
-	                         <li class="nav-item"><a class="nav-link" href="{{ url('settings') }}" style="color:#9BD6C5">设置</a></li>
 	                    @endif
 	         	 </ul>
 	          </div>
 		</nav>
 	</div>
 	
-		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"  crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
 		
 	    @yield('content')
 	
 	    <!-- JavaScripts -->
-	    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"  crossorigin="anonymous"></script>
+	     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 	    
 	    {{-- <script src="{{ elixir('js/app.js') }}"></script> --}}
 		<script>
