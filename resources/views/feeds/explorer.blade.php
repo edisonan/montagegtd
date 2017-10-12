@@ -36,9 +36,9 @@ $(document).ready(function () {
                     
                     @if (count($feeds) > 0)
                     
-                    	<div class="row" style="padding: 10px;">
+                    	<div class="row">
 		                    @foreach ($feeds as $feed)
-			                    <div class="col-md-offset-0 col-md-3 text-center" style="height:100px;box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);transition: 0.3s;border-radius: 5px;    padding: 10px;">
+			                    <div class="col-md-3">
 			                    	<div style="height:60px">
 					                    <img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
 				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
@@ -46,6 +46,16 @@ $(document).ready(function () {
 			                    	<div style="float: right">
 				                    	<a href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">订阅</a>
 			                    	</div>
+			                    	
+			                    	<div class="card card-block">
+								      <h3 class="card-title"> 
+								      	<img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
+				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
+				                      </h3>
+								      <p class="card-text">{{ $feed->feed_desc }}</p>
+  									  <a class="card-link" href="{{ url('article/list') }}?feed_id={{$feed->id}}">去阅读</a>
+  									  <a class="card-link" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
+								    </div>
 			                    </div>
 		                    @endforeach
                     	</div>
