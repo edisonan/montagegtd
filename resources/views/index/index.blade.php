@@ -204,7 +204,7 @@ $(document).ready(function () {
     	@include('common.success')
     	<div class="row">
     	<div 
-    		class="col-sm-offset-0 col-sm-5 bootstro" 
+    		class="col-md-offset-0 col-md-5 bootstro" 
     		data-bootstro-step="0"
     		data-bootstro-placement="bottom"
     		data-bootstro-nextButtonText="下一步"
@@ -252,11 +252,11 @@ $(document).ready(function () {
                         {{ csrf_field() }}
 
                         <!-- Pomo Name -->
-                        <div class="form-group" @if($runing_pomo_status != 3) style="display:none" @endif id="formdiv1">
-                            <div class="col-sm-9"  style="display: -webkit-inline-box;width: 75%;">
+                        <div class="form-group row" @if($runing_pomo_status != 3) style="display:none" @endif id="formdiv1">
+                            <div class="col-md-9"  style="display: -webkit-inline-box;width: 75%;">
                                 <input type="text" name="name" id="pomo_name" class="form-control" value="{{ old('pomo') }}" placeholder="此做了什么？点击任务名快速添加">
                             </div>
-                            <div class="col-sm-3" style="display: -webkit-inline-box;width: 25%;">
+                            <div class="col-md-3" style="display: -webkit-inline-box;width: 25%;">
                                 <button type="submit" class="btn btn-success" >
                                                                                                          记录
                                 </button>
@@ -291,7 +291,7 @@ $(document).ready(function () {
     
     
         <div 
-        	class="col-sm-offset-0 col-sm-7 bootstro" 
+        	class="col-md-offset-0 col-md-7 bootstro" 
         	data-bootstro-step="1"
     		data-bootstro-placement="bottom"
     		data-bootstro-prevButtonText="上一步"
@@ -317,19 +317,19 @@ $(document).ready(function () {
                         {{ csrf_field() }}
 
                         <!-- Task Name -->
-                        <div class="form-group">
-                            <label for="task-name" class="col-sm-3 control-label">待办内容</label>
+                        <div class="form-group row">
+                            <label for="task-name" class="col-md-3 control-label">待办内容</label>
 
-                            <div class="col-sm-8">
+                            <div class="col-md-8">
 	                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}" style="display: -webkit-inline-box;width: 85%;">
 								    <a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级</small></a>
                             </div>
                         </div>
                         
-                        <div class="form-group" id="task_form_div1" style="display:none">
-                            <label for="task-name" class="col-sm-3 control-label">优先级</label>
+                        <div class="form-group row" id="task_form_div1" style="display:none">
+                            <label for="task-name" class="col-md-3 control-label">优先级</label>
 							
-                            <div class="col-sm-8">
+                            <div class="col-md-8">
                             	<label class="radio-inline">
 								  <input type="radio" name="priority" id="inlineRadio1" value="1" title="不重要不紧急" checked><span title="不重要不紧急"><small>☆</small></span>
 								</label>
@@ -345,26 +345,26 @@ $(document).ready(function () {
                             </div>
                         </div>
                         
-                        <div class="form-group" "form-group" id="task_form_div2" style="display: none;">
-                            <label for="task-name" class="col-sm-3 control-label">提醒时间</label>
+                        <div class="form-group row" "form-group row" id="task_form_div2" style="display: none;">
+                            <label for="task-name" class="col-md-3 control-label">提醒时间</label>
 
-                            <div class="col-sm-6">
+                            <div class="col-md-6">
                                 <input type="text" name="remindtime" id="task-remindtime" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
                             </div>
                         </div>
                         
-                        <div class="form-group" "form-group" id="task_form_div3" style="display: none;">
-                            <label for="task-name" class="col-sm-3 control-label">截止日期</label>
+                        <div class="form-group row" "form-group row" id="task_form_div3" style="display: none;">
+                            <label for="task-name" class="col-md-3 control-label">截止日期</label>
 
-                            <div class="col-sm-6">
+                            <div class="col-md-6">
                                 <input type="text" name="deadline" id="task-deadline" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
                             </div>
                         </div>
                         
-                        <div class="form-group" "form-group" id="task_form_div4" style="display: none;">
-                            <label for="task-name" class="col-sm-3 control-label">所属技能</label>
+                        <div class="form-group row" "form-group row" id="task_form_div4" style="display: none;">
+                            <label for="task-name" class="col-md-3 control-label">所属技能</label>
 
-                            <div class="col-sm-6">
+                            <div class="col-md-6">
 	                            <select class="form-control" name="goal_id" style="display: -webkit-inline-box;width: 85%;">
 	                            	<option checked></option>
 		                              @foreach ($goals as $goal)
@@ -376,8 +376,8 @@ $(document).ready(function () {
                         </div>
                         
                         <!-- Add Task Button -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-3 col-sm-6">
+                        <div class="form-group row">
+                            <div class="col-md-offset-3 col-md-6">
                                 <button type="submit" class="btn btn-default">
                                     <i class="fa fa-btn fa-plus"></i>添加上去！
                                 </button>

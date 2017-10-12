@@ -11,7 +11,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-    	<div class="col-sm-12">
+    	<div class="col-md-12">
     		@include('common.success')
             <div class="card">
                 <div class="card-header">
@@ -55,7 +55,7 @@ $(document).ready(function () {
 
         </div>
     
-        <div class="col-sm-12">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     	设置您的亚马逊邮箱
@@ -69,17 +69,17 @@ $(document).ready(function () {
                     <form action="{{ url('setting/'.$setting->id) }}" method="POST" class="form-horizontal">
                         {{ csrf_field() }}
                         
-                        <div class="form-group" id="task_form_div1" >
-                            <label for="task-name" class="col-sm-3 control-label">Kindle订阅地址</label>
+                        <div class="form-group row" id="task_form_div1" >
+                            <label for="task-name" class="col-md-3 control-label">Kindle订阅地址</label>
                             
-                            <div class="col-sm-8">
+                            <div class="col-md-8">
                             	<input type="text" name="kindle_email" id="kindle_email" class="form-control" value="{{ $setting->kindle_email }}">
                             </div>
 							
                         </div>
                         
-                        <div class="form-group" id="task_form_div1" >
-                            <label for="task-name" class="col-sm-3 control-label">是否开启推送</label>
+                        <div class="form-group row" id="task_form_div1" >
+                            <label for="task-name" class="col-md-3 control-label">是否开启推送</label>
                             
 							<label class="radio-inline">
 								  <input type="radio" name="is_start_kindle" id="inlineRadio1" value="0" {{ empty($setting->is_start_kindle) ?'checked':'' }}><span>不开启</span>
@@ -89,8 +89,8 @@ $(document).ready(function () {
 								</label>
                         </div>
                         
-                        <div class="form-group" id="task_form_div1" >
-                            <label for="task-name" class="col-sm-3 control-label">是否带图推送</label>
+                        <div class="form-group row" id="task_form_div1" >
+                            <label for="task-name" class="col-md-3 control-label">是否带图推送</label>
                             
 							<label class="radio-inline">
 								  <input type="radio" name="with_image_push" id="inlineRadio1" value="0" {{ empty($setting->with_image_push) ?'checked':'' }}><span>不开启</span>
@@ -103,8 +103,8 @@ $(document).ready(function () {
                         <input type="hidden" name="page_info" value="kindle_page">
 
                         <!-- Add Task Button -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-3 col-sm-6">
+                        <div class="form-group row">
+                            <div class="col-md-offset-3 col-md-6">
                                 <button type="submit" class="btn btn-default">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>

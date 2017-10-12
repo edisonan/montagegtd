@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
     
-        <div class="col-sm-offset-2 col-sm-8">
+        <div class="col-md-offset-2 col-md-8">
             <div class="card">
                 <div class="card-header">
                     	修改分类
@@ -18,17 +18,17 @@
                         {{ csrf_field() }}
 
                         <!-- Task Name -->
-                        <div class="form-group">
-                            <label for="task-name" class="col-sm-3 control-label">分类名称</label>
+                        <div class="form-group row">
+                            <label for="task-name" class="col-md-3 control-label">分类名称</label>
 								
-                            <div class="col-sm-8">
+                            <div class="col-md-8">
 	                               <input type="text" name="name" id="name" class="form-control" value="{{ $category->name }}">
                             </div>
                         </div>
                         
                         <!-- Add Task Button -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-3 col-sm-6">
+                        <div class="form-group row">
+                            <div class="col-md-offset-3 col-md-6">
                                 <button type="submit" class="btn btn-default">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>

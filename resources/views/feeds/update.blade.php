@@ -20,7 +20,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-        <div class="col-sm-offset-2 col-sm-8">
+        <div class="col-md-offset-2 col-md-8">
             <div class="card">
                 <div class="card-header">
                     	修改订阅
@@ -37,27 +37,27 @@ $(document).ready(function () {
                     <form action="{{ url('feed/'.$feedSub->id) }}" method="POST" class="form-horizontal">
                         {{ csrf_field() }}
 
-                        <div class="form-group" id="task_form_div1" >
-                            <label for="task-name" class="col-sm-3 control-label">订阅名称</label>
+                        <div class="form-group row" id="task_form_div1" >
+                            <label for="task-name" class="col-md-3 control-label">订阅名称</label>
                             
-                            <div class="col-sm-8">
+                            <div class="col-md-8">
                             	<input type="text" name="feed_name" id="feed_name" class="form-control" value="{{ $feedSub->feed_name }}">
                             </div>
 							
                         </div>
                         
-                        <div class="form-group">
-                            <label for="task-name" class="col-sm-3 control-label">订阅排序</label>
+                        <div class="form-group row">
+                            <label for="task-name" class="col-md-3 control-label">订阅排序</label>
 								
-                            <div class="col-sm-8">
+                            <div class="col-md-8">
 	                               <input type="text" name="feed_order" id="feed_order" class="form-control" value="{{ $feedSub->feed_order }}">
                             </div>
                         </div>
                         
-                        <div class="form-group" "form-group" id="task_form_div4" >
-                            <label for="task-name" class="col-sm-3 control-label">所属分类</label>
+                        <div class="form-group row" "form-group row" id="task_form_div4" >
+                            <label for="task-name" class="col-md-3 control-label">所属分类</label>
 
-                            <div class="col-sm-6">
+                            <div class="col-md-6">
                             	@if(count($categorys) == 0)
                             	所有订阅必须有分类，您当前尚未建立分类，请前往建立后再新增订阅！[<a href="{{ url('categorys') }}" target="_blank">分类设置</a>]
                             	@else
@@ -71,8 +71,8 @@ $(document).ready(function () {
                         </div>
 
                         <!-- Add Task Button -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-3 col-sm-6">
+                        <div class="form-group row">
+                            <div class="col-md-offset-3 col-md-6">
                                 <button type="submit" class="btn btn-default">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>

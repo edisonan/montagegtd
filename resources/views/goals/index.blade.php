@@ -47,17 +47,17 @@ $(document).ready(function () {
                         {{ csrf_field() }}
 
                         <!-- Task Name -->
-                        <div class="form-group">
-                            <label for="goal-name" class="col-sm-3 control-label">技能名称:</label>
+                        <div class="form-group row">
+                            <label for="goal-name" class="col-md-3 control-label">技能名称:</label>
 
-                            <div class="col-sm-8">
+                            <div class="col-md-8">
 	                                <input type="text" name="name" id="goal-name" class="form-control" value="{{ old('goal') }}">
                             </div>
                         </div>
 
                         <!-- Add Task Button -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-3 col-sm-6">
+                        <div class="form-group row">
+                            <div class="col-md-offset-3 col-md-6">
                                 <button type="submit" class="btn btn-default">
                                     <i class="fa fa-btn fa-plus"></i>添加！
                                 </button>

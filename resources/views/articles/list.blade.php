@@ -43,7 +43,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-        <div class="col-sm-offset-0 col-sm-12">
+        <div class="col-md-offset-0 col-md-12">
             <div class="card">
                 <div class="card-header">
                     	{{ $feed->feed_name }}

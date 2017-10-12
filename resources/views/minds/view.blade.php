@@ -34,7 +34,7 @@ $(document).ready(function () {
 
     <div class="container">
     
-        <div class="col-sm-offset-0 col-sm-12">
+        <div class="col-md-offset-0 col-md-12">
         	@include('common.success')
             <div class="card">
                 <div class="card-header">
@@ -70,14 +70,14 @@ $(document).ready(function () {
                 </div>
 
                 <div class="card-body">
-					<div id="jsmind_container" class="col-sm-offset-0 col-sm-10">
+					<div id="jsmind_container" class="col-md-offset-0 col-md-10">
 					</div>
-					<div id="" class="col-sm-offset-0 col-sm-2">
-						<span id="mind_name" class="col-sm-12">详细描述:{{$mind->name}}</span>
-						<textarea  class="col-sm-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; width: 151px;" id="mind_content">{{$mind->content}}</textarea>
+					<div id="" class="col-md-offset-0 col-md-2">
+						<span id="mind_name" class="col-md-12">详细描述:{{$mind->name}}</span>
+						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; width: 151px;" id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
-						<button class="btn btn-primary col-sm-12" onclick="mind_update()">保存</button>
+						<button class="btn btn-primary col-md-12" onclick="mind_update()">保存</button>
 						<div id="mind_content_show"></div>
 					</div>
                 </div>

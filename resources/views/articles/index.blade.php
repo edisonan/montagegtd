@@ -173,7 +173,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     	<div class="row">
-    	<div class="col-sm-offset-0 col-sm-3">
+    	<div class="col-md-offset-0 col-md-3">
     		@include('common.success')
     		<div class="card card-default">
                 <div class="card-header">
@@ -216,7 +216,7 @@ $(document).ready(function () {
     		</div>
     	</div>
     
-        <div class="col-sm-offset-0 col-sm-8">
+        <div class="col-md-offset-0 col-md-8">
             <div class="card card-default">
                 <div class="card-header">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
@@ -311,7 +311,7 @@ $(document).ready(function () {
                         		{!! $articleSubs->appends($page_params)->links() !!}
                         		
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        		<button class="col-sm-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+                        		<button class="col-md-12 btn btn-default" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @endif
                         
@@ -319,19 +319,19 @@ $(document).ready(function () {
                         @if(count($articleSubs) == 0)
                         
 	                        @if(!empty($next_recommend_feed))
-	                        	<div class="text-center col-sm-12" style="    font-size: 20px;">
+	                        	<div class="text-center col-md-12" style="    font-size: 20px;">
 	                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
 	                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
 	                        	</div>
 	                        @endif
 	                        
 	                        @if(count($recommend_feeds) > 0)
-	                        		<div class="text-center col-sm-12" style="    font-size: 20px;">
+	                        		<div class="text-center col-md-12" style="    font-size: 20px;">
 	                        			还可以逛逛其他的资源~
 	                        		</div>
 	                        		
 			                    	@foreach($recommend_feeds as $recommend_feed)
-	                    			<div class="col-sm-offset-0 col-sm-6">
+	                    			<div class="col-md-offset-0 col-md-6">
 								        <div class="product-container">  
 								          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
 								          <div class="intro text-right">最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }} &nbsp;&nbsp; <a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >去阅读</a></div>  

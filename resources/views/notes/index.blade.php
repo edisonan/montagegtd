@@ -151,7 +151,7 @@ $(document).ready(function () {
 });
 </script>
     <div class="container">
-        <div class="col-sm-offset-0 col-sm-12">
+        <div class="col-md-offset-0 col-md-12">
         	@include('common.success')
             <div class="card">
                 <div class="card-header">
@@ -167,10 +167,10 @@ $(document).ready(function () {
                         {{ csrf_field() }}
 
                         <!-- note Name -->
-                        <div class="form-group">
-                            <label for="note-name" class="col-sm-2 control-label">你在想什么呢</label>
+                        <div class="form-group row">
+                            <label for="note-name" class="col-md-2 control-label">你在想什么呢</label>
 
-                            <div class="col-sm-10" >
+                            <div class="col-md-10" >
                             	<textarea class="form-control" rows="4"  name="name" id="note-name" >{{ $add_content }}</textarea>
                             	
                             	<button id="start" class="ui-btn ui-btn-primary" disabled title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">录音</button>
@@ -195,8 +195,8 @@ $(document).ready(function () {
                         </div>
 
                         <!-- Add note Button -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-3 col-sm-6">
+                        <div class="form-group row">
+                            <div class="col-md-offset-3 col-md-6">
                             	<input type="hidden" name="status" value="1" id="status_id">
                             	
                                 <button type="button" class="btn btn-default" onclick="submitProcess(1)">
@@ -226,10 +226,10 @@ $(document).ready(function () {
 							<article class="post" style="padding: 0px;" id="{{$note->id}}">
 								<div class="post-head">
 									<div class="post-meta" style="text-align: left">
-										<div class="col-sm-offset-0 col-sm-1" style="width: 50px;padding-right: 0px;padding-left: 0px;">
+										<div class="col-md-offset-0 col-md-1" style="width: 50px;padding-right: 0px;padding-left: 0px;">
 											<img src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1" style="width:30px; height:30px;margin:5px;border-radius: 50%;" class="img-thumbnail avatar"></a>
 										</div>
-										<div class="col-sm-offset-0 col-sm-11">
+										<div class="col-md-offset-0 col-md-11">
 											<span class="author">
 												<a href="#" target="_blank">{{ $note->user->name }}</a>
 											</span> 
@@ -239,7 +239,7 @@ $(document).ready(function () {
 										</div>
 									</div>
 								</div>
-								<div class="post-content col-sm-offset-0 col-sm-12">
+								<div class="post-content col-md-offset-0 col-md-12">
 									<div class="preprepre">
 									
 									@if($note->status != 2)
@@ -259,7 +259,7 @@ $(document).ready(function () {
 									<?php echo $note->name;?>
 									</div>
 								</div>
-								<div class="col-sm-offset-11 col-sm-1 text-right">
+								<div class="col-md-offset-11 col-md-1 text-right">
 										@if($note->user_id == Auth::user()->id )
 											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="cursor:pointer;">
 											<img alt=""     style="width: 15px;" src="/img/icon/delete.png">

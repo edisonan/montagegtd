@@ -45,7 +45,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-        <div class="col-sm-offset-0 col-sm-12">
+        <div class="col-md-offset-0 col-md-12">
         	@include('common.success')
             <div class="card">
                 <div class="card-header">
@@ -61,11 +61,11 @@ $(document).ready(function () {
                         {{ csrf_field() }}
 
                         <!-- mind Name -->
-                        <div class="form-group" id="mind_form_div1" >
-                            <div class="col-sm-9" style="display: -webkit-inline-box;width: 75%;">
+                        <div class="form-group row" id="mind_form_div1" >
+                            <div class="col-md-9" style="display: -webkit-inline-box;width: 75%;">
                             	<input type="text" name="name" id="name" class="form-control" value="">
                             </div>
-                            <div class="col-sm-3" style="display: -webkit-inline-box;width: 25%;">
+                            <div class="col-md-3" style="display: -webkit-inline-box;width: 25%;">
                             	<button type="submit" class="btn btn-default">
                                     <i class="fa fa-btn fa-plus"></i>新想法！
                                 </button>
@@ -85,7 +85,7 @@ $(document).ready(function () {
                 
                  		@if (count($minds) > 0)
                                 @foreach ($minds as $mind)
-                                		<div class="col-sm-3  text-center" id="{{$mind->id}}">
+                                		<div class="col-md-3  text-center" id="{{$mind->id}}">
                                 			<div style="position: relative; width:200px; margin-bottom:20px" id="{{$mind->id}}"> 
                                 				<a href="{{url('mind/' . $mind->id)}}" title="">
 													<img src="/img/cover.jpg" width="200px"> 
