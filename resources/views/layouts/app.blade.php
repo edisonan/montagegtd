@@ -53,7 +53,7 @@
 
 <body id="app-layout">
 	<div class="container">
-		<nav class="navbar navbar-expand-lg navbar-light bg-light  nav-tabs">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
 			<a class="navbar-brand" href="{{ url('/') }}">
 	        	<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
 	            <span style="color:#429c4e">Montage GTD</span>
