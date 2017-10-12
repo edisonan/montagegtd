@@ -55,13 +55,13 @@
                 myNoteChart.setOption(option); 
 
              // 基于准备好的dom，初始化echarts图表
-                var myMindChart = ec.init(document.getElementById('note_main')); 
+                var myMindChart = ec.init(document.getElementById('mind_main')); 
              	var option =  eval('(' +' <?php echo $mind_bar_statistics;?>' + ')');
              	// 为echarts对象加载数据 
                 myMindChart.setOption(option); 
 
              // 基于准备好的dom，初始化echarts图表
-                var myArticleChart = ec.init(document.getElementById('note_main')); 
+                var myArticleChart = ec.init(document.getElementById('article_main')); 
              	var option =  eval('(' +' <?php echo $article_bar_statistics;?>' + ')');
              	// 为echarts对象加载数据 
                 myArticleChart.setOption(option); 

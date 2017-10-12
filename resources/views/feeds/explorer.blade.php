@@ -38,22 +38,13 @@ $(document).ready(function () {
                     
                     	<div class="row">
 		                    @foreach ($feeds as $feed)
-			                    <div class="col-md-3">
-			                    	<div style="height:60px">
-					                    <img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
-				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
-			                    	</div>
-			                    	<div style="float: right">
-				                    	<a href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">订阅</a>
-			                    	</div>
-			                    	
+			                    <div class="col-md-4" style="padding:10px">
 			                    	<div class="card card-block">
-								      <h3 class="card-title"> 
+								      <h4 class="card-title"> 
 								      	<img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
 				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
-				                      </h3>
+				                      </h4>
 								      <p class="card-text">{{ $feed->feed_desc }}</p>
-  									  <a class="card-link" href="{{ url('article/list') }}?feed_id={{$feed->id}}">去阅读</a>
   									  <a class="card-link" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
 								    </div>
 			                    </div>
