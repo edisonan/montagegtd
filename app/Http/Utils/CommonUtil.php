@@ -117,9 +117,19 @@ class CommonUtil{
 				return $startFormat.' '.date('h时i分', strtotime($startTime)).'至'.$endFormat.' '.date('h时i分', strtotime($endTime));
 			}
 		} else if(!empty($startTime)){
-			return $startFormat.' '.date('Y年m月d日 h时i分', strtotime($startTime));
+			return date('Y年m月d日 h时i分', strtotime($startTime));
 		} else {
 			return false;
+		}
+	}
+	
+	public static function hostUrl($url)
+	{
+		$parts = parse_url($url);
+		if(empty($parts)){
+			return false;
+		} else {
+			return $parts['scheme'].'://'.$parts['host'];
 		}
 	}
 }

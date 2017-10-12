@@ -34,10 +34,10 @@ class FeedRepository
     public function forIsRecommend($is_recommend,$need_page=false)
     {
     	$feed = Feed::where('is_recommend', $is_recommend)
-    	->orderBy('recommend_order', 'asc');
+    	->orderBy('recommend_order', 'desc');
     
     	if($need_page){
-    		return $feed->paginate(50);
+    		return $feed->paginate(48);
     	} else {
     		return $feed->get();
     	}

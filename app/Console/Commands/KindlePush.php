@@ -89,6 +89,9 @@ class KindlePush extends Command
     			
     			//get recent publish list
     			$articleSubs = $articleSubRepository->getRecentPublishList($user, 'unread', $start_time, $end_time, 300);
+    			if(empty($articleSubs)){
+    				continue;
+    			}
     			foreach($articleSubs as $articleSub)
     			{
     				$article = $articleSub->article;

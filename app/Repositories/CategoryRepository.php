@@ -63,6 +63,15 @@ class CategoryRepository
     	} else {
     		return $category->category_order;
     	}
-    	
+    }
+    
+    /**
+     * 根据categoryName获取分类
+     * @param User $user
+     * @param unknown $category_name
+     */
+    public function forCategoryName(User $user, $category_name)
+    {
+    	return Category::where('user_id', $user->id)->where('name',$category_name)->first();
     }
 }

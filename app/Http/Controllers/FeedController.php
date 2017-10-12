@@ -205,6 +205,65 @@ class FeedController extends Controller
         }
         
     }
+    
+    /**
+     * 快速订阅
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+     */
+    public function quickstore(Request $request)
+    {
+    	$this->validate($request, [
+    		'feed_id' => 'required',
+    	]);
+    
+    	$category = $this->categorys->forCategoryName($request->user(), '未分类');
+    	if(empty($category)){
+    		$category = $request->user()->categorys()->create([
+    			'name' => '未分类',
+    			'category_order' => 0,
+    		]);
+    	}
+    
+    	$feed = Feed::where('id', $request->feed_id)->first();
+    	if(!empty($feed)){
+    		$feedSub = $this->feedSubs->forUserByFeedId($request->user(),$feed->id,1);
+    		 
+    		if(!empty($feedSub)){
+    			$resp = $this->responseJson(1000,'','已经关注');
+    			return response($resp);
+    		}
+    		$feed->sub_count = $feed->sub_count + 1;
+    		$feed->save();
+    	}
+    
+    	$feedSub = $request->user()->feedSubs()->create([
+    		'feed_id' => $feed->id,
+    		'feed_name' => $feed->feed_name,
+    		'category_id' => $category->id,
+    	]);
+    
+    	$articles = Article::where('feed_id',$feed->id)->orderBy('published','desc')->take(30)->get();
+    	if(!empty($articles)){
+    		foreach ($articles as $article){
+    			$articleSub = new \App\ArticleSub();
+    			$articleSub->feed_id = $feed->id;
+    			$articleSub->user_id = $request->user()->id;
+    			$articleSub->article_id = $article->id;
+    			$articleSub->status = 'unread';
+    			$articleSub->save();
+    		}
+    	} else {
+    		$this->feeds->checkFeed($feed);
+    	}
+    
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE, '', '关注成功');
+    		return response($resp);
+    	} else {
+    		return redirect('/feeds')->with('message', 'IT WORKS!');
+    	}
+    }
 
     /**
      * Destroy the given task.
