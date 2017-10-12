@@ -13,15 +13,15 @@ $(document).ready(function () {
     
     	<div class="col-sm-12">
     		@include('common.success')
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	配置说明
                     	<div style="float:right">
                     		<a href="{{'/articles'}}">[返回]</a>
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                 	<div style="float:left">
                 		<img alt=""  class="" src="/img/kindle.jpg" width="150px">
                 	</div>
@@ -56,12 +56,12 @@ $(document).ready(function () {
         </div>
     
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	设置您的亚马逊邮箱
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 

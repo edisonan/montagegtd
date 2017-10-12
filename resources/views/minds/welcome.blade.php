@@ -8,12 +8,12 @@
     <div class="container">
     
         <div class="col-sm-offset-0 col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                		 思维导图
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                 	<div style="margin-bottom: 30px;margin-top: 10px;">
                 		<p>
                 			<b>思维导图</b>是Montage GTD的一项子栏目，这里通过思维导图来总结你的每一个想法，发散思维，认真思考每一个想法！<a rel="nofollow" href="{{url('/minds')}}">马上去体验！</a>

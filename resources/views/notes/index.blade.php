@@ -153,12 +153,12 @@ $(document).ready(function () {
     <div class="container">
         <div class="col-sm-offset-0 col-sm-12">
         	@include('common.success')
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	新的笔记
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
@@ -216,12 +216,12 @@ $(document).ready(function () {
 
             <!-- Current notes -->
             @if (count($notes) > 0)
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                        	 大家在分享什么
                     </div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                     	@foreach ($notes as $note)
 							<article class="post" style="padding: 0px;" id="{{$note->id}}">
 								<div class="post-head">

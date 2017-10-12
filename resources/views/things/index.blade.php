@@ -36,12 +36,12 @@ $(document).ready(function () {
         	
         	@include('common.success')
         	
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	新增事情记录
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
@@ -86,17 +86,17 @@ $(document).ready(function () {
                 </div>
             </div>
             
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	新完成事情记录
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                 	@if (count($things) > 0)
                     
                     	<div>
 		                    @foreach ($things as $thing)
-			                    <div>
+			                    <div style="height:40px">
 				                    <img alt=""     style="width: 15px;" src="/img/icon/thing{{ $thing->type }}.png">
 				                    {{ $thing->name }}  
 				                    <a href="{{ url('thing/'.$thing->id)}}" style="color:blue">

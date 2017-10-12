@@ -47,12 +47,12 @@ $(document).ready(function () {
     
         <div class="col-sm-offset-0 col-sm-12">
         	@include('common.success')
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	思维导图
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
@@ -76,12 +76,12 @@ $(document).ready(function () {
                 </div>
             </div>
             
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	导图列表
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                 
                  		@if (count($minds) > 0)
                                 @foreach ($minds as $mind)

@@ -33,12 +33,12 @@ $(document).ready(function () {
     <div class="container">
             <!-- Current Goals -->
             	@include('common.success')
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         	技能列表
                     </div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 

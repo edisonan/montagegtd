@@ -13,13 +13,13 @@ $(document).ready(function () {
     
         <div class="col-sm-12">
             @include('common.success')
-            <div class="panel panel-default">
+            <div class="card">
             	 
-                <div class="panel-heading">
+                <div class="card-header">
                     	设置
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 

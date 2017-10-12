@@ -6,8 +6,8 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                 	@if(isset($_SERVER['HTTP_REFERER']))
                 		登陆后将返至上页<a title="{{ $_SERVER['HTTP_REFERER'] }}" href="javascript:void(0)">?</a>
                 	@else
@@ -17,11 +17,11 @@
                 		<a class="" href="{{ url('/register') }}"><b>[一键注册]</b></a>
                 	</div>
                 </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
                         {!! csrf_field() !!}
 
-                        <div class="form-group{{ $errors->has('email') ? ' has-error' : '' }}">
+                        <div class="form-group {{ $errors->has('email') ? ' has-error' : '' }}">
                             <label class="col-md-4 control-label">邮箱地址</label>
 
                             <div class="col-md-6">
@@ -35,7 +35,7 @@
                             </div>
                         </div>
 
-                        <div class="form-group{{ $errors->has('password') ? ' has-error' : '' }}">
+                        <div class="form-group {{ $errors->has('password') ? ' has-error' : '' }}">
                             <label class="col-md-4 control-label">密码</label>
 
                             <div class="col-md-6">

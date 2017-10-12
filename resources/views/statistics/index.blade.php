@@ -3,12 +3,12 @@
 @section('content')
     <div class="container">
             <!-- Current Tasks -->
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         	统计汇总[{{$start_date}}-{{$end_date}}]
                     </div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                     	<div id="pie_main" style="height:400px"></div>
                     	<div id="pomo_main" style="height:400px"></div>
                     	<div id="task_main" style="height:400px"></div>

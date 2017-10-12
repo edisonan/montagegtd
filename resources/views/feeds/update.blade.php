@@ -21,15 +21,15 @@ $(document).ready(function () {
     <div class="container">
     
         <div class="col-sm-offset-2 col-sm-8">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	修改订阅
                     	<div style="float:right">
                     		[<a href="{{ url('categorys') }}" target="_blank">分类设置</a>]
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 

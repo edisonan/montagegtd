@@ -172,11 +172,11 @@ $(document).ready(function () {
 });
 </script>
     <div class="container">
-    
+    	<div class="row">
     	<div class="col-sm-offset-0 col-sm-3">
     		@include('common.success')
-    		<div class="panel panel-default">
-                <div class="panel-heading">
+    		<div class="card card-default">
+                <div class="card-header">
                 	订阅分类
                 	<div style="float:right">
                 		<a href="{{ url('kindles') }}">[Send2Kindle]</a>
@@ -184,7 +184,7 @@ $(document).ready(function () {
                     </div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
 		    		<ul class="nav nav-pills nav-stacked">
 		    			@if(count($nav_infos)>0)
 			    			@foreach($nav_infos as $nav_id=>$nav_info)
@@ -217,8 +217,8 @@ $(document).ready(function () {
     	</div>
     
         <div class="col-sm-offset-0 col-sm-8">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card card-default">
+                <div class="card-header">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
                 			尚无文章
                 		@else
@@ -241,11 +241,12 @@ $(document).ready(function () {
                     		<input type="checkbox" value="" id="unable_desc"/>一目十行
                     		<input type="checkbox" value="" id="unable_img"/>屏图
                     		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
+                    		<a href="{{ url('feeds/explorer')}}">[发现]</a>
                     		<a href="{{ url('feeds')}}">[添加订阅]</a>
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
                     
@@ -342,6 +343,7 @@ $(document).ready(function () {
                 </div>
             </div>
 
+        </div>
         </div>
     </div>
 @endsection

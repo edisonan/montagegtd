@@ -202,7 +202,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     	@include('common.success')
-    
+    	<div class="row">
     	<div 
     		class="col-sm-offset-0 col-sm-5 bootstro" 
     		data-bootstro-step="0"
@@ -219,8 +219,8 @@ $(document).ready(function () {
 				</div>
     		@endif
     		
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card card-default">
+                <div class="card-header">
                     	@if($runing_pomo_status != 3)
                     		@if (count($pomos) == 0 && count($tasks) > 0)
                     			现在还有{{ count($tasks) }}项任务哦，赶紧开始第一个番茄吧
@@ -237,7 +237,7 @@ $(document).ready(function () {
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
                     
@@ -299,8 +299,8 @@ $(document).ready(function () {
     		data-bootstro-finishButton="返回网站，开启高效生活~"
     		
         >
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card card-default">
+                <div class="card-header">
                     	新的待办事项
                     	<div style="float:right">
                     		<a href="{{'tasks'}}">[已完成待办]</a>
@@ -308,7 +308,7 @@ $(document).ready(function () {
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
@@ -435,6 +435,7 @@ $(document).ready(function () {
                 </div>
             </div>
 
+        </div>
         </div>
     </div>
 @endsection

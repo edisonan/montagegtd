@@ -33,12 +33,12 @@ $(document).ready(function () {
     <div class="container">
 			@include('common.success')
             <!-- Finish Pomos -->
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         	番茄汇总
                     </div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
 		            @if (count($pomos) > 0)
                         <table class="table table-striped task-table">
                             <thead>

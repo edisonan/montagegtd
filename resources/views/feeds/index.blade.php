@@ -51,15 +51,15 @@ $(document).ready(function () {
     
         <div class="col-sm-offset-0 col-sm-12">
         	@include('common.success')
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	新的订阅
                     	<div style="float:right">
                     		[<a href="{{ url('categorys') }}">分类设置</a>]
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 

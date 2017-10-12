@@ -180,12 +180,12 @@ jQuery(document).ready(function ($) {
     
     	<div class="col-sm-offset-2 col-sm-8">
     		
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                 
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                 
                 
                 

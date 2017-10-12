@@ -36,8 +36,8 @@ $(document).ready(function () {
     
         <div class="col-sm-offset-0 col-sm-12">
         	@include('common.success')
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	想法-{{$mind->name}} 
                     	<button class="btn-primary" onclick="add_node();">
 	                    	<span  class="glyphicon glyphicon-file"></span>
@@ -69,7 +69,7 @@ $(document).ready(function () {
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
 					<div id="jsmind_container" class="col-sm-offset-0 col-sm-10">
 					</div>
 					<div id="" class="col-sm-offset-0 col-sm-2">

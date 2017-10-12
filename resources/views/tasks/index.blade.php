@@ -4,12 +4,12 @@
     <div class="container">
     		@include('common.success')
             <!-- Current Tasks -->
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         	任务汇总
                     </div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                     	
 			            @if (count($tasks) > 0)
                         <table class="table table-striped task-table">

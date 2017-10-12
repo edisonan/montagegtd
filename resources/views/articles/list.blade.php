@@ -27,21 +27,33 @@ $(document).ready(function () {
 // 		$(this).parent().parent().children("div.post-content").css("height","auto");
 		$(this).css("display","none");
 	});
+
+	$(".feed_quick_sub").click(function(){
+		var feed_id = $(this).attr('feed_id');
+		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result){
+			result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert(result_arr.msg);
+			} else {
+				alert(result_arr.msg);
+			}
+		});
+	});
 });
 </script>
     <div class="container">
     
         <div class="col-sm-offset-0 col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	{{ $feed->feed_name }}
                     	
                     	<div style="float:right">
-                    		[<a href="{{ url('feeds') }}?url={{ $feed->url }}">订阅此源</a>]
+                    		[<a href="javascript:void(0)"  feed_id="{{ $feed->id }}" class="feed_quick_sub">订阅此源</a>]
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
                     
@@ -55,7 +67,7 @@ $(document).ready(function () {
 										</h1>
 										<div class="post-meta">
 											<span class="author">
-												来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
+												来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a>
 											</span> 
 											• 
 											<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>

@@ -7,8 +7,8 @@
     
         <div class="col-md-offset-0 col-md-12">
         	@include('common.success')
-            <div class="panel panel-default">
-                <div class="panel-heading">
+            <div class="card">
+                <div class="card-header">
                     	分类展示
                     	<div style="float:right">
                     		<a href="{{'/feeds'}}">[添加订阅]</a>
@@ -16,7 +16,7 @@
                     	</div>
                 </div>
 
-                <div class="panel-body">
+                <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
                     

@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>@yield('title','Montage GTD - 高效你的生活')</title>
@@ -19,10 +19,12 @@
     <link href="{{'/css/screen.min.css'}}" rel='stylesheet' type='text/css'>
 
     <!-- Styles -->
-    <link href="//cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    
     {{-- <link href="{{ elixir('css/app.css') }}" rel="stylesheet"> --}}
 
     <style>
+		<!-- 
         body {
             font-family: 'Lato';
         }
@@ -30,93 +32,92 @@
         .fa-btn {
             margin-right: 6px;
         }
+		 -->
+        
+        .col-md-offset-0{margin-left:0}
+		.col-md-offset-1{margin-left:8.333333%}
+		.col-md-offset-2{margin-left:16.666667%}
+		.col-md-offset-3{margin-left:25%}
+		.col-md-offset-4{margin-left:33.333333%}
+		.col-md-offset-5{margin-left:41.666667%}
+		.col-md-offset-6{margin-left:50%}
+		.col-md-offset-7{margin-left:58.333333%}
+		.col-md-offset-8{margin-left:66.666667%}
+		.col-md-offset-9{margin-left:75%}
+		.col-md-offset-10{margin-left:83.333333%}
+		.col-md-offset-11{margin-left:91.666667%}
+		.col-md-offset-12{margin-left:100%}
     </style>
     <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 </head>
 
 <body id="app-layout">
-    <nav class="navbar navbar-default">
-        <div class="container">
-            <div class="navbar-header">
-
-                <!-- Collapsed Hamburger -->
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#app-navbar-collapse">
-                    <span class="sr-only">Toggle Navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-
-                <!-- Branding Image -->
-                <a class="navbar-brand" href="{{ url('/') }}">
-                		<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
-                    	<span style="color:#429c4e">Montage GTD</span>
-                </a>
-            </div>
-
-            <div class="collapse navbar-collapse" id="app-navbar-collapse">
-                <!-- Left Side Of Navbar -->
-                <ul class="nav navbar-nav">
-                </ul>
-
-                <!-- Right Side Of Navbar -->
-                <ul class="nav navbar-nav navbar-right">
-                    <!-- Authentication Links -->
-                    @if (Auth::guest())
-                    <li><a href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
-                    <li><a href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
-                    <li><a href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
-                    <li><a href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
-                    <li><a href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
-                    @else
-                    <li><a href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
-                    <li><a href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
-                    <li><a href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
-                    <li><a href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
-                    <li><a href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
-                    @endif
-                    
-                    @if (Auth::guest())
-                        <li><a href="{{ url('/login') }}" style="color:#E85205">登录</a></li>
-                        <li><a href="{{ url('/register') }}" style="color:#9BD6C5">注册</a></li>
-                    @else
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                                <span style="color:#9BD6C5">{{ Auth::user()->name }}</span> <span class="caret"></span>
-                            </a>
-
-                            <ul class="dropdown-menu" role="menu">
-                    			<li><a href="{{ url('statistics') }}">统计</a></li>
-                    			<li><a href="{{ url('settings') }}">设置</a></li>
-                                <li><a href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a></li>
-                            </ul>
-                        </li>
-                    @endif
-                    
-                </ul>
-            </div>
-        </div>
-    </nav>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<div class="container">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<a class="navbar-brand" href="{{ url('/') }}">
+	        	<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
+	            <span style="color:#429c4e">Montage GTD</span>
+	         </a>
+	        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+			 	<span class="navbar-toggler-icon"></span>
+			</button>
+	        <div class="collapse navbar-collapse" id="navbarNav"  style="float:right">
+	          <ul class="navbar-nav" >
+	          		@if (Auth::guest())
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
+	                    @else
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
+	                    @endif
+	                    @if (Auth::guest())
+	                        <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}" style="color:#E85205">登录</a></li>
+	                        <li class="nav-item"><a class="nav-link" href="{{ url('/register') }}" style="color:#9BD6C5">注册</a></li>
+	                    @else
+	                        <li class="nav-item dropdown">
+	                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+	                                <span style="color:#9BD6C5">{{ Auth::user()->name }}</span> <span class="caret"></span>
+	                            </a>
 	
-    @yield('content')
-
-    <!-- JavaScripts -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    
-    {{-- <script src="{{ elixir('js/app.js') }}"></script> --}}
-<script>
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?d99a2953a8d7b5c51e4c84811bcbc1db";
-  var s = document.getElementsByTagName("script")[0]; 
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>
-<footer class="footer  text-center">
-        <p>&copy; 2016 Congcong, Inc.<a href="mailto:accacc@126.com?subject=MontageGTDFeedBack">遇到问题?联系我~</a></p>
-        <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"  title="蒙太奇MontageGTD-高效你的生活" url="http://task.congcong.us" pic="http://task.congcong.us/favicon.ico"></wb:share-button>
-</footer>
+	                            <div class="dropdown-menu">
+	                    			<a class="nav-link"  href="{{ url('statistics') }}">统计</a>
+	                    			<a class="nav-link"  href="{{ url('settings') }}">设置</a>
+	                                <a class="nav-link"  href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a>
+	                            </div>
+	                        </li>
+	                    @endif
+	         	 </ul>
+	          </div>
+		</nav>
+	</div>
+	
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+		
+	    @yield('content')
+	
+	    <!-- JavaScripts -->
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+	    
+	    {{-- <script src="{{ elixir('js/app.js') }}"></script> --}}
+		<script>
+		var _hmt = _hmt || [];
+		(function() {
+		  var hm = document.createElement("script");
+		  hm.src = "https://hm.baidu.com/hm.js?d99a2953a8d7b5c51e4c84811bcbc1db";
+		  var s = document.getElementsByTagName("script")[0]; 
+		  s.parentNode.insertBefore(hm, s);
+		})();
+		</script>
+		<footer class="footer  text-center">
+		        <p>&copy; 2016 Congcong, Inc.<a href="mailto:accacc@126.com?subject=MontageGTDFeedBack">遇到问题?联系我~</a></p>
+		        <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227"  title="蒙太奇MontageGTD-高效你的生活" url="http://task.congcong.us" pic="http://task.congcong.us/favicon.ico"></wb:share-button>
+		</footer>
 </body>
 </html>

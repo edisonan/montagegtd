@@ -3,12 +3,12 @@
 @section('content')
     <div class="container">
             <!-- Current Goals -->
-                <div class="panel panel-default">
-                    <div class="panel-heading">
+                <div class="card">
+                    <div class="card-header">
                         	修改目标
                     </div>
 
-                    <div class="panel-body">
+                    <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')
 
