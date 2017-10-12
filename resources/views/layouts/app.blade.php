@@ -53,7 +53,7 @@
 
 <body id="app-layout">
 	<div class="container">
-		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light  nav-tabs">
 			<a class="navbar-brand" href="{{ url('/') }}">
 	        	<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
 	            <span style="color:#429c4e">Montage GTD</span>
@@ -61,7 +61,9 @@
 	        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			 	<span class="navbar-toggler-icon"></span>
 			</button>
+			
 	        <div class="collapse navbar-collapse" id="navbarNav">
+	        	
 	          <ul class="navbar-nav  ml-auto" >
 	          		@if (Auth::guest())
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
@@ -80,17 +82,21 @@
 	                        <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}" style="color:#E85205">登录</a></li>
 	                        <li class="nav-item"><a class="nav-link" href="{{ url('/register') }}" style="color:#9BD6C5">注册</a></li>
 	                    @else
+	                    	<!-- 
 	                        <li class="nav-item dropdown">
 	                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
 	                                <span style="color:#9BD6C5">{{ Auth::user()->name }}</span> <span class="caret"></span>
 	                            </a>
 	
 	                            <div class="dropdown-menu">
-	                    			<a class="nav-link"  href="{{ url('statistics') }}">统计</a>
-	                    			<a class="nav-link"  href="{{ url('settings') }}">设置</a>
-	                                <a class="nav-link"  href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a>
+	                    			<a class="dropdown-item"  href="{{ url('statistics') }}">统计</a>
+	                    			<a class="dropdown-item"  href="{{ url('settings') }}">设置</a>
+	                                <a class="dropdown-item"  href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a>
 	                            </div>
 	                        </li>
+	                    	 -->
+	                         <li class="nav-item"><a class="nav-link" href="{{ url('statistics') }}" style="color:#E85205">统计</a></li>
+	                         <li class="nav-item"><a class="nav-link" href="{{ url('settings') }}" style="color:#9BD6C5">设置</a></li>
 	                    @endif
 	         	 </ul>
 	          </div>
