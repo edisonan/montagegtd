@@ -37,7 +37,7 @@ class ApiController extends Controller
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
     {
-        $this->middleware('auth', ['except' => ['wechatlogin','articles','notes','explorer']]);
+        $this->middleware('auth', ['except' => ['wechatlogin','articles','notes','explorer','articleview']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;
