@@ -91,7 +91,7 @@ class ApiController extends Controller
     	return response($resp);
     }
     
-    public function articles(Request $request)
+    public function articleview(Request $request)
     {
     	//     	$user = $request->user();
     	$user = new User();$user->id = 1;//TODO 模拟
