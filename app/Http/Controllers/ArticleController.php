@@ -47,9 +47,6 @@ class ArticleController extends Controller
         $this->articles = $articles;
         $this->articleSubs = $articleSubs;
         $this->articleSubs = $articleSubs;
-        
-        Paginator::$defaultView = 'pagination::bootstrap-4';
-        
     }
     
     public function welcome(Request $request)

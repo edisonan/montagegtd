@@ -4,6 +4,12 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+use Illuminate\Contracts\Pagination\Paginator as PaginatorContract;
+use Illuminate\Pagination\BootstrapFourPresenter;
+use Illuminate\Pagination\SimpleBootstrapFourPresenter;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -13,7 +19,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+    	// Change the ->paginate() presenter
+    	LengthAwarePaginator::presenter(function (Paginator $paginator) {
+    		return new BootstrapFourPresenter($paginator);
+    	});
+    	
+    	// Change the ->simplePaginate() presenter
+    	Paginator::presenter(function (PaginatorContract $paginator) {
+    		return new SimpleBootstrapFourPresenter($paginator);
+    	});
     }
 
     /**
