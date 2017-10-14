@@ -78,7 +78,7 @@ $(document).ready(function () {
 				if(active){
 					item.removeClass("active");
 				} else {
-					item.parent().siblings().removeClass("active");
+					item.siblings().removeClass("active");
 					item.addClass("active");
 				}
 			}
