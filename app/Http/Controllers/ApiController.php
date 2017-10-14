@@ -91,6 +91,23 @@ class ApiController extends Controller
     	return response($resp);
     }
     
+    public function articles(Request $request)
+    {
+    	//     	$user = $request->user();
+    	$user = new User();$user->id = 1;//TODO 模拟
+    	
+    	if(!$request->has('article_id')){
+    		echo 'error';exit;
+    	}
+    	 
+    	$sql = 'select b.subject as title,b.content as content,b.published as published, b.id as article_id,c.id as feed_id,c.feed_name as feed_name from articles b,feeds c where  b.feed_id = c.id and b.id=:article_id limit 1';
+    	$sql_param = [':article_id'=>$request->article_id];
+    	$article = DB::select($sql, $sql_param);
+    	 
+    	$resp = $this->responseJson(self::OK_CODE, $article);
+    	return response($resp);
+    }
+    
     /**
      * 发现
      * @param Request $request
