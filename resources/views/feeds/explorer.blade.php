@@ -1,6 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+	      
+	      .rowone{
+	        overflow: hidden;
+		    text-overflow: ellipsis;
+		    display: -webkit-box;
+		    -webkit-box-orient: vertical;
+		    -webkit-line-clamp: 1;
+	      }
+	      
+	      .rowtwo{
+	        overflow: hidden;
+		    text-overflow: ellipsis;
+		    display: -webkit-box;
+		    -webkit-box-orient: vertical;
+		    -webkit-line-clamp: 1;
+	      }
+</style>
+
 <script type="text/javascript">
 $(document).ready(function () {
 
@@ -40,11 +59,11 @@ $(document).ready(function () {
 		                    @foreach ($feeds as $feed)
 			                    <div class="col-md-4" style="padding:10px">
 			                    	<div class="card card-block">
-								      <b class="card-title"> 
+								      <b class="card-title rowone"> 
 								      	<img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
 				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
 				                      </b>
-								      <p class="card-text">{{ $feed->feed_desc }}</p>
+								      <p class="card-text rowtwo">{{ $feed->feed_desc }}</p>
   									  <a class="card-link text-right" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
 								    </div>
 			                    </div>

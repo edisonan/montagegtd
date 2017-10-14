@@ -42,6 +42,14 @@
 	      .active {
 	      	color:red;
 	      }
+	      
+	      .rowone{
+	        overflow: hidden;
+		    text-overflow: ellipsis;
+		    display: -webkit-box;
+		    -webkit-box-orient: vertical;
+		    -webkit-line-clamp: 1;
+	      }
 </style>
 
 <script src="/js/jquery.cookie.js"></script>
@@ -199,7 +207,7 @@ $(document).ready(function () {
 			    				@if(count($nav_info['list'])>0)
 			    					<ul class="category_item">
 			    					@foreach($nav_info['list'] as $item)
-			    						<li>
+			    						<li class="rowone">
 			    							<a href="{{ url('articles?feed_id='.$item['feed_id'].'&status='.$status) }}">
 			    							<span style="/*display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;*/">
 			    							[
