@@ -308,7 +308,7 @@ $(document).ready(function () {
 									@endif
 								</article>
 								@endforeach
-                        		{!! $articleSubs->appends($page_params)->links() !!}
+                        		{!! $articleSubs->appends($page_params)->links('app.pagination') !!}
                         		
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
                         		<button class="col-md-12 btn btn-primary-outline" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
