@@ -63,7 +63,7 @@ $(document).ready(function () {
 								      	<img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
 				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
 				                      </b>
-								      <p class="card-text rowtwo">{{ $feed->feed_desc }}</p>
+								      <p class="card-text rowtwo">{{ $feed->feed_desc }} &nbsp;</p>
   									  <a class="card-link text-right" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
 								    </div>
 			                    </div>
