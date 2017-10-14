@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     	
     	// Change the ->simplePaginate() presenter
     	Paginator::presenter(function (PaginatorContract $paginator) {
-    		return new SimpleBootstrapFourPresenter($paginator);
+    		return new BootstrapFourPresenter($paginator);
     	});
     }
 
