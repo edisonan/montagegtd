@@ -180,6 +180,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/thing/{thing}', 'ThingController@destroy');
     Route::post('/thing/{thing}', 'ThingController@update');
     Route::get('/thing/{thing}', 'ThingController@update');
+    
+    Route::get('/api/wechat/articles', 'ApiController@articles');
 
     Route::auth();
 
