@@ -39,6 +39,9 @@
 		        background: #326c84;  
 		        border-radius: 0 0 10px 10px;  
 	      }  
+	      .active {
+	      	color:red;
+	      }
 </style>
 
 <script src="/js/jquery.cookie.js"></script>
