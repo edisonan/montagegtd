@@ -47,6 +47,10 @@
 		.col-md-offset-10{margin-left:83.333333%}
 		.col-md-offset-11{margin-left:91.666667%}
 		.col-md-offset-12{margin-left:100%}
+		
+		a {
+			color: #089bf9;
+		}
     </style>
     <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 </head>
