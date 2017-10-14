@@ -225,7 +225,7 @@ $(document).ready(function () {
                     	@foreach ($notes as $note)
 							<article class="post" style="padding: 0px;" id="{{$note->id}}">
 								<div class="post-head">
-									<div class="post-meta" style="text-align: left">
+									<div class="post-meta row" style="text-align: left">
 										<div class="col-md-offset-0 col-md-1" style="width: 50px;padding-right: 0px;padding-left: 0px;">
 											<img src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1" style="width:30px; height:30px;margin:5px;border-radius: 50%;" class="img-thumbnail avatar"></a>
 										</div>
