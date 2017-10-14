@@ -103,6 +103,11 @@ class ApiController extends Controller
     	$sql = 'select b.subject as title,b.content as content,b.published as published, b.id as article_id,c.id as feed_id,c.feed_name as feed_name from articles b,feeds c where  b.feed_id = c.id and b.id=:article_id limit 1';
     	$sql_param = [':article_id'=>$request->article_id];
     	$article = DB::select($sql, $sql_param);
+    	if(count($article) == 1){
+    		$article = $article[0];
+    	} else {
+    		echo 'error';exit;
+    	}
     	 
     	$resp = $this->responseJson(self::OK_CODE, $article);
     	return response($resp);
