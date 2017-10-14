@@ -35,7 +35,7 @@
 		if(remain < 0){
 			if(status == 2){
 				document.getElementById('divdown').style.display = "none";
-				document.getElementById('formdiv1').style.display = "block";
+				document.getElementById('formdiv1').style.display = "";
 				return false;
 			} else {
 				location.href = '{{url('/index')}}';
@@ -73,10 +73,10 @@
 	}
 	
 	function displayATHiddenDiv(){
-		document.getElementById('task_form_div1').style.display = "block";
-		document.getElementById('task_form_div2').style.display = "block";
-		document.getElementById('task_form_div3').style.display = "block";
-		document.getElementById('task_form_div4').style.display = "block";
+		document.getElementById('task_form_div1').style.display = "";
+		document.getElementById('task_form_div2').style.display = "";
+		document.getElementById('task_form_div3').style.display = "";
+		document.getElementById('task_form_div4').style.display = "";
 	}
 	
 	function clearTips($suffix){
