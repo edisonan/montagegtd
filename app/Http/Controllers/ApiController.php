@@ -111,7 +111,7 @@ class ApiController extends Controller
  //     	$user = $request->user();
     	$user = new User();$user->id = 1;//TODO 模拟
     	
-    	$sql = 'select name,record_path,image_path,created_at from feeds where is_recommend = 1 order by rand() limit 10';
+    	$sql = 'select name,record_path,image_path,created_at from notes order by updated_at desc limit 10';
     	$sql_param = [];
     	$articles = DB::select($sql, $sql_param);
     	
