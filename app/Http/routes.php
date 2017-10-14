@@ -181,7 +181,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/thing/{thing}', 'ThingController@update');
     Route::get('/thing/{thing}', 'ThingController@update');
     
-    Route::get('/api/wechat/articles', 'ApiController@articles');
+    Route::get('/api/wechat/articles', 'Wechat\ApiController@articles');
 
     Route::auth();
 
