@@ -40,12 +40,12 @@ $(document).ready(function () {
 		                    @foreach ($feeds as $feed)
 			                    <div class="col-md-4" style="padding:10px">
 			                    	<div class="card card-block">
-								      <h4 class="card-title"> 
+								      <b class="card-title"> 
 								      	<img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
 				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
-				                      </h4>
+				                      </b>
 								      <p class="card-text">{{ $feed->feed_desc }}</p>
-  									  <a class="card-link" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
+  									  <a class="card-link text-right" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
 								    </div>
 			                    </div>
 		                    @endforeach
