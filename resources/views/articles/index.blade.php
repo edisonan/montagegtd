@@ -200,7 +200,7 @@ $(document).ready(function () {
 			    					@foreach($nav_info['list'] as $item)
 			    						<li>
 			    							<a href="{{ url('articles?feed_id='.$item['feed_id'].'&status='.$status) }}">
-			    							<span style="display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+			    							<span style="/*display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;*/">
 			    							[
 			    							<?php echo $item['feed_count']?>
 			    							]
