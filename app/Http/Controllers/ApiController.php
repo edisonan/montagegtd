@@ -77,7 +77,7 @@ class ApiController extends Controller
     		$status = 'unread';
     	}
     	$sql = 'select b.subject as title,b.published as publieshed,a.id as article_sub_id, b.id as article_id,c.id as feed_id,c.feed_name as feed_name from article_subs a,articles b,feeds c where b.subject != "" and a.user_id=:user_id and a.article_id = b.id and b.feed_id = c.id and a.status=:status';
-    	$sql_param = [':user_id'=>$request->user()->id,':status'=>$status];
+    	$sql_param = [':user_id'=>$user->id,':status'=>$status];
     	if($request->has('feed_id')){
     		$sql .= ' and c.feed_id = :feed_id ';
     		$sql_param[':feed_id'] = $request->feed_id;
