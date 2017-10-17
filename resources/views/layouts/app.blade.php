@@ -46,7 +46,7 @@
 		.col-md-offset-12{margin-left:100%}
 		
 		a {
-			color: #333;
+			color: #0c74a7;
 		}
     </style>
     <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
