@@ -55,6 +55,10 @@
 			padding: 10px;
 			font-size: 18px;
 		  }
+		  
+		  img{
+			      max-width: fit-content;
+		  }
 </style>
 
 <script src="/js/jquery.cookie.js"></script>
