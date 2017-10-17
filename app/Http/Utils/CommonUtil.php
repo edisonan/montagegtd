@@ -138,7 +138,7 @@ class CommonUtil{
 		return CommonUtil::HtmlClose(CommonUtil::removeXSS($content));
 	}
 	
-	function HtmlClose($body) {
+	public static function HtmlClose($body) {
 		$strlen_var = strlen($body);
 		// 不包含 html 标签
 		if (strpos($body, '<') === false) {
