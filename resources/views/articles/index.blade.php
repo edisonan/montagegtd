@@ -200,7 +200,7 @@ $(document).ready(function () {
                 <div class="card-header">
                 	订阅分类
                 	<div style="float:right">
-                		<a href="{{ url('kindles') }}">[Send2Kindle]</a>
+                		<a href="{{ url('kindles') }}">[SendKindle]</a>
                     	<a href="{{'/feeds/setting'}}">[管理]</a>
                     </div>
                 </div>
@@ -237,7 +237,7 @@ $(document).ready(function () {
     		</div>
     	</div>
     
-        <div class="col-md-offset-0 col-md-8">
+        <div class="col-md-offset-0 col-md-9">
             <div class="card card-default">
                 <div class="card-header">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
@@ -266,8 +266,8 @@ $(document).ready(function () {
                     		<a href="{{ url('feeds')}}">[添加订阅]</a>
                     	</div>
                 </div>
-
-                <div class="card-body">
+			</div>
+                <!--<div class="card-body">-->
                     <!-- Display Validation Errors -->
                     @include('common.errors')
                     
@@ -344,8 +344,8 @@ $(document).ready(function () {
 	                        		</div>
 	                    	@endif
 	                    @endif
-                </div>
-            </div>
+                <!--</div>-->
+            
 
         </div>
         </div>
