@@ -3,6 +3,17 @@
 @section('title', $article->subject.' - Montage GTD')
 
 @section('content')
+<style>
+		  
+		  .post-text{
+			padding: 10px;
+			font-size: 18px;
+		  }
+		  
+		  img{
+			      max-width: fit-content;
+		  }
+</style>
 <script src="/js/lazyload.min.js"></script>
 <script type="text/javascript" charset="utf-8">
   $(function() {
@@ -52,6 +63,34 @@ $(document).ready(function () {
                     		<a href="{{'/articles'}}">[继续阅读]</a>
                     	</div>
                 </div>
+                
+                <div class="card" style="margin-bottom:10px">
+					<div class="card-block" style="padding: 10px;">
+					  @if(!empty($article->subject))
+					  <h4 class="card-title">
+							<a href="{{ $article->url }}">[原文]</a>
+							{{ $article->subject }}
+					  </h4>
+				      @endif
+					  <p class="card-text"><small class="text-muted">来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
+					  
+					  @if($unable_desc == "false")
+					  <div class="card-text post-text">
+						<?php 
+						$content = $article->content; 
+						if($unable_img == "true"){ 
+							$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
+						} 
+						echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
+						?>
+					  </div>
+					  <p class="card-text text-right">
+					  <a id="share" name="share"></a>
+								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="<?php echo $_SERVER['REQUEST_URI'];?>" pic="{{ $article->image_url }}"></wb:share-button>
+					  </p>
+					  @endif
+					</div>
+				  </div>
 
                 <div class="card-body">
 					<article class="post">

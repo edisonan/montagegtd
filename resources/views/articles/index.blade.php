@@ -291,11 +291,10 @@ $(document).ready(function () {
 											<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
 									  </h4>
 								      @endif
-									  <p class="card-text"><small class="text-muted">来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
+									  <p class="card-text"><small class="text-muted">来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
 									  
 									  @if($unable_desc == "false")
 									  <div class="card-text post-text">
-										<show>
 										<?php 
 										$content = $article->content; 
 										if($unable_img == "true"){ 
@@ -303,7 +302,6 @@ $(document).ready(function () {
 										} 
 										echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
 										?>
-										</show>
 									  </div>
 									  <p class="card-text text-right">
 											 <a href="{{ url('article/view/'.$article->id) }}#share" target="_blank" class="btn btn-outline-secondary btn-sm" title="分享"><img src="/img/icon/share.png" width="20px"/>Share</a>
