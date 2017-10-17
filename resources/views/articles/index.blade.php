@@ -134,7 +134,7 @@ $(document).ready(function () {
 		location.href="";
 	});
 	
-	$(".post img").click(function(){
+	$(".post-text img").click(function(){
 		if($(this).attr("orignal_src") != null){
 			$(this).attr("src", $(this).attr("orignal_src"));//修改图片路径
 		}
