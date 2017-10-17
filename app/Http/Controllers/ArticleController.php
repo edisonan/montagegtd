@@ -315,7 +315,7 @@ class ArticleController extends Controller
     		} else {
     			$aipSpeech = new AipSpeech(env('BD_APP_ID', ''),env('BD_API_KEY', ''),env('BD_SECRET_KEY', ''));
     			$result = $aipSpeech->synthesis(strip_tags($article->content), 'zh', 1, array(
-    					'vol' => 5,
+    					'per' => 3,
     			));
     			// 识别正确返回语音二进制 错误则返回json 参照下面错误码
     			if(!is_array($result)){
