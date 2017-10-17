@@ -70,11 +70,11 @@ $(document).ready(function () {
                 </div>
 
                 <div class="card-body row">
-					<div id="jsmind_container" class="col-md-offset-0 col-md-8">
+					<div id="jsmind_container" class="col-md-offset-0 col-md-9">
 					</div>
-					<div id="" class="col-md-offset-0 col-md-4">
+					<div id="" class="col-md-offset-0 col-md-3">
 						<span id="mind_name" class="col-md-12">详细描述:{{$mind->name}}</span>
-						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; width: 300px;" id="mind_content">{{$mind->content}}</textarea>
+						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; width: 250px;" id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
