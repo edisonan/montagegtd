@@ -287,6 +287,7 @@ $(document).ready(function () {
 									  
 									  @if($unable_desc == "false")
 									  <div class="card-text post-text">
+										<show>
 										<?php 
 										$content = $article->content; 
 										if($unable_img == "true"){ 
@@ -294,6 +295,7 @@ $(document).ready(function () {
 										} 
 										echo App\Http\Utils\CommonUtil::removeXSS($content); 
 										?>
+										</show>
 									  </div>
 									  <p class="card-text text-right">
 											 <a href="{{ url('article/view/'.$article->id) }}#share" target="_blank" class="btn btn-outline-primary">Share</a>
