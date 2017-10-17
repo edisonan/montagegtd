@@ -299,6 +299,7 @@ $(document).ready(function () {
 											<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="{{ url('article/view/'.$article->id) }}" pic="{{ $article->image_url }}">
 											 分享
 											 </wb:share-button>
+											 <a href="{{ url('article/view/'.$article->id) }}#share" target="_blank" class="btn btn-outline-primary">Share</a>
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read @if($articleSub->status == 'read') active @endif">Read</a>
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_star @if($articleSub->status == 'star') active @endif">Star</a>
