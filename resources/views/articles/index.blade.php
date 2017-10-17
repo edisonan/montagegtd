@@ -125,7 +125,7 @@ $(document).ready(function () {
 	
 	$(".view-all").click(function(){
 		$(this).parent().parent().children("div.post-text").css("height","auto");
-		//$(this).css("display","none");
+		$(this).css("display","none");
 	});
 
 	//处理屏蔽图片
