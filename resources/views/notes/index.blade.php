@@ -11,6 +11,11 @@
             .ui-btn-primary:hover, .ui-btn-primary.hover { color: #fff; background-color: #16a329; border-color: #16a329; }
             .ui-btn-primary:focus, .ui-btn-primary:active { color: #fff; }
             .ui-btn-primary.disabled:focus{ color: #aaa; }
+			
+			.post-text{
+				padding: 10px;
+				font-size: 18px;
+			  }
 </style>
 
 <script>
@@ -220,14 +225,13 @@ $(document).ready(function () {
                     <div class="card-header">
                        	 大家在分享什么
                     </div>
-
-                    <div class="card-body">
+				</div>
                     	@foreach ($notes as $note)
 							<div class="card" style="margin-bottom:10px">
 								<div class="card-block">
 								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
 								  <p class="card-text"><small class="text-muted"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></small></p>
-								  <p class="card-text">
+								  <div class="card-text post-text">
 								    @if($note->status != 2)
 									<img alt=""     style="width: 15px;    margin-right: 10px;" src="/img/icon/security.png">
 									@endif
@@ -242,7 +246,7 @@ $(document).ready(function () {
 									</a>
 									@endif
 								  <?php echo $note->name;?>
-								  </p>
+								  </div>
 								  <p class="card-text text-right">
 								    @if($note->user_id == Auth::user()->id )
 											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="cursor:pointer;">
@@ -257,10 +261,7 @@ $(document).ready(function () {
 								</div>
 							  </div>
 					  @endforeach
-                    
-                    </div>
-                </div>
-                 {!! $notes->links() !!}
+						{!! $notes->links() !!}
             @endif
         </div>
     </div>
