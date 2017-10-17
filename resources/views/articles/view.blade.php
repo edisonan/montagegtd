@@ -1,4 +1,4 @@
-@extends('layouts.article')
+@extends('layouts.app')
 
 @section('title', $article->subject.' - Montage GTD')
 

@@ -223,26 +223,12 @@ $(document).ready(function () {
 
                     <div class="card-body">
                     	@foreach ($notes as $note)
-							<article class="post" style="padding: 0px;" id="{{$note->id}}">
-								<div class="post-head">
-									<div class="post-meta row" style="text-align: left">
-										<div class="col-md-offset-0 col-md-1" style="width: 50px;padding-right: 0px;padding-left: 0px;">
-											<img src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1" style="width:30px; height:30px;margin:5px;border-radius: 50%;" class="img-thumbnail avatar"></a>
-										</div>
-										<div class="col-md-offset-0 col-md-11">
-											<span class="author">
-												<a href="#" target="_blank">{{ $note->user->name }}</a>
-											</span> 
-											<br/>
-											<time class="post-date" datetime="<?php echo $note->created_at;?>" title="<?php echo $note->created_at;?>"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></time>
-											<br/>
-										</div>
-									</div>
-								</div>
-								<div class="post-content col-md-offset-0 col-md-12">
-									<div class="preprepre">
-									
-									@if($note->status != 2)
+							<div class="card" style="margin-bottom:10px">
+								<div class="card-block">
+								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
+								  <p class="card-text"><small class="text-muted"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></small></p>
+								  <p class="card-text">
+								    @if($note->status != 2)
 									<img alt=""     style="width: 15px;    margin-right: 10px;" src="/img/icon/security.png">
 									@endif
 									
@@ -255,12 +241,10 @@ $(document).ready(function () {
 										<image height="150px" src="{{ $note->image_path }}"/>
 									</a>
 									@endif
-									
-									<?php echo $note->name;?>
-									</div>
-								</div>
-								<div class="col-md-offset-11 col-md-1 text-right">
-										@if($note->user_id == Auth::user()->id )
+								  <?php echo $note->name;?>
+								  </p>
+								  <p class="card-text text-right">
+								    @if($note->user_id == Auth::user()->id )
 											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="cursor:pointer;">
 											<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
 											</a> 
@@ -268,10 +252,10 @@ $(document).ready(function () {
                                             <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" style="cursor:pointer;">
 											<img alt=""     style="width: 15px;" src="/img/icon/like.png">
 											</a> 
-                                            @endif
-						  	</div>
-								<footer class="post-footer clearfix" style="margin-top: 0px;"></footer>
-							</article>
+                                    @endif
+								  </p>
+								</div>
+							  </div>
 					  @endforeach
                     
                     </div>

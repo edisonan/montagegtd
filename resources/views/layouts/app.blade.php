@@ -14,9 +14,6 @@
     @endif
     <!-- Fonts -->
     <link href="//cdn.bootcss.com/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
-    <link href="https://fonts.css.network/css?family=Lato:100,300,400,700" rel='stylesheet' type='text/css'>
-    
-    <link href="{{'/css/screen.min.css'}}" rel='stylesheet' type='text/css'>
 
     <!-- Styles -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
@@ -49,7 +46,7 @@
 		.col-md-offset-12{margin-left:100%}
 		
 		a {
-			color: #089bf9;
+			color: #333;
 		}
     </style>
     <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>

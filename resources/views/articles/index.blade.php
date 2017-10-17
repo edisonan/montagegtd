@@ -105,18 +105,18 @@ $(document).ready(function () {
 		});
 	});
 
-	$(".post .post-content").each(function(){
+	$(".post-text").each(function(){
 		height=$(this).height();
 		if(height > 1000) {
 			$(this).css("height","360");
 			$(this).css("overflow","hidden");
-			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">点开更多内容</p>");
+			$(this).parent().find(".view-all").css("display","");
 		}
 	});
 	
-	$(".morecon").click(function(){
-		$(this).parent().children("div.post-content").css("height","auto");
-		$(this).css("display","none");
+	$(".view-all").click(function(){
+		$(this).parent().parent().children("div.post-text").css("height","auto");
+		//$(this).css("display","none");
 	});
 
 	//处理屏蔽图片
@@ -266,64 +266,46 @@ $(document).ready(function () {
                     			<?php $article_sub_ids = array();?>
 	                    		@foreach ($articleSubs as $articleSub)
 	                    		<?php $article = $articleSub->article;if(empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
-	                            <article class="post">
-									@if(!empty($article->subject))
-									<div class="post-head">
-										<h1 class="post-title">
+								<div class="card" style="margin-bottom:10px">
+									<div class="card-block" style="padding: 10px;">
+									  @if(!empty($article->subject))
+									  <h4 class="card-title">
 											<a href="{{ $article->url }}">[原文]</a>
 											<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
-										</h1>
-										<div class="post-meta">
-											<span class="author">
-												来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a>
-											</span> 
-											• 
-											<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>
-										</div>
+									  </h4>
+								      @endif
+									  <p class="card-text"><small class="text-muted">来源：<a href="{{ $article->feed->url}}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
+									  
+									  @if($unable_desc == "false")
+									  <div class="card-text post-text">
+										<?php 
+										$content = $article->content; 
+										if($unable_img == "true"){ 
+											$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
+										} 
+										echo App\Http\Utils\CommonUtil::removeXSS($content); 
+										?>
+									  </div>
+									  <p class="card-text text-right">
+											<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="{{ url('article/view/'.$article->id) }}" pic="{{ $article->image_url }}">
+											 分享
+											 </wb:share-button>
+											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
+											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read @if($articleSub->status == 'read') active @endif">Read</a>
+											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_star @if($articleSub->status == 'star') active @endif">Star</a>
+											<a href="javascript:void(0);" style="display:none" class="btn btn-outline-primary view-all">View All</a>
+									  </p>
+									  @endif
 									</div>
-									@endif
-									@if(!empty($article->image_url))
-									<!-- 
-									<div class="featured-media">
-										<a href="#">
-											<img src="{{$article->image_url}}" alt="{{ $article->subject }}">
-										</a>
-									</div>
-									 -->
-									@endif
-									
-									@if($unable_desc == "false")
-									<div class="post-content" style="    margin: 5px 0;">
-										<p></p>
-										<p><?php 
-											$content = $article->content; 
-											if($unable_img == "true"){ 
-												$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
-											} 
-											echo App\Http\Utils\CommonUtil::removeXSS($content); 
-											?>
-										</p>
-										<p></p>
-									</div>
-									<div class="post-permalink text-right">
-										<!-- 
-										<a href="{{ url('article/view/'.$article->id) }}#share" class="btn btn-primary-outline" target="_blank">ShareAndView</a>
-										 -->
-										 <wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="{{ url('article/view/'.$article->id) }}" pic="{{ $article->image_url }}">
-										 分享
-										 </wb:share-button>
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-primary-outline set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-primary-outline set_read @if($articleSub->status == 'read') active @endif">Read</a>
-										<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-primary-outline set_star @if($articleSub->status == 'star') active @endif">Star</a>
-									</div>
-									<footer class="post-footer clearfix"></footer>
-									@endif
-								</article>
+								  </div>
+								
+								
+	                            
 								@endforeach
                         		{!! $articleSubs->appends($page_params)->links() !!}
                         		
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        		<button class="col-md-12 btn btn-primary" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+                        		<button class="col-md-12 btn btn-outline-primary" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @endif
                         
