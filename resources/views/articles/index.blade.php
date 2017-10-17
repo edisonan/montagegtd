@@ -127,11 +127,13 @@ $(document).ready(function () {
 	$(".view-all").click(function(){
 		$(this).parent().parent().children("div.post-text").css("height","auto");
 		$(this).css("display","none");
+		$(this).parent().parent().find(".morecon").css("display","none");
 	});
 
 	$(".morecon").click(function(){
 		$(this).parent().children("div.post-text").css("height","auto");
 		$(this).css("display","none");
+		$(this).parent().parent().find(".view-all").css("display","none");
 	});
 
 	//处理屏蔽图片
@@ -320,7 +322,7 @@ $(document).ready(function () {
                         		{!! $articleSubs->appends($page_params)->links() !!}
                         		
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        		<button class="col-md-12 btn btn-outline-secondary" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+                        		<button class="col-md-12 btn btn-outline-info" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @endif
                         
