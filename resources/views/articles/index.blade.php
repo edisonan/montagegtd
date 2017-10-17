@@ -50,6 +50,11 @@
 		    -webkit-box-orient: vertical;
 		    -webkit-line-clamp: 1;
 	      }
+		  
+		  .post-text{
+			padding: 10px;
+			font-size: 18px;
+		  }
 </style>
 
 <script src="/js/jquery.cookie.js"></script>
