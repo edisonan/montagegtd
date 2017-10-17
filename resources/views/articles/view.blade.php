@@ -74,7 +74,6 @@ $(document).ready(function () {
 				      @endif
 					  <p class="card-text"><small class="text-muted">来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
 					  
-					  @if($unable_desc == "false")
 					  <div class="card-text post-text">
 						<?php 
 						$content = $article->content; 
@@ -88,43 +87,9 @@ $(document).ready(function () {
 					  <a id="share" name="share"></a>
 								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="<?php echo $_SERVER['REQUEST_URI'];?>" pic="{{ $article->image_url }}"></wb:share-button>
 					  </p>
-					  @endif
 					</div>
 				  </div>
 
-                <div class="card-body">
-					<article class="post">
-						@if(!empty($article->subject))
-						<div class="post-head">
-							<h1 class="post-title">
-								<a href="{{ $article->url }}">[原文]</a>
-								<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
-							</h1>
-							<div class="post-meta">
-								<span class="author">
-									来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a>
-								</span> 
-								• 
-								<time class="post-date" datetime="{{$article->published}}" title="{{$article->published}}">{{$article->published}}</time>
-							</div>
-						</div>
-						@endif
-						
-						<div class="post-content" style="    margin: 5px 0;">
-							<p></p>
-							<p>											
-								<?php echo  App\Http\Utils\CommonUtil::removeXSS($article->content); ?>
-							</p>
-							<p></p>
-						</div>
-						<footer class="post-footer clearfix">
-							<div style="float: right">
-								<a id="share" name="share"></a>
-								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="<?php echo $_SERVER['REQUEST_URI'];?>" pic="{{ $article->image_url }}"></wb:share-button>
-							</div>
-						</footer>
-					</article>
-                </div>
             </div>
 
         </div>
