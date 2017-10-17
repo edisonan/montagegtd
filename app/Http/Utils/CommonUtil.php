@@ -135,7 +135,7 @@ class CommonUtil{
 	
 	public static function formatContentHtml($content)
 	{
-		return App\Http\Utils\CommonUtil::HtmlClose(App\Http\Utils\CommonUtil::removeXSS($content));
+		return CommonUtil::HtmlClose(CommonUtil::removeXSS($content));
 	}
 	
 	function HtmlClose($body) {
