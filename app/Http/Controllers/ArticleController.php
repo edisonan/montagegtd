@@ -307,7 +307,7 @@ class ArticleController extends Controller
     public function getArticleRecord(Request $request, ArticleSub $articleSub)
     {
     	if($articleSub->user_id == $request->user()->id ){
-    		$article = $articleSub->article();
+    		$article = $articleSub->article;
     		
     		if(file_exists(config("app.storage_path").'article_records/'.$article->id.'.mp3')){
     			header('Content-type: audio/mp3');
