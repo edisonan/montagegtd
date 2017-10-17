@@ -293,7 +293,7 @@ $(document).ready(function () {
 										if($unable_img == "true"){ 
 											$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
 										} 
-										echo App\Http\Utils\CommonUtil::removeXSS($content); 
+										echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
 										?>
 										</show>
 									  </div>

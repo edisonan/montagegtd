@@ -245,7 +245,7 @@ $(document).ready(function () {
 										<image height="150px" src="{{ $note->image_path }}"/>
 									</a>
 									@endif
-								  <?php echo $note->name;?>
+								  <?php echo App\Http\Utils\CommonUtil::formatContentHtml($note->name);?>
 								  </div>
 								  <p class="card-text text-right post-text">
 								    @if($note->user_id == Auth::user()->id )
