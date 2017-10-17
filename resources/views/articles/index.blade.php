@@ -119,7 +119,7 @@ $(document).ready(function () {
 		if(height > 1000) {
 			$(this).css("height","360");
 			$(this).css("overflow","hidden");
-			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">click for more...</p>");
+			$(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 2em; \">click for more content...</p>");
 			$(this).parent().find(".view-all").css("display","");
 		}
 	});
