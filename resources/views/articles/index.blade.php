@@ -298,10 +298,10 @@ $(document).ready(function () {
 										</show>
 									  </div>
 									  <p class="card-text text-right">
-											 <a href="{{ url('article/view/'.$article->id) }}#share" target="_blank" class="btn btn-outline-primary"><img src="/img/icon/share.png" width="20px"/>Share</a>
-											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read_later @if($articleSub->status == 'read_later') active @endif"><img src="/img/icon/read_later.png" width="20px"/>Read Later</a>
-											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read @if($articleSub->status == 'read') active @endif"><img src="/img/icon/read_already.png" width="20px"/>Read</a>
-											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_star @if($articleSub->status == 'star') active @endif"><img src="/img/icon/read_star.png" width="20px"/>Star</a>
+											 <a href="{{ url('article/view/'.$article->id) }}#share" target="_blank" class="btn btn-outline-primary" title="分享"><img src="/img/icon/share.png" width="20px"/>Share</a>
+											 <a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read @if($articleSub->status == 'read') active @endif" title="已读"><img src="/img/icon/read_already.png" width="20px"/>Read</a>
+											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read_later @if($articleSub->status == 'read_later') active @endif" title="稍后阅读"><img src="/img/icon/read_later.png" width="20px"/>Later</a>
+											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_star @if($articleSub->status == 'star') active @endif" title="加星"><img src="/img/icon/read_star.png" width="20px"/>Star</a>
 											<a href="javascript:void(0);" style="display:none" class="btn btn-outline-warning view-all"><img src="/img/icon/read_more.png" width="30px"/>View All</a>
 									  </p>
 									  @endif
