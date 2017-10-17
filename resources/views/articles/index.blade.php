@@ -298,10 +298,10 @@ $(document).ready(function () {
 										</show>
 									  </div>
 									  <p class="card-text text-right">
-											 <a href="{{ url('article/view/'.$article->id) }}#share" target="_blank" class="btn btn-outline-primary btn-sm" title="分享"><img src="/img/icon/share.png" width="20px"/>Share</a>
-											 <a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary btn-sm set_read @if($articleSub->status == 'read') active @endif" title="已读"><img src="/img/icon/read_already.png" width="20px"/>Read</a>
-											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif" title="稍后阅读"><img src="/img/icon/read_later.png" width="20px"/>Later</a>
-											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary btn-sm set_star @if($articleSub->status == 'star') active @endif" title="加星"><img src="/img/icon/read_star.png" width="20px"/>Star</a>
+											 <a href="{{ url('article/view/'.$article->id) }}#share" target="_blank" class="btn btn-outline-secondary btn-sm" title="分享"><img src="/img/icon/share.png" width="20px"/>Share</a>
+											 <a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_read @if($articleSub->status == 'read') active @endif" title="已读"><img src="/img/icon/read_already.png" width="20px"/>Read</a>
+											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif" title="稍后阅读"><img src="/img/icon/read_later.png" width="20px"/>Later</a>
+											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_star @if($articleSub->status == 'star') active @endif" title="加星"><img src="/img/icon/read_star.png" width="20px"/>Star</a>
 											<a href="javascript:void(0);" style="display:none" class="btn btn-outline-warning btn-sm view-all"><img src="/img/icon/read_more.png" width="30px"/>View All</a>
 									  </p>
 									  @endif
@@ -314,7 +314,7 @@ $(document).ready(function () {
                         		{!! $articleSubs->appends($page_params)->links() !!}
                         		
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        		<button class="col-md-12 btn btn-outline-primary" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+                        		<button class="col-md-12 btn btn-outline-secondary" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @endif
                         
