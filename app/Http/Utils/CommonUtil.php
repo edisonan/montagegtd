@@ -126,7 +126,7 @@ class CommonUtil{
 	public static function hostUrl($url)
 	{
 		$parts = parse_url($url);
-		if(empty($parts)){
+		if(empty($parts) || !isset($parts['scheme']) || !isset($parts['host'])){
 			return false;
 		} else {
 			return $parts['scheme'].'://'.$parts['host'];
