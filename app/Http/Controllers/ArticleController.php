@@ -311,7 +311,7 @@ class ArticleController extends Controller
     		
     		if(file_exists(config("app.storage_path").'article_records/'.$article->id.'.mp3')){
     			header('Content-type: audio/mp3');
-    			readfile(config("app.storage_path").$note->record_path);
+    			readfile(config("app.storage_path").'article_records/'.$article->id.'.mp3');
     		} else {
     			$aipSpeech = new AipSpeech(env('BD_APP_ID', ''),env('BD_API_KEY', ''),env('BD_SECRET_KEY', ''));
     			$result = $aipSpeech->synthesis(strip_tags($article->content), 'zh', 1, array(
@@ -321,7 +321,7 @@ class ArticleController extends Controller
     			if(!is_array($result)){
     				file_put_contents(config("app.storage_path").'article_records/'.$article->id.'.mp3', $result);
     				header('Content-type: audio/mp3');
-    				readfile(config("app.storage_path").$note->record_path);
+    				readfile(config("app.storage_path").'article_records/'.$article->id.'.mp3');
     			} else {
     				\Log::info('create article record error'.serialize($result));
     			}
