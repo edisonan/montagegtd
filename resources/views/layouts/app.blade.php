@@ -57,7 +57,7 @@
 </head>
 
 <body id="app-layout">
-	<div class="container">
+	<div class="container" style="    margin-bottom: 5px;">
 		<nav class="navbar navbar-expand-lg navbar-light bg-light">
 			<a class="navbar-brand" href="{{ url('/') }}">
 	        	<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">

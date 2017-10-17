@@ -39,27 +39,27 @@ $(document).ready(function () {
             <div class="card">
                 <div class="card-header">
                     	想法-{{$mind->name}} 
-                    	<button class="btn-primary" onclick="add_node();">
+                    	<button class="btn-info" onclick="add_node();">
 	                    	<span  class="glyphicon glyphicon-file"></span>
 	                    	<span>add node</span>
                     	</button>
-                    	<button class="btn-primary" onclick="modify_node();">
+                    	<button class="btn-info" onclick="modify_node();">
 	                    	<span  class="glyphicon glyphicon-pencil"></span>
 	                    	<span>modify node</span>
                     	</button>
-                    	<button class="btn-primary" onclick="show_selected();">
+                    	<button class="btn-info" onclick="show_selected();">
 	                    	<span  class="glyphicon glyphicon-search"></span>
 	                    	<span>get the selected</span>
                     	</button>
-                    	<button class="btn-primary" onclick="remove_node();">
+                    	<button class="btn-info" onclick="remove_node();">
 	                    	<span  class="glyphicon glyphicon-remove"></span>
 	                    	<span>remove node</span>
                     	</button>
-                    	<button class="btn-primary" onclick="toggle();">
+                    	<button class="btn-info" onclick="toggle();">
 	                    	<span  class="glyphicon glyphicon-fast-forward"></span>
 	                    	<span>toggle node</span>
                     	</button>
-                    	<button class="btn-primary" onclick="screen_shot();">
+                    	<button class="btn-info" onclick="screen_shot();">
 	                    	<span  class="glyphicon glyphicon-camera"></span>
 	                    	<span>screen shot</span>
                     	</button>
@@ -77,7 +77,7 @@ $(document).ready(function () {
 						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; width: 151px;" id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
-						<button class="btn btn-primary col-md-12" onclick="mind_update()">保存</button>
+						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
 						<div id="mind_content_show"></div>
 					</div>
                 </div>

@@ -204,7 +204,7 @@ $(document).ready(function () {
                             <div class="col-md-offset-3 col-md-6">
                             	<input type="hidden" name="status" value="1" id="status_id">
                             	
-                                <button type="button" class="btn btn-default" onclick="submitProcess(1)">
+                                <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
                                     <i class="fa fa-btn fa-plus"></i>私密发布
                                 </button>
                             	

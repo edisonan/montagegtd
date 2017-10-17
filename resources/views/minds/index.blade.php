@@ -66,7 +66,7 @@ $(document).ready(function () {
                             	<input type="text" name="name" id="name" class="form-control" value="">
                             </div>
                             <div class="col-md-3" style="display: -webkit-inline-box;width: 25%;">
-                            	<button type="submit" class="btn btn-default">
+                            	<button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>新想法！
                                 </button>
                             </div>
