@@ -18,6 +18,8 @@ use DB;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
 
+use App\Http\Utils\AipSpeech;
+
 class ArticleController extends Controller
 {
     /**
@@ -300,5 +302,32 @@ class ArticleController extends Controller
     		}
     	}
     	return $feeds;
+    }
+    
+    public function getArticleRecord(Request $request, ArticleSub $articleSub)
+    {
+    	if($articleSub->user_id == $request->user()->id ){
+    		$article = $articleSub->article();
+    		
+    		if(file_exists(config("app.storage_path").'article_records/'.$article->id.'.mp3')){
+    			header('Content-type: audio/mp3');
+    			readfile(config("app.storage_path").$note->record_path);
+    		} else {
+    			$aipSpeech = new AipSpeech(env('BD_APP_ID', ''),env('BD_API_KEY', ''),env('BD_SECRET_KEY', ''));
+    			$result = $aipSpeech->synthesis(strip_tags($article->content), 'zh', 1, array(
+    					'vol' => 5,
+    			));
+    			// 识别正确返回语音二进制 错误则返回json 参照下面错误码
+    			if(!is_array($result)){
+    				file_put_contents(config("app.storage_path").'article_records/'.$article->id.'.mp3', $result);
+    				header('Content-type: audio/mp3');
+    				readfile(config("app.storage_path").$note->record_path);
+    			} else {
+    				\Log::info('create article record error'.serialize($result));
+    			}
+    		}
+    	} else {
+    		echo 'error'.$request->user()->user_id;exit;
+    	}
     }
 }
