@@ -230,7 +230,7 @@ $(document).ready(function () {
 							<div class="card" style="margin-bottom:10px">
 								<div class="card-block">
 								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://gravatar.css.network/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40&d=identicon&r=PG&f=1" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
-								  <p class="card-text"><small class="text-muted"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></small></p>
+								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></small></p>
 								  <div class="card-text post-text">
 								    @if($note->status != 2)
 									<img alt=""     style="width: 15px;    margin-right: 10px;" src="/img/icon/security.png">
@@ -247,7 +247,7 @@ $(document).ready(function () {
 									@endif
 								  <?php echo $note->name;?>
 								  </div>
-								  <p class="card-text text-right">
+								  <p class="card-text text-right post-text">
 								    @if($note->user_id == Auth::user()->id )
 											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="cursor:pointer;">
 											<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
