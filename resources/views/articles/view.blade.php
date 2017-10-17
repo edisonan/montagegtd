@@ -77,9 +77,6 @@ $(document).ready(function () {
 					  <div class="card-text post-text">
 						<?php 
 						$content = $article->content; 
-						if($unable_img == "true"){ 
-							$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
-						} 
 						echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
 						?>
 					  </div>
