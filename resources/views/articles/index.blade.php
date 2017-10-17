@@ -298,7 +298,7 @@ $(document).ready(function () {
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read_later @if($articleSub->status == 'read_later') active @endif">Read Later</a>
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_read @if($articleSub->status == 'read') active @endif">Read</a>
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-primary set_star @if($articleSub->status == 'star') active @endif">Star</a>
-											<a href="javascript:void(0);" style="display:none" class="btn btn-outline-primary view-all">View All</a>
+											<a href="javascript:void(0);" style="display:none" class="btn btn-outline-warning view-all">View All</a>
 									  </p>
 									  @endif
 									</div>
