@@ -122,7 +122,6 @@ class ArticleController extends Controller
     	}
     	
     	$unable_img = isset($_COOKIE['unable_img'])?$_COOKIE['unable_img']:"false";
-    	var_dump($unable_img);exit;
     	$unable_desc = isset($_COOKIE['unable_desc'])?$_COOKIE['unable_desc']:"false";
     	
         return view('articles.index', [
