@@ -202,7 +202,7 @@ class FeedRepository
     			if ($results_url == 0  && ! (strtotime($date) < strtotime($previousweek))) {
     				$article = new Article;
     				
-    				$content = $item['text']."&nbsp;&nbsp; <small>$date</small>";
+    				$content = $item['text']."&nbsp;&nbsp; ";
     				
     				if(isset($item['user'])){
     					$content = "<a href='http://fanfou.com/{$item['user']['unique_id']}'>@{$item['user']['name']}</a> &nbsp; $content";
