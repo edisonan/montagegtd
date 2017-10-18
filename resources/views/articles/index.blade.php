@@ -3,46 +3,46 @@
 @section('content')
 <style>
         .lazy{width:100%;height:0;background-size:100%;}
-       
-        .product-container {  
-	      width: 260px;  
-	      margin: 5px auto;  
-	      border-radius: 10px;  
-	      background: #f6f8f7;  
+
+        .product-container {
+	      width: 260px;
+	      margin: 5px auto;
+	      border-radius: 10px;
+	      background: #f6f8f7;
 	  	}
-	      .name {  
-		        border-bottom: 1px solid @gray-light;  
-		        font-size: 20px;  
-		        padding: 2px;  
-	      }  
-	      
-	      .interest {  
-		        color: #1da427;  
-		        font-size: 70px;  
-		        font-weight: bold;  
-		        padding: 0px;  
-		        margin-bottom: -30px;  
-	      }  
-	      
-	      .percent {  
-		         	 font-size: 31px;  
+	      .name {
+		        border-bottom: 1px solid @gray-light;
+		        font-size: 20px;
+		        padding: 2px;
+	      }
+
+	      .interest {
+		        color: #1da427;
+		        font-size: 70px;
+		        font-weight: bold;
+		        padding: 0px;
+		        margin-bottom: -30px;
+	      }
+
+	      .percent {
+		         	 font-size: 31px;
 		   }
-	      
-	      .intro {  
-	        	padding: 5px;  
-	      }  
-	      
-	      .strong {  
-		        padding: 3px;  
-		        font-size: 17px;  
-		        color: @white;  
-		        background: #326c84;  
-		        border-radius: 0 0 10px 10px;  
-	      }  
+
+	      .intro {
+	        	padding: 5px;
+	      }
+
+	      .strong {
+		        padding: 3px;
+		        font-size: 17px;
+		        color: @white;
+		        background: #326c84;
+		        border-radius: 0 0 10px 10px;
+	      }
 	      .active {
 	      	color:red;
 	      }
-	      
+
 	      .rowone{
 	        overflow: hidden;
 		    text-overflow: ellipsis;
@@ -50,12 +50,12 @@
 		    -webkit-box-orient: vertical;
 		    -webkit-line-clamp: 1;
 	      }
-		  
+
 		  .post-text{
 			padding: 10px;
 			font-size: 18px;
 		  }
-		  
+
 		  img{
 			      max-width: 75%;
 		  }
@@ -123,7 +123,7 @@ $(document).ready(function () {
 			$(this).parent().find(".view-all").css("display","");
 		}
 	});
-	
+
 	$(".view-all").click(function(){
 		$(this).parent().parent().children("div.post-text").css("height","auto");
 		$(this).css("display","none");
@@ -135,17 +135,16 @@ $(document).ready(function () {
 		$(this).css("display","none");
 		$(this).parent().parent().find(".view-all").css("display","none");
 	});
-
 	//处理屏蔽图片
 	$("#unable_img").click(function(){
 		if($("#unable_img").is(':checked')){
-			$.cookie('unable_img', true); 
+			$.cookie('unable_img', true);
 		} else {
-			$.cookie('unable_img', false); 
+			$.cookie('unable_img', false);
 		}
 		location.href="";
 	});
-	
+
 	$(".post-text img").click(function(){
 		if($(this).attr("orignal_src") != null){
 			$(this).attr("src", $(this).attr("orignal_src"));//修改图片路径
@@ -153,31 +152,31 @@ $(document).ready(function () {
 	});
 	if($.cookie("unable_img") != null && $.cookie("unable_img")=="true"){
 		$("#unable_img").prop('checked', true);
-		
+
 		$(".post img").each(function(){
 			if($(this).attr("src") != null && $(this).attr("src")!="" && $(this).attr("src") != "/img/unable_img.png") {
 			    $(this).attr("orignal_src",$(this).attr("src"));//修改图片路径
 			    $(this).attr("src","/img/unable_img.png");//修改图片路径
 			}
-		    
+
 		    $(this).parent("a").attr("orignal_href", $(this).parent("a").attr("href"));//修改链接路径
 		    $(this).parent("a").attr("href","javascript:void(0)");//修改链接路径
 		});
 	}
-	
+
 	//处理一目十行
 	$("#unable_desc").click(function(){
 		if($("#unable_desc").is(':checked')){
-			$.cookie('unable_desc', true); 
+			$.cookie('unable_desc', true);
 		} else {
-			$.cookie('unable_desc', false); 
+			$.cookie('unable_desc', false);
 		}
 		location.href="";
 	});
-	
+
 	if($.cookie("unable_desc") != null && $.cookie("unable_desc")=="true"){
 		$("#unable_desc").prop('checked', true);
-		
+
 // 		$(".post-content").each(function(){
 // 			$(this).css("display","none");
 // 		});
@@ -197,6 +196,18 @@ $(document).ready(function () {
 
 	$(".category_items").click(function(){
 		$(this).parent().find(".category_item").toggle();
+	});
+
+	$(".feed_quick_sub").click(function(){
+		var feed_id = $(this).attr('feed_id');
+		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result){
+			result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert(result_arr.msg);
+			} else {
+				alert(result_arr.msg);
+			}
+		});
 	});
 });
 </script>
@@ -241,15 +252,15 @@ $(document).ready(function () {
 			    			@endforeach
 			    		@endif
 		    		</ul>
-		    	</div>	
+		    	</div>
     		</div>
     	</div>
-    
+
         <div class="col-md-offset-0 col-md-9">
             <div class="card card-default">
                 <div class="card-header">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-                			尚无文章
+							热门推荐
                 		@else
                 			@if($status == 'unread')
                 			未读
@@ -278,7 +289,7 @@ $(document).ready(function () {
                 <!--<div class="card-body">-->
                     <!-- Display Validation Errors -->
                     @include('common.errors')
-                    
+
                     		@if (count($articleSubs) > 0)
                     			<?php $article_sub_ids = array();?>
 	                    		@foreach ($articleSubs as $articleSub)
@@ -292,16 +303,16 @@ $(document).ready(function () {
 									  </h4>
 								      @endif
 									  <p class="card-text"><small class="text-muted">来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
-									  
+
 									  @if($unable_desc == "false")
 									  <div class="card-text post-text">
-										<?php 
-										$content = $article->content; 
-										if($unable_img == "true"){ 
+										<?php
+										$content = $article->content;
+										if($unable_img == "true"){
 											$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
 											$content = str_replace("src='", "src='/img/unable_img.png' orignal_src='", $content);
-										} 
-										echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
+										}
+										echo App\Http\Utils\CommonUtil::formatContentHtml($content);
 										?>
 									  </div>
 									  <p class="card-text text-right">
@@ -314,45 +325,51 @@ $(document).ready(function () {
 									  @endif
 									</div>
 								  </div>
-								
-								
-	                            
+
+
+
 								@endforeach
                         		{!! $articleSubs->appends($page_params)->links() !!}
-                        		
+
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
                         		<button class="col-md-12 btn btn-outline-info" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
                         		@endif
                         @endif
-                        
-                        
+
+
                         @if(count($articleSubs) == 0)
-                        
+
 	                        @if(!empty($next_recommend_feed))
-	                        	<div class="text-center col-md-12" style="    font-size: 20px;">
-	                        		这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
-	                        		<a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
-	                        	</div>
+								<div class="card" style="margin-top:10px">
+									<div class="card-block" style="padding: 10px;">
+									  <h4 class="card-title">
+											这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
+									  </h4>
+									  <p class="card-text text-center"><a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a></p>
+									</div>
+								  </div>
 	                        @endif
-	                        
+
 	                        @if(count($recommend_feeds) > 0)
-	                        		<div class="text-center col-md-12" style="    font-size: 20px;">
+									<div class="text-center col-md-12" style="font-size: 20px; margin: 10px;">
 	                        			还可以逛逛其他的资源~
 	                        		</div>
-	                        		<div class="row">
+	                        		<div class="row" style="margin:15px">
 				                    	@foreach($recommend_feeds as $recommend_feed)
-		                    			<div class="col-md-offset-0 col-md-6">
-									        <div class="product-container">  
-									          <div class="name"><a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a></div>  
-									          <div class="intro text-right">最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }} &nbsp;&nbsp; <a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >去阅读</a></div>  
-									        </div>  
-		                    			</div>
+										<div class="card col-md-6" style="margin-bottom:15px">
+											<div class="card-block" style="padding: 5px;">
+											  <h4 class="card-title">
+													<a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a>
+											  </h4>
+											  <p class="card-text text-center"><small>最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}&nbsp;&nbsp;<a href="javascript:void(0);"  feed_id="{{ $recommend_feed->id }}" class="feed_quick_sub">直接订阅</a></small></p>
+											</div>
+										  </div>
 				                    	@endforeach
 	                        		</div>
 	                    	@endif
 	                    @endif
                 <!--</div>-->
-            
+
 
         </div>
         </div>

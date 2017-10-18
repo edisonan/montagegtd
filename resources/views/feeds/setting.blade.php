@@ -103,7 +103,7 @@
 					    	 change_feed_sub_id = item.id;
 					    	 change_feed_sub_category = now_category_id;
 					     } else if(evt.oldIndex == evt.newIndex){
-							return '';
+// 							return '';
 					     }
 
 					     var valArr = new Array;
