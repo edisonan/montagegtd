@@ -57,7 +57,7 @@
 		  }
 		  
 		  img{
-			      max-width: 500px;
+			      max-width: 70%;
 		  }
 </style>
 
