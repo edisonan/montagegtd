@@ -11,7 +11,7 @@
 		  }
 		  
 		  img{
-			      max-width: fit-content;
+			      max-width: 75%;
 		  }
 </style>
 <script src="/js/lazyload.min.js"></script>
