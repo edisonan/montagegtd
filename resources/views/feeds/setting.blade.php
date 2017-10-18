@@ -69,7 +69,7 @@
 				    	 var vals = valArr.join(',');//转换为逗号隔开的字符串
 
 				    	 $.ajax({
-				 		    url: "{{ url('categorys') }}"+"/sort",
+				 		    url: "{{ url('categorys/sort') }}",
 				 		    type: 'POST',
 				 		    data: {"category_ids":vals, "_token":"{{ csrf_token() }}"},
 				 		    success: function(result) {
@@ -123,7 +123,7 @@
 				 				if(result_arr.code != 9999){
 				 					alert('处理失败，请稍后再试');
 				 				} else {
-				 					$('#'+feed_value).remove();
+// 				 					$('#'+feed_value).remove();
 				 				}
 				 		    }
 				 		});
