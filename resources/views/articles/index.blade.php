@@ -57,7 +57,7 @@
 		  }
 		  
 		  img{
-			      max-width: fit-content;
+			      max-width: 500px;
 		  }
 </style>
 
