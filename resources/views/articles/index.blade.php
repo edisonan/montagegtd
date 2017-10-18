@@ -299,7 +299,7 @@ $(document).ready(function () {
 										$content = $article->content; 
 										if($unable_img == "true"){ 
 											$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
-											\Log::info($content);
+											$content = str_replace("src='", "src='/img/unable_img.png' orignal_src='", $content);
 										} 
 										echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
 										?>
