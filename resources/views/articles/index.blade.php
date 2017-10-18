@@ -209,6 +209,12 @@ $(document).ready(function () {
 			}
 		});
 	});
+
+	//play audio
+	$(".playaudio").click(function(){
+		var article_sub_id = $(this).attr('article_sub_id');
+		$("#audio").attr("src","/article/record/"+article_sub_id);
+	});
 });
 </script>
     <div class="container">
@@ -298,6 +304,7 @@ $(document).ready(function () {
 									<div class="card-block" style="padding: 10px;">
 									  @if(!empty($article->subject))
 									  <h4 class="card-title">
+									  		<img class="playaudio" article_sub_id="{{$articleSub->id}}"  alt="" src="/img/icon/music.png" width="30px">
 											<a href="{{ $article->url }}">[原文]</a>
 											<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
 									  </h4>
@@ -329,6 +336,7 @@ $(document).ready(function () {
 
 
 								@endforeach
+								<audio style="position: fixed;float:right"></audio>
                         		{!! $articleSubs->appends($page_params)->links() !!}
 
                         		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
@@ -372,6 +380,10 @@ $(document).ready(function () {
 
 
         </div>
+        
+        <!-- audio -->
+        <audio id="audio" style="position: fixed;float:right" autoplay src=""></audio>
+        
         </div>
     </div>
 @endsection
