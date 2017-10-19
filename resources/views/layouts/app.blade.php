@@ -47,10 +47,11 @@
 		.col-md-offset-12{margin-left:100%}
 		
 		a {
-			color: #0c74a7;
+			color: #333;
 		}
 		body{
-			  font-family:Lato;
+		    color: #525252;
+		    font-family: NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,"Microsoft Yahei","Hiragino Sans GB","WenQuanYi Micro Hei",sans-serif;
 		}
     </style>
     <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
