@@ -5,7 +5,7 @@
 
 		  .post-text{
 			padding: 10px;
-			font-size: 18px;
+			font-size: 20px;
 		  }
 
 		  img{
