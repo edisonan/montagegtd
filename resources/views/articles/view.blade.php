@@ -82,7 +82,7 @@ $(document).ready(function () {
 					  </div>
 					  <p class="card-text text-right">
 					  <a id="share" name="share"></a>
-								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="<?php echo $_SERVER['REQUEST_URI'];?>" pic="{{ $article->image_url }}"></wb:share-button>
+								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="/article/view/{{$article->id}}" pic="{{ $article->image_url }}"></wb:share-button>
 					  </p>
 					</div>
 				  </div>
