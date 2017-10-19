@@ -5,7 +5,7 @@
 @section('content')
 <div class="container">
     <div class="row">
-        <div class="col-md-8 col-md-offset-2">
+        <div class="col-md-8  mr-auto">
             <div class="card">
                 <div class="card-header">
                 	@if(isset($_SERVER['HTTP_REFERER']))
@@ -50,7 +50,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <div class="col-md-6 col-md-offset-4">
+                            <div class="col-md-6  mr-auto">
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" name="remember"> 记住我
@@ -60,7 +60,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <div class="col-md-6 col-md-offset-4">
+                            <div class="col-md-6  mr-auto">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-sign-in"></i>登录
                                 </button>

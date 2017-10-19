@@ -40,7 +40,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-        <div class="col-md-offset-2 col-md-8">
+        <div class=" mr-auto col-md-8">
             <div class="card">
                 <div class="card-header">
                 	<!-- 
