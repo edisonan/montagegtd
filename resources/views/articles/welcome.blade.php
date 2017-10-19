@@ -19,7 +19,7 @@
                 			<b>去阅读</b>是Montage GTD的一项子栏目，这里支持你订阅各大个人博客、科技媒体，甚至都可以定时发送您订阅的文章到kindle阅读器，每天回家打开kindle即可享受阅读好时光！<a rel="nofollow" href="{{url('/articles')}}">马上去体验！</a>
                 		</p>
                 	</div>
-					<img alt="" src="/img/read.png" class=" mr-auto col-md-10">
+					<img alt="" src="/img/read.png" class=" mx-auto col-md-10">
                 </div>
             </div>
 

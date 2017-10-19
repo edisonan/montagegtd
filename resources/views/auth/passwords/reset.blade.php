@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row">
-        <div class="col-md-8  mr-auto">
+        <div class="col-md-8  mx-auto">
             <div class="card">
                 <div class="card-header">Reset Password</div>
 
@@ -55,7 +55,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <div class="col-md-6  mr-auto">
+                            <div class="col-md-6  mx-auto">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-refresh"></i>Reset Password
                                 </button>

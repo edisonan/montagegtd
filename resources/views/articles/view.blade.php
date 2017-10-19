@@ -40,7 +40,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     
-        <div class=" mr-auto col-md-8">
+        <div class=" mx-auto col-md-8">
             <div class="card">
                 <div class="card-header">
                 	<!-- 
