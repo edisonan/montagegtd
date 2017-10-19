@@ -36,6 +36,9 @@ $(document).ready(function () {
                 <div class="card">
                     <div class="card-header">
                         	技能列表
+                        	<div style="float:right">
+	                    		<a href="{{'/index'}}">[返回]</a>
+	                    	</div>
                     </div>
 
                     <div class="card-body">

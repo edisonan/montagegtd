@@ -6,6 +6,9 @@
                 <div class="card">
                     <div class="card-header">
                         	修改目标
+                        	<div style="float:right">
+	                    		<a href="{{'/goals'}}">[返回]</a>
+	                    	</div>
                     </div>
 
                     <div class="card-body">
