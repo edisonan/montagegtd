@@ -12,6 +12,13 @@ button, input, optgroup, select, textarea {
     font: inherit;
     color: black;
 }
+.rowone{
+        overflow: hidden;
+	    text-overflow: ellipsis;
+	    display: -webkit-box;
+	    -webkit-box-orient: vertical;
+	    -webkit-line-clamp: 1;
+      }
 </style>
 <script type="text/javascript">
 $(document).ready(function () {
@@ -73,12 +80,12 @@ $(document).ready(function () {
 					<div id="jsmind_container" class=" col-md-9">
 					</div>
 					<div id="" class=" col-md-3">
-						<span id="mind_name" class="col-md-12">详细描述:{{$mind->name}}</span>
+						<small id="mind_name" class="col-md-12 rowone">详细描述:{{$mind->name}}</small>
 						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
-						<div id="mind_content_show"></div>
+						<div id="mind_content_show" style="margin-top:10px;"></div>
 					</div>
                 </div>
             </div>
