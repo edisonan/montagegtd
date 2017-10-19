@@ -32,7 +32,7 @@
         }
 		 -->
         
-        .col-md-offset-0{margin-left:0}
+        .{margin-left:0}
 		.col-md-offset-1{margin-left:8.333333%}
 		.col-md-offset-2{margin-left:16.666667%}
 		.col-md-offset-3{margin-left:25%}

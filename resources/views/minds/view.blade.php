@@ -34,7 +34,7 @@ $(document).ready(function () {
 
     <div class="container">
     
-        <div class="col-md-offset-0 col-md-12">
+        <div class=" col-md-12">
         	@include('common.success')
             <div class="card">
                 <div class="card-header">
@@ -70,9 +70,9 @@ $(document).ready(function () {
                 </div>
 
                 <div class="card-body row">
-					<div id="jsmind_container" class="col-md-offset-0 col-md-9">
+					<div id="jsmind_container" class=" col-md-9">
 					</div>
-					<div id="" class="col-md-offset-0 col-md-3">
+					<div id="" class=" col-md-3">
 						<span id="mind_name" class="col-md-12">详细描述:{{$mind->name}}</span>
 						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">

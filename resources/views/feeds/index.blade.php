@@ -49,7 +49,7 @@ $(document).ready(function () {
 
     <div class="container">
     
-        <div class="col-md-offset-0 col-md-12">
+        <div class=" col-md-12">
         	@include('common.success')
             <div class="card">
                 <div class="card-header">

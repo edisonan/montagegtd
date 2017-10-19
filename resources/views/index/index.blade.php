@@ -204,7 +204,7 @@ $(document).ready(function () {
     	@include('common.success')
     	<div class="row">
     	<div 
-    		class="col-md-offset-0 col-md-5 bootstro" 
+    		class=" col-md-5 bootstro" 
     		data-bootstro-step="0"
     		data-bootstro-placement="bottom"
     		data-bootstro-nextButtonText="下一步"
@@ -291,7 +291,7 @@ $(document).ready(function () {
     
     
         <div 
-        	class="col-md-offset-0 col-md-7 bootstro" 
+        	class=" col-md-7 bootstro" 
         	data-bootstro-step="1"
     		data-bootstro-placement="bottom"
     		data-bootstro-prevButtonText="上一步"
