@@ -121,6 +121,12 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
+	$("#task_more").click(function(){
+		$('#task_form_div1').toggle();
+		$('#task_form_div2').toggle();
+		$('#task_form_div3').toggle();
+		$('#task_form_div4').toggle();
+	})
 	$(".finish_task, .delete_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
@@ -322,7 +328,7 @@ $(document).ready(function () {
 
                             <div class="col-md-8">
 	                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}" style="display: -webkit-inline-box;width: 85%;">
-								    <a href="javascript:void(0)" onclick="displayATHiddenDiv()"><small>高级</small></a>
+								    <a href="javascript:void(0)" id="task_more"><small>高级</small></a>
                             </div>
                         </div>
                         
