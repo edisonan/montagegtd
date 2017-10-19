@@ -219,7 +219,7 @@ $(document).ready(function () {
 </script>
     <div class="container">
     	<div class="row">
-    	<div class="col-md-offset-0 col-md-3">
+    	<div class="col-md-offset-0 col-md-4">
     		@include('common.success')
     		<div class="card card-default">
                 <div class="card-header">
@@ -262,7 +262,7 @@ $(document).ready(function () {
     		</div>
     	</div>
 
-        <div class="col-md-offset-0 col-md-9">
+        <div class="col-md-offset-0 col-md-8">
             <div class="card card-default">
                 <div class="card-header">
                 		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
