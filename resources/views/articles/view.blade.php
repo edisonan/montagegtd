@@ -3,6 +3,7 @@
 @section('title', $article->subject.' - Montage GTD')
 
 @section('content')
+<link rel="stylesheet" href="/css/share.min.css">
 <style>
 		  
 		  .post-text{
@@ -34,6 +35,13 @@ $(document).ready(function () {
 				alert(result_arr.msg);
 			}
 		});
+	});
+	
+	$(".icon-heart").click(function(){
+		console.log(123);
+		var title = $(this).attr('data-title');
+		var url = $(this).attr('data-url');
+		location.href='/notes?add_content='+url;
 	});
 	
 });
@@ -81,8 +89,10 @@ $(document).ready(function () {
 						?>
 					  </div>
 					  <p class="card-text text-right">
-					  <a id="share" name="share"></a>
-								<wb:share-button appkey="567683707" addition="simple" type="button" ralateUid="1671353227" title="{{ $article->subject }}" url="/article/view/{{$article->id}}" pic="{{ $article->image_url }}"></wb:share-button>
+						  <a id="share" name="share"></a>
+						  <div class="social-share" style="float:right" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"  data-mobile-sites="facebook,twitter,google,wechat,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
+							<a href="javascript:void(0);" class="social-share-icon icon-heart" class="" data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}" data-url="http://task.congcong.us/article/view/{{$article->id}}"></a>
+						  </div>
 					  </p>
 					</div>
 				  </div>
@@ -91,4 +101,6 @@ $(document).ready(function () {
 
         </div>
     </div>
+	<script src="/js/social-share.js"></script>
+	<script src="/js/qrcode.js"></script>
 @endsection
