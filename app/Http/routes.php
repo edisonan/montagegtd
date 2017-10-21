@@ -29,12 +29,16 @@ Route::group(['middleware' => ['web']], function () {
     })->middleware('guest');
     
     Route::get('/test', function () {
-        	$feeds = App\Feed::where('type',3)->where('status',1)->get();
-    		$feedRepository = new App\Repositories\FeedRepository();
-    		foreach ($feeds as $feed){
-    			$feedRepository->checkFanfouFeed($feed);
-    			\Log::info('process feed ! url:'.$feed->url);
+    	$feedFactory = new ArandiLopez\Feed\Factories\FeedFactory(['cache.enabled' => false]);
+    	$feeder = $feedFactory->make('https://www.douban.com/location/beijing/events/feed/weekly');
+    	$simplePieInstance = $feeder->getRawFeederObject();
+    
+    	if (!empty($simplePieInstance)) {
+    		$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
+    		foreach ($simplePieInstance->get_items() as $item) {
+    			var_dump($item);
     		}
+    	}
     })->middleware('guest');
     
     Route::get('/test3', function () {
