@@ -29,16 +29,23 @@ Route::group(['middleware' => ['web']], function () {
     })->middleware('guest');
     
     Route::get('/test', function () {
+    	\Log::info('here');
     	$feedFactory = new ArandiLopez\Feed\Factories\FeedFactory(['cache.enabled' => false]);
+    	\Log::info('here1');
     	$feeder = $feedFactory->make('https://www.douban.com/location/beijing/events/feed/weekly');
+    	\Log::info('here2');
     	$simplePieInstance = $feeder->getRawFeederObject();
+    	\Log::info('here3');
     
     	if (!empty($simplePieInstance)) {
+    	\Log::info('here4');
     		$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     		foreach ($simplePieInstance->get_items() as $item) {
+    	\Log::info('here5');
     			var_dump($item);
     		}
     	} else {
+    	\Log::info('here6');
     		echo 'empty';
     	}
     })->middleware('guest');
