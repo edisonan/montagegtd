@@ -38,6 +38,8 @@ Route::group(['middleware' => ['web']], function () {
     		foreach ($simplePieInstance->get_items() as $item) {
     			var_dump($item);
     		}
+    	} else {
+    		echo 'empty';
     	}
     })->middleware('guest');
     
