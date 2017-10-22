@@ -65,6 +65,7 @@ $(document).ready(function () {
                      {{$article->feed->feed_name}}
                      </a>
                     	<div style="float:right">
+							<a href="#share" >[分享]</a>
                     		@if(!$is_feed)
                     		<a href="javascript:void(0)" feed_id="{{ $article->feed->id }}" class="feed_quick_sub">[添加订阅]</a>
                     		@endif
