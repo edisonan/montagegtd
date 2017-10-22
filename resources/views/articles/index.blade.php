@@ -331,7 +331,7 @@ $(document).ready(function () {
 										echo App\Http\Utils\CommonUtil::formatContentHtml($content);
 										?>
 									  </div>
-									  <p class="card-text text-right">
+									  <div class="card-text text-right">
 											<!-- share start -->
 											<p class="social-share" style="display:none" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"  data-mobile-sites="facebook,twitter,google,wechat,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
 												<a href="javascript:void(0);" class="social-share-icon icon-heart" class="" data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
@@ -342,7 +342,7 @@ $(document).ready(function () {
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif" title="稍后阅读"><img src="/img/icon/read_later.png" width="20px"/>Later</a>
 											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_star @if($articleSub->status == 'star') active @endif" title="加星"><img src="/img/icon/read_star.png" width="20px"/>Star</a>
 											<a href="javascript:void(0);" style="display:none" class="btn btn-outline-warning btn-sm view-all"><img src="/img/icon/read_more.png" width="30px"/>View All</a>
-									  </p>
+									  </div>
 									  @endif
 									</div>
 								  </div>
