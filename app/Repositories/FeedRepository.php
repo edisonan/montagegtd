@@ -90,7 +90,7 @@ class FeedRepository
     
     	//only add articles and update feed when results are found
     	if (!empty($simplePieInstance)) {
-    		$feedSubs = FeedSub::where('feed_id',$feed->id)->get();
+    		$feedSubs = FeedSub::where('feed_id',$feed->id)->where('status',1)->get();
     		
     		//set previous week
     		$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
@@ -166,7 +166,7 @@ class FeedRepository
     
     	\Log::info("Check Feed:".$feed->id.'|'.$feed->url);
     	
-    	$feedSubs = FeedSub::where('feed_id',$feed->id)->get();
+    	$feedSubs = FeedSub::where('feed_id',$feed->id)->where('status',1)->get();
     
     	$config = config('services.fanfou');
     	
