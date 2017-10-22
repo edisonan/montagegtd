@@ -204,7 +204,7 @@ $(document).ready(function () {
 	});
 	
 	$(".share_btn").click(function(){
-		$(this).parent().find(".social_share").toggle();
+		$(this).parent().find(".social-share").toggle();
 	});
 
 	$(".feed_quick_sub").click(function(){
