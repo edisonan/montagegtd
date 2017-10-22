@@ -333,7 +333,7 @@ $(document).ready(function () {
 									  </div>
 									  <div class="card-text text-right">
 											<!-- share start -->
-											<p class="social-share" style="display:none" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"  data-mobile-sites="facebook,twitter,google,wechat,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
+											<p class="social-share" style="display:none" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,weibo"  data-mobile-sites="facebook,twitter,google,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
 												<a href="javascript:void(0);" class="social-share-icon icon-heart" class="" data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
 											  </p>
 											<!-- share end -->
