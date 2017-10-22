@@ -229,7 +229,7 @@ $(document).ready(function () {
 		console.log(123);
 		var title = $(this).attr('data-title');
 		var url = $(this).attr('data-url');
-		location.href='/notes?add_content='+url;
+		window.open('/notes?add_content='+url);
 	});
 });
 </script>
