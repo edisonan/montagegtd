@@ -158,7 +158,6 @@ class ArticleController extends Controller
     	} else {
     		$page_count = 50;
     	}
-    	$page_params['status'] = $status;
     	 
     	if($request->has('feed_id')){
     		$articles = $this->articles->forUserByFeedId($request->user(), $request->feed_id,$need_page=true,$page_count);
