@@ -45,13 +45,12 @@ class ArticleSubRepository
      */
     public function forUserByCategoryStatusFeedId(User $user,string $status,$category_id,$need_page=false,$page_size=20)
     {
-		var_dump($category_id);
-    	$article = ArticleSub::where('user_id', $user->id)->whereIn('feed_id',function($query)  use($category_id){
-			var_dump($category_id);
+    	$article = ArticleSub::where('user_id', $user->id)
+		/*->whereIn('feed_id',function($query) use($category_id){
 			$query->select('id')
 			->from('feeds')
 			->where('category_id', $category_id);
-		})
+		})*/
     	->where('status',$status)
     	->orderBy('updated_at','desc');
     	if($need_page){
