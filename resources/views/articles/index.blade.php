@@ -240,7 +240,7 @@ $(document).ready(function () {
 			    			@foreach($nav_infos as $nav_id=>$nav_info)
 			    			<li role="presentation">
 			    				<span class="category_items">
-			    				<img src="/img/icon/unfold.png" width="30px" class="unfold_category_item"/><a href="{{ url('articles?category_id='.$nav_id.'&status='.$status) }}">{{ $nav_info['category_info']['category_name'] }}[{{count($nav_info['list'])}}]</a>
+			    				<img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="{{ url('articles?category_id='.$nav_id.'&status='.$status) }}">{{ $nav_info['category_info']['category_name'] }}[{{count($nav_info['list'])}}]</a>
 			    				</span>
 			    				@if(count($nav_info['list'])>0)
 			    					<ul class="category_item">
