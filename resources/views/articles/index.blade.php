@@ -333,9 +333,9 @@ $(document).ready(function () {
 									  </div>
 									  <p class="card-text text-right">
 											<!-- share start -->
-											<div class="social-share" style="display:none" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"  data-mobile-sites="facebook,twitter,google,wechat,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
+											<p class="social-share" style="display:none" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"  data-mobile-sites="facebook,twitter,google,wechat,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
 												<a href="javascript:void(0);" class="social-share-icon icon-heart" class="" data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
-											  </div>
+											  </p>
 											<!-- share end -->
 											 <a href="javascript:void(0)" target="_blank" class="btn btn-outline-secondary btn-sm share_btn" title="分享"><img src="/img/icon/share.png" width="20px"/>Share</a>
 											 <a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_read @if($articleSub->status == 'read') active @endif" title="已读"><img src="/img/icon/read_already.png" width="20px"/>Read</a>
