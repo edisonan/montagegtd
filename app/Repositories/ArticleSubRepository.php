@@ -45,7 +45,9 @@ class ArticleSubRepository
      */
     public function forUserByCategoryStatusFeedId(User $user,string $status,$category_id,$need_page=false,$page_size=20)
     {
-    	$article = ArticleSub::where('user_id', $user->id)->whereIn('feed_id',function($query){
+		var_dump($category_id);
+    	$article = ArticleSub::where('user_id', $user->id)->whereIn('feed_id',function($query,$category_id){
+			var_dump($category_id);
 			$query->select('id')
 			->from('feeds')
 			->where('category_id', $category_id);
