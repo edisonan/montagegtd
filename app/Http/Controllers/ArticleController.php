@@ -73,8 +73,9 @@ class ArticleController extends Controller
     	}
     	$page_params['status'] = $status;
 		
-		if($request->has('page_count') && is_int($request->page_count) && $request->page_count<500){
-    		$page_count = $request->page_count;
+		if($request->has('page_count')){
+    		$page_count = (int)$request->page_count;
+			$page_count = $page_count>0 && $page_count<=500?$page_count:50
     	} else {
     		$page_count = 50;
     	}
