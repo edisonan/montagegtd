@@ -194,8 +194,12 @@ $(document).ready(function () {
 		});
 	}
 
-	$(".category_items").click(function(){
-		$(this).parent().find(".category_item").toggle();
+	//$(".category_items").click(function(){
+	//	$(this).parent().find(".category_item").toggle();
+	//});
+	
+	$(".unfold_category_item").click(function(){
+		$(this).parent().parent().find(".category_item").toggle();
 	});
 
 	$(".feed_quick_sub").click(function(){
@@ -236,7 +240,7 @@ $(document).ready(function () {
 			    			@foreach($nav_infos as $nav_id=>$nav_info)
 			    			<li role="presentation">
 			    				<span class="category_items">
-			    				{{ $nav_info['category_info']['category_name'] }}[{{count($nav_info['list'])}}]
+			    				<img src="/imgs/icon/unfold.png" width="30px" class="unfold_category_item"/><a href="{{ url('articles?category_id='.$nav_id.'&status='.$status) }}">{{ $nav_info['category_info']['category_name'] }}[{{count($nav_info['list'])}}]</a>
 			    				</span>
 			    				@if(count($nav_info['list'])>0)
 			    					<ul class="category_item">

@@ -37,6 +37,27 @@ class ArticleSubRepository
     		return $article->get();
     	}
     }
+	/**
+     * Get all of the tasks for a given user.
+     *
+     * @param  User  $user
+     * @return Collection
+     */
+    public function forUserByCategoryStatusFeedId(User $user,string $status,$category_id,$need_page=false,$page_size=20)
+    {
+    	$article = ArticleSub::where('user_id', $user->id)->whereIn('feed_id',function($query){
+			$query->select('id')
+			->from('feeds')
+			->where('category_id', $category_id);
+		})
+    	->where('status',$status)
+    	->orderBy('updated_at','desc');
+    	if($need_page){
+    		return $article->paginate($page_size);
+    	} else {
+    		return $article->get();
+    	}
+    }
     
     public function forUserByStatusFeedId(User $user,string $status,$feed_id,$need_page=false,$page_size=20)
     {
