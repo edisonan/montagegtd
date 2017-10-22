@@ -75,10 +75,11 @@ class ArticleController extends Controller
 		
 		if($request->has('page_count') && is_int($request->page_count) && $request->page_count<500){
     		$page_count = $request->page_count;
+			echo $page_count;
     	} else {
     		$page_count = 50;
     	}
-    	$page_params['status'] = $status;
+    	$page_params['page_count'] = $page_count;
     	
     	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order asc,f.feed_order asc', [':user_id'=>$request->user()->id]);
     	
@@ -158,6 +159,7 @@ class ArticleController extends Controller
     	} else {
     		$page_count = 50;
     	}
+		$page_params['page_count'] = $page_count;
     	 
     	if($request->has('feed_id')){
     		$articles = $this->articles->forUserByFeedId($request->user(), $request->feed_id,$need_page=true,$page_count);
