@@ -224,6 +224,13 @@ $(document).ready(function () {
 		var article_sub_id = $(this).attr('article_sub_id');
 		$("#audio").attr("src","/article/record/"+article_sub_id);
 	});
+	
+	$(".icon-heart").click(function(){
+		console.log(123);
+		var title = $(this).attr('data-title');
+		var url = $(this).attr('data-url');
+		location.href='/notes?add_content='+url;
+	});
 });
 </script>
     <div class="container">
