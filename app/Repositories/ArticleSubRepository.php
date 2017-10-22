@@ -28,7 +28,6 @@ class ArticleSubRepository
      */
     public function forUserByStatus(User $user,string $status,$need_page=false,$page_size=30)
     {
-		echo $page_size;exit;
     	$article = ArticleSub::where('user_id', $user->id)
 		    	->where('status',$status)->orderBy('updated_at','desc');
     	
@@ -64,6 +63,7 @@ class ArticleSubRepository
     
     public function forUserByStatusFeedId(User $user,string $status,$feed_id,$need_page=false,$page_size=30)
     {
+		echo $page_size; exit;
     	$article = ArticleSub::where('user_id', $user->id)
     	->where('status',$status)
     	->where('feed_id',$feed_id)->orderBy('updated_at','desc');
