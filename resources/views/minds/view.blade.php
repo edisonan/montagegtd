@@ -77,8 +77,7 @@ $(document).ready(function () {
                 </div>
 
                 <div class="card-body row">
-					<div id="jsmind_container" class=" col-md-12">
-					</div>
+					
 					<div id="" class=" col-md-12">
 						<b id="mind_name"  style="margin-top:15px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
                         <div id="mind_content_show" style="margin:15px;"></div>
@@ -87,6 +86,9 @@ $(document).ready(function () {
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
 						
+					</div>
+
+                    <div id="jsmind_container" class=" col-md-12">
 					</div>
                 </div>
             </div>
