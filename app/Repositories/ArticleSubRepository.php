@@ -53,7 +53,7 @@ class ArticleSubRepository
 			->where('status', 1);
 		})
     	->where('status',$status);*/
-        $article = \DB::table('article_subs')
+        $article = \DB::table('article_subs')->with('articles')
        ->where(['article_subs.user_id'=>$user->id])
        ->where(['article_subs.status'=>$status])
        ->join('articles', 'articles.id', '=', 'article_subs.article_id')
