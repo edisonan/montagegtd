@@ -80,12 +80,13 @@ $(document).ready(function () {
 					<div id="jsmind_container" class=" col-md-12">
 					</div>
 					<div id="" class=" col-md-12">
-						<small id="mind_name" class="col-md-12 rowone">详细描述:{{$mind->name}}</small>
+						<b id="mind_name"  style="margin-top:15px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
+                        <div id="mind_content_show" style="margin:15px;"></div>
 						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
-						<div id="mind_content_show" style="margin-top:10px;"></div>
+						
 					</div>
                 </div>
             </div>
