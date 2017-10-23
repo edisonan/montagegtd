@@ -77,10 +77,10 @@ $(document).ready(function () {
                 </div>
 
                 <div class="card-body row">
-					<div id="jsmind_container" class=" col-md-7">
+					<div id="jsmind_container" class=" col-md-8">
 					</div>
 
-					<div id="" class=" col-md-5">
+					<div id="" class=" col-md-4">
 						<b id="mind_name"  style="margin-top:15px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
                         
 						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
