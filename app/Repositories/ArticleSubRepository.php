@@ -52,8 +52,7 @@ class ArticleSubRepository
 			->where('category_id', $category_id)
 			->where('status', 1);
 		})
-    	->where('status',$status)
-    	->orderBy('updated_at','desc');
+    	->where('status',$status);
     	if($need_page){
     		return $article->paginate($page_size);
     	} else {
