@@ -104,12 +104,12 @@ $(document).ready(function () {
         view:{
             hmargin:100,        // 思维导图距容器外框的最小水平距离
             vmargin:50,         // 思维导图距容器外框的最小垂直距离
-            line_width:2,       // 思维导图线条的粗细
+            line_width:1,       // 思维导图线条的粗细
             line_color:'#555'   // 思维导图线条的颜色
         },
         layout:{
             hspace:30,          // 节点之间的水平间距
-            vspace:20,          // 节点之间的垂直间距
+            vspace:10,          // 节点之间的垂直间距
             pspace:13           // 节点收缩/展开控制器的尺寸
         },
         shortcut:{
