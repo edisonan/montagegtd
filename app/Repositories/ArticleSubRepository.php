@@ -45,7 +45,7 @@ class ArticleSubRepository
      */
     public function forUserByCategoryStatusFeedId(User $user,string $status,$category_id,$need_page=false,$page_size=30)
     {
-    	$article = ArticleSub::where('user_id', $user->id)
+    	$article = ArticleSub::with('article')->where('user_id', $user->id)
 		->whereIn('feed_id', function($query) use($category_id){
 			$query->select('feed_id')
 			->from('feed_subs')
@@ -63,7 +63,7 @@ class ArticleSubRepository
     
     public function forUserByStatusFeedId(User $user,string $status,$feed_id,$need_page=false,$page_size=30)
     {
-    	$article = ArticleSub::where('user_id', $user->id)
+    	$article = ArticleSub::with('article')->where('user_id', $user->id)
     	->where('status',$status)
     	->where('feed_id',$feed_id)->orderBy('updated_at','desc');
     	if($need_page){
