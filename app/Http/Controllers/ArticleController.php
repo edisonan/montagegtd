@@ -120,8 +120,10 @@ class ArticleController extends Controller
     		$page_params['feed_id'] = $request->feed_id;
     		$feed_id = $request->feed_id;
     	} else if($request->has('category_id')){
+			\Log::info('sql start'.time());
 			$articleSubs = $this->articleSubs->forUserByCategoryStatusFeedId($request->user(), $status, $request->category_id, $need_page=true, $page_count);
-    		$page_params['category_id'] = $request->category_id;
+    		\Log::info('sql end'.time());
+			$page_params['category_id'] = $request->category_id;
     		$feed_id = $request->feed_id;
 		} else {
     		$articleSubs = $this->articleSubs->forUserByStatus($request->user(), $status, $need_page=true, $page_count);
