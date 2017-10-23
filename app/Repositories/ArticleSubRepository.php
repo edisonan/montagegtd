@@ -56,6 +56,7 @@ class ArticleSubRepository
         $article = \DB::table('article_subs')
        ->where(['article_subs.user_id'=>$user->id])
        ->where(['article_subs.status'=>$status])
+       ->join('articles', 'articles.id', '=', 'article_subs.article_id')
        ->leftJoin("feed_subs",'feed_subs.feed_id','=','article_subs.feed_id')
 	   ->where(['feed_subs.category_id'=>$category_id])
 	   ->where(['feed_subs.status'=>1]);
