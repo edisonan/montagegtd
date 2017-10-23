@@ -45,21 +45,24 @@ class ArticleSubRepository
      */
     public function forUserByCategoryStatusFeedId(User $user,string $status,$category_id,$need_page=false,$page_size=30)
     {
-    	/*$article = ArticleSub::with('article')->where('user_id', $user->id)
+    	$article = ArticleSub::with('article')->where('user_id', $user->id)
 		->whereIn('feed_id', function($query) use($category_id){
+            \Log::info('sub query start:'.time());
 			$query->select('feed_id')
 			->from('feed_subs')
 			->where('category_id', $category_id)
 			->where('status', 1);
+            \Log::info('sub query end:'.time());
 		})
-    	->where('status',$status);*/
+    	->where('status',$status);
+        /*
         $article = \DB::table('article_subs')->with('articles')
        ->where(['article_subs.user_id'=>$user->id])
        ->where(['article_subs.status'=>$status])
        ->join('articles', 'articles.id', '=', 'article_subs.article_id')
        ->leftJoin("feed_subs",'feed_subs.feed_id','=','article_subs.feed_id')
 	   ->where(['feed_subs.category_id'=>$category_id])
-	   ->where(['feed_subs.status'=>1]);
+	   ->where(['feed_subs.status'=>1]);*/
        
     	if($need_page){
     		return $article->paginate($page_size);
