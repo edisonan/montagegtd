@@ -65,7 +65,7 @@ https://gitee.com/accacc/task
 录入网址：http://task.congcong.us/feeds?url=%s
 ```
 
-- 快速分享，chrome浏览器安装 [右键搜] (https://chrome.google.com/webstore/detail/context-menus/phlfmkfpmphogkomddckmggcfpmfchpn)
+- 快速分享，chrome浏览器安装 [右键搜](https://chrome.google.com/webstore/detail/context-menus/phlfmkfpmphogkomddckmggcfpmfchpn)
 ```
 右键“右键搜标识”选择选项，自定义中进行设置：
 页面菜单：https://task.congcong.us/notes?add_content=%s
