@@ -1,4 +1,4 @@
-# Montage GTD 一个基于Laravel 集RSS阅读、思维导图、番茄工作法于一体的GTD Web site
+# Montage GTD 一个基于Laravel 集RSS阅读、思维导图、番茄工作法于一体的GTD Web应用
 
 ![avatar](public/img/index.jpg)
 
