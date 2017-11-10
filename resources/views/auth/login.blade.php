@@ -14,7 +14,7 @@
                 		登录
                 	@endif
                 	<div style="float: right">
-                		<a class="" href="{{ url('/register') }}"><b>[一键注册]</b></a>
+                		<a class="" href="{{ url('/register') }}"><img src="/img/icon/quick.png" width="25px" class=""><span style="color: #007bff;width: 50px;" class="">快速注册</span></a>
                 	</div>
                 </div>
                 <div class="card-body">
