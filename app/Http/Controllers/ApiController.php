@@ -65,8 +65,8 @@ class ApiController extends Controller
 //     	$user = $request->user();
     	$user = new User();$user->id = 1;//TODO 模拟
     	
-    	if($request->has('page') && is_int($request->page)){
-    		$page = $request->page;
+    	if($request->has('page')){
+    		$page = (int)$request->page;
     	} else {
     		$page = 0;
     	}
@@ -90,7 +90,7 @@ class ApiController extends Controller
     	}
     	
     	$sql .= ' order by a.updated_at desc ';
-    	$sql .= ' limit '. ($page*20) . ',10';
+    	$sql .= ' limit '. ($page*10) . ',10';
     	$articles = DB::select($sql, $sql_param);
     	
     	$resp = $this->responseJson(self::OK_CODE, $articles);
