@@ -184,7 +184,7 @@ class ApiController extends Controller
         	$tagNote->create(array('tag_id'=>$tag->id, 'note_id'=>$note->id));
         }
     	 
-    	$resp = $this->responseJson(self::OK_CODE, $articles);
+    	$resp = $this->responseJson(self::OK_CODE, $note);
     	return response($resp);
     }
     
