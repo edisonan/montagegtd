@@ -201,6 +201,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/api/wechat/notes', 'ApiController@notes');
     Route::get('/api/wechat/addNote', 'ApiController@addNote');
     Route::get('/api/wechat/articleSubStatus', 'ApiController@articleSubStatus');
+    Route::get('/api/wechat/articleSubStatus/{articleSub}', 'ApiController@articleSubStatus');
 
     Route::auth();
 
