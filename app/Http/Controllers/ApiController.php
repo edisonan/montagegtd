@@ -141,4 +141,51 @@ class ApiController extends Controller
     	return response($resp);
     }
     
+    public function addNote()
+    {
+    	//     	$user = $request->user();
+    	$user = new User();$user->id = 1;//TODO 模拟
+    	 
+    	$this->validate($request, [
+            'name' => 'required',
+            'status' => 'required',
+        ]);
+    	
+    	if($request->status == false){
+    		$request->status = 2;
+    	} else {
+    		$request->status = 1;
+    	}
+
+        $name = htmlspecialchars($request->name);
+        $name = str_replace('&lt;code&gt;', '<code>', $name);
+        $name = str_replace('&lt;/code&gt;', '</code>', $name);
+        $name = nl2br($name);
+        $note = $request->user()->notes()->create([
+            'name' => $name,
+            'record_path' => '',
+            'image_path' => '',
+            'status' => $request->status,
+        ]);
+        
+        preg_match_all('/#(.*?)#/i',$request->name,$match);
+        foreach ($match[0] as $item){
+        	$tag_name = trim($item,'#');
+        	if(empty($tag_name)){
+        		continue;
+        	}
+        	
+        	$tag = $this->tags->forTagName($tag_name);
+        	if(empty($tag)){
+        		$tag = Tag::create(array('name'=>$tag_name));
+        	}
+        	
+        	$tagNote = new NoteTagMap();
+        	$tagNote->create(array('tag_id'=>$tag->id, 'note_id'=>$note->id));
+        }
+    	 
+    	$resp = $this->responseJson(self::OK_CODE, $articles);
+    	return response($resp);
+    }
+    
 }
