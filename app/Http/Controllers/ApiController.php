@@ -115,6 +115,14 @@ class ApiController extends Controller
     	} else {
     		echo 'error';exit;
     	}
+    	
+    	if($request->has('article_sub_id')){
+    		$article_sub_id = $request->article_sub_id;
+    	} else {
+    		$article_sub_id = '';
+    	}
+    	 
+    	$article['article_sub_id'] = $article_sub_id;
     	 
     	$resp = $this->responseJson(self::OK_CODE, $article);
     	return response($resp);
