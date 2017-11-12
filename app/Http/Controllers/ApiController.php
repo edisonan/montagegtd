@@ -37,7 +37,7 @@ class ApiController extends Controller
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
     {
-        $this->middleware('auth', ['except' => ['wechatlogin','articles','notes','explorer','articleview','addNote']]);
+        $this->middleware('auth', ['except' => ['wechatlogin','articles','notes','explorer','articleview','addNote','articleSubStatus']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;
@@ -74,8 +74,9 @@ class ApiController extends Controller
     	if($request->has('status')){
     		$status = $request->status;
     	} else {
-    		$status = 'unread';
+    		$status = 'read_later';
     	}
+    	
     	$sql = 'select b.subject as title,b.image_url as image_url,b.published as published,a.id as article_sub_id, b.id as article_id,c.id as feed_id,c.feed_name as feed_name from article_subs a,articles b,feeds c where b.subject != "" and a.user_id=:user_id and a.article_id = b.id and b.feed_id = c.id and a.status=:status';
     	$sql_param = [':user_id'=>$user->id,':status'=>$status];
     	
@@ -191,6 +192,49 @@ class ApiController extends Controller
         }
     	 
     	$resp = $this->responseJson(self::OK_CODE, $note);
+    	return response($resp);
+    }
+    
+    public function articleSubStatus(Request $request,ArticleSub  $articleSub)
+    {
+    	//     	$user = $request->user();
+    	$user = new User();$user->id = 1;//TODO 模拟
+    	
+    	if($request->has('ids')){
+    		$id_arr = explode(',', $request->ids);
+    		foreach ($id_arr as $id){
+    			$articleSub = ArticleSub::where('id',$id)->where('user_id',$user->id)->first();
+    			if(empty($articleSub)){
+    				continue;
+    			} else {
+    				if($articleSub->status == 'unread'){
+    					$articleSub->status = 'read';
+    					$articleSub->updated_at = date('Y-m-d H:i:s');
+    					$articleSub->update();
+    				}
+    			}
+    		}
+    	} else if($request->has('feed_id')) {
+    		$articleSubs = ArticleSub::where('user_id',$user->id)->where('status','unread')->where('feed_id',$request->feed_id)->get();
+    		foreach ($articleSubs as $articleSub){
+    			if(empty($articleSub)){
+    				continue;
+    			} else {
+    				$articleSub->status = 'read';
+    				$articleSub->updated_at = date('Y-m-d H:i:s');
+    				$articleSub->update();
+    			}
+    		}
+    	} else {
+    		$this->authorize('destroy', $articleSub);
+    		if(in_array($request->status,array('read','unread', 'read_later', 'star'))){
+    			$articleSub->status = $request->status;
+    			$articleSub->updated_at = date('Y-m-d H:i:s');
+    			$articleSub->update();
+    		}
+    	}
+    
+    	$resp = $this->responseJson(self::OK_CODE,$articleSub->article);
     	return response($resp);
     }
     
