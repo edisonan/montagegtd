@@ -199,6 +199,8 @@ class ArticleController extends Controller
     		$article_sub_id = '';
     	}
     	
+    	$article['article_sub_id'] = $article_sub_id;
+    	
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE,$article);
         	return response($resp);
