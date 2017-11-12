@@ -193,14 +193,6 @@ class ArticleController extends Controller
     		}
     	}
     	
-    	if($request->has('article_sub_id')){
-    		$article_sub_id = $request->article_sub_id;
-    	} else {
-    		$article_sub_id = '';
-    	}
-    	
-    	$article['article_sub_id'] = $article_sub_id;
-    	
         if ($request->ajax() || $request->wantsJson()) {
         	$resp = $this->responseJson(self::OK_CODE,$article);
         	return response($resp);
@@ -208,7 +200,6 @@ class ArticleController extends Controller
         	return view('articles.view', [
     			'article' => $article,
         		'is_feed' => $is_feed,
-        		'article_sub_id' => $article_sub_id,
     		]);
         }
     }
