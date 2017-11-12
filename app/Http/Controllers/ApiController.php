@@ -128,7 +128,7 @@ class ApiController extends Controller
     	return response($resp);
     }
     
-    public function notes()
+    public function notes(Request $request)
     {
  //     	$user = $request->user();
     	$user = new User();$user->id = 1;//TODO 模拟
@@ -141,7 +141,7 @@ class ApiController extends Controller
     	return response($resp);
     }
     
-    public function addNote()
+    public function addNote(Request $request)
     {
     	//     	$user = $request->user();
     	$user = new User();$user->id = 1;//TODO 模拟
