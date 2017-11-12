@@ -85,8 +85,10 @@
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
 	                    @endif
 	                    @if (Auth::guest())
-	                        <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}" style="color:#E85205">登录</a></li>
+	                        <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}" style="color:#E85205">登录/注册</a></li>
+	                        <!-- 
 	                        <li class="nav-item"><a class="nav-link" href="{{ url('/register') }}" style="color:#9BD6C5">注册</a></li>
+	                         -->
 	                    @else
 	                        <li class="nav-item dropdown">
 	                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">

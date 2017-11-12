@@ -70,7 +70,7 @@
 
                         <div class="form-group row">
                             <div class="col-md-6  mx-auto">
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-outline-info">
                                     <i class="fa fa-btn fa-user"></i>注册
                                 </button>
                             </div>
@@ -141,7 +141,7 @@
 
                         <div class="form-group row">
                             <div class="col-md-6  mx-auto">
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-outline-info">
                                     <i class="fa fa-btn fa-sign-in"></i>登录
                                 </button>
 
