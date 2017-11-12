@@ -84,7 +84,7 @@ class ApiController extends Controller
     	}
     	
     	$sql .= ' order by a.updated_at desc ';
-    	$sql .= ' limit '. ($page*20) . ',20';
+    	$sql .= ' limit '. ($page*20) . ',5';
     	$articles = DB::select($sql, $sql_param);
     	
     	$resp = $this->responseJson(self::OK_CODE, $articles);
