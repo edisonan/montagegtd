@@ -7,7 +7,7 @@
     <div class="row">
     	<div class="col-md-6">
             <div class="card">
-                <div class="card-header">注册</div>
+                <div class="card-header">快速注册</div>
                 <div class="card-body">
                     <form class="form-horizontal" role="form" method="POST" action="{{ url('/register') }}">
                         {!! csrf_field() !!}
@@ -83,14 +83,19 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
+                	<!-- 
                 	@if(isset($_SERVER['HTTP_REFERER']))
                 		登陆后将返至上页<a title="{{ $_SERVER['HTTP_REFERER'] }}" href="javascript:void(0)">?</a>
                 	@else
                 		登录
                 	@endif
+                	 -->
+                	登录
+                	<!-- 
                 	<div style="float: right">
                 		<a class="" href="{{ url('/register') }}"><img src="/img/icon/quick.png" width="25px" class=""><span style="color: #007bff;width: 50px;" class="">快速注册</span></a>
                 	</div>
+                	 -->
                 </div>
                 <div class="card-body">
                     <form class="form-horizontal" role="form" method="POST" action="{{ url('/login') }}">
