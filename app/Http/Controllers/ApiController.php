@@ -226,7 +226,9 @@ class ApiController extends Controller
     			}
     		}
     	} else {
-    		$this->authorize('destroy', $articleSub);
+    		if($articleSub->user_id != $user->id){
+    			echo 'error user!';exit;
+    		}
     		if(in_array($request->status,array('read','unread', 'read_later', 'star'))){
     			$articleSub->status = $request->status;
     			$articleSub->updated_at = date('Y-m-d H:i:s');
