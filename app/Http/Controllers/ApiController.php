@@ -161,7 +161,7 @@ class ApiController extends Controller
         $name = str_replace('&lt;code&gt;', '<code>', $name);
         $name = str_replace('&lt;/code&gt;', '</code>', $name);
         $name = nl2br($name);
-        $note = $request->user()->notes()->create([
+        $note = $user->notes()->create([
             'name' => $name,
             'record_path' => '',
             'image_path' => '',
