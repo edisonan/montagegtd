@@ -84,7 +84,7 @@ class ApiController extends Controller
     	}
     	
     	$sql .= ' order by a.updated_at desc ';
-    	$sql .= ' limit '. ($page*20) . ',5';
+    	$sql .= ' limit '. ($page*20) . ',10';
     	$articles = DB::select($sql, $sql_param);
     	
     	$resp = $this->responseJson(self::OK_CODE, $articles);
@@ -133,7 +133,7 @@ class ApiController extends Controller
  //     	$user = $request->user();
     	$user = new User();$user->id = 1;//TODO 模拟
     	
-    	$sql = 'select name,record_path,image_path,created_at from notes order by updated_at desc limit 10';
+    	$sql = 'select n.name as name,n.record_path as record_path,n.image_path as image_path,n.created_at as created_at,u.name as user_name from notes n,users u where n.user_id=u.id order by updated_at desc limit 10';
     	$sql_param = [];
     	$articles = DB::select($sql, $sql_param);
     	
