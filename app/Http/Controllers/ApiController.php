@@ -96,7 +96,7 @@ class ApiController extends Controller
     	$articles = DB::select($sql, $sql_param);
     	
     	foreach ($articles as $key=>$val){
-    		$val['published'] = CommonUtil::prettyDate($val['published']);
+    		$val->published = CommonUtil::prettyDate($val->published);
     		$articles[$key] = $val;
     	}
     	
