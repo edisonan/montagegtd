@@ -18,6 +18,7 @@ use DB;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
 use App\User;
+use App\Http\Utils\CommonUtil;
 
 class ApiController extends Controller
 {
@@ -93,6 +94,11 @@ class ApiController extends Controller
     	$sql .= ' order by a.updated_at desc ';
     	$sql .= ' limit '. ($page*10) . ',10';
     	$articles = DB::select($sql, $sql_param);
+    	
+    	foreach ($articles as $key=>$val){
+    		$val['published'] = CommonUtil::prettyDate($val['published']);
+    		$articles[$key] = $val;
+    	}
     	
     	$resp = $this->responseJson(self::OK_CODE, $articles);
     	return response($resp);

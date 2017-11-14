@@ -157,4 +157,35 @@ class CommonUtil{
 		 }
 		 return $html;
 	}
+	
+	public static function prettyDate($dateStr){
+		$minute = 1000 * 60;
+		$hour = minute * 60;
+		$day = hour * 24;
+		$halfamonth = day * 15;
+		$month = day * 30;
+		
+		$diff = time()-strtotime($dateStr);
+		if($diff < 0){
+			return '';
+		}
+		
+		$monthC = $diff / $month;
+		$weekC = $diff / (7 * $day);
+		$dayC = $diff / $day;
+		$hourC = $diff / $hour;
+		$minC = $diff / $minute;
+		
+		if($monthC >= 1){
+			return (int)$monthC."个月前";
+		} else if($dayC >= 1){
+			return (int)$dayC.'天前';
+		} else if($hourC >= 1){
+			return (int)$hourC.'个小时前';
+		} else if($minC >= 1){
+			return (int)$minC.'分钟前';
+		} else {
+			return '刚刚';
+		}
+	}
 }
