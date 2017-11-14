@@ -127,7 +127,7 @@ class ApiController extends Controller
      */
     public function explorer(Request $request)
     {
-    	$sql = 'select feed_name,feed_desc,favicon from feeds where is_recommend = 1 order by rand() limit 10';
+    	$sql = 'select id,feed_name,feed_desc,favicon from feeds where is_recommend = 1 order by rand() limit 10';
     	$sql_param = [];
     	$articles = DB::select($sql, $sql_param);
     	 
