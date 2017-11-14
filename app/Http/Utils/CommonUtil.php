@@ -159,7 +159,7 @@ class CommonUtil{
 	}
 	
 	public static function prettyDate($dateStr){
-		$minute = 1000 * 60;
+		$minute = 60;
 		$hour = $minute * 60;
 		$day = $hour * 24;
 		$halfamonth = $day * 15;
