@@ -160,10 +160,10 @@ class CommonUtil{
 	
 	public static function prettyDate($dateStr){
 		$minute = 1000 * 60;
-		$hour = minute * 60;
-		$day = hour * 24;
-		$halfamonth = day * 15;
-		$month = day * 30;
+		$hour = $minute * 60;
+		$day = $hour * 24;
+		$halfamonth = $day * 15;
+		$month = $day * 30;
 		
 		$diff = time()-strtotime($dateStr);
 		if($diff < 0){
