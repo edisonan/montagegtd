@@ -14,6 +14,8 @@
 		  img{
 			      max-width: 75%;
 		  }
+		  
+		  .mark{position: absolute;display: none;}
 </style>
 <script src="/js/lazyload.min.js"></script>
 <script type="text/javascript" charset="utf-8">
@@ -44,7 +46,72 @@ $(document).ready(function () {
 		location.href='/notes?add_content='+url;
 	});
 	
+	$('.card-text').mouseup(function(ev){//设定一个onmouseup事件
+		
+		var ev = ev || window.event;
+		//var left = ev.screenX - ev.offsetX;
+		//var top = ev.screenY;
+		
+		   var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+            var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+            var left =    scrollX;
+            var top =  scrollY;
+		
+		console.log('************');
+		
+		console.log(scrollX, scrollY);  
+		console.log(this.offsetLeft, this.offsetTop);  
+		console.log('++++++++++');
+		console.log(ev.offsetX, ev.offsetY);  
+				console.log(ev.clientX, ev.clientY);  
+				console.log(ev.pageX, ev.pageY);  
+				console.log(ev.screenX, ev.screenY);  
+				console.log(left, top);  
+		
+		if(selectText().length>10){
+			setTimeout(function(){//设定一个定时器
+				$(".mark").css('display','block'); 
+				$(".mark").css('left', left + 'px'); 
+				$(".mark").css('top',top + 'px'); 
+			},100);
+		}
+		else{
+			$(".mark").css('display','none'); 
+		}
+	});
+	
+	$('.card-text').click(function(ev){
+		var ev = ev || window.event;
+		ev.cancelBubble = true;
+	});
+	
+	$(document).click(function(){
+		$(".mark").css('display','none'); 
+	});
+
+	$(".mark").click(function(){
+		alert(selectText());
+	});
+	
 });
+
+function selectText(){
+		if(document.selection){ //IE浏览器下
+			return document.selection.createRange().text;//返回选中的文字
+		}
+		else{  //非IE浏览器下
+			return window.getSelection().toString();//返回选中的文字
+		}
+	}
+
+/**
+$(window).load(function() {
+	
+	
+	
+	
+});
+*/
 </script>
     <div class="container">
     
@@ -88,7 +155,13 @@ $(document).ready(function () {
 						$content = $article->content; 
 						echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
 						?>
+						 
 					  </div>
+					  
+					  <!-- 标注 -->
+					  <div class="mark"><img src="/img/icon/mark.png" width="30px" alt="mark"></div>
+					 
+					  
 					  <p class="card-text text-right">
 						  <a id="share" name="share"></a>
 						  <div class="social-share" style="float:right" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"  data-mobile-sites="facebook,twitter,google,wechat,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
