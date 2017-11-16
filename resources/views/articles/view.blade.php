@@ -15,7 +15,7 @@
 			      max-width: 75%;
 		  }
 		  
-		  .mark{position: absolute;display: none;}
+		  #mark{position: absolute;display:none}
 </style>
 <script src="/js/lazyload.min.js"></script>
 <script type="text/javascript" charset="utf-8">
@@ -46,37 +46,33 @@ $(document).ready(function () {
 		location.href='/notes?add_content='+url;
 	});
 	
-	$('.card-text').mouseup(function(ev){//设定一个onmouseup事件
+	var img = document.getElementById("mark")
+	
+	$(document).mouseup(function(ev){//设定一个onmouseup事件
 		
-		var ev = ev || window.event;
-		//var left = ev.screenX - ev.offsetX;
-		//var top = ev.screenY;
+		   var ev = ev || window.event;
 		
 		   var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
-            var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
-            var left =    scrollX;
-            var top =  scrollY;
+           var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+		   
+		   var pagex = ev.pageX||ev.clientX+scrollLeft();
+           var pagey = ev.pageY||ev.clientY+scrollTop();
+
+           var left = pagex - img.offsetWidth/2+"px";
+           var top = pagey - img.offsetHeight/2+"px"
 		
-		console.log('************');
-		
-		console.log(scrollX, scrollY);  
-		console.log(this.offsetLeft, this.offsetTop);  
-		console.log('++++++++++');
-		console.log(ev.offsetX, ev.offsetY);  
-				console.log(ev.clientX, ev.clientY);  
-				console.log(ev.pageX, ev.pageY);  
-				console.log(ev.screenX, ev.screenY);  
-				console.log(left, top);  
-		
-		if(selectText().length>10){
-			setTimeout(function(){//设定一个定时器
-				$(".mark").css('display','block'); 
-				$(".mark").css('left', left + 'px'); 
-				$(".mark").css('top',top + 'px'); 
-			},100);
-		}
+			if(selectText().length>10){
+				setTimeout(function(){//设定一个定时器
+					//$("#mark").css('display','block'); 
+					//$("#mark").css('left', left + 'px'); 
+					//$("#mark").css('top',top + 'px'); 
+					img.style.display="block";//鼠标的坐标-图片的坐标除2那就使图片中间
+					img.style.left=pagex-img.offsetWidth/2+"px";//鼠标的坐标-图片的坐标除2那就使图片中间
+					img.style.top=pagey-img.offsetHeight/2+"px"//鼠标的坐标-图片的坐标除2那就使图片中间
+				},100);
+			}
 		else{
-			$(".mark").css('display','none'); 
+			$("#mark").css('display','none'); 
 		}
 	});
 	
@@ -86,11 +82,19 @@ $(document).ready(function () {
 	});
 	
 	$(document).click(function(){
-		$(".mark").css('display','none'); 
+		$("#mark").css('display','none'); 
 	});
 
-	$(".mark").click(function(){
-		alert(selectText());
+	$("#mark").click(function(){
+		$.post("{{ url('/article/mark') }}",{"article_id":{{ $article->id }},content:selectText(),"_token":"{{ csrf_token() }}"},function(result){
+			result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert(result_arr.msg);
+			} else {
+				alert(result_arr.msg);
+				$("#mark").css('display','none'); 
+			}
+		});
 	});
 	
 });
@@ -105,14 +109,30 @@ function selectText(){
 	}
 
 /**
-$(window).load(function() {
-	
-	
-	
-	
-});
+window.onload=function(){
+            //需求：鼠标在文档上移动，小天使就跟随移动;
+            //思路：获取鼠标在页面上的坐标，赋值给小天使，用鼠标移动事件;
+            //有了鼠标移动事件(onmousemove)，一般会替代定时器一部分功能；
+
+            var img = document.getElementById("mark")
+
+            document.onmousemove=function(event){
+                var event=event||window.event//获取鼠标坐标  兼容写法；
+                var pagex=event.pageX||event.clientX+scrollLeft();
+                var pagey=event.pageY||event.clientY+scrollTop();
+				
+				console.log(pagex + ' ' + pagey);
+
+                img.style.display="block";//鼠标的坐标-图片的坐标除2那就使图片中间
+                img.style.left=pagex-img.offsetWidth/2+"px";//鼠标的坐标-图片的坐标除2那就使图片中间
+                img.style.top=pagey-img.offsetHeight/2+"px"//鼠标的坐标-图片的坐标除2那就使图片中间
+
+            }
+        }
 */
 </script>
+	
+	
     <div class="container">
     
         <div class=" mx-auto col-md-8">
@@ -150,7 +170,7 @@ $(window).load(function() {
 				      @endif
 					  <p class="card-text"><small class="text-muted">来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
 					  
-					  <div class="card-text post-text">
+					  <div class="card-text post-text" id="card-text">
 						<?php 
 						$content = $article->content; 
 						echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
@@ -158,10 +178,8 @@ $(window).load(function() {
 						 
 					  </div>
 					  
-					  <!-- 标注 -->
-					  <div class="mark"><img src="/img/icon/mark.png" width="30px" alt="mark"></div>
-					 
 					  
+
 					  <p class="card-text text-right">
 						  <a id="share" name="share"></a>
 						  <div class="social-share" style="float:right" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"  data-mobile-sites="facebook,twitter,google,wechat,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
@@ -170,10 +188,15 @@ $(window).load(function() {
 					  </p>
 					</div>
 				  </div>
+				  
+				 
 
             </div>
 
         </div>
+		<!-- 标注 -->
+						<img src="/img/icon/mark.png" width="30px" alt="mark" id="mark">
+		
     </div>
 	<script src="/js/social-share.js"></script>
 	<script src="/js/qrcode.js"></script>

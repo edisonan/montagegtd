@@ -147,6 +147,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');
     Route::get('/article/list', 'ArticleController@list');
+    Route::post('/article/mark', 'ArticleController@mark');
     Route::get('/article/view/{article}', 'ArticleController@view');
     Route::get('/articles/status/{articleSub}', 'ArticleController@status');
     Route::get('/articles/allstatus', 'ArticleController@status');

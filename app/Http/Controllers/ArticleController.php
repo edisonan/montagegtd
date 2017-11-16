@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Category;
 use App\Repositories\CategoryRepository;
 use App\Article;
+use App\ArticleMark;
 use App\Repositories\ArticleRepository;
 use App\Feed;
 use App\ArticleSub;
@@ -313,6 +314,33 @@ class ArticleController extends Controller
         } else {
         	return redirect('/articles')->with('message', 'IT WORKS!');
         }
+    }
+	
+	
+	public function mark(Request $request)
+    {
+        $this->validate($request, [
+            'content' => 'required',
+            'article_id' => 'required',
+        ]);
+		
+		$article = Article::where('user_id', $request->user()->id)
+    	->where('id',$request->article_id)
+    	->first();
+		
+		if(empty($article)){
+			echo 'error article_id';
+			exit;
+		}
+		
+		$articleMark = new ArticleMark();
+		$articleMark->user_id = $request->user()->id;
+		$articleMark->article_id = $request->article_id;
+		$articleMark->content = $request->content;
+		$articleMark->save();
+
+		$resp = $this->responseJson(self::OK_CODE,null,'标注成功');
+		return response($resp);
     }
     
     private function sortFeed($feeds){
