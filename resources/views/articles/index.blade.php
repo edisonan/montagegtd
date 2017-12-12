@@ -53,7 +53,8 @@
 
 		  .post-text{
 			padding: 10px;
-			font-size: 20px;
+			line-height: 1.8;
+			//font-size: 20px;
 		  }
 
 		  img{
