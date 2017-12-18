@@ -56,7 +56,7 @@
 		    Notification.requestPermission();
 		  else {
 		    var notification = new Notification('蒙太奇-专业GTD,剪辑你自己的生活', {
-		      icon: 'http://congcong.us/favicon.ico',
+		      icon: 'https://congcong.us/favicon.ico',
 		      body: message,
 		    });
 
