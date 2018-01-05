@@ -18,21 +18,17 @@ class HomeController extends Controller
             $content->header('Dashboard');
             $content->description('Description...');
 
-            $content->row(Dashboard::title());
+            //$content->row(Dashboard::title());
 
             $content->row(function (Row $row) {
 
-                $row->column(4, function (Column $column) {
-                    $column->append(Dashboard::environment());
-                });
+                $row->column(4, '今日新增用户');
+                $row->column(4, '今日新增订阅');
+                $row->column(4, '今日新增番茄');
 
-                $row->column(4, function (Column $column) {
-                    $column->append(Dashboard::extensions());
-                });
-
-                $row->column(4, function (Column $column) {
-                    $column->append(Dashboard::dependencies());
-                });
+                //$row->column(4, function (Column $column) {
+                //    $column->append(Dashboard::extensions());
+                //});
             });
         });
     }
