@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html xmlns:wb="http://open.weibo.com/wb">
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -54,7 +53,6 @@
 		    font-family: NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,"Microsoft Yahei","Hiragino Sans GB","WenQuanYi Micro Hei",sans-serif;
 		}
     </style>
-    <script src="http://tjs.sjs.sinajs.cn/open/api/js/wb.js" type="text/javascript" charset="utf-8"></script>
 </head>
 
 <body id="app-layout">
