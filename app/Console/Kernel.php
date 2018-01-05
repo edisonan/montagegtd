@@ -64,4 +64,17 @@ class Kernel extends ConsoleKernel
     	$schedule->command('feed_type3')->everyTenMinutes();
     	$schedule->command('kindle_push')->dailyAt('18:00');
     }
+	
+	
+    /**
+     * Register the commands for the application.
+     *
+     * @return void
+     */
+    protected function commands()
+    {
+        $this->load(__DIR__.'/Commands');
+
+        require base_path('routes/console.php');
+    }
 }

@@ -59,7 +59,7 @@ class PomoController extends Controller
     public function start(Request $request)
     {
     	$request->session()->forget('rest_start_time');
-    	
+		
     	$request->user()->pomos()->create([
     		'name' => $request->has('name')?$request->name:'',
     		'status'=> 1,
