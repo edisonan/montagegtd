@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html xmlns:wb="http://open.weibo.com/wb">
 <html lang="en">
 <head>
     <meta charset="utf-8">
