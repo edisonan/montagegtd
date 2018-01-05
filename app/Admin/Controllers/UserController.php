@@ -77,9 +77,9 @@ class UserController extends Controller
 
             $grid->name();
             $grid->email();
-            $grid->created_at();
-            $grid->updated_at();
-			$grid->last_login();
+            $grid->created_at()->sortable();
+            $grid->updated_at()->sortable();
+			$grid->last_login()->sortable();
 			
 			$grid->disableActions();
 			$grid->disableRowSelector();
