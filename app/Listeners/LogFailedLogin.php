@@ -26,7 +26,7 @@ class LogFailedLogin
      */
     public function handle(Failed $event)
     {
-        $email = $event->user->email;
+        $email = isset($event->user->email)?$event->user->email:'';
         Log::info('Login Failed: '.$email);
     }
 }
