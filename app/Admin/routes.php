@@ -12,5 +12,7 @@ Route::group([
 
     $router->get('/', 'HomeController@index');
 	$router->resource('demo/users', UserController::class);
+	$router->resource('demo/feeds', FeedController::class);
+	$router->resource('demo/feedsubs', FeedSubController::class);
 
 });
