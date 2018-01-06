@@ -10,10 +10,9 @@ https://gitee.com/accacc/task
 
 ## 技术栈
 基于php nginx mysql composer等工具
-- php: >=5.5.9
-- laravel: 5.2.*
-- develpr/phindle:dev-dev
-- eventviva/php-image-resize:~1.5
+- php: >=7.0.0
+- laravel: 5.5.*
+- mysql:>=5.5.*
 
 ## 功能特性
 
