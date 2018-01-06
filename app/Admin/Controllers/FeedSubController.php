@@ -76,6 +76,8 @@ class FeedSubController extends Controller
             $grid->id('ID')->sortable();
 
             $grid->created_at();
+            $grid->created_at();
+            $grid->created_at();
             $grid->updated_at();
         });
     }

@@ -79,7 +79,13 @@ class FeedController extends Controller
             $grid->feed_name();
             $grid->url();
             $grid->sub_count();
-            $grid->is_recommend();
+            $grid->is_recommend()->display(function ($is_recommend) {
+			    return $is_recommend == 1?'是':'否';
+			})->sortable();
+			
+            $grid->status()->display(function ($status) {
+			    return $status == 1?'启用':'关闭';
+			})->sortable();
             $grid->created_at();
             $grid->updated_at();
         });
@@ -95,6 +101,11 @@ class FeedController extends Controller
         return Admin::form(Feed::class, function (Form $form) {
 
             $form->display('id', 'ID');
+            $form->display('is_recommend', 'is_recommend');
+            $form->display('lock_name', 'lock_name');
+            $form->display('orders', 'orders');
+            $form->display('type', 'type');
+            $form->display('status', 'status');
 
             $form->display('created_at', 'Created At');
             $form->display('updated_at', 'Updated At');
