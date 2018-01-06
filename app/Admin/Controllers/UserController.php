@@ -86,6 +86,21 @@ class UserController extends Controller
 			    return \App\Http\Utils\CommonUtil::prettyDate($last_login);
 			})->sortable();
 			
+			$grid->column('活跃等级')->display(function () {
+				$curr_time = time();
+				$created_at_time = strtotime($this->created_at);
+				$last_login_time = strtotime($this->last_login);
+				
+				if($curr_time - strtotime($this->created_at) < 7*3600){
+					return '最近一周注册';
+				} else if($curr_time - $last_login_time < 7*3600){
+					return '最近一周活跃';
+				} else {
+					return $last_login_time-$created_at_time > 3600?'不活跃':'不活跃(曾活跃过)';
+				}
+			});
+			
+			
 			$grid->disableActions();
 			$grid->disableRowSelector();
 			$grid->disableExport();
