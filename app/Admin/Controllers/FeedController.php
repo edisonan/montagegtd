@@ -75,7 +75,7 @@ class FeedController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->user()->name('添加者');
+//             $grid->user()->name('添加者');
             $grid->feed_name('名称');
             $grid->url('地址');
             $grid->sub_count('订阅数')->sortable();
