@@ -19,20 +19,20 @@ class Category extends Model
 		return $this->hasMany(FeedSub::class)->orderBy('created_at');
 	}
 
-	public function getUnreadCountAttribute()
-	{
-		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
-	}
+// 	public function getUnreadCountAttribute()
+// 	{
+// 		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
+// 	}
 
-	public function getReadCountAttribute()
-	{
-		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
-	}
+// 	public function getReadCountAttribute()
+// 	{
+// 		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->where('articles.status', 'unread')->count();
+// 	}
 
-	public function getTotalCountAttribute()
-	{
-		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->count();
-	}
+// 	public function getTotalCountAttribute()
+// 	{
+// 		return DB::table('feed_subs')->join('articles', 'feeds.id', '=', 'articles.feed_id')->where('feeds.category_id', $this->id)->count();
+// 	}
 	
 	public function user()
 	{

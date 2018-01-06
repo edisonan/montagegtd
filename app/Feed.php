@@ -23,20 +23,20 @@ class Feed extends Model
 		return $this->hasMany(Article::class);
 	}
 
-	public function getUnreadCountAttribute()
-	{
-		return $this->articles->where('status','unread')->count();
-	}
+// 	public function getUnreadCountAttribute()
+// 	{
+// 		return $this->articles->where('status','unread')->count();
+// 	}
 
-	public function getReadCountAttribute()
-	{
-		return $this->articles->where('status','read')->count();
-	}
+// 	public function getReadCountAttribute()
+// 	{
+// 		return $this->articles->where('status','read')->count();
+// 	}
 
-	public function getTotalCountAttribute()
-	{
-		return $this->articles->count();
-	}
+// 	public function getTotalCountAttribute()
+// 	{
+// 		return $this->articles->count();
+// 	}
 	
 	public function user()
 	{
