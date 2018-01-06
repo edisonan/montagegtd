@@ -40,7 +40,7 @@ class FeedSubRepository
      */
     public function forUserByStatus(User $user,$status,$need_page=false)
     {
-    	$note = FeedSub::where('status', $status)
+    	$note = FeedSub::with(['feed','category'])->where('status', $status)
     	->where('user_id', $user->id)
     	->orderBy('created_at', 'desc');
     	
