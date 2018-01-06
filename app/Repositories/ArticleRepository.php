@@ -28,7 +28,7 @@ class ArticleRepository
      */
     public function forUserByStatus(User $user,string $status,$need_page=false)
     {
-    	$article = Article::where('user_id', $user->id)
+    	$article = Article::with('feed')->where('user_id', $user->id)
 		    	->where('status',$status)->orderBy('published','desc');
     	
     	if($need_page){
