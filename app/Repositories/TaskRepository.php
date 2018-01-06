@@ -32,7 +32,7 @@ class TaskRepository
      */
     public function forUserByStatus(User $user,string $status)
     {
-    	return Task::where('user_id', $user->id)
+    	return Task::with('goal')->where('user_id', $user->id)
     	->where('status',$status)
     	->orderBy('is_top', 'desc')
     	->orderBy('priority', 'desc')
