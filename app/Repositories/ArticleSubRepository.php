@@ -45,16 +45,27 @@ class ArticleSubRepository
      */
     public function forUserByCategoryStatusFeedId(User $user,string $status,$category_id,$need_page=false,$page_size=30)
     {
+    	$feeds = \DB::table('feed_subs')->select('feed_id')->where('category_id',$category_id)->where('status',1)->get();
+    	
+    	$feed_id_arr = array();
+    	foreach ($feeds as $feed){
+    		$feed_id_arr[] = $feed->id;
+    	}
+    	
     	$article = ArticleSub::with('article.feed')->where('user_id', $user->id)
-		->whereIn('feed_id', function($query) use($category_id){
-            \Log::info('sub query start:'.time());
-			$query->select('feed_id')
-			->from('feed_subs')
-			->where('category_id', $category_id)
-			->where('status', 1);
-            \Log::info('sub query end:'.time());
-		})
+    	->whereIn('feed_id', $feed_id_arr)
     	->where('status',$status);
+    	
+//     	$article = ArticleSub::with('article.feed')->where('user_id', $user->id)
+// 		->whereIn('feed_id', function($query) use($category_id){
+//             \Log::info('sub query start:'.time());
+// 			$query->select('feed_id')
+// 			->from('feed_subs')
+// 			->where('category_id', $category_id)
+// 			->where('status', 1);
+//             \Log::info('sub query end:'.time());
+// 		})
+//     	->where('status',$status);
         /*
         $article = \DB::table('article_subs')->with('articles')
        ->where(['article_subs.user_id'=>$user->id])
