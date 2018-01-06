@@ -91,12 +91,12 @@ class UserController extends Controller
 				$created_at_time = strtotime($this->created_at);
 				$last_login_time = strtotime($this->last_login);
 				
-				if($curr_time - strtotime($this->created_at) < 7*3600){
+				if($curr_time - strtotime($this->created_at) < 7*24*3600){
 					return '最近一周注册';
-				} else if($curr_time - $last_login_time < 7*3600){
+				} else if($curr_time - $last_login_time < 7*24*3600){
 					return '最近一周活跃';
 				} else {
-					return $last_login_time-$created_at_time < 3600?'注册后不活跃':'注册后曾活跃过';
+					return $last_login_time-$created_at_time < 24*3600?'注册后不活跃':'注册后曾活跃过';
 				}
 			});
 			
