@@ -78,7 +78,7 @@ class FeedController extends Controller
             $grid->id('ID')->sortable();
 
             $grid->user()->name('添加者');
-            $grid->feed_name('名称');
+            $grid->feed_name('名称')->limit(50);
             $grid->url('地址')->limit(50);
             $grid->sub_count('订阅数')->sortable();
             $grid->is_recommend('推荐')->display(function ($is_recommend) {
