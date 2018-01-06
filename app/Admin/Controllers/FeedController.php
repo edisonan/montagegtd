@@ -24,7 +24,7 @@ class FeedController extends Controller
     {
         return Admin::content(function (Content $content) {
 
-            $content->header('header');
+            $content->header('订阅源列表');
             $content->description('description');
 
             $content->body($this->grid());
@@ -75,19 +75,19 @@ class FeedController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->user()->name();
-            $grid->feed_name();
-            $grid->url();
-            $grid->sub_count();
-            $grid->is_recommend()->display(function ($is_recommend) {
+            $grid->user()->name('添加者');
+            $grid->feed_name('名称');
+            $grid->url('地址');
+            $grid->sub_count('订阅数')->sortable();
+            $grid->is_recommend('推荐')->display(function ($is_recommend) {
 			    return $is_recommend == 1?'是':'否';
 			})->sortable();
 			
-            $grid->status()->display(function ($status) {
+            $grid->status('状态')->display(function ($status) {
 			    return $status == 1?'启用':'关闭';
 			})->sortable();
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->created_at('创建时间');
+            $grid->updated_at('修改时间');
         });
     }
 
@@ -107,8 +107,6 @@ class FeedController extends Controller
             $form->display('type', 'type');
             $form->display('status', 'status');
 
-            $form->display('created_at', 'Created At');
-            $form->display('updated_at', 'Updated At');
         });
     }
 }
