@@ -41,7 +41,7 @@ class NoteRepository
      */
     public function forUserByStatus(User $user,$status,$need_page=false)
     {
-    	$note = Note::with(['noteTagMaps','user'])->where('status', $status)
+    	$note = Note::with(['noteTagMaps.tag','user'])->where('status', $status)
     	->orWhere('user_id', $user->id)
     	->orderBy('created_at', 'desc');
     	if($need_page){
