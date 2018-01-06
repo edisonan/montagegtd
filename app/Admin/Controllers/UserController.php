@@ -77,8 +77,10 @@ class UserController extends Controller
 
             $grid->name();
             $grid->email();
-            $grid->created_at()->sortable();
-            $grid->updated_at()->sortable();
+            $grid->created_at()->display(function ($created_at) {
+			    return \App\Http\Utils\CommonUtil::prettyDate($created_at);
+			})->sortable();
+            //$grid->updated_at()->sortable();
 			//$grid->last_login()->sortable();
 			$grid->last_login()->display(function ($last_login) {
 			    return \App\Http\Utils\CommonUtil::prettyDate($last_login);
