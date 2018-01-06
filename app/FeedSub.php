@@ -23,7 +23,7 @@ class FeedSub extends Model
         'feed_id' => 'int',
     ];
     
-    protected $appends = array('unread_count', 'read_count', 'total_count');
+    protected $appends = array();
 
     /**
      * Get the user that owns the task.

@@ -8,7 +8,7 @@ class Feed extends Model
 {
 	protected $fillable = ['feed_name','feed_desc','url','favicon','user_id','category_id','type','orders','status','sub_count'];
 	protected $table = 'feeds';
-	protected $appends = array('unread_count', 'read_count', 'total_count');
+	protected $appends = array();
 	protected $casts = [
 			'user_id' => 'int',
 	];

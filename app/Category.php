@@ -9,7 +9,7 @@ class Category extends Model
 {
 	protected $fillable = ['name','user_id','category_order'];
 	protected $table = 'categories';
-	protected $appends = array('unread_count', 'read_count', 'total_count');
+	protected $appends = array();
 	protected $casts = [
 			'user_id' => 'int',
 	];
