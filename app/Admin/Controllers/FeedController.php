@@ -80,11 +80,11 @@ class FeedController extends Controller
             $grid->url('地址');
             $grid->sub_count('订阅数')->sortable();
             $grid->is_recommend('推荐')->display(function ($is_recommend) {
-			    return $is_recommend == 1?'是':'否';
+			    return $is_recommend?'是':'否';
 			})->sortable();
 			
             $grid->status('状态')->display(function ($status) {
-			    return $status == 1?'启用':'关闭';
+			    return $status?'启用':'关闭';
 			})->sortable();
             $grid->created_at('创建时间');
             $grid->updated_at('修改时间');
