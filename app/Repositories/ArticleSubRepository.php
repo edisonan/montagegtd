@@ -45,11 +45,11 @@ class ArticleSubRepository
      */
     public function forUserByCategoryStatusFeedId(User $user,string $status,$category_id,$need_page=false,$page_size=30)
     {
-    	$feeds = \DB::table('feed_subs')->select('feed_id')->where('category_id',$category_id)->where('status',1)->get();
+    	$feedsubs = \DB::table('feed_subs')->select('feed_id')->where('category_id',$category_id)->where('status',1)->get();
     	
     	$feed_id_arr = array();
-    	foreach ($feeds as $feed){
-    		$feed_id_arr[] = $feed->id;
+    	foreach ($feedsubs as $feedsub){
+    		$feed_id_arr[] = $feedsub->feed_id;
     	}
     	
     	$article = ArticleSub::with('article.feed')->where('user_id', $user->id)
