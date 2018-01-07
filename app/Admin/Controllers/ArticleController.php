@@ -75,7 +75,9 @@ class ArticleController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->subject('文章名')->limit(50);
+            $grid->subject('文章名')->display(function ($name) {
+			    return "<a target='_blank' href='/article/view/{$this->id}'>$name</span>";
+			})->limit(50);
             $grid->feed()->feed_name('订阅源')->limit(50);
             $grid->published('发布时间');
             
