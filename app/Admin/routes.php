@@ -29,7 +29,7 @@ Route::group([
 	$router->resource('minds', MindController::class);
 	$router->resource('notes', NoteController::class);
 	$router->resource('pomos', PomoController::class);
-	$router->resource('settings', settingController::class);
+	$router->resource('settings', SettingController::class);
 	$router->resource('tasks', TaskController::class);
 	$router->resource('things', ThingController::class);
 	
