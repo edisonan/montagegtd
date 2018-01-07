@@ -77,8 +77,8 @@ class ArticleController extends Controller
 
             $grid->subject('文章名')->display(function ($name) {
 			    return "<a target='_blank' href='/article/view/{$this->id}'>$name</span>";
-			})->limit(50);
-            $grid->feed()->feed_name('订阅源');
+			});
+            $grid->feed()->feed_name('订阅源')->limit(50);
             $grid->published('发布时间');
             
             $grid->created_at('录入时间');
