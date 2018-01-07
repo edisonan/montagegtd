@@ -76,8 +76,8 @@ class FeedSubController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->feed()->feed_name('订阅源名称');
             $grid->user()->name('订阅者');
+            $grid->feed()->feed_name('订阅源名称')->limit(50);
             $grid->category()->name('分类');
             
             $grid->created_at('订阅时间');
