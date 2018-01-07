@@ -73,10 +73,18 @@ class MindController extends Controller
     {
         return Admin::grid(Mind::class, function (Grid $grid) {
 
+        	$grid->model()->where('is_root',1);
+        	
             $grid->id('ID')->sortable();
 
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->user()->name('创建者');
+            $grid->name('名称');
+            $grid->status('状态');
+            $grid->created_at('创建时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

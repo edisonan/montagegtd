@@ -75,8 +75,15 @@ class ArticleController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->subject('文章名')->limit(50);
+            $grid->feed()->feed_name('订阅源')->limit(50);
+            $grid->published('发布时间');
+            
+            $grid->created_at('录入时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

@@ -75,8 +75,18 @@ class ThingController extends Controller
 
             $grid->id('ID')->sortable();
 
+            $grid->user()->name();
+            $grid->start_time();
+            $grid->end_time();
+            $grid->name();
+            $grid->type();
+            
             $grid->created_at();
             $grid->updated_at();
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

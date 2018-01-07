@@ -75,8 +75,14 @@ class FeedbackController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->user()->name('反馈人');
+            $grid->from('来源');
+            $grid->content('反馈内容');
+            $grid->created_at('创建时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

@@ -75,8 +75,19 @@ class TaskController extends Controller
 
             $grid->id('ID')->sortable();
 
+            $grid->user()->name();
+            $grid->name();
+            $grid->status();
+            $grid->deadline();
+            $grid->remindtime();
+            $grid->priority();
+            
             $grid->created_at();
             $grid->updated_at();
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

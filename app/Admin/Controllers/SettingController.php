@@ -75,8 +75,20 @@ class SettingController extends Controller
 
             $grid->id('ID')->sortable();
 
+            $grid->user()->name();
+            $grid->day_pomo_goal();
+            $grid->week_pomo_goal();
+            $grid->month_pomo_goal();
+            $grid->pomo_time();
+            $grid->pomo_rest_time();
+            
+            $grid->kindle_email();
+            
             $grid->created_at();
-            $grid->updated_at();
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

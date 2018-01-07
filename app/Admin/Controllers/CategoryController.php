@@ -75,8 +75,14 @@ class CategoryController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->user()->name('创建者');
+            $grid->name('名称');
+            $grid->category_order('排序');
+            $grid->created_at('创建时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

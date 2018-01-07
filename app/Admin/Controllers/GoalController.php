@@ -75,8 +75,17 @@ class GoalController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->user()->name('创建人');
+            $grid->name('目标名称');
+            $grid->status('状态');
+            $grid->deadline('截止日期');
+            $grid->remindtime('提醒时间');
+            $grid->priority('优先级');
+            $grid->created_at('创建时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

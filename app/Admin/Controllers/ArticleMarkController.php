@@ -75,8 +75,16 @@ class ArticleMarkController extends Controller
 
             $grid->id('ID')->sortable();
 
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->user()->name('创建人');
+            
+            $grid->content('内容')->limit(50);
+            $grid->article()->subject('文章名')->limit(50);
+            
+            $grid->created_at('创建时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 
