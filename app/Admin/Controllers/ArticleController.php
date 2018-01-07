@@ -84,6 +84,13 @@ class ArticleController extends Controller
             $grid->disableActions();
             $grid->disableCreation();
             $grid->disableRowSelector();
+            
+            $grid->filter(function ($filter) {
+            
+    			$filter->like('subject', 'subject');
+    			$filter->like('content', 'content');
+            	
+            });
         });
     }
 
