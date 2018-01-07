@@ -72,13 +72,19 @@ class FeedSubController extends Controller
     protected function grid()
     {
         return Admin::grid(FeedSub::class, function (Grid $grid) {
+        	$grid->model()->orderBy('id', 'desc');
 
             $grid->id('ID')->sortable();
 
-            $grid->created_at();
-            $grid->created_at();
-            $grid->created_at();
-            $grid->updated_at();
+            $grid->feed()->feed_name('订阅源名称');
+            $grid->user()->name('订阅者');
+            $grid->category()->name('分类');
+            
+            $grid->created_at('订阅时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 

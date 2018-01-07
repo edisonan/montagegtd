@@ -115,8 +115,8 @@ class UserController extends Controller
 			
 			
 			$grid->disableActions();
+			$grid->disableCreation();
 			$grid->disableRowSelector();
-			$grid->disableExport();
 
         });
     }

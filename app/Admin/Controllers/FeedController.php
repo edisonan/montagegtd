@@ -90,6 +90,10 @@ class FeedController extends Controller
 			})->sortable();
             $grid->created_at('创建时间');
             $grid->updated_at('修改时间');
+            
+            $grid->disableActions();
+            $grid->disableCreation();
+            $grid->disableRowSelector();
         });
     }
 
