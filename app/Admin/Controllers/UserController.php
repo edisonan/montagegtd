@@ -11,6 +11,15 @@ use Encore\Admin\Layout\Content;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\ModelForm;
 
+use Encore\Admin\Layout\Row;
+use Encore\Admin\Widgets\Box;
+use Encore\Admin\Widgets\Collapse;
+use Encore\Admin\Widgets\Table;
+use Encore\Admin\Widgets\InfoBox;
+
+
+
+
 class UserController extends Controller
 {
     use ModelForm;
@@ -77,7 +86,9 @@ class UserController extends Controller
         	 
             $grid->id('ID')->sortable();
 
-            $grid->name();
+            $grid->name()->display(function ($name) {
+			    return "<a href='/admin/statistic?user_id={$this->id}'>$name</span>";
+			});
             $grid->email();
             $grid->created_at()->display(function ($created_at) {
 			    return \App\Http\Utils\CommonUtil::prettyDate($created_at);
@@ -127,5 +138,53 @@ class UserController extends Controller
             $form->display('updated_at', 'Updated At');
             $form->display('last_login', 'Last Login');
         });
+    }
+    
+    public function statistic()
+    {
+    	return Admin::content(function (Content $content) {
+    
+    		$content->header('Dashboard');
+    		$content->description('Description...');
+    
+    		//$content->row(Dashboard::title());
+    		
+    		if(!isset($_GET['user_id'])){
+    			echo 'error param no user_id!';die;
+    		}
+    		
+    
+    		$content->row(function (Row $row) {
+	    		$user_id = $_GET['user_id'];
+    			$user = User::where('id',$user_id);
+    			
+    			$box1 = new Box('用户GTD内容统计', new Table());
+    			$box1->removable();
+    			$box1->collapsable();
+    			$box1->style('info');
+    			$box1->solid();
+    			
+    			$box2 = new Box('用户订阅内容统计', new Table());
+    			$box2->removable();
+    			$box2->collapsable();
+    			$box2->style('info');
+    			$box2->solid();
+    			
+    			$box3 = new Box('用户思维导图与想法内容统计', new Table());
+    			$box3->removable();
+    			$box3->collapsable();
+    			$box3->style('info');
+    			$box3->solid();
+    			
+    
+    			$row->column(4, $box1);
+    			$row->column(4, $box2);
+    			$row->column(4, $box3);
+    
+    			//$row->column(4, function (Column $column) {
+    			//    $column->append(Dashboard::extensions());
+    			//});
+    		});
+    	});
     }
 }

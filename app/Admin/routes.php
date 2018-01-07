@@ -11,8 +11,10 @@ Route::group([
 ], function (Router $router) {
 
     $router->get('/', 'HomeController@index');
-	$router->resource('demo/users', UserController::class);
-	$router->resource('demo/feeds', FeedController::class);
-	$router->resource('demo/feedsubs', FeedSubController::class);
+	$router->resource('users', UserController::class);
+    $router->get('statistic', 'UserController@statistic');
+    
+	$router->resource('feeds', FeedController::class);
+	$router->resource('feedsubs', FeedSubController::class);
 
 });
