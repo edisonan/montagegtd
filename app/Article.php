@@ -9,7 +9,7 @@ class Article extends Model
 {
 	protected $fillable = ['status','subject','url','image_url','content','published'];
 	protected $table = 'articles';
-	protected $appends = array('category_id');
+	protected $appends = array();
 	protected $casts = [
 			'user_id' => 'int',
 	];
