@@ -170,7 +170,7 @@ class FeedController extends Controller
 	        }
 	        
         	//如果未锁定，那么更改Feed的名称
-        	if(empty($feed->lock_name) && $feed->name != $request->feed_name){
+        	if(empty($feed->recommend_name) && $feed->name != $request->feed_name){
         		$feed->feed_name = $request->feed_name;
         	}
         	$feed->sub_count = $feed->sub_count + 1;
