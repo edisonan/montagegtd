@@ -21,7 +21,7 @@ class FeedCommon extends Command
      *
      * @var string
      */
-    protected $signature = 'feed_common';
+    protected $signature = 'feed_common {active_level}';
 
     /**
      * The console command description.
