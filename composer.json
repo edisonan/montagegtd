@@ -11,6 +11,7 @@
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "develpr/phindle": "dev-dev",
+        "celd/opml-import-export": "dev-master",
         "arandilopez/laravel-feed-parser": "0.1.*"
     },
     "require-dev": {
