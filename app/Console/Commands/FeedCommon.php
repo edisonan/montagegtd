@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 
 use App\Repositories\FeedRepository;
 use App\Feed;
+use App\Http\Utils\SpideUtil;
 
 use Log;
 
