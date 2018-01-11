@@ -108,7 +108,7 @@ class FeedController extends Controller
 
             $form->display('id', 'ID');
             $form->display('is_recommend', 'is_recommend');
-            $form->display('lock_name', 'lock_name');
+            $form->display('recommend_name', 'recommend_name');
             $form->display('orders', 'orders');
             $form->display('type', 'type');
             $form->display('status', 'status');
