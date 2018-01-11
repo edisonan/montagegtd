@@ -17,6 +17,8 @@ use Encore\Admin\Widgets\Collapse;
 use Encore\Admin\Widgets\Table;
 use Encore\Admin\Widgets\InfoBox;
 
+use Illuminate\Support\Facades\DB;
+
 
 
 
@@ -155,22 +157,66 @@ class UserController extends Controller
     		
     
     		$content->row(function (Row $row) {
+				$rows1 = array();
+				$rows2 = array();
+				$rows3 = array();
+				
 	    		$user_id = $_GET['user_id'];
-    			$user = User::where('id',$user_id);
+    			$user = DB::table('users')->where('id',$user_id)->first();
+				
+            	$pomos = DB::table('pomos')->select('status',DB::raw('count(*) as total'))->where('user_id',$user_id)->groupBy('status')->get();
+				foreach($pomos as $pomo){
+					$rows1[] = array('Pomo '.$pomo->status, $pomo->total);
+				}
+				
+            	$tasks = DB::table('tasks')->select('status',DB::raw('count(*) as total'))->where('user_id',$user_id)->groupBy('status')->get();
+				foreach($tasks as $task){
+					$rows1[] = array('Task '.$task->status, $task->total);
+				}
+				
+            	$things = DB::table('things')->select('type',DB::raw('count(*) as total'))->where('user_id',$user_id)->groupBy('type')->get();
+            	foreach($things as $thing){
+					$rows1[] = array('Thing '.$thing->type, $thing->total);
+				}
+				
+				$minds = DB::table('minds')->select('status',DB::raw('count(*) as total'))->where('user_id',$user_id)->groupBy('status')->get();
+				foreach($minds as $mind){
+					$rows1[] = array('思维导图:'.$mind->status, $mind->total);
+				}
+				
+            	$notes = DB::table('notes')->select('status',DB::raw('count(*) as total'))->where('user_id',$user_id)->groupBy('status')->get();
+				foreach($notes as $note){
+					$rows1[] = array('Note '.$note->status, $note->total);
+				}
     			
-    			$box1 = new Box('用户GTD内容统计', new Table());
+    			$box1 = new Box('用户GTD内容统计', new Table(array(), $rows1));
     			$box1->removable();
     			$box1->collapsable();
     			$box1->style('info');
     			$box1->solid();
-    			
-    			$box2 = new Box('用户订阅内容统计', new Table());
+				
+				
+				$feed_subs = DB::table('feed_subs')->select('status',DB::raw('count(*) as total'))->where('user_id',$user_id)->groupBy('status')->get();
+				foreach($feed_subs as $feed_sub){
+					$rows2[] = array('Feed Sub '.$feed_sub->status, $feed_sub->total);
+				}
+				
+            	$article_subs = DB::table('articles')->select('status',DB::raw('count(*) as total'))->where('user_id',$user_id)->groupBy('status')->get();
+				foreach($article_subs as $article_sub){
+					$rows2[] = array('Article Sub '.$article_sub->status, $article_sub->total);
+				}
+				
+    			$box2 = new Box('用户订阅内容统计', new Table(array(), $rows2));
     			$box2->removable();
     			$box2->collapsable();
     			$box2->style('info');
     			$box2->solid();
+				
+				$rows3[] = array('账户名', $user->name);
+				$rows3[] = array('账户创建时间', $user->created_at);
+				$rows3[] = array('上次登录时间', $user->last_login);
     			
-    			$box3 = new Box('用户思维导图与想法内容统计', new Table());
+    			$box3 = new Box('用户基础信息', new Table(array(), $rows3));
     			$box3->removable();
     			$box3->collapsable();
     			$box3->style('info');
