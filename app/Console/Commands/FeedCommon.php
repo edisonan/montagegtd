@@ -37,12 +37,21 @@ class FeedCommon extends Command
      */
     public function handle()
     {
+		$active_level = $this->argument('active_level');
+		
     	$feedRepository = new FeedRepository();
-    	$feeds = $feedRepository->getListByTypeStatus(1, 1);
-    	
+		$spideUtil = new SpideUtil();
+		
+    	$feeds = $feedRepository->getListByActiveLevelStatus($active_level, 1);
+		
     	foreach ($feeds as $feed){
-    		$feedRepository->checkFeed($feed);
-    		Log::info('process feed ! url:'.$feed->url);
+			if($feed->type = 3){
+				$feedRepository->checkFanfouFeed($feed);
+			} else if($feed->type==2){
+				$spideUtil->processFeed($feed);
+			} else {
+				$feedRepository->checkFeed($feed);
+			}
     	}
     }
 }
