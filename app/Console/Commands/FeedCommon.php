@@ -46,7 +46,7 @@ class FeedCommon extends Command
     	$feeds = $feedRepository->getListByActiveLevelStatus($active_level, 1);
 		
     	foreach ($feeds as $feed){
-			if($feed->type = 3){
+			if($feed->type == 3){
 				$feedRepository->checkFanfouFeed($feed);
 			} else if($feed->type==2){
 				$spideUtil->processFeed($feed);
