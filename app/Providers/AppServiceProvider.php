@@ -10,7 +10,7 @@ use Illuminate\Pagination\SimpleBootstrapFourPresenter;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
-use Monolog\Processor\WebProcessor;
+use Monolog\Processor\UidProcessor;
 use Log;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
     	$monolog = Log::getMonolog();
-    	$monolog->pushProcessor(new WebProcessor());
+    	$monolog->pushProcessor(new UidProcessor());
     	
         //
 // 		LengthAwarePaginator::presenter(function (Paginator $paginator) {
