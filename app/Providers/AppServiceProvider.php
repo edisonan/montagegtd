@@ -26,14 +26,14 @@ class AppServiceProvider extends ServiceProvider
     	$monolog->pushProcessor(new WebProcessor());
     	
         //
-		LengthAwarePaginator::presenter(function (Paginator $paginator) {
-    		return new BootstrapFourPresenter($paginator);
-    	});
+// 		LengthAwarePaginator::presenter(function (Paginator $paginator) {
+//     		return new BootstrapFourPresenter($paginator);
+//     	});
     	
-    	// Change the ->simplePaginate() presenter
-    	Paginator::presenter(function (PaginatorContract $paginator) {
-    		return new BootstrapFourPresenter($paginator);
-    	});
+//     	// Change the ->simplePaginate() presenter
+//     	Paginator::presenter(function (PaginatorContract $paginator) {
+//     		return new BootstrapFourPresenter($paginator);
+//     	});
     	
     	
     }
