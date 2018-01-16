@@ -18,6 +18,10 @@ $(document).ready(function () {
             <div class="card" style="margin-top: 10px;">
                 <div class="card-header">
                     	订阅微博<a href="#weibo"></a>
+                    	<div style="float:right">
+                    		[<a href="{{ url('feeds/explorer') }}">返回发现</a>]
+                    		[<a href="{{ url('articles') }}">返回阅读</a>]
+                    	</div>
                 </div>
 				
 				<div class="card-body">
@@ -25,7 +29,7 @@ $(document).ready(function () {
 							<div class="form-row">
 								{{ csrf_field() }}
 								<div  class="col-12">
-									<label for="disabledSelect">微博用户ID</label>
+									<label for="disabledSelect">微博用户ID(进入博主的微博主页，控制台执行 <code>/uid=(\d+)/. exec(document.querySelector('.opt_box .btn_bed').getAttribute('action-data'))[1]</code>)</label>
 									<input type="text" value="" class="form-control" name="weibo_user_id" placeholder="请输入微博userid"/> 
 								</div>
 								<div  class="col-12">
@@ -40,7 +44,7 @@ $(document).ready(function () {
 								<input type="hidden" value="weibo" name="feed_name"/>
 								<input type="hidden" value="weibo" name="url"/>
 								<div class="col">
-									<button type="submit" class="btn btn-primary">马上订阅</button>获取uid：进入博主的微博主页，控制台执行 <code>/uid=(\d+)/. exec(document.querySelector('.opt_box .btn_bed').getAttribute('action-data'))[1]</code>
+									<button type="submit" class="btn btn-primary">马上订阅</button>
 								</div>
 							</div>
 					</form>

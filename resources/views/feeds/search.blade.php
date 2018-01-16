@@ -45,7 +45,8 @@ $(document).ready(function () {
                 <div class="card-header">
                     	发现新的订阅源
                     	<div style="float:right">
-                    		<a href="{{'/articles'}}">[返回]</a>
+                    		[<a href="{{ url('feeds/explorer') }}">返回发现</a>]
+                    		[<a href="{{ url('articles') }}">返回阅读</a>]
                     	</div>
                 </div>
 
