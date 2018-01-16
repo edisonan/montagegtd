@@ -43,17 +43,17 @@ $(document).ready(function () {
         	@include('common.success')
             <div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
-                    	Search
+                    	搜索订阅源
                 </div>
 				
 				<div class="card-body">
 					<form action="/feeds/search">
 						<div class="form-row">
-							<div  class="col-7">
-								<input type="text" value="" name="name" class="form-control" placeholder="input search value"/>
+							<div  class="col-8">
+								<input type="text" value="" name="name" class="form-control" placeholder="请输入想要搜索的关键字"/>
 							</div>
 							<div class="col">
-								<button type="submit" class="btn btn-primary">Search</button>
+								<button type="submit" class="btn btn-primary">即刻搜索</button>
 							</div>
 						</div>
 					</form>
@@ -62,62 +62,83 @@ $(document).ready(function () {
 			
 			<div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
-                    	Weibo
+                    	订阅微博
                 </div>
 				
 				<div class="card-body">
-					<form action="/feeds/">
-						<fieldset disabled>
+					<form action="/feeds/store" method="post">
 							<div class="form-row">
-								<div  class="col-7">
-									<input type="text" value="" class="form-control" placeholder="input weibo user_id"/> 
+								<div  class="col-12">
+									<label for="disabledSelect">微博用户ID</label>
+									<input type="text" value="" class="form-control" name="weibo_user_id" placeholder="请输入微博userid"/> 
 								</div>
-								<!--
-								<div  class="col">
-									  <label for="disabledSelect">Disabled select menu</label>
-									  <select id="disabledSelect" class="form-control">
-										<option>Disabled select</option>
+								<div  class="col-12">
+									  <label for="disabledSelect">选择分类</label>
+									  <select id="disabledSelect" name="category_id" class="form-control">
+										@foreach ($categorys as $category)
+											<option value="{{ $category->id }}">{{ $category->name }}</option>
+										@endforeach
 									  </select>
 								</div>
-								<div  class="col">
-									<input type="text" value="" class="form-control" placeholder="input weibo user_id"/> 
-								</div>
-								-->
+								<input type="hidden" value="weibo" name="feed_type"/>
+								<input type="hidden" value="weibo" name="feed_name"/>
+								<input type="hidden" value="weibo" name="url"/>
 								<div class="col">
-									<button type="submit" class="btn btn-primary">Weibo</button>
+									<button type="submit" class="btn btn-primary">马上订阅</button>
 								</div>
 							</div>
-						</fieldset>
 					</form>
 				</div>
 			</div>
 			
 			<div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
-                    	Weixin
+                    	分类订阅
+                </div>
+				
+				<div class="card-body">
+					<div class="row">
+						@foreach ($recommend_categorys as $id=>$name)
+							<div class="col-md-6" style="padding:10px">
+								<div class="card card-block" style="text-align:center">
+									<b class="card-title rowone"> 
+										<a href="/feeds/search?recommend_category_id={{ $id }}">{{ $name }}</a>
+									</b>
+								</div>
+							</div>
+						@endforeach
+					</div>
+				</div>
+			</div>
+			
+			<div class="card" style="margin-bottom: 10px;">
+                <div class="card-header">
+                    	订阅微信公众号
                 </div>
 				
 				<div class="card-body">
 					<form action="/feeds/">
 						<fieldset disabled>
 							<div class="form-row">
-								<div  class="col-7">
-									<input type="text" value="" class="form-control" placeholder="input weixin id"/>
-								</div>
-								<!--
-								<div  class="col">
-									  <label for="disabledSelect">Disabled select menu</label>
-									  <select id="disabledSelect" class="form-control">
-										<option>Disabled select</option>
-									  </select>
+								<div  class="col-12">
+									<label for="disabledSelect">公众号ID</label>
+									<input type="text" value="" class="form-control" name="weixin_id" placeholder="请输入公众号ID"/>
 								</div>
 								
-								<div  class="col">
-									<input type="text" value="" class="form-control" placeholder=""/> 
+								<div  class="col-12">
+									  <label for="disabledSelect">选择分类</label>
+									  <select id="disabledSelect" name="category_id" class="form-control">
+										@foreach ($categorys as $category)
+										<option value="{{ $category->id }}">{{ $category->name }}</option>
+										@endforeach
+									  </select>
 								</div>
-								-->
+								<input type="hidden" value="weixin" name="feed_type"/>
+								<input type="hidden" value="weixin" name="feed_name"/>
+								<input type="hidden" value="weixin" name="url"/>
+								
 								<div class="col">
-									<button type="submit" class="btn btn-primary">Weixin</button>
+									<button type="submit" class="btn btn-primary">马上订阅</button>
 								</div>
 							</div>
 						</fieldset>
@@ -127,25 +148,7 @@ $(document).ready(function () {
 			
 			<div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
-                    	Category
-                </div>
-				
-				<div class="card-body">
-					@foreach (array() as $feed)
-					<div class="row col-md-6" style="padding:10px">
-						<div class="card card-block">
-							<b class="card-title rowone"> 
-							
-							</b>
-						</div>
-					</div>
-					@endforeach
-				</div>
-			</div>
-			
-			<div class="card" style="margin-bottom: 10px;">
-                <div class="card-header">
-                    	Recommend
+                    	推荐订阅源
                 </div>
 				
                 <div class="card-body">
@@ -173,6 +176,8 @@ $(document).ready(function () {
                     @endif
                 </div>
             </div>
+            
+            
 
         </div>
     </div>
