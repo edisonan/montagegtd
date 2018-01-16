@@ -85,9 +85,21 @@ class FeedController extends Controller
     public function explorer(Request $request)
     {
     	$feeds = $this->feeds->forIsRecommend(1, $need_page=true);
+		
+		$categorys = $this->categorys->forUser($request->user());
     	
+    	if(count($categorys) == 0){
+    		$category = $request->user()->categorys()->create([
+	            'name' => '未分类',
+	        	'category_order' => 0,
+        	]);
+    		$categorys = array($category);
+    	}
+		
         return view('feeds.explorer', [
             'feeds' => $feeds,
+            'categorys' => $categorys,
+            'recommend_categorys' => Feed::$recommend_categorys,
         ]);
     }
 	
@@ -97,8 +109,13 @@ class FeedController extends Controller
      */
     public function search(Request $request)
     {
-		$name = $request->name;
-    	$feeds = $this->feeds->findByName($name , $need_page=true);
+    	if($request->has('recommend_category_id')){
+    		$feeds = $this->feeds->findByRecommendCategoryId($request->recommend_category_id);
+    	} else if($request->has('name')){
+	    	$feeds = $this->feeds->findByName($request->name , $need_page=true);
+    	} else {
+    		echo 'error params'; exit;
+    	}
     	
         return view('feeds.search', [
             'feeds' => $feeds,
