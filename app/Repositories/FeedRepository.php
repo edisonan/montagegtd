@@ -31,9 +31,21 @@ class FeedRepository
         }
     }
     
-    public function forIsRecommend($is_recommend,$need_page=false)
+        public function forIsRecommend($is_recommend,$need_page=false)
     {
     	$feed = Feed::where('is_recommend', $is_recommend)
+    	->orderBy('recommend_order', 'desc');
+    
+    	if($need_page){
+    		return $feed->paginate(9);
+    	} else {
+    		return $feed->get();
+    	}
+    }
+    
+    public function findByRecommendCategoryId($recommend_category_id,$need_page=false)
+    {
+    	$feed = Feed::where('recommend_category_id', $recommend_category_id)
     	->orderBy('recommend_order', 'desc');
     
     	if($need_page){
