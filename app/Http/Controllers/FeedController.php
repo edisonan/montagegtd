@@ -476,7 +476,7 @@ class FeedController extends Controller
     	}
     	 
     	 
-    	return view('feeds.weixinrss', [
+    	return view('feeds.weiborss', [
     			'categorys' => $categorys,
     	]);
     }
@@ -494,7 +494,7 @@ class FeedController extends Controller
     	}
     
     
-    	return view('feeds.weiborss', [
+    	return view('feeds.weixinrss', [
     			'categorys' => $categorys,
     	]);
     }

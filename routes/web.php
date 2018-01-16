@@ -135,7 +135,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/feeds/search', 'FeedController@search');
     Route::get('/feeds/weixinrss', 'FeedController@weixinrss');
     Route::get('/feeds/weiborss', 'FeedController@weiborss');
-    Route::get('/feeds/ompl', 'FeedController@ompl');
+    Route::get('/feeds/opml', 'FeedController@opml');
     Route::post('/feeds/importOpml', 'FeedController@importOpml');
     
     Route::get('/articles', 'ArticleController@index');
