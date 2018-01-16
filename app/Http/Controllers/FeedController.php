@@ -179,6 +179,13 @@ class FeedController extends Controller
         	'category_id' => 'required',
         ]);
         
+        if($request->has('feed_type')){
+        	if($request->feed_type == 'weibo'){
+        		$request->url = 'https://api.prprpr.me/weibo/rss/'.$request->weibo_user_id;
+        		$request->feed_name = \App\Http\Utils\CommonUtil::page_title($request->url);;
+        	}
+        }
+        
         $category = $this->categorys->forCategoryId($request->user(),$request->category_id);
         if(empty($category)){
         	echo 'error:'.$request->category_id;exit;
