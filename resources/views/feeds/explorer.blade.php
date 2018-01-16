@@ -43,7 +43,10 @@ $(document).ready(function () {
         	@include('common.success')
             <div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
-                    	搜索订阅源
+                    	发现
+                    	<div style="float:right">
+                    		[<a href="{{ url('articles') }}">返回阅读</a>]
+                    	</div>
                 </div>
 				
 				<div class="card-body">
