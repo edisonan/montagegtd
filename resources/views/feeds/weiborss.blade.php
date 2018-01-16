@@ -25,7 +25,7 @@ $(document).ready(function () {
                 </div>
 				
 				<div class="card-body">
-					<form action="/feeds/store" method="post">
+					<form action="/feed" method="post">
 							<div class="form-row">
 								{{ csrf_field() }}
 								<div  class="col-12">

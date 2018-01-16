@@ -17,7 +17,7 @@ $(document).ready(function () {
             
 			<div class="card" style="margin-top: 10px;">
                 <div class="card-header">
-                    	订阅微信公众号<a href="#weixin"></a>
+                    	订阅微信公众号(稍后恢复订阅)<a href="#weixin"></a>
                     	<div style="float:right">
                     		[<a href="{{ url('feeds/explorer') }}">返回发现</a>]
                     		[<a href="{{ url('articles') }}">返回阅读</a>]
@@ -25,7 +25,7 @@ $(document).ready(function () {
                 </div>
 				
 				<div class="card-body">
-					<form action="/feeds/">
+					<form action="/feed" method="post">
 						<fieldset disabled>
 							<div class="form-row">
 								<div  class="col-12">
