@@ -13,6 +13,17 @@ class Feed extends Model
 			'user_id' => 'int',
 	];
 
+	public static $recommend_categorys = array(
+		1=>'IT新闻',
+		2=>'技术',
+		3=>'英语',
+		4=>'文学',
+		5=>'财经',
+		6=>'新闻',
+		7=>'微信',
+		8=>'微博',
+	);
+
 	public function category()
 	{
 		return $this->belongsTo(Category::class);
