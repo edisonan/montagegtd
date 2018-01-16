@@ -412,10 +412,8 @@ class FeedController extends Controller
     	
     	if(!empty($request->change_feed_sub_id) && !empty($request->change_feed_sub_category)){
     		$category = Category::where('user_id',$request->user()->id)->where("id", $request->change_feed_sub_category)->first();
-    		var_dump($category);
     		if(!empty($category)){
     			$feedSub = FeedSub::where('user_id',$request->user()->id)->where("id", $request->change_feed_sub_id)->first();
-	    		var_dump($feedSub);
     			if(!empty($feedSub)){
 	    			$feedSub->update(array('category_id'=>$request->change_feed_sub_category));
     			}
@@ -428,6 +426,94 @@ class FeedController extends Controller
     	} else {
     		return redirect('/feeds')->with('message', 'IT WORKS!');
     	}
+    }
+    
+    public function importOpml(Request $request){
+	    if ($request->file('opml_file')->isValid()) {
+	    	$path = $request->opml_file->path();
+	    	
+	    	$importer = new \Celd\Opml\Importer(file_get_contents($path));
+	    	$feedList = $importer->getFeedList();
+	    	
+		    $categorys = $this->categorys->forUser($request->user());
+	    	 
+	    	if(count($categorys) == 0){
+	    		$category = $request->user()->categorys()->create([
+	    				'name' => '未分类',
+	    				'category_order' => 0,
+	    		]);
+	    		$categorys = array($category);
+	    	}
+	    	
+	    	foreach ($feedList->getItems() as $item) {
+	    		if ($item->getType() == 'category') {
+	    			echo $item->getTitle()."bbbbbbbbbbbbbbbbb\n"; // Category title
+	    			
+	    			foreach($item->getFeeds() as $feed) {
+	    				echo $feed->getTitle().'|'.$feed->getXmlUrl() . "\n";
+	    			}
+	    		} else {
+		    		echo $item->getTitle().'|'.$item->getXmlUrl()." aaaaaaaaaaaaaaa\n"; //Root feed title
+	    		}
+	    	}
+	    } else {
+	    	echo 'error param!';exit;
+	    }
+	    exit;
+    	
+    }
+    
+    public function weiborss(Request $request)
+    {
+    	$categorys = $this->categorys->forUser($request->user());
+    	 
+    	if(count($categorys) == 0){
+    		$category = $request->user()->categorys()->create([
+    				'name' => '未分类',
+    				'category_order' => 0,
+    		]);
+    		$categorys = array($category);
+    	}
+    	 
+    	 
+    	return view('feeds.weixinrss', [
+    			'categorys' => $categorys,
+    	]);
+    }
+    
+    public function weixinrss(Request $request)
+    {
+    	$categorys = $this->categorys->forUser($request->user());
+    
+    	if(count($categorys) == 0){
+    		$category = $request->user()->categorys()->create([
+    				'name' => '未分类',
+    				'category_order' => 0,
+    		]);
+    		$categorys = array($category);
+    	}
+    
+    
+    	return view('feeds.weiborss', [
+    			'categorys' => $categorys,
+    	]);
+    }
+    
+    public function opml(Request $request)
+    {
+    	$categorys = $this->categorys->forUser($request->user());
+    
+    	if(count($categorys) == 0){
+    		$category = $request->user()->categorys()->create([
+    				'name' => '未分类',
+    				'category_order' => 0,
+    		]);
+    		$categorys = array($category);
+    	}
+    
+    	return view('feeds.opml', [
+    			'categorys' => $categorys,
+    	]);
     }
     
 }

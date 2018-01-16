@@ -133,6 +133,10 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/feeds/explorer', 'FeedController@explorer');
     Route::get('/feeds/quickstore', 'FeedController@quickstore');
     Route::get('/feeds/search', 'FeedController@search');
+    Route::get('/feeds/weixinrss', 'FeedController@weixinrss');
+    Route::get('/feeds/weiborss', 'FeedController@weiborss');
+    Route::get('/feeds/ompl', 'FeedController@ompl');
+    Route::post('/feeds/importOpml', 'FeedController@importOpml');
     
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');

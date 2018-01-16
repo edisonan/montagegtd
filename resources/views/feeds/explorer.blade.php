@@ -62,32 +62,40 @@ $(document).ready(function () {
 			
 			<div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
-                    	订阅微博
+                    	订阅方式推荐
                 </div>
 				
 				<div class="card-body">
-					<form action="/feeds/store" method="post">
-							<div class="form-row">
-								<div  class="col-12">
-									<label for="disabledSelect">微博用户ID</label>
-									<input type="text" value="" class="form-control" name="weibo_user_id" placeholder="请输入微博userid"/> 
-								</div>
-								<div  class="col-12">
-									  <label for="disabledSelect">选择分类</label>
-									  <select id="disabledSelect" name="category_id" class="form-control">
-										@foreach ($categorys as $category)
-											<option value="{{ $category->id }}">{{ $category->name }}</option>
-										@endforeach
-									  </select>
-								</div>
-								<input type="hidden" value="weibo" name="feed_type"/>
-								<input type="hidden" value="weibo" name="feed_name"/>
-								<input type="hidden" value="weibo" name="url"/>
-								<div class="col">
-									<button type="submit" class="btn btn-primary">马上订阅</button>
+					<div class="row">
+							<div class="col-md-3" style="padding:10px">
+								<div class="card card-block" style="text-align:center">
+									<b class="card-title rowone"> 
+										<a href="/feeds">直接订阅</a>
+									</b>
 								</div>
 							</div>
-					</form>
+							<div class="col-md-3" style="padding:10px">
+								<div class="card card-block" style="text-align:center">
+									<b class="card-title rowone"> 
+										<a href="/feeds/weiborss">订阅微博</a>
+									</b>
+								</div>
+							</div>
+							<div class="col-md-3" style="padding:10px">
+								<div class="card card-block" style="text-align:center">
+									<b class="card-title rowone"> 
+										<a href="/feeds/weixinrss">订阅公众号</a>
+									</b>
+								</div>
+							</div>
+							<div class="col-md-3" style="padding:10px">
+								<div class="card card-block" style="text-align:center">
+									<b class="card-title rowone"> 
+										<a href="/feeds/opml">OPML导入</a>
+									</b>
+								</div>
+							</div>
+					</div>
 				</div>
 			</div>
 			
@@ -108,41 +116,6 @@ $(document).ready(function () {
 							</div>
 						@endforeach
 					</div>
-				</div>
-			</div>
-			
-			<div class="card" style="margin-bottom: 10px;">
-                <div class="card-header">
-                    	订阅微信公众号
-                </div>
-				
-				<div class="card-body">
-					<form action="/feeds/">
-						<fieldset disabled>
-							<div class="form-row">
-								<div  class="col-12">
-									<label for="disabledSelect">公众号ID</label>
-									<input type="text" value="" class="form-control" name="weixin_id" placeholder="请输入公众号ID"/>
-								</div>
-								
-								<div  class="col-12">
-									  <label for="disabledSelect">选择分类</label>
-									  <select id="disabledSelect" name="category_id" class="form-control">
-										@foreach ($categorys as $category)
-										<option value="{{ $category->id }}">{{ $category->name }}</option>
-										@endforeach
-									  </select>
-								</div>
-								<input type="hidden" value="weixin" name="feed_type"/>
-								<input type="hidden" value="weixin" name="feed_name"/>
-								<input type="hidden" value="weixin" name="url"/>
-								
-								<div class="col">
-									<button type="submit" class="btn btn-primary">马上订阅</button>
-								</div>
-							</div>
-						</fieldset>
-					</form>
 				</div>
 			</div>
 			
