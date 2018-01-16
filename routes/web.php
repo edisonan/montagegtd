@@ -132,6 +132,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/feeds/sort', 'FeedController@sort');
     Route::get('/feeds/explorer', 'FeedController@explorer');
     Route::get('/feeds/quickstore', 'FeedController@quickstore');
+    Route::get('/feeds/search', 'FeedController@search');
     
     Route::get('/articles', 'ArticleController@index');
     Route::post('/article', 'ArticleController@store');
