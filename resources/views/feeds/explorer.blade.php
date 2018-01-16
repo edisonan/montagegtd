@@ -41,14 +41,113 @@ $(document).ready(function () {
     
         <div class=" col-md-12">
         	@include('common.success')
-            <div class="card">
+            <div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
-                    	发现新的订阅源
-                    	<div style="float:right">
-                    		<a href="{{'/articles'}}">[返回]</a>
-                    	</div>
+                    	Search
                 </div>
-
+				
+				<div class="card-body">
+					<form action="/feeds/search">
+						<div class="form-row">
+							<div  class="col-7">
+								<input type="text" value="" name="name" class="form-control" placeholder="input search value"/>
+							</div>
+							<div class="col">
+								<button type="submit" class="btn btn-primary">Search</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+			
+			<div class="card" style="margin-bottom: 10px;">
+                <div class="card-header">
+                    	Weibo
+                </div>
+				
+				<div class="card-body">
+					<form action="/feeds/">
+						<fieldset disabled>
+							<div class="form-row">
+								<div  class="col-7">
+									<input type="text" value="" class="form-control" placeholder="input weibo user_id"/> 
+								</div>
+								<!--
+								<div  class="col">
+									  <label for="disabledSelect">Disabled select menu</label>
+									  <select id="disabledSelect" class="form-control">
+										<option>Disabled select</option>
+									  </select>
+								</div>
+								<div  class="col">
+									<input type="text" value="" class="form-control" placeholder="input weibo user_id"/> 
+								</div>
+								-->
+								<div class="col">
+									<button type="submit" class="btn btn-primary">Weibo</button>
+								</div>
+							</div>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+			
+			<div class="card" style="margin-bottom: 10px;">
+                <div class="card-header">
+                    	Weixin
+                </div>
+				
+				<div class="card-body">
+					<form action="/feeds/">
+						<fieldset disabled>
+							<div class="form-row">
+								<div  class="col-7">
+									<input type="text" value="" class="form-control" placeholder="input weixin id"/>
+								</div>
+								<!--
+								<div  class="col">
+									  <label for="disabledSelect">Disabled select menu</label>
+									  <select id="disabledSelect" class="form-control">
+										<option>Disabled select</option>
+									  </select>
+								</div>
+								
+								<div  class="col">
+									<input type="text" value="" class="form-control" placeholder=""/> 
+								</div>
+								-->
+								<div class="col">
+									<button type="submit" class="btn btn-primary">Weixin</button>
+								</div>
+							</div>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+			
+			<div class="card" style="margin-bottom: 10px;">
+                <div class="card-header">
+                    	Category
+                </div>
+				
+				<div class="card-body">
+					@foreach (array() as $feed)
+					<div class="row col-md-6" style="padding:10px">
+						<div class="card card-block">
+							<b class="card-title rowone"> 
+							
+							</b>
+						</div>
+					</div>
+					@endforeach
+				</div>
+			</div>
+			
+			<div class="card" style="margin-bottom: 10px;">
+                <div class="card-header">
+                    	Recommend
+                </div>
+				
                 <div class="card-body">
                     <!-- Display Validation Errors -->
                     @include('common.errors')

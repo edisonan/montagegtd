@@ -90,6 +90,20 @@ class FeedController extends Controller
             'feeds' => $feeds,
         ]);
     }
+	
+	/**
+     * 
+     * @param Request $request
+     */
+    public function search(Request $request)
+    {
+		$name = $request->name;
+    	$feeds = $this->feeds->findByName($name , $need_page=true);
+    	
+        return view('feeds.search', [
+            'feeds' => $feeds,
+        ]);
+    }
     
     public function setting(Request $request)
     {

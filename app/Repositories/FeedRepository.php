@@ -42,6 +42,18 @@ class FeedRepository
     		return $feed->get();
     	}
     }
+	
+	public function findByName($name,$need_page=false)
+    {
+    	$feed = Feed::where('feed_name', 'like', '%'.$name.'%')
+    	->orderBy('recommend_order', 'desc');
+    
+    	if($need_page){
+    		return $feed->paginate(48);
+    	} else {
+    		return $feed->get();
+    	}
+    }
     
     /**
      * get feed list by type and status
