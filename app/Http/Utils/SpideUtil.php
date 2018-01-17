@@ -23,6 +23,7 @@ class SpideUtil{
 		//获取该Feed的订阅者
 		$feedSubs = FeedSub::where('feed_id',$feed->id)->get();
 		
+		$feed_last_published = '';
 		foreach ($list as $item){
 			$article = Article::where('feed_id',$feed->id)->where('user_id',$feed->user_id)->where('url',$item['url'])->first();
 			if(empty($article)){
@@ -49,6 +50,10 @@ class SpideUtil{
 				}
 			}
 			
+			if(empty($feed_last_published) || strtotime($feed_last_published) < strtotime($article->published)){
+				$feed_last_published = $article->published;
+			}
+			
 			//get content
 			if(empty($article->content)){
 				$result = $this->request($item['url']);
@@ -56,12 +61,19 @@ class SpideUtil{
 					continue;
 				}
 				$params = $this->getContent($result,$feed->type);
-				print_r($params);
 				if(empty($params)){
 					continue;
 				}
 				$article->content = $params['content'];
 				$article->save();
+			}
+		}
+		
+		if(count($list) > 0){
+			if(!empty($feed_last_published)){
+				Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s'), 'last_published' => $feed_last_published]);
+			} else {
+				Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
 			}
 		}
 	}
