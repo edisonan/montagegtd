@@ -382,7 +382,7 @@ $(document).ready(function () {
 
 	                        @if(count($recommend_feeds) > 0)
 									<div class="text-center col-md-12" style="font-size: 20px; margin: 10px;">
-	                        			还可以逛逛其他的资源~
+	                        			<a href="/feeds/explorer">还可以逛逛其他的资源~</a>
 	                        		</div>
 	                        		<div class="row" style="margin:15px">
 				                    	@foreach($recommend_feeds as $recommend_feed)
