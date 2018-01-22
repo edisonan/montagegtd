@@ -61,9 +61,12 @@ class Kernel extends ConsoleKernel
     	$schedule->command('statistics_cron')->dailyAt('00:30');
     	$schedule->command('feed_common',array(1))->everyTenMinutes();
     	$schedule->command('feed_common',array(2))->hourly();
-    	$schedule->command('feed_common',array(-1))->daily();
-    	$schedule->command('feed_common',array(-2))->daily();
+    	$schedule->command('feed_common',array(3))->daily();
+    	$schedule->command('feed_common',array(4))->daily();
     	$schedule->command('kindle_push')->dailyAt('18:00');
+    	
+    	$schedule->command('backup2qiniu',array(env('TASK_SQL_FILE_PATH')))->dailyAt('18:00');
+    	$schedule->command('backup2qiniu',array(env('WWW_SQL_FILE_PATH')))->dailyAt('18:00');
     }
 	
 	

@@ -304,7 +304,7 @@ $(document).ready(function () {
                     		<input type="checkbox" value="" id="unable_desc"/>一目十行
                     		<input type="checkbox" value="" id="unable_img"/>屏图
                     		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
-                    		<a href="{{ url('feeds/explorer')}}">[发现]</a>
+                    		<a href="{{ url('feeds/explorer')}}">[发现<sup style="color:red;"><img alt="" src="/img/icon/recommend.png" style="width: 25px;">推荐</sup>]</a>
                     		<a href="{{ url('feeds')}}">[添加订阅]</a>
                     	</div>
                 </div>

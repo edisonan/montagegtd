@@ -78,7 +78,7 @@
 	                    @else
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
+	                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}" style="color:#F7AA55">去阅读<sup>推荐</sup></a></li>
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
 	                    <li class="nav-item"><a class="nav-link" href="{{ url('index/feedback') }}" style="color:#E85205">添加反馈</a></li>
 	                    @endif

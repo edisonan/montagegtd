@@ -4,6 +4,7 @@ namespace App\Http\Utils;
 use App\Article;
 use App\ArticleSub;
 use App\FeedSub;
+use App\Feed;
 use function GuzzleHttp\json_encode;
 include 'simple_html_dom.php';
 
