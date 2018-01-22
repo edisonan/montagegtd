@@ -10,11 +10,12 @@
         "celd/opml-import-export": "dev-master",
         "develpr/phindle": "dev-dev",
         "encore/laravel-admin": "1.5.*",
+        "eventviva/php-image-resize": "1.6.*",
         "fideloper/proxy": "~3.3",
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "sentry/sentry-laravel": "^0.8.0",
-		"eventviva/php-image-resize": "1.6.*"
+        "zgldh/qiniu-laravel-storage": "^0.9.0"
     },
     "require-dev": {
         "filp/whoops": "~2.0",
