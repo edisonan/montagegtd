@@ -61,7 +61,7 @@
 			      max-width: 85%;
 		  }
 
-		  .h1 .h2 .h3 {
+		  .h1,h1,.h2,h2,.h3,h3 {
 		      font-size: 1.5rem;
 		  }
 </style>
