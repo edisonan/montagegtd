@@ -60,6 +60,10 @@
 		  img{
 			      max-width: 85%;
 		  }
+
+		  .h1 .h2 .h3 {
+		      font-size: 1.5rem;
+		  }
 </style>
 <link rel="stylesheet" href="/css/share.min.css">
 
