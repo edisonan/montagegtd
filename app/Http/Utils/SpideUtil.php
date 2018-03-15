@@ -184,6 +184,7 @@ class SpideUtil{
 			$image->resizeToWidth(200);
 			$image->save($filename);
 		} catch (Exception $e) {
+			\Log::info('ERROR '.serialize($e).'|'.$filename);
 		}
 		return $filename;
 	}
