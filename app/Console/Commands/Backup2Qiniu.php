@@ -42,8 +42,12 @@ class Backup2Qiniu extends Command
 		$path = $file_path.'/'.date('Ymd').'.sql.tar.gz';
 		
 		if(file_exists($path)){
-			\Storage::disk('qiniu')->put( basename($path), fopen($path,'r+'));
-			\Log::info('upload to qiniu :'.$path);
+      try{
+        \Storage::disk('qiniu')->put( basename($path), fopen($path,'r+'));
+        \Log::info('upload to qiniu :'.$path);
+      }catch(Exception $e){
+        \Log::info('ERROR upload to qiniu :'.$path.'|'.serialize($e));
+      }
 		} else {
 			\Log::info('path not exist :'.$path);
 		}
