@@ -128,7 +128,7 @@ class PomoController extends Controller
 	        $thing->save();
 	        
 	        //auto resting
-	        $request->session()->set('rest_start_time', time());
+	        $request->session()->put('rest_start_time', time());
     	}
     	
     	if ($request->ajax() || $request->wantsJson()) {
