@@ -55,7 +55,7 @@ class ThirdController extends Controller
     	$keys = $o -> getRequestToken();
     	$aurl = $o -> getAuthorizeURL( $keys['oauth_token'] ,false , $config['callback']);
     	
-    	$request->session()->set('temp', $keys);
+    	$request->session()->put('temp', $keys);
     	return redirect((string)$aurl)->with('message', 'IT WORKS!');
     }
 
