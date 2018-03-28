@@ -65,8 +65,8 @@ class TaskController extends Controller
     	
         $this->validate($request, [
             'name' => 'required|max:255',
-            'remindtime' => 'date_format:Y-m-d H:i:s',
-            'deadline' => 'date_format:Y-m-d H:i:s',
+            'remindtime' => 'nullable|date_format:Y-m-d H:i:s',
+            'deadline' => 'nullable|date_format:Y-m-d H:i:s',
         ]);
         
         $params = array();
