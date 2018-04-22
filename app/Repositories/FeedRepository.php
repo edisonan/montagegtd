@@ -122,24 +122,21 @@ class FeedRepository
     	$feeder = $feedFactory->make($feed->url);
     	$simplePieInstance = $feeder->getRawFeederObject();
     
-    	//only add articles and update feed when results are found
     	if (!empty($simplePieInstance)) {
     		$feedSubs = FeedSub::where('feed_id',$feed->id)->where('status',1)->get();
     		
-    		//set previous week
     		$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
     
+    		$feed_last_published = '';
     		foreach ($simplePieInstance->get_items() as $item) {
     			//count the number of items that already exist in the database with the item url and feed_id
     			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => $item->get_permalink()])->count();
     			$results_title = Article::where([ 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
     			$date = $item->get_date('Y-m-j H:i:s');
     
-    			//add new article if no results are found and article date is no older than one week
     			if ($results_url == 0 && $results_title == 0 && ! (strtotime($date) < strtotime($previousweek))) {
     				$article = new Article;
     
-    				//get article content
     				$article->feed_id = $feed->id;
     				$article->status = 'unread';
     				$article->url = $item->get_permalink();
@@ -149,8 +146,6 @@ class FeedRepository
     
     				$article->user_id = $feed->user_id;
     
-    				//get URL of first image
-    				//TODO: replace with SimplePie str_get_html function, see: http://stackoverflow.com/questions/9865130/getting-image-url-from-rss-feed-using-simplepie
     				$description =  $item->get_description();
     				preg_match('/<img.+src=[\'"](?P<src>.+?)[\'"].*>/i', $description, $image);
     				if (array_key_exists('src', $image)) {
@@ -164,7 +159,6 @@ class FeedRepository
     					}
     				}
     
-    				//save article content to database
     				$article->save();
     				
     				\Log::info("Save Article:".$article->url);
@@ -183,12 +177,20 @@ class FeedRepository
 							\Log::info("Save ArticleSub:".$articleSub->user_id.'|'.$articleSub->article_id);
     					}
     				}
+    				
+    				if(empty($feed_last_published) || strtotime($feed_last_published) < strtotime($article->published)){
+    					$feed_last_published = $article->published;
+    				}
     			}
     		}
     
     		//update feed updated_at record
     		if(count($simplePieInstance->get_items()) > 0){
-	    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s'),'feed_desc' => $simplePieInstance->get_description(),'favicon' => $simplePieInstance->get_image_url()]);
+    			if(!empty($feed_last_published)){
+    				Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s'),'feed_desc' => $simplePieInstance->get_description(),'favicon' => $simplePieInstance->get_image_url(), 'last_published' => $feed_last_published]);
+    			} else {
+    				Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s'),'feed_desc' => $simplePieInstance->get_description(),'favicon' => $simplePieInstance->get_image_url()]);
+    			}
     		}
     	}
     }
@@ -223,16 +225,16 @@ class FeedRepository
     	if(empty($items)) {
     		return false;
     	}
+    	
     	foreach ($items as $item) {
 				if(isset($item['repost_status'])){
 					$item = $item['repost_status'];
 				}
-    			//count the number of items that already exist in the database with the item url and feed_id
+				
     			$results_url = Article::where([ 'feed_id' => $feed->id, 'url' => 'http://fanfou.com/statuses/'.$item['id']])->count();
-//     			$results_title = Article::where([ 'feed_id' => $feed->id, 'subject' => $item->get_title()])->count();
     			$date = date('Y-m-d H:i:s',strtotime($item['created_at']));
-    
-    			//add new article if no results are found and article date is no older than one week
+    			
+    			$feed_last_published = '';
     			if ($results_url == 0  && ! (strtotime($date) < strtotime($previousweek))) {
     				$article = new Article;
     				
@@ -257,10 +259,7 @@ class FeedRepository
     
     				$article->user_id = $feed->user_id;
     
-    				//get URL of first image
-    				//TODO: replace with SimplePie str_get_html function, see: http://stackoverflow.com/questions/9865130/getting-image-url-from-rss-feed-using-simplepie
     				$description =  $item['text'];
-    				//save article content to database
     				$article->save();
     				
     				\Log::info("Save Article:".$article->url);
@@ -279,14 +278,20 @@ class FeedRepository
     						\Log::info("Save ArticleSub:".$articleSub->user_id.'|'.$articleSub->article_id);
     					}
     				}
-    
-//     				\Log::info("Article Title:".$item->get_title());
+    				
+    				if(empty($feed_last_published) || strtotime($feed_last_published) < strtotime($article->published)){
+    					$feed_last_published = $article->published;
+    				}
     			}
     		}
     
     		//update feed updated_at record
     		if(count($items) > 0){
-	    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
+    			if(!empty($feed_last_published)){
+		    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s'), 'last_published' => $feed_last_published]);
+    			} else {
+		    		Feed::where('id', $feed->id)->update(['updated_at' => date('Y-m-j H:i:s')]);
+    			}
     		}
     	}
 }

@@ -129,25 +129,30 @@ class KindlePush extends Command
     				$phindle->addContent($content);
     			}
     			
-    			//do something build mobi file
-    			$phindle->process();
     			
-    			// get mobi file path
-    			$path = $phindle->getMobiPath();
-    			
-    			$kindleLog->path = $path;
-    			$kindleLog->status = 2;
-    			$kindleLog->save();
-    			
-    			//send to kindle address
-    			Log::info('send to kindle:'.$user->id.'|'.count($articleSubs).'|'.$path);
-    			Mail::send('emails.kindle', ['setting'=>$setting,'path'=>$path], function ($m) use ($setting,$path) {
-    				$m->to($setting->kindle_email, 'user')->subject('Send To Kindle');
-    				$m->attach($path);
-    			});
-    			
-    			$kindleLog->status = 3;
-    			$kindleLog->save();
+				try{
+					//do something build mobi file
+					$phindle->process();
+
+					// get mobi file path
+					$path = $phindle->getMobiPath();
+					
+					$kindleLog->path = $path;
+					$kindleLog->status = 2;
+					$kindleLog->save();
+
+					//send to kindle address
+					Log::info('send to kindle:'.$user->id.'|'.count($articleSubs).'|'.$path);
+					Mail::send('emails.kindle', ['setting'=>$setting,'path'=>$path], function ($m) use ($setting,$path) {
+						$m->to($setting->kindle_email, 'user')->subject('Send To Kindle');
+						$m->attach($path);
+					});
+					
+					$kindleLog->status = 3;
+					$kindleLog->save();
+				}catch(Exception $e){
+					Log::info('ERROR:'.serialize($e).':'.serialize($phindle));
+				}
     		}
     }
 }

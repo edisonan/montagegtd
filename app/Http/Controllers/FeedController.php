@@ -443,7 +443,6 @@ class FeedController extends Controller
 	    	$feedList = $importer->getFeedList();
 	    	
 		    $categorys = $this->categorys->forUser($request->user());
-	    	 
 	    	if(count($categorys) == 0){
 	    		$category = $request->user()->categorys()->create([
 	    				'name' => '未分类',
@@ -451,23 +450,72 @@ class FeedController extends Controller
 	    		]);
 	    		$categorys = array($category);
 	    	}
+	    	$category_arr = array();
+	    	foreach ($categorys as $category){
+	    		$category_arr[$category->name] = $category->id;
+	    	}
 	    	
+	    	$category_id = $category_arr['未分类'];
 	    	foreach ($feedList->getItems() as $item) {
 	    		if ($item->getType() == 'category') {
-	    			echo $item->getTitle()."bbbbbbbbbbbbbbbbb\n"; // Category title
+	    			
+	    			if(!isset($category_arr[$item->getTitle()])){
+	    				$category = $request->user()->categorys()->create([
+	    						'name' => '未分类',
+	    						'category_order' => 0,
+	    				]);
+	    				$category_arr[$item->getTitle()] = $category->id;
+	    			}
+	    			
+	    			$category_id = $category_arr[$item->getTitle()];
 	    			
 	    			foreach($item->getFeeds() as $feed) {
-	    				echo $feed->getTitle().'|'.$feed->getXmlUrl() . "\n";
+	    				$this->storeFeedSub($feed->getTitle(), $feed->getXmlUrl(), $category_id, $request->user());
 	    			}
 	    		} else {
-		    		echo $item->getTitle().'|'.$item->getXmlUrl()." aaaaaaaaaaaaaaa\n"; //Root feed title
+	    			$this->storeFeedSub($item->getTitle(), $item->getXmlUrl(), $category_id, $request->user());
 	    		}
 	    	}
+	    	
+	    	return redirect('/feeds')->with('message', 'IT WORKS!');
 	    } else {
 	    	echo 'error param!';exit;
 	    }
 	    exit;
+    }
+    
+    private function storeFeedSub($feed_name, $feed_url, $category_id, $user){
+    	$feed = Feed::where('url',$feed_url)->first();
+    	if(empty($feed)){
+    		$feed = new Feed();
+    		$feed->user_id = $user->id;
+    		$feed->feed_name = $feed_name;
+    		$feed->url = $feed_url;
+    		$feed->category_id = $category_id;
+    		$feed->sub_count = 1;
+    		$feed->save();
+    	} else {
+    		$feedSub = $this->feedSubs->forUserByFeedId($user,$feed->id,1);
+    		 
+    		if(!empty($feedSub)){
+    			return false;
+    		}
+    		 
+    		//如果未锁定，那么更改Feed的名称
+    		if(empty($feed->recommend_name) && $feed->name != $feed_name){
+    			$feed->feed_name = $feed_name;
+    		}
+    		$feed->sub_count = $feed->sub_count + 1;
+    		$feed->save();
+    	}
     	
+    	$feedSub = $user->feedSubs()->create([
+    			'feed_id' => $feed->id,
+    			'feed_name' => $feed_name,
+    			'category_id' => $category_id,
+    	]);
+    	
+    	return true;
     }
     
     public function weiborss(Request $request)

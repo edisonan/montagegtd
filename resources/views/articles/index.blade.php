@@ -60,6 +60,10 @@
 		  img{
 			      max-width: 85%;
 		  }
+
+		  .h1,h1,.h2,h2,.h3,h3 {
+		      font-size: 1.5rem;
+		  }
 </style>
 <link rel="stylesheet" href="/css/share.min.css">
 
@@ -304,7 +308,7 @@ $(document).ready(function () {
                     		<input type="checkbox" value="" id="unable_desc"/>一目十行
                     		<input type="checkbox" value="" id="unable_img"/>屏图
                     		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
-                    		<a href="{{ url('feeds/explorer')}}">[发现]</a>
+                    		<a href="{{ url('feeds/explorer')}}">[发现<sup style="color:red;"><img alt="" src="/img/icon/recommend.png" style="width: 25px;">推荐</sup>]</a>
                     		<a href="{{ url('feeds')}}">[添加订阅]</a>
                     	</div>
                 </div>
@@ -382,7 +386,7 @@ $(document).ready(function () {
 
 	                        @if(count($recommend_feeds) > 0)
 									<div class="text-center col-md-12" style="font-size: 20px; margin: 10px;">
-	                        			还可以逛逛其他的资源~
+	                        			<a href="/feeds/explorer">还可以逛逛其他的资源~</a>
 	                        		</div>
 	                        		<div class="row" style="margin:15px">
 				                    	@foreach($recommend_feeds as $recommend_feed)
