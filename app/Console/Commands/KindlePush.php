@@ -73,7 +73,7 @@ class KindlePush extends Command
     					'path'	=> config("app.storage_path") . '/ebooks', //The path that temp files will be stored, as well as the location of the final ebook mobi file
     					'isbn'  => '666666666666666',
     					'staticResourcePath' => config("app.storage_path").'/ebooks/static', //The absolute path to your static resources referenced in html (images, css, etc)
-    					'cover'	=> 'public/img/kindle/cover.png' , //The relative path of your cover image
+    					'cover'	=> 'cover.jpg' , //The relative path of your cover image
     					'kindlegenPath' => '/usr/local/bin/kindlegen', //The path to the kindlegen utility
     					'downloadImages' => true, //Should images be downloaded from the web if found in your html?
     			));
