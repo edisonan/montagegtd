@@ -34,7 +34,7 @@ class TaskController extends Controller
      */
     public function __construct(TaskRepository $tasks, GoalRepository $goals,   TagRepository $tags)
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => ['ics']]);
 
         $this->tasks = $tasks;
         $this->goals = $goals;
