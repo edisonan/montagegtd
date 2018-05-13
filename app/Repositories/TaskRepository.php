@@ -49,4 +49,13 @@ class TaskRepository
     	->orderBy('updated_at', 'desc')
     	->get();
     }
+    
+    public function forUserByUserIdRemindTime($user_id, $start_time, $end_time)
+    {
+    	return Task::where('user_id', $user_id)
+    	->where('remindtime', '>', $start_time)
+    	->where('remindtime', '<', $end_time)
+    	->where('status',1)
+    	->get();
+    }
 }

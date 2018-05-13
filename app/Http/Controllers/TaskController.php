@@ -173,4 +173,42 @@ class TaskController extends Controller
     	}
     }
     
+    public function update(Request $request)
+    {
+    	if($request->has('parent_task_id')){
+    		$user_id = $request->user_id;
+    	} else {
+    		echo 'error params';exit;
+    	}
+    	
+    	$start_time = date('Y-m-d H:i:s');
+    	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+31536000);
+    	 
+    	$tasks = $this->tasks->forUserByRemindTime($user_id, $start_time, $end_time);
+    	
+    	$task_props = array();
+    	foreach ($tasks as $task){
+    		$task_props[] = array(
+    			'description'=>$task->name,
+    			'dtend'=>$task->remindtime,
+    			'dtstart'=>$task->remindtime,
+    			'location'=>'',
+    			'summary'=>$task->name,
+    			'url'=>'https://task.congcong.us/tasks',
+    		);
+    	}
+    	
+    	$ics = new ICSUtil($task_props);
+    	$ics_file_contents = $ics->to_string();
+    	
+    	file_put_contents(config("app.storage_path").'/task_ics_'.$user_id, $ics_file_contents);
+    	
+    	header("Content-type:application/octet-stream");
+    	header("Content-Disposition:attachment;filename = task_ics_".$user_id.'.ics');
+    	header("Accept-ranges:bytes");
+    	header("Accept-length:".filesize(config("app.storage_path").'/task_ics_'.$user_id));
+    	
+    	readfile(config("app.storage_path").'/task_ics_'.$user_id);
+    }
+    
 }
