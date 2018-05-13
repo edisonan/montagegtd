@@ -173,7 +173,7 @@ class TaskController extends Controller
     	}
     }
     
-    public function update(Request $request)
+    public function ics(Request $request)
     {
     	if($request->has('parent_task_id')){
     		$user_id = $request->user_id;
