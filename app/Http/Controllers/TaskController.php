@@ -182,8 +182,8 @@ class TaskController extends Controller
         //TODO GET USER_ID BY $user_token
         $user_id = 1;
         
-    	$start_time = date('Y-m-d H:i:s',strtotime($start_time)-15768000);
-    	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+15768000);
+    	$start_time = date('Y-m-d H:i:s',time()-15768000);
+    	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+31536000);
     	 
     	$tasks = $this->tasks->forUserByUserIdRemindTime($user_id, $start_time, $end_time);
     	
