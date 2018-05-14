@@ -113,6 +113,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/task/{task}', 'TaskController@destroy');
     Route::post('/task/{task}', 'TaskController@update');
     Route::get('/task/{task}', 'TaskController@update');
+    Route::get('/taskics', 'TaskController@ics');
     
     Route::get('/categorys', 'CategoryController@index');
     Route::post('/category', 'CategoryController@store');
