@@ -53,8 +53,11 @@ class ICSUtil
 		$ics_props = array(
 				'BEGIN:VCALENDAR',
 				'VERSION:2.0',
-				'PRODID:-//hacksw/handcal//NONSGML v1.0//EN',
+				'PRODID:-//Edison An//NONSGML v1.0//EN',
 				'CALSCALE:GREGORIAN',
+				'X-WR-CALNAME:Montage Tasks',
+				'X-WR-TIMEZONE:Asia/Shanghai',
+				'X-WR-CALDESC:Montage GTD Util By Edison An',
 		);
 
 		foreach($this->properties as $key => $val) {
