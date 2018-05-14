@@ -180,7 +180,7 @@ class TaskController extends Controller
     	$start_time = date('Y-m-d H:i:s');
     	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+31536000);
     	 
-    	$tasks = $this->tasks->forUserByRemindTime($user_id, $start_time, $end_time);
+    	$tasks = $this->tasks->forUserByUserIdRemindTime($user_id, $start_time, $end_time);
     	
     	$task_props = array();
     	foreach ($tasks as $task){
