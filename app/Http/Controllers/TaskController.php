@@ -173,14 +173,8 @@ class TaskController extends Controller
     	}
     }
     
-    public function ics(Request $request)
+    public function ics(Request $request,String $user_id)
     {
-    	if($request->has('parent_task_id')){
-    		$user_id = $request->user_id;
-    	} else {
-    		echo 'error params';exit;
-    	}
-    	
     	$start_time = date('Y-m-d H:i:s');
     	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+31536000);
     	 
