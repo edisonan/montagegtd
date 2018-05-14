@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
-use App\Http\Utils\ICSUtil;
 use App\Http\Controllers\Controller;
 
 use App\Task;
@@ -15,6 +14,8 @@ use App\Repositories\TaskRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\GoalRepository;
 use App\Thing;
+
+use App\Http\Utils\ICSUtil;
 
 class TaskController extends Controller
 {
