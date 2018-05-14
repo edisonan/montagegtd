@@ -194,7 +194,7 @@ class TaskController extends Controller
     		);
     	}
     	
-    	$ics = new App\Http\Utils\ICSUtil($task_props);
+    	$ics = new ICSUtil($task_props);
     	$ics_file_contents = $ics->to_string();
     	
     	file_put_contents(config("app.storage_path").'/task_ics_'.$user_id, $ics_file_contents);
