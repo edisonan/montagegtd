@@ -1,4 +1,6 @@
 <?php
+namespace App\Http\Utils;
+
 class ICSUtil
 {
 	const DT_FORMAT = 'Ymd\THis\Z';
