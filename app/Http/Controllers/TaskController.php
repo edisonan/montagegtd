@@ -177,6 +177,8 @@ class TaskController extends Controller
     
     public function ics(Request $request,String $user_token)
     {
+        date_default_timezone_set("Asia/Shanghai");
+        
         //TODO GET USER_ID BY $user_token
         $user_id = 1;
         
