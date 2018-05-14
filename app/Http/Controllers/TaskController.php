@@ -175,8 +175,11 @@ class TaskController extends Controller
     	}
     }
     
-    public function ics(Request $request,String $user_id)
+    public function ics(Request $request,String $user_token)
     {
+        //TODO GET USER_ID BY $user_token
+        $user_id = 1;
+        
     	$start_time = date('Y-m-d H:i:s');
     	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+31536000);
     	 
