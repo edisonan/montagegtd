@@ -32,7 +32,7 @@ class ICSUtil
 			}
 		} else {
 			if (in_array($key, $this->available_properties)) {
-				if(!is_array($this->properties[$num]))
+				if(!isset($this->properties[$num]) || !is_array($this->properties[$num]))
 				{
 					$this->properties[$num] = [];
 				}
