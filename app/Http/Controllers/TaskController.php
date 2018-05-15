@@ -16,6 +16,7 @@ use App\Repositories\GoalRepository;
 use App\Thing;
 
 use App\Http\Utils\ICSUtil;
+use App\Http\Utils\ICSUtil2;
 
 class TaskController extends Controller
 {
@@ -190,16 +191,25 @@ class TaskController extends Controller
     	$task_props = array();
     	foreach ($tasks as $task){
     		$task_props[] = array(
-    			'description'=>$task->name,
     			'dtend'=>$task->remindtime,
     			'dtstart'=>$task->remindtime,
-    			'location'=>'',
+    			'due'=>$task->remindtime,
+    			'completed'=>$task->remindtime,
     			'summary'=>$task->name,
-    			'url'=>'https://task.congcong.us/tasks',
+    			'repeat'=>1,
+    			'status'=>'NEEDS-ACTION',
     		);
+//     		$task_props[] = array(
+//     			'description'=>$task->name,
+//     			'dtend'=>$task->remindtime,
+//     			'dtstart'=>$task->remindtime,
+//     			'location'=>'',
+//     			'summary'=>$task->name,
+//     			'url'=>'https://task.congcong.us/tasks',
+//     		);
     	}
     	
-    	$ics = new ICSUtil($task_props);
+    	$ics = new ICSUtil2($task_props);
     	$ics_file_contents = $ics->to_string();
     	
     	file_put_contents(config("app.storage_path").'/task_ics_'.$user_id, $ics_file_contents);
