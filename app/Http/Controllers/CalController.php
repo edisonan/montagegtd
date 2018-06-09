@@ -11,7 +11,7 @@ use App\Repositories\CalRepository;
 
 use App\Http\Utils\ICSUtil;
 
-class TaskController extends Controller
+class CalController extends Controller
 {
     /**
      * The task repository instance.
