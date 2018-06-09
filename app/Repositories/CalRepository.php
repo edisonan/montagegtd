@@ -13,7 +13,7 @@ class CalRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forByNameAndStatus(string $theme, string $status,$need_page=false)
+    public function forByThemeAndStatus(string $theme, string $status,$need_page=false)
     {
     	$cal = Cal::where('status',$status)->where('theme',$theme)->orderBy('id','asc');
     	
