@@ -115,6 +115,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/task/{task}', 'TaskController@update');
     Route::get('/taskics/{user_token}', 'TaskController@ics');
     
+    Route::get('/calics/{theme}', 'CalController@ics');
+    
     Route::get('/categorys', 'CategoryController@index');
     Route::post('/category', 'CategoryController@store');
     Route::post('/category/{category}', 'CategoryController@update');

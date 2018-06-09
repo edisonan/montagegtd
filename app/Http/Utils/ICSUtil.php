@@ -14,6 +14,9 @@ class ICSUtil
 			'summary',
 			'url'
 	);
+	
+	public $cal_name = "Montage Tasks";
+	public $cal_desc = "Montage GTD Util By Edison An";
 
 	public function __construct($props)
 	{
@@ -55,9 +58,9 @@ class ICSUtil
 				'VERSION:2.0',
 				'PRODID:-//Edison An//NONSGML v1.0//EN',
 				'CALSCALE:GREGORIAN',
-				'X-WR-CALNAME:Montage Tasks',
+				'X-WR-CALNAME:'.$this->cal_name,
 				'X-WR-TIMEZONE:Asia/Shanghai',
-				'X-WR-CALDESC:Montage GTD Util By Edison An',
+				'X-WR-CALDESC:'.$this->cal_desc,
 		);
 
 		foreach($this->properties as $key => $val) {
