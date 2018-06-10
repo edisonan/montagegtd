@@ -54,7 +54,6 @@ class LoginController extends Controller
     	
     	//判断是否是登录态，如果是那么进行关联操作，如果不是那么进行登录操作
     	$curr_user = $request->user();
-    	dd($curr_user);//TODO
     	if(empty($curr_user)){
     		$action = 'login';
     	} else {
@@ -64,14 +63,13 @@ class LoginController extends Controller
     	//获取oauth表中信息
     	$oauthRepository = new OauthRepository();
     	$oauth_info = $oauthRepository->forByThirdUidAndDriver($third_user->id, $driver);
-    	dd($oauth_info);//TODO
     	
     	//如果有，那么直接召唤出来user,登录
     	if(!empty($oauth_info)){
     		$user = User::where('id',$oauth_info['user_id'])->first();
     		
     		if($action == 'related'){
-    			if($curr_user->user_id != $oauth_info['user_id']){
+    			if($curr_user->id != $oauth_info['user_id']){
     				echo 'error,this has related the user_id '.$user->name;exit;
     			} else {
     				
@@ -97,7 +95,6 @@ class LoginController extends Controller
 	    		$user = new User();
 	    		$user->save($data);
     		}
-			dd($user);
 			
     		//存储oauth信息
     		$oauth_info = new OauthInfo();
@@ -110,8 +107,6 @@ class LoginController extends Controller
     			'access_token'=>$token,
     			'expire'=>$expire
     		));
-    		
-    		DD($oauth_info);
     		
     		if($action == 'login'){
     			Auth::login($user);
