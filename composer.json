@@ -10,7 +10,7 @@
         "celd/opml-import-export": "dev-master",
         "develpr/phindle": "dev-dev",
         "encore/laravel-admin": "1.5.*",
-        "eventviva/php-image-resize": "1.6.*",
+        "gumlet/php-image-resize": "1.6.*",
         "fideloper/proxy": "~3.3",
         "laravel/framework": "5.5.*",
         "laravel/socialite": "^3.0",
