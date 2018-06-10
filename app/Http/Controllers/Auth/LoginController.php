@@ -98,7 +98,7 @@ class LoginController extends Controller
 			
     		//存储oauth信息
     		$token = $third_user->token->access_token;
-    		$expire = isset($third_user->token->expires_in)?date('Y-m-d H:i:s',$third_user->token->expires_in):'';
+    		$expire = isset($third_user->token->expires_in)?date('Y-m-d H:i:s',$third_user->token->expires_in):'2038-01-01 00:00:00';
     		
     		$oauth_info = new OauthInfo();
     		$oauth_info->create(array(
