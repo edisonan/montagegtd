@@ -42,7 +42,7 @@ class LoginController extends Controller
     	return Socialite::driver($driver)->redirect();
     }
     
-    public function thirdCallback(){
+    public function thirdCallback($driver){
     	$user = Socialite::driver($driver)->user();
     	dd($user->token);
     }
