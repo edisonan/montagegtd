@@ -34,7 +34,7 @@ class OauthInfoRepository
     {
     	return OauthInfo::where('third_uid', $third_uid)->where('driver', $driver)
     	->orderBy('updated_at', 'desc')
-    	->get();
+    	->first();
     }
     
 }
