@@ -93,7 +93,7 @@ class LoginController extends Controller
 	    		
 	    		//进行存储user
 	    		$user = new User();
-	    		$user->save($data);
+	    		$user->create($data);
     		}
 			
     		//存储oauth信息
@@ -101,7 +101,7 @@ class LoginController extends Controller
     		$expire = isset($third_user->token->expires_in)?date('Y-m-d H:i:s',$third_user->token->expires_in):'';
     		
     		$oauth_info = new OauthInfo();
-    		$oauth_info->save(array(
+    		$oauth_info->create(array(
     			'third_uid'=>$third_user->id,
     			'user_id'=>$user->id,
     			'driver'=>$driver,

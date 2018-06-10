@@ -12,7 +12,7 @@ class OauthInfo extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_id','expire','access_token','driver','third_uid'];
+    protected $fillable = ['user_id','expire','access_token','driver','third_uid','created_at','updated_at'];
     
     /**
      * The attributes that should be cast to native types.
