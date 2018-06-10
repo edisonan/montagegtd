@@ -7,7 +7,7 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 use Overtrue\Socialite\SocialiteManager;
 use Illuminate\Http\Request;
-use App\Repositories\OauthRepository;
+use App\Repositories\OauthInfoRepository;
 use App\User;
 use App\OauthInfo;
 
@@ -61,8 +61,8 @@ class LoginController extends Controller
     	}
 
     	//获取oauth表中信息
-    	$oauthRepository = new OauthRepository();
-    	$oauth_info = $oauthRepository->forByThirdUidAndDriver($third_user->id, $driver);
+    	$oauthInfoRepository = new OauthInfoRepository();
+    	$oauth_info = $oauthInfoRepository->forByThirdUidAndDriver($third_user->id, $driver);
     	
     	//如果有，那么直接召唤出来user,登录
     	if(!empty($oauth_info)){
@@ -97,9 +97,10 @@ class LoginController extends Controller
     		}
 			
     		//存储oauth信息
-    		$oauth_info = new OauthInfo();
     		$token = $third_user->token->access_token;
     		$expire = isset($third_user->token->expires_in)?date('Y-m-d H:i:s',$third_user->token->expires_in):'';
+    		
+    		$oauth_info = new OauthInfo();
     		$oauth_info->save(array(
     			'third_uid'=>$third_user->id,
     			'user_id'=>$user->id,
