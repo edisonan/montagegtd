@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Repositories\OauthInfoRepository;
 use App\User;
 use App\OauthInfo;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
