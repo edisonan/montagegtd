@@ -58,13 +58,13 @@ class CalController extends Controller
 	    	$cal_token = $default_cal_token;
     	}
     	
-    	$person_cal_url = 'http://task.congcong.us/taskics/'.$cal_token;
+    	$person_cal_url = 'webcal://task.congcong.us/taskics/'.$cal_token;
     	
     	//处理公共日历相关内容
     	$cals = array(
     		array(
     			'theme' => '2018 世界杯',
-    			'url' => 'http://task.congcong.us/calics/worldcup',
+    			'url' => 'webcal://task.congcong.us/calics/worldcup',
     		)	
     	);
     	

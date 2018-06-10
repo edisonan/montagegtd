@@ -31,23 +31,16 @@ $(document).ready(function () {
 						</p>
 						
 	                	<p>
-						1、中亚用户,点击<a href="https://www.amazon.cn/gp/digital/fiona/manage?ie=UTF8&ref_=ya_myk&#manageDevices">这里</a>配置,<a href="/img/kindle_amazon_cn.jpg" target="_blank">图示1</a> <a href="/img/kindle_amazon_cn2.jpg" target="_blank">图示2</a>
-						
+	                		IOS手机方案1、设置-》账户与密码-》添加账户-》其他-》添加已订阅的日历-》复制粘贴下方地址即可
+							
 						</p>
 						
 						<p>
-						2、美亚用户 点击<a href="https://www.amazon.com/mn/dcw/myx.html#/home/devices/1">这里</a>配置
-						<!-- 
-						<img alt="" src="">
-						 -->
+							IOS手机方案2、复制下方地址使用Safari浏览器打开即可
 						</p>
 						
 						<p>
-						3、添加 noreply@congcong.us 到信任列表，根据亚马逊生成的邮箱在页面下面设置
-						</p>
-						
-						<p>
-						4、点击<a href="{{url('kindle/test')}}">测试链接</a>发送请求,查看kindle是否收到测试文件
+							Android手机方案1、待补充...
 						</p>
                 	</div>
                 </div>
