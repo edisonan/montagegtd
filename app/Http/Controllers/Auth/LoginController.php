@@ -38,21 +38,13 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
     
-    public function githubRedirect(){
-    	return Socialite::driver('github')->redirect();
+    public function thirdRedirect($driver){
+    	return Socialite::driver($driver)->redirect();
     }
     
-    public function githubCallback(){
-    	$user = Socialite::driver('github')->user();
+    public function thirdCallback(){
+    	$user = Socialite::driver($driver)->user();
     	dd($user->token);
     }
     
-    public function weiboRedirect(){
-    	return Socialite::driver('weibo')->redirect();
-    }
-    
-    public function weiboCallback(){
-    	$user = Socialite::driver('weibo')->user();
-    	dd($user->token);
-    }
 }
