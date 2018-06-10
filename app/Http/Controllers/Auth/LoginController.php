@@ -47,7 +47,7 @@ class LoginController extends Controller
     public function thirdCallback($driver){
     	$socialite = new SocialiteManager(config('services'));
     	$user = $socialite->driver($driver)->user();
-    	dd($user->token);
+    	dd($user);
     }
     
 }
