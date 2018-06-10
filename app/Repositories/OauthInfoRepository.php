@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\User;
 use App\Task;
 
-class OauthRepository
+class OauthInfoRepository
 {
     /**
      * Get all of the tasks for a given user.
