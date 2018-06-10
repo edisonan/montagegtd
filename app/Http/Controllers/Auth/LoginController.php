@@ -78,7 +78,7 @@ class LoginController extends Controller
     			Auth::login($user);
     		}
     		
-//     		redirect('/');
+    		redirect('/');
     	} else {
     		//如果当前已经登录了，无需创建用户，否则需要单独创建用户
     		if($action == 'related'){
@@ -115,7 +115,7 @@ class LoginController extends Controller
     			Auth::login($user);
     		}
     		
-//     		redirect('/');
+    		redirect('/');
     	}
     }
 }
