@@ -66,10 +66,10 @@ class LoginController extends Controller
     	
     	//如果有，那么直接召唤出来user,登录
     	if(!empty($oauth_info)){
-    		$user = User::where('id',$oauth_info['user_id'])->first();
+    		$user = User::where('id',$oauth_info->user_id)->first();
     		
     		if($action == 'related'){
-    			if($curr_user->id != $oauth_info['user_id']){
+    			if($curr_user->id != $oauth_info->user_id){
     				echo 'error,this has related the user_id '.$user->name;exit;
     			} else {
     				
