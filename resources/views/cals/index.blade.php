@@ -76,7 +76,7 @@ $(document).ready(function () {
                 </div>
 
                 <div class="card-body">
-					@foreach ($s as $cal)
+					@foreach ($cals as $cal)
 							<div class="col-md-12" >
 								<span class = "col-md-3">
 									{{$cal['theme']}}
