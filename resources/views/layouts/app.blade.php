@@ -96,6 +96,7 @@
 	                            <div class="dropdown-menu">
 	                    			<a class="dropdown-item"  href="{{ url('statistics') }}">统计</a>
 	                    			<a class="dropdown-item"  href="{{ url('settings') }}">设置</a>
+	                    			<a class="dropdown-item"  href="{{ url('accounts') }}">账号管理</a>
 	                    			<a class="dropdown-item"  href="{{ url('cals') }}">日历订阅</a>
 	                                <a class="dropdown-item"  href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>登出</a>
 	                            </div>

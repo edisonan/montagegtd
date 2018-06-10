@@ -75,11 +75,12 @@ class LoginController extends Controller
     			} else {
     				
     			}
+	    		redirect('/accounts');
     		} else {
     			Auth::login($user);
+	    		redirect('/index');
     		}
     		
-    		redirect('/');
     	} else {
     		//如果当前已经登录了，无需创建用户，否则需要单独创建用户
     		if($action == 'related'){
@@ -114,9 +115,11 @@ class LoginController extends Controller
     		
     		if($action == 'login'){
     			Auth::login($user);
+	    		redirect('/index');
+    		} else {
+    			redirect('/accounts');
     		}
     		
-    		redirect('/');
     	}
     }
 }
