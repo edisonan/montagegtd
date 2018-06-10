@@ -44,13 +44,19 @@ return [
 	'github' => [
 			'client_id' => env('GITHUB_CLIENT_ID'),         // Your GitHub Client ID
 			'client_secret' => env('GITHUB_CLIENT_SECRET'), // Your GitHub Client Secret
-			'redirect' => 'http://task.congcong.us/login/github/callback',
+			'redirect' => env('GITHUB_REDIRECT'),
 	],
 		
 	'weibo' => [
 			'client_id' => env('WEIBO_CLIENT_ID'),         // Your WeiBo Client ID
 			'client_secret' => env('WEIBO_CLIENT_SECRET'), // Your WeiBo Client Secret
-			'redirect' => 'http://task.congcong.us/login/weibo/callback',
+			'redirect' => env('WEIBO_REDIRECT'),
+	],
+		
+	'weixin' => [
+			'client_id' => env('WEIXIN_CLIENT_ID'),         // Your Weixin Client ID
+			'client_secret' => env('WEIXIN_CLIENT_SECRET'), // Your Weixin Client Secret
+			'redirect' => env('WEIXIN_REDIRECT'),
 	],
 
 ];
