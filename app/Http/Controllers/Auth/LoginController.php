@@ -11,6 +11,7 @@ use App\Repositories\OauthInfoRepository;
 use App\User;
 use App\OauthInfo;
 use Illuminate\Support\Facades\Auth;
+use function Symfony\Component\Debug\header;
 
 class LoginController extends Controller
 {
@@ -75,10 +76,10 @@ class LoginController extends Controller
     			} else {
     				
     			}
-	    		redirect('/accounts');
+	    		return redirect('/accounts');
     		} else {
     			Auth::login($user);
-	    		redirect('/index');
+	    		return redirect('/index');
     		}
     		
     	} else {
@@ -115,13 +116,11 @@ class LoginController extends Controller
     		
     		if($action == 'login'){
     			Auth::login($user);
-	    		redirect('/index');
+	    		return redirect('/index');
     		} else {
-    			redirect('/accounts');
+    			return redirect('/accounts');
     		}
     		
     	}
-    	
-    	exit;
     }
 }
