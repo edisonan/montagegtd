@@ -204,6 +204,12 @@ Route::group(['middleware' => ['web']], function () {
 
     //Route::auth();
 	Auth::routes();
+	
+	Route::get('login/github', 'Auth\LoginController@githubRedirect');
+	Route::get('login/github/callback', 'Auth\LoginController@githubCallback');
+	Route::get('login/weibo', 'Auth\LoginController@weiboRedirect');
+	Route::get('login/weibo/callback', 'Auth\LoginController@weiboCallback');
+	
 	Route::get('/logout', 'Auth\LoginController@logout');
 	
 

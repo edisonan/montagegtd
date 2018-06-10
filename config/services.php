@@ -40,5 +40,17 @@ return [
 		'secret' => env('FANFOU_SECRET'),
 		'callback' => env('FANFOU_CALLBACK')
 	],
+		
+	'github' => [
+			'client_id' => env('GITHUB_CLIENT_ID'),         // Your GitHub Client ID
+			'client_secret' => env('GITHUB_CLIENT_SECRET'), // Your GitHub Client Secret
+			'redirect' => 'http://task.congcong.us/login/github/callback',
+	],
+		
+	'weibo' => [
+			'client_id' => env('WEIBO_CLIENT_ID'),         // Your WeiBo Client ID
+			'client_secret' => env('WEIBO_CLIENT_SECRET'), // Your WeiBo Client Secret
+			'redirect' => 'http://task.congcong.us/login/weibo/callback',
+	],
 
 ];

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Laravel\Socialite\Facades\Socialite;
 
 class LoginController extends Controller
 {
@@ -35,5 +36,23 @@ class LoginController extends Controller
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+    
+    public function githubRedirect(){
+    	return Socialite::driver('github')->redirect();
+    }
+    
+    public function githubCallback(){
+    	$user = Socialite::driver('github')->user();
+    	dd($user->token);
+    }
+    
+    public function weiboRedirect(){
+    	return Socialite::driver('weibo')->redirect();
+    }
+    
+    public function weiboCallback(){
+    	$user = Socialite::driver('weibo')->user();
+    	dd($user->token);
     }
 }
