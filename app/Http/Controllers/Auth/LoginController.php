@@ -106,7 +106,9 @@ class LoginController extends Controller
     			'user_id'=>$user->id,
     			'driver'=>$driver,
     			'access_token'=>$token,
-    			'expire'=>$expire
+    			'expire'=>$expire,
+    			'created_at'=>date('Y-m-d H:i:s'),
+    			'updated_at'=>date('Y-m-d H:i:s'),
     		));
     		
     		if($action == 'login'){
