@@ -53,7 +53,7 @@ class AccountController extends Controller
     		$oauthinfos[$oauthinfo->driver] = array('expire'=>$oauthinfo->expire);
     	}
     	
-        return view('settings.index', [
+        return view('accounts.index', [
             'oauths' => $oauths,
         ]);
     }
