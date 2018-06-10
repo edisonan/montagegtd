@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 use Overtrue\Socialite\SocialiteManager;
-use App\Http\Requests\Request;
+use Illuminate\Http\Request;
 use App\Repositories\OauthRepository;
 use App\User;
 use App\OauthInfo;
