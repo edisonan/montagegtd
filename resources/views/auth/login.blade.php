@@ -145,8 +145,8 @@
                                     <i class="fa fa-btn fa-sign-in"></i>登录
                                 </button>
 
-                                <a class="btn btn-link" href="{{ url('/password/reset') }}">忘记密码?</a>
-                                或通过<a href="{{url('/login/third/weibo')}}">weibo</a><a href="{{url('/login/third/github')}}">github</a>登录
+                                <a class="btn btn-link" href="{{ url('/password/reset') }}">忘记密码?</a><br/>
+                                或通过<a href="{{url('/login/third/weibo')}}">weibo</a>、<a href="{{url('/login/third/github')}}">github</a>登录
                             </div>
                         </div>
                     </form>
