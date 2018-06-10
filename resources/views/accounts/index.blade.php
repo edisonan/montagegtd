@@ -29,9 +29,9 @@ $(document).ready(function () {
 									
 									 <a href="http://task.congcong.us/login/third/{{$key}}">
 									@if(empty($oauth))
-										重新授权
-									@else
 										去授权
+									@else
+										重新授权
 		                        	@endif
 									 </a>
 								</span>
