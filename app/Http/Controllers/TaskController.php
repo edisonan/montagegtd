@@ -15,8 +15,6 @@ use App\Repositories\TagRepository;
 use App\Repositories\GoalRepository;
 use App\Thing;
 
-use App\Http\Utils\ICSUtil;
-use App\Http\Utils\ICSUtil2;
 
 class TaskController extends Controller
 {
@@ -174,52 +172,6 @@ class TaskController extends Controller
     	} else {
     		return redirect('/index')->with('message', 'IT WORKS!');
     	}
-    }
-    
-    public function ics(Request $request,String $user_token)
-    {
-        date_default_timezone_set("Asia/Shanghai");
-        
-        //TODO GET USER_ID BY $user_token
-        $user_id = 1;
-        
-    	$start_time = date('Y-m-d H:i:s',time()-15768000);
-    	$end_time = date('Y-m-d H:i:s',strtotime($start_time)+31536000);
-    	 
-    	$tasks = $this->tasks->forUserByUserIdRemindTime($user_id, $start_time, $end_time);
-    	
-    	$task_props = array();
-    	foreach ($tasks as $task){
-    		$task_props[] = array(
-    			'dtend'=>$task->remindtime,
-    			'dtstart'=>$task->remindtime,
-    			'due'=>$task->remindtime,
-    			'completed'=>$task->remindtime,
-    			'summary'=>$task->name,
-    			'repeat'=>1,
-    			'status'=>'NEEDS-ACTION',
-    		);
-//     		$task_props[] = array(
-//     			'description'=>$task->name,
-//     			'dtend'=>$task->remindtime,
-//     			'dtstart'=>$task->remindtime,
-//     			'location'=>'',
-//     			'summary'=>$task->name,
-//     			'url'=>'https://task.congcong.us/tasks',
-//     		);
-    	}
-    	
-    	$ics = new ICSUtil2($task_props);
-    	$ics_file_contents = $ics->to_string();
-    	
-    	file_put_contents(config("app.storage_path").'/task_ics_'.$user_id, $ics_file_contents);
-    	
-    	header("Content-type:application/octet-stream");
-    	header("Content-Disposition:attachment;filename = task_ics_".$user_id.'.ics');
-    	header("Accept-ranges:bytes");
-    	header("Accept-length:".filesize(config("app.storage_path").'/task_ics_'.$user_id));
-    	
-    	readfile(config("app.storage_path").'/task_ics_'.$user_id);
     }
     
 }

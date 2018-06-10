@@ -113,9 +113,10 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/task/{task}', 'TaskController@destroy');
     Route::post('/task/{task}', 'TaskController@update');
     Route::get('/task/{task}', 'TaskController@update');
-    Route::get('/taskics/{user_token}', 'TaskController@ics');
     
+    Route::get('/cals', 'CalController@index');
     Route::get('/calics/{theme}', 'CalController@ics');
+    Route::get('/taskics/{cal_token}', 'CalController@taskics');
     
     Route::get('/categorys', 'CategoryController@index');
     Route::post('/category', 'CategoryController@store');

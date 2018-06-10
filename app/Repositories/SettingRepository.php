@@ -21,6 +21,16 @@ class SettingRepository
     }
     
     /**
+     * Get Setting By cal_token
+     * @param string $cal_token
+     */
+    public function forCalToken(string $cal_token)
+    {
+    	return Setting::where('cal_token', $cal_token)
+    	->first();
+    }
+    
+    /**
      * Get all of the notes for a given user.
      *
      * @param  User  $user
