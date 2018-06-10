@@ -10,11 +10,11 @@
         "celd/opml-import-export": "dev-master",
         "develpr/phindle": "dev-dev",
         "encore/laravel-admin": "1.5.*",
-        "gumlet/php-image-resize": "1.6.*",
         "fideloper/proxy": "~3.3",
+        "gumlet/php-image-resize": "1.6.*",
         "laravel/framework": "5.5.*",
-        "laravel/socialite": "^3.0",
         "laravel/tinker": "~1.0",
+        "overtrue/socialite": "^2.0",
         "sentry/sentry-laravel": "^0.8.0",
         "zgldh/qiniu-laravel-storage": "^0.9.0"
     },

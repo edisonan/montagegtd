@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use Laravel\Socialite\Facades\Socialite;
+
+use Overtrue\Socialite\SocialiteManager;
 
 class LoginController extends Controller
 {
@@ -39,11 +40,13 @@ class LoginController extends Controller
     }
     
     public function thirdRedirect($driver){
-    	return Socialite::driver($driver)->redirect();
+    	$socialite = new SocialiteManager(config('services'));
+    	return $socialite->driver($driver)->redirect();
     }
     
     public function thirdCallback($driver){
-    	$user = Socialite::driver($driver)->user();
+    	$socialite = new SocialiteManager(config('services'));
+    	$user = $socialite->driver($driver)->user();
     	dd($user->token);
     }
     
