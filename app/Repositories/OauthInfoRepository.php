@@ -3,7 +3,7 @@
 namespace App\Repositories;
 
 use App\User;
-use App\Task;
+use App\OauthInfo;
 
 class OauthInfoRepository
 {
