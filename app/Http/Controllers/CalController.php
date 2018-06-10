@@ -44,7 +44,7 @@ class CalController extends Controller
     	//处理个人日历提醒相关内容
     	$cal_token = '';
     	$setting = $this->settings->forUser($request->user());
-    	if(isset($setting['cal_token'])){
+    	if(isset($setting['cal_token']) && !empty($setting['cal_token'])){
     		$cal_token = $setting['cal_token'];
     	} else {
 	    	$default_cal_token = md5($request->user()->id.'_'.time());
