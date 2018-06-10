@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 use App\Cal;
+use App\Setting;
 use App\Repositories\CalRepository;
 
 use App\Http\Utils\ICSUtil;
