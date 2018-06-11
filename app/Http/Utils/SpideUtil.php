@@ -6,6 +6,8 @@ use App\ArticleSub;
 use App\FeedSub;
 use App\Feed;
 use function GuzzleHttp\json_encode;
+use Illuminate\Support\Facades\Log;
+use Exception;
 include 'simple_html_dom.php';
 
 class SpideUtil{
@@ -145,7 +147,7 @@ class SpideUtil{
 		preg_match_all('#<img src="(.*?)"#is', $content, $matches);
 		$img_urls = $matches[1];
 		
-		\Log::info(\json_encode($img_urls));
+		Log::info(\json_encode($img_urls));
 		
 		$args = array();
 		foreach ($img_urls as $img_url) {
@@ -184,7 +186,7 @@ class SpideUtil{
 			$image->resizeToWidth(200);
 			$image->save($filename);
 		} catch (Exception $e) {
-			\Log::info('ERROR '.serialize($e).'|'.$filename);
+			Log::info('ERROR '.serialize($e).'|'.$filename);
 		}
 		return $filename;
 	}

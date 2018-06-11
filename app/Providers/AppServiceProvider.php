@@ -3,15 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
-use Illuminate\Contracts\Pagination\Paginator as PaginatorContract;
-use Illuminate\Pagination\BootstrapFourPresenter;
-use Illuminate\Pagination\SimpleBootstrapFourPresenter;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Log;
 
 use Monolog\Processor\UidProcessor;
-use Log;
 
 class AppServiceProvider extends ServiceProvider
 {

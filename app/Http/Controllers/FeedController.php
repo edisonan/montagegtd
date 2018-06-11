@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-use App\Http\Requests;
 use ArandiLopez\Feed\Factories\FeedFactory;
-use App\Http\Controllers\Controller;
 
 use App\Feed;
 use App\Repositories\FeedRepository;
@@ -15,7 +14,6 @@ use App\Repositories\FeedSubRepository;
 use App\Category;
 use App\Repositories\CategoryRepository;
 use App\Article;
-use DB;
 
 
 class FeedController extends Controller
@@ -23,7 +21,7 @@ class FeedController extends Controller
     /**
      * The note repository instance.
      *
-     * @var NoteRepository
+     * @var FeedRepository
      */
     protected $feeds;
     protected $feedSubs;
@@ -32,7 +30,9 @@ class FeedController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  CategoryRepository  $categorys
+     * @param  FeedSubRepository  $feedSubs
+     * @param  FeedRepository  $feeds
      * @return void
      */
     public function __construct(CategoryRepository $categorys,FeedSubRepository $feedSubs, FeedRepository $feeds)
@@ -48,7 +48,6 @@ class FeedController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -169,7 +168,6 @@ class FeedController extends Controller
      * Create a new note.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request)
     {
@@ -307,8 +305,7 @@ class FeedController extends Controller
      * Destroy the given task.
      *
      * @param  Request  $request
-     * @param  Task  $task
-     * @return Response
+     * @param  FeedSub  $feedSub
      */
     public function destroy(Request $request, FeedSub $feedSub)
     {

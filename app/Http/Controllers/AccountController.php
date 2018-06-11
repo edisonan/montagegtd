@@ -4,18 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\Controller;
-
-use App\Setting;
-use App\Repositories\SettingRepository;
 use App\Repositories\OauthInfoRepository;
 
 class AccountController extends Controller
 {
     /**
-     * The note repository instance.
+     * The oauthInfo repository instance.
      *
-     * @var NoteRepository
+     * @var OauthInfoRepository
      */
     protected $oauths;
     
@@ -23,7 +19,7 @@ class AccountController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  OauthInfoRepository  $tasks
      * @return void
      */
     public function __construct( OauthInfoRepository $oauths)
@@ -33,10 +29,9 @@ class AccountController extends Controller
         $this->oauths = $oauths;
     }
     /**
-     * Display a list of all of the user's task.
+     * Display a list of all of the user's accounts.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {

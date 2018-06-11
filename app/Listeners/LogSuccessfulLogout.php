@@ -2,7 +2,6 @@
 
 namespace App\Listeners;
 use Illuminate\Auth\Events\Logout;
-use Log;
 
 
 /**

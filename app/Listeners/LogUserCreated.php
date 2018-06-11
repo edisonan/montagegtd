@@ -2,8 +2,8 @@
 
 namespace App\Listeners;
 
-use Log;
 use App\Events\UserCreated;
+use Illuminate\Support\Facades\Log;
 
 
 /**

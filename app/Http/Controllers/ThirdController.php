@@ -2,16 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests;
-
 use App\Http\Utils\OAuth;
 use App\Http\Utils\FFClient;
 
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\Controller;
-
-use App\Third;
 use App\Repositories\ThirdRepository;
 
 class ThirdController extends Controller

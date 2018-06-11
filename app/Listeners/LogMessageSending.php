@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use Illuminate\Mail\Events\MessageSending;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 
 /**

@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Utils;
+
+use Exception;
 /*
 * Copyright (c) 2017 Baidu.com, Inc. All Rights Reserved
 *

@@ -4,25 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Category;
 use App\Repositories\CategoryRepository;
 
 class CategoryController extends Controller
 {
     /**
-     * The note repository instance.
+     * The category repository instance.
      *
-     * @var NoteRepository
+     * @var CategoryRepository
      */
     protected $categorys;
 
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  CategoryRepository  $categorys
      * @return void
      */
     public function __construct( CategoryRepository $categorys)
@@ -36,7 +33,6 @@ class CategoryController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -51,7 +47,6 @@ class CategoryController extends Controller
      * Create a new note.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request)
     {
@@ -76,8 +71,7 @@ class CategoryController extends Controller
      * Destroy the given task.
      *
      * @param  Request  $request
-     * @param  Task  $task
-     * @return Response
+     * @param  Category  $category
      */
     public function destroy(Request $request, Category $category)
     {

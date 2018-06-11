@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Thing;
 use App\Repositories\ThingRepository;
 
@@ -36,7 +33,6 @@ class ThingController extends Controller
      * Display a list of all of the user's thing.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -49,7 +45,6 @@ class ThingController extends Controller
      * Create a new thing.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request)
     {
@@ -91,7 +86,6 @@ class ThingController extends Controller
      *
      * @param  Request  $request
      * @param  Thing  $thing
-     * @return Response
      */
     public function destroy(Request $request, Thing $thing)
     {

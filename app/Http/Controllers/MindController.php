@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Mind;
 use App\Repositories\MindRepository;
 
@@ -42,7 +39,6 @@ class MindController extends Controller
      * Display a list of all of the user's mind.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request,$add_content = '')
     {
@@ -57,7 +53,6 @@ class MindController extends Controller
      * Create a new mind.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request)
     {
@@ -99,7 +94,6 @@ class MindController extends Controller
      *
      * @param  Request  $request
      * @param  Mind  $mind
-     * @return Response
      */
     public function destroy(Request $request, Mind $mind)
     {

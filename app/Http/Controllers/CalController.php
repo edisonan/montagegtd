@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\Controller;
-
-use App\Cal;
 use App\Setting;
 use App\Repositories\CalRepository;
 
@@ -29,6 +26,8 @@ class CalController extends Controller
     /**
      * Create a new controller instance.
      *
+     * @param  CalRepository  $cals
+     * @param  SettingRepository  $settings
      * @param  TaskRepository  $tasks
      * @return void
      */

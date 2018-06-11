@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Task;
 use App\Tag;
 use App\TaskTagMap;
@@ -46,7 +43,6 @@ class TaskController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -59,7 +55,6 @@ class TaskController extends Controller
      * Create a new task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request)
     {
@@ -130,7 +125,6 @@ class TaskController extends Controller
      *
      * @param  Request  $request
      * @param  Task  $task
-     * @return Response
      */
     public function destroy(Request $request, Task $task)
     {

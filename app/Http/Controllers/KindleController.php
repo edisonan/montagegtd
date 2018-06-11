@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
-use App\Http\Controllers\Controller;
 
 use App\Setting;
 use App\KindleLog;
@@ -12,14 +13,13 @@ use App\Repositories\SettingRepository;
 
 use Develpr\Phindle\Phindle;
 use Develpr\Phindle\Content;
-use Develpr\Phindle\OpfRenderer;
 
 class KindleController extends Controller
 {
     /**
      * The note repository instance.
      *
-     * @var NoteRepository
+     * @var SettingRepository
      */
     protected $settings;
     
@@ -27,7 +27,7 @@ class KindleController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  SettingRepository  $tasks
      * @return void
      */
     public function __construct( SettingRepository $settings)
@@ -40,7 +40,6 @@ class KindleController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -62,8 +61,6 @@ class KindleController extends Controller
      * Destroy the given task.
      *
      * @param  Request  $request
-     * @param  Task  $task
-     * @return Response
      */
     public function test(Request $request)
     {
@@ -112,9 +109,9 @@ class KindleController extends Controller
     	$kindleLog->status = 2;
     	$kindleLog->save();
     	
-    	\Log::info('send to kindle test:'.$user->id.'|'.$path);
+    	Log::info('send to kindle test:'.$user->id.'|'.$path);
     	
-    	\Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting,'path'=>$path], function ($m) use ($user,$setting,$path) {
+    	Mail::send('emails.kindle', ['user'=>$user,'setting'=>$setting,'path'=>$path], function ($m) use ($user,$setting,$path) {
     		$m->to($setting->kindle_email, $user->name)->subject('Send To Kindle');
     		$m->attach($path);
     	});

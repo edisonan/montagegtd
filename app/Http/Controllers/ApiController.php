@@ -3,18 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
-use App\Category;
 use App\Repositories\CategoryRepository;
-use App\Article;
 use App\Repositories\ArticleRepository;
-use App\Feed;
 use App\ArticleSub;
-use App\FeedSub;
-use DB;
+use App\NoteTagMap;
+use App\Tag;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
 use App\User;
@@ -33,7 +28,10 @@ class ApiController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  CategoryRepository  $categorys
+     * @param  ArticleRepository  $articles
+     * @param  FeedSubRepository  $feedSubs
+     * @param  ArticleSubRepository  $articleSubs
      * @return void
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
@@ -59,7 +57,6 @@ class ApiController extends Controller
      * 获取文章相关操作
      *
      * @param  Request  $request
-     * @return Response
      */
     public function articles(Request $request)
     {

@@ -1,17 +1,19 @@
 <?php
 namespace App\Http\Utils;
 
+use Illuminate\Support\Facades\Log;
+
 class CommonUtil{
 	public static function page_title($url) {
         $fp = @file_get_contents($url);
         if (!$fp) {
-        	\Log::info("can not open".$url);
+        	Log::info("can not open".$url);
         	return '';
         }
 
         $res = preg_match("/<title>(.*)<\/title>/siU", $fp, $title_matches);
         if (!$res) {
-        	\Log::info("can not preg".$url);
+        	Log::info("can not preg".$url);
         	return '';
         }
             

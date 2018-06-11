@@ -4,25 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Repositories\StatisticsRepository;
 use function GuzzleHttp\json_encode;
 
 class StatisticsController extends Controller
 {
     /**
-     * The note repository instance.
+     * The statistics repository instance.
      *
-     * @var NoteRepository
+     * @var StatisticsRepository
      */
     protected $statistics;
 
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  StatisticsRepository  $tasks
      * @return void
      */
     public function __construct(StatisticsRepository $statistics)
@@ -36,7 +33,6 @@ class StatisticsController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request,$add_content = '')
     {

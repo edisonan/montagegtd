@@ -232,6 +232,6 @@ return [
 
 	'storage_path' => env('STORAGE_PATH', 'storage/'),
 		
-	'pagination' => Illuminate\Pagination\BootstrapFourPresenter::class,
+// 	'pagination' => Illuminate\Pagination\BootstrapFourPresenter::class,
 
 ];

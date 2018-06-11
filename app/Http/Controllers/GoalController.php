@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Goal;
 use App\Repositories\GoalRepository;
 
@@ -36,7 +33,6 @@ class GoalController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -53,7 +49,6 @@ class GoalController extends Controller
      * Create a new task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request)
     {
@@ -80,7 +75,6 @@ class GoalController extends Controller
      *
      * @param  Request  $request
      * @param  Goal  $goal
-     * @return Response
      */
     public function destroy(Request $request, Goal $goal)
     {

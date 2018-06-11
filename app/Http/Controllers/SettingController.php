@@ -4,17 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\Controller;
-
 use App\Setting;
 use App\Repositories\SettingRepository;
 
 class SettingController extends Controller
 {
     /**
-     * The note repository instance.
+     * The settings repository instance.
      *
-     * @var NoteRepository
+     * @var SettingRepository
      */
     protected $settings;
     
@@ -22,7 +20,7 @@ class SettingController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  SettingRepository  $settings
      * @return void
      */
     public function __construct( SettingRepository $settings)
@@ -35,7 +33,6 @@ class SettingController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -56,8 +53,7 @@ class SettingController extends Controller
      * Destroy the given task.
      *
      * @param  Request  $request
-     * @param  Task  $task
-     * @return Response
+     * @param  Setting  $setting
      */
     public function update(Request $request, Setting $setting)
     {

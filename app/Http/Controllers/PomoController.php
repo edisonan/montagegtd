@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Pomo;
 use App\Thing;
 use App\Repositories\PomoRepository;
@@ -41,7 +38,6 @@ class PomoController extends Controller
      * Display a list of all of the user's pomo.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request)
     {
@@ -54,7 +50,6 @@ class PomoController extends Controller
      * Start a new pomo.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function start(Request $request)
     {
@@ -77,7 +72,6 @@ class PomoController extends Controller
      * Discard a new pomo.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function discard(Request $request, Pomo $pomo)
     {
@@ -101,7 +95,6 @@ class PomoController extends Controller
      * Create a new pomo.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request, Pomo $pomo)
     {
@@ -144,7 +137,6 @@ class PomoController extends Controller
      *
      * @param  Request  $request
      * @param  Pomo  $pomo
-     * @return Response
      */
     public function destroy(Request $request, Pomo $pomo)
     {

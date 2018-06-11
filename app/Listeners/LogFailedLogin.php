@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 use Illuminate\Auth\Events\Failed;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 
 /**

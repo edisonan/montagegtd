@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
 use App\Note;
 use App\Repositories\NoteRepository;
 use App\Tag;
@@ -26,7 +23,8 @@ class NoteController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  TaskRepository  $tasks
+     * @param  NoteRepository  $notes
+     * @param  TagRepository  $tags
      * @return void
      */
     public function __construct(NoteRepository $notes, TagRepository $tags)
@@ -46,7 +44,6 @@ class NoteController extends Controller
      * Display a list of all of the user's task.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function index(Request $request,$add_content = '')
     {
@@ -97,7 +94,6 @@ class NoteController extends Controller
      * Create a new note.
      *
      * @param  Request  $request
-     * @return Response
      */
     public function store(Request $request)
     {
@@ -170,8 +166,7 @@ class NoteController extends Controller
      * Destroy the given task.
      *
      * @param  Request  $request
-     * @param  Task  $task
-     * @return Response
+     * @param  Note  $note
      */
     public function destroy(Request $request, Note $note)
     {

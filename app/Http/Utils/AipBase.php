@@ -1,9 +1,7 @@
 <?php
 namespace App\Http\Utils;
 
-use App\Http\Utils\AipHttpClient;
-use App\Http\Utils\AipBCEUtil;
-use App\Http\Utils\AipImageUtil;
+use Exception;
 /*
 * Copyright (c) 2017 Baidu.com, Inc. All Rights Reserved
 *

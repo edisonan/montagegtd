@@ -92,7 +92,7 @@ class LoginController extends Controller
 	    		$data['name'] = $third_user->name;
 	    		$data['email'] = 'taskcongcongus.'.empty($third_user->email)?time().rand(1,9999):$third_user->email;
 	    		$data['password'] = bcrypt(str_random(16));
-	    		$data['last_login'] = Carbon::now();
+	    		$data['last_login'] = date('Y-m-d H:i:s');
 	    		
 	    		//进行存储user
 	    		$user = new User();
