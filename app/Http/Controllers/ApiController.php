@@ -14,6 +14,9 @@ use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
 use App\User;
 use App\Http\Utils\CommonUtil;
+use function Qiniu\json_decode;
+use App\Http\Utils\OAuth;
+use App\Repositories\OauthInfoRepository;
 
 class ApiController extends Controller
 {
@@ -36,7 +39,7 @@ class ApiController extends Controller
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
     {
-        $this->middleware('auth', ['except' => ['wechatlogin','articles','notes','explorer','articleview','addNote','articleSubStatus']]);
+        $this->middleware('wechatminiauth', ['except' => ['wechatlogin']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;
@@ -50,7 +53,58 @@ class ApiController extends Controller
      */
     public function wechatlogin(Request $request)
     {
+    	$code = $request->input('code');
     	
+    	$api_url = 'https://api.weixin.qq.com/sns/jscode2session?appid='.config('services.wechatmini.client_id').'&secret='.config('services.wechatmini.client_id').'&js_code='.$code.'&grant_type=authorization_code';
+    	$result = file_get_contents($api_url);
+    	$wx_ret = json_decode($result);
+    	
+    	$openid = $wx_ret['openid'];
+    	$session_key = $wx_ret['session_key'];
+    	
+    	$oauthRepository = new OauthInfoRepository();
+    	$oauth = $oauthRepository->forByThirdUidAndDriver($openid, 'wechatmini');
+    	if(empty($oauth)){
+    		//add user
+    		$data = array();
+    		$data['name'] = time();
+    		$data['email'] = 'taskcongcongus.'.time().rand(1,9999);
+    		$data['password'] = bcrypt(str_random(16));
+    		$data['last_login'] = date('Y-m-d H:i:s');
+    		$user = new User();
+    		$user->create($data);
+    			
+    		//add oauth
+    		$oauth_info = new OauthInfo();
+    		$oauth_info->create(array(
+    				'third_uid'=>$openid,
+    				'user_id'=>$user->id,
+    				'driver'=>'wechatmini',
+    				'access_token'=>$session_key,
+    				'expire'=>'2038-01-01 00:00:00',
+    				'created_at'=>date('Y-m-d H:i:s'),
+    				'updated_at'=>date('Y-m-d H:i:s'),
+    		));
+    		$user_id = $user->id;
+    	} else {
+    		//update oauth
+    		$oauth->update(array(
+    			'access_token' => $session_key,
+    		));
+    		$user_id = $oauth['user_id'];
+    	}
+    	
+    	$wechat_mini_token = 'wechat_mini_token_'.md5($open_id.$session_key.time());
+    	$token_value = $user_id.'#'.$openid.'#'.$session_key;
+    	$token_expire_time = 86400;
+    	
+    	Cache::store('file')->put($wechat_mini_token,$token_value,$token_expire_time);
+    	
+    	return $this->responseJson(self::OK_CODE,'succ',array(
+    			'openid'=>$openid,
+    			'token'=>$wechat_mini_token,
+    			'token_expire_time'=>$token_expire_time,
+    	));
     }
     
     /**
@@ -61,7 +115,8 @@ class ApiController extends Controller
     public function articles(Request $request)
     {
 //     	$user = $request->user();
-    	$user = new User();$user->id = 1;//TODO 模拟
+    	$user = new User();$app_session = app('app_session');
+            $user->id = $app_session[0];
     	
     	if($request->has('page')){
     		$page = (int)$request->page;
@@ -104,7 +159,8 @@ class ApiController extends Controller
     public function articleview(Request $request)
     {
     	//     	$user = $request->user();
-    	$user = new User();$user->id = 1;//TODO 模拟
+    	$user = new User();$app_session = app('app_session');
+            $user->id = $app_session[0];
     	
     	if(!$request->has('article_id')){
     		echo 'error';exit;
@@ -140,8 +196,9 @@ class ApiController extends Controller
     
     public function notes(Request $request)
     {
- //     	$user = $request->user();
-    	$user = new User();$user->id = 1;//TODO 模拟
+    	$user = new User();
+    	$app_session = app('app_session');
+        $user->id = $app_session[0];
     	
     	$sql = 'select n.id as id,n.name as name,n.record_path as record_path,n.image_path as image_path,n.created_at as created_at,u.name as user_name from notes n,users u where n.user_id=u.id order by n.updated_at desc limit 10';
     	$sql_param = [];
@@ -153,8 +210,9 @@ class ApiController extends Controller
     
     public function addNote(Request $request)
     {
-    	//     	$user = $request->user();
-    	$user = new User();$user->id = 1;//TODO 模拟
+    	$user = new User();
+    	$app_session = app('app_session');
+        $user->id = $app_session[0];
     	 
     	$this->validate($request, [
             'name' => 'required',
@@ -200,8 +258,9 @@ class ApiController extends Controller
     
     public function articleSubStatus(Request $request,ArticleSub  $articleSub)
     {
-    	//     	$user = $request->user();
-    	$user = new User();$user->id = 1;//TODO 模拟
+    	$user = new User();
+    	$app_session = app('app_session');
+        $user->id = $app_session[0];
     	
     	if($request->has('ids')){
     		$id_arr = explode(',', $request->ids);

@@ -58,5 +58,11 @@ return [
 			'client_secret' => env('WECHAT_CLIENT_SECRET'), // Your Weixin Client Secret
 			'redirect' => env('WECHAT_REDIRECT'),
 	],
+		
+	'wechatmini' => [
+			'client_id' => env('WECHATMINI_CLIENT_ID'),         // Your Weixin Client ID
+			'client_secret' => env('WECHATMINI_CLIENT_SECRET'), // Your Weixin Client Secret
+			'redirect' => env('WECHATMINI_REDIRECT'),
+	],
 
 ];
