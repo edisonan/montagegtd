@@ -53,10 +53,10 @@ return [
 			'redirect' => env('WEIBO_REDIRECT'),
 	],
 		
-	'weixin' => [
-			'client_id' => env('WEIXIN_CLIENT_ID'),         // Your Weixin Client ID
-			'client_secret' => env('WEIXIN_CLIENT_SECRET'), // Your Weixin Client Secret
-			'redirect' => env('WEIXIN_REDIRECT'),
+	'wechat' => [
+			'client_id' => env('WECHAT_CLIENT_ID'),         // Your Weixin Client ID
+			'client_secret' => env('WECHAT_CLIENT_SECRET'), // Your Weixin Client Secret
+			'redirect' => env('WECHAT_REDIRECT'),
 	],
 
 ];
