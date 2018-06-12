@@ -55,7 +55,7 @@ class ApiController extends Controller
     {
     	$code = $request->input('code');
     	
-    	$api_url = 'https://api.weixin.qq.com/sns/jscode2session?appid='.config('services.wechatmini.client_id').'&secret='.config('services.wechatmini.client_id').'&js_code='.$code.'&grant_type=authorization_code';
+    	$api_url = 'https://api.weixin.qq.com/sns/jscode2session?appid='.config('services.wechatmini.client_id').'&secret='.config('services.wechatmini.client_secret').'&js_code='.$code.'&grant_type=authorization_code';
     	$result = file_get_contents($api_url);
     	$wx_ret = json_decode($result,true);
     	
