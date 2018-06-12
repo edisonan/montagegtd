@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Foundation\Application;
 use function GuzzleHttp\json_encode;
+use Log;
 
 
 class WechatMiniOauthMiddleware
@@ -24,7 +25,8 @@ class WechatMiniOauthMiddleware
      * @return mixed
      */
     public function handle($request, Closure $next){
-
+		Log::info(print_r($request,true));
+		
         $wechat_mini_token = $request->header('token','');
 
         if(empty($wechat_mini_token)){
