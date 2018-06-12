@@ -33,7 +33,7 @@ class WechatMiniOauthMiddleware
             return  response('Unauthorized.', 401);
         }
 
-        $token_value = Cache::store('file')->get($wechat_mini_token);
+        $token_value = \Cache::store('file')->get($wechat_mini_token);
 
         if(empty($token_value)){
             return  response('Unauthorized.', 401);
