@@ -207,7 +207,7 @@ Route::group(['middleware' => ['web']], function () {
 
 });
 
-Route::group(['middleware' => ['wechatminiauth']], function () {
+Route::group(['middleware' => ['web']], function () {
 	Route::get('/api/wechat/articles', 'ApiController@articles');
 	Route::get('/api/wechat/articleview', 'ApiController@articleview');
 	Route::get('/api/wechat/explorer', 'ApiController@explorer');
