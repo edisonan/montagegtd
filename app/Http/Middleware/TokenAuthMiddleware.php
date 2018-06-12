@@ -4,11 +4,10 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Foundation\Application;
-use function GuzzleHttp\json_encode;
 use Log;
 
 
-class WechatMiniOauthMiddleware
+class TokenAuthMiddleware
 {
 
     private $app;
@@ -19,21 +18,21 @@ class WechatMiniOauthMiddleware
 
 
     /**
-     *  检测小程序端的登录状态
+     *  检测登录状态
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
      * @return mixed
      */
     public function handle($request, Closure $next){
-        $wechat_mini_token = $request->header('token','');
+        $token = $request->header('token','');
         
-		Log::info(print_r($wechat_mini_token,true));
+		Log::info(print_r($token,true));
 
-        if(empty($wechat_mini_token)){
+        if(empty($token)){
             return  response('Unauthorized.', 401);
         }
 
-        $token_value = \Cache::store('file')->get($wechat_mini_token);
+        $token_value = \Cache::store('file')->get($token);
 
         if(empty($token_value)){
             return  response('Unauthorized.', 401);

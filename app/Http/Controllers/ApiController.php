@@ -40,7 +40,7 @@ class ApiController extends Controller
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
     {
-        $this->middleware('wechatminiauth', ['except' => ['wechatlogin','explorer']]);
+        $this->middleware('tokenauth', ['except' => ['wechatlogin','explorer']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;
