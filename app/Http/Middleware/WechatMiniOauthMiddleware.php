@@ -11,11 +11,9 @@ class WechatMiniOauthMiddleware
 {
 
     private $app;
-    private $redis;
 
     public function __construct(Application $app){
         $this->app = $app;
-        $this->redis = $app->make('redis');
     }
 
 
