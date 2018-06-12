@@ -30,13 +30,13 @@ class WechatMiniOauthMiddleware
 		Log::info(print_r($wechat_mini_token,true));
 
         if(empty($wechat_mini_token)){
-            return  json_encode(array('code'=>1000,'msg'=>'params error'));
+            return  response('Unauthorized.', 401);
         }
 
         $token_value = Cache::store('file')->get($wechat_mini_token);
 
         if(empty($token_value)){
-            return  json_encode(array('code'=>1000,'msg'=>'token error'));
+            return  response('Unauthorized.', 401);
         }
 
         $v = explode('#', $token_value);
