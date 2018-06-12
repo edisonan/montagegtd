@@ -13,6 +13,7 @@ use App\Tag;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
 use App\User;
+use App\OauthInfo;
 use App\Http\Utils\CommonUtil;
 use function Qiniu\json_decode;
 use App\Http\Utils\OAuth;
