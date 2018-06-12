@@ -101,11 +101,11 @@ class ApiController extends Controller
     	
     	Cache::store('file')->put($wechat_mini_token,$token_value,$token_expire_time);
     	
-    	return $this->responseJson(self::OK_CODE,'succ',array(
+    	return $this->responseJson(self::OK_CODE,array(
     			'openid'=>$openid,
     			'token'=>$wechat_mini_token,
     			'token_expire_time'=>$token_expire_time,
-    	));
+    	),'succ');
     }
     
     /**
