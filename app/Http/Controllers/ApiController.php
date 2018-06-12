@@ -39,7 +39,7 @@ class ApiController extends Controller
      */
     public function __construct( CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs)
     {
-        $this->middleware('wechatminiauth', ['except' => ['wechatlogin']]);
+        $this->middleware('wechatminiauth', ['except' => ['wechatlogin','explorer']]);
 
         $this->categorys = $categorys;
         $this->articles = $articles;
@@ -115,8 +115,9 @@ class ApiController extends Controller
     public function articles(Request $request)
     {
 //     	$user = $request->user();
-    	$user = new User();$app_session = app('app_session');
-            $user->id = $app_session[0];
+    	$user = new User();
+    	$app_session = app('app_session');
+        $user->id = $app_session[0];
     	
     	if($request->has('page')){
     		$page = (int)$request->page;
@@ -159,8 +160,9 @@ class ApiController extends Controller
     public function articleview(Request $request)
     {
     	//     	$user = $request->user();
-    	$user = new User();$app_session = app('app_session');
-            $user->id = $app_session[0];
+    	$user = new User();
+    	$app_session = app('app_session');
+        $user->id = $app_session[0];
     	
     	if(!$request->has('article_id')){
     		echo 'error';exit;
