@@ -25,9 +25,9 @@ class WechatMiniOauthMiddleware
      * @return mixed
      */
     public function handle($request, Closure $next){
-		Log::info(print_r($request,true));
-		
         $wechat_mini_token = $request->header('token','');
+        
+		Log::info(print_r($wechat_mini_token,true));
 
         if(empty($wechat_mini_token)){
             return  json_encode(array('code'=>1000,'msg'=>'params error'));
