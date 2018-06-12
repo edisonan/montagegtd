@@ -95,11 +95,11 @@ class ApiController extends Controller
     		$user_id = $oauth['user_id'];
     	}
     	
-    	$wechat_mini_token = 'wechat_mini_token_'.md5($open_id.$session_key.time());
+    	$wechat_mini_token = 'wechat_mini_token_'.md5($openid.$session_key.time());
     	$token_value = $user_id.'#'.$openid.'#'.$session_key;
     	$token_expire_time = 86400;
     	
-    	Cache::store('file')->put($wechat_mini_token,$token_value,$token_expire_time);
+    	\Cache::store('file')->put($wechat_mini_token,$token_value,$token_expire_time);
     	
     	return $this->responseJson(self::OK_CODE,array(
     			'openid'=>$openid,
