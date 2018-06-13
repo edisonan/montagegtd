@@ -13,6 +13,10 @@ use App\OauthInfo;
 use Illuminate\Support\Facades\Auth;
 use function Symfony\Component\Debug\header;
 
+use App\Http\Utils\OAuth;
+use App\Http\Utils\FFClient;
+
+
 class LoginController extends Controller
 {
     /*
@@ -46,13 +50,46 @@ class LoginController extends Controller
     }
     
     public function thirdRedirect(Request $request,$driver){
-    	$socialite = new SocialiteManager(config('services'));
-    	return $socialite->driver($driver)->redirect();
+    	if($driver == 'fanfou'){
+    		
+    		$oauth = new OAuth( config('services.'.$driver.'.client_id'), config('services.'.$driver.'client_secret'));
+    		$keys = $oauth -> getRequestToken();
+    		
+    		$oaurl = $oauth -> getAuthorizeURL( $keys['oauth_token'], false, config('services.'.$driver.'.redirect'));
+    		$request->session()->put('request_tokens', $keys);
+    		return redirect((string)$oaurl);
+    	} else {
+	    	$socialite = new SocialiteManager(config('services'));
+	    	return $socialite->driver($driver)->redirect();
+    	}
     }
     
     public function thirdCallback(Request $request,$driver){
-    	$socialite = new SocialiteManager(config('services'));
-    	$third_user = $socialite->driver($driver)->user();
+    	if($driver == 'fanfou'){
+    		$request_tokens = $request->session()->get('request_tokens');
+    		$oauth = new OAuth( $config['key'] , $config['secret'] , $request_tokens['oauth_token'], $request_tokens['oauth_token_secret']  );
+    		 
+    		//获取access_token
+    		$last_key = $oauth -> getAccessToken(  $request_tokens['oauth_token'] ) ;
+    		 
+    		//创造一个新的请求
+    		$ffuser = new FFClient( config('services.'.$driver.'.client_id'), config('services.'.$driver.'client_secret') , $last_key['oauth_token'] , $last_key['oauth_token_secret']  );
+    		$ffuser_result = $ff_user -> verify_credentials();
+    		$ffuser_info = json_decode($ffuser_result, true);
+    		
+    		var_dump($ffuser_info);
+    		exit;
+    		$third_user = new User([
+	            'id' => $this->arrayItem($user, 'id'),
+	            'nickname' => $this->arrayItem($user, 'screen_name'),
+	            'name' => $this->arrayItem($user, 'name'),
+	            'email' => $this->arrayItem($user, 'email'),
+	            'avatar' => $this->arrayItem($user, 'avatar_large'),
+	        ]);
+    	} else {
+	    	$socialite = new SocialiteManager(config('services'));
+	    	$third_user = $socialite->driver($driver)->user();
+    	}
     	
     	//判断是否是登录态，如果是那么进行关联操作，如果不是那么进行登录操作
     	$curr_user = $request->user();

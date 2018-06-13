@@ -36,9 +36,9 @@ return [
     ],
 
 	'fanfou' => [
-		'key' => env('FANFOU_KEY'),
-		'secret' => env('FANFOU_SECRET'),
-		'callback' => env('FANFOU_CALLBACK')
+			'client_id' => env('FANFOU_CLIENT_ID'),
+			'client_secret' => env('FANFOU_CLIENT_SECRET'),
+			'redirect' => env('FANFOU_REDIRECT')
 	],
 		
 	'github' => [
