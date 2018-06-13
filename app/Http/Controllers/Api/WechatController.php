@@ -19,7 +19,6 @@ use App\User;
 use App\OauthInfo;
 use App\Http\Utils\CommonUtil;
 use function Qiniu\json_decode;
-use App\Http\Utils\OAuth;
 use App\Repositories\OauthInfoRepository;
 
 class WechatController extends Controller

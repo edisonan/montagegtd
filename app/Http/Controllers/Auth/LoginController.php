@@ -13,7 +13,7 @@ use App\OauthInfo;
 use Illuminate\Support\Facades\Auth;
 use function Symfony\Component\Debug\header;
 
-use App\Http\Utils\OAuth;
+use App\Http\Utils\OAuth1\OAuth;
 use App\Http\Utils\FFClient;
 
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Utils\OAuth;
+use App\Http\Utils\OAuth1\OAuth;
 use App\Http\Utils\FFClient;
 
 use Illuminate\Http\Request;
