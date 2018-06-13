@@ -75,7 +75,7 @@ class LoginController extends Controller
     		 
     		//创造一个新的请求
     		$ffuser = new FFClient( config('services.'.$driver.'.client_id'), config('services.'.$driver.'client_secret') , $last_key['oauth_token'] , $last_key['oauth_token_secret']  );
-    		$ffuser_result = $ff_user -> verify_credentials();
+    		$ffuser_result = $ffuser -> verify_credentials();
     		$ffuser_info = json_decode($ffuser_result, true);
     		
     		var_dump($ffuser_info);
