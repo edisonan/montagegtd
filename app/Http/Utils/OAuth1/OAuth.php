@@ -173,7 +173,7 @@ class OAuth {
 
 
         $request = $this->oAuthRequest($this->accessTokenURL(), 'GET', $parameters); 
-		
+		\Log::info($request);
 		$url = $this->accessTokenURL();
 
 		
