@@ -52,7 +52,7 @@ class LoginController extends Controller
     public function thirdRedirect(Request $request,$driver){
     	if(in_array($driver, array('fanfou','twitter'))){
     		
-    		$oauth = new OAuth( config('services.'.$driver.'.client_id'), config('services.'.$driver.'client_secret'));
+    		$oauth = new OAuth( config("services.$driver.client_id"), config("services.$driver.client_secret"));
     		$keys = $oauth -> getRequestToken();
     		
     		$oaurl = $oauth -> getAuthorizeURL( $keys['oauth_token'], false, config('services.'.$driver.'.redirect'));
