@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Utils;
+namespace App\Http\Utils\OAuth1;
 /** 
  * 饭否操作类 
  * 
