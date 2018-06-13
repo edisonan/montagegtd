@@ -50,7 +50,7 @@ class LoginController extends Controller
     }
     
     public function thirdRedirect(Request $request,$driver){
-    	if($driver == 'fanfou'){
+    	if(in_array($driver, array('fanfou','twitter'))){
     		
     		$oauth = new OAuth( config('services.'.$driver.'.client_id'), config('services.'.$driver.'client_secret'));
     		$keys = $oauth -> getRequestToken();
@@ -65,7 +65,7 @@ class LoginController extends Controller
     }
     
     public function thirdCallback(Request $request,$driver){
-    	if($driver == 'fanfou'){
+    	if(in_array($driver, array('fanfou','twitter'))){
     		$request_tokens = $request->session()->get('request_tokens');
     		$oauth = new OAuth( $config['key'] , $config['secret'] , $request_tokens['oauth_token'], $request_tokens['oauth_token_secret']  );
     		 
