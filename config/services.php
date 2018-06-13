@@ -47,6 +47,12 @@ return [
 			'redirect' => env('GITHUB_REDIRECT'),
 	],
 		
+	'twitter' => [
+			'client_id' => env('TWITTER_CLIENT_ID'),         // Your GitHub Client ID
+			'client_secret' => env('TWITTER_CLIENT_SECRET'), // Your GitHub Client Secret
+			'redirect' => env('TWITTER_REDIRECT'),
+	],
+		
 	'weibo' => [
 			'client_id' => env('WEIBO_CLIENT_ID'),         // Your WeiBo Client ID
 			'client_secret' => env('WEIBO_CLIENT_SECRET'), // Your WeiBo Client Secret
