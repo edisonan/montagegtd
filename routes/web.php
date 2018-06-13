@@ -208,13 +208,13 @@ Route::group(['middleware' => ['web']], function () {
 });
 
 Route::group(['middleware' => ['web']], function () {
-	Route::get('/api/wechat/login', 'WechatController@wechatlogin');
-	Route::get('/api/wechat/articles', 'WechatController@articles');
-	Route::get('/api/wechat/articleview', 'WechatController@articleview');
-	Route::get('/api/wechat/explorer', 'WechatController@explorer');
-	Route::get('/api/wechat/notes', 'WechatController@notes');
-	Route::get('/api/wechat/addNote', 'WechatController@addNote');
-	Route::get('/api/wechat/articleSubStatus', 'WechatController@articleSubStatus');
-	Route::get('/api/wechat/articleSubStatus/{articleSub}', 'WechatController@articleSubStatus');
+	Route::get('/api/wechat/login', 'Api\WechatController@wechatlogin');
+	Route::get('/api/wechat/articles', 'Api\WechatController@articles');
+	Route::get('/api/wechat/articleview', 'Api\WechatController@articleview');
+	Route::get('/api/wechat/explorer', 'Api\WechatController@explorer');
+	Route::get('/api/wechat/notes', 'Api\WechatController@notes');
+	Route::get('/api/wechat/addNote', 'Api\WechatController@addNote');
+	Route::get('/api/wechat/articleSubStatus', 'Api\WechatController@articleSubStatus');
+	Route::get('/api/wechat/articleSubStatus/{articleSub}', 'Api\WechatController@articleSubStatus');
 });
 		
