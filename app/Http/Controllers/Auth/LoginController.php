@@ -74,7 +74,7 @@ class LoginController extends Controller
     		$last_key = $oauth -> getAccessToken(  $request_tokens['oauth_token'] ) ;
     		 
     		//创造一个新的请求
-    		$ffuser = new FFClient( config('services.'.$driver.'.client_id'), config('services.'.$driver.'client_secret') , $last_key['oauth_token'] , $last_key['oauth_token_secret']  );
+    		$ffuser = new FFClient( config("services.$driver.client_id"), config("services.$driver.client_secret") , $last_key['oauth_token'] , $last_key['oauth_token_secret']  );
     		$ffuser_result = $ffuser -> verify_credentials();
     		$ffuser_info = json_decode($ffuser_result, true);
     		
