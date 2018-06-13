@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +19,7 @@ use function Qiniu\json_decode;
 use App\Http\Utils\OAuth;
 use App\Repositories\OauthInfoRepository;
 
-class ApiController extends Controller
+class WechatController extends Controller
 {
     protected $categorys;
     
