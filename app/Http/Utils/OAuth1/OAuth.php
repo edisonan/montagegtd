@@ -112,6 +112,8 @@ class OAuth {
      * construct WeiboOAuth object 
      */ 
     function __construct($consumer_key, $consumer_secret, $oauth_token = NULL, $oauth_token_secret = NULL) { 
+    	\Log::info($consumer_key);
+    	\Log::info($consumer_secret);
         $this->sha1_method = new OAuthSignatureMethod_HMAC_SHA1(); 
         $this->consumer = new OAuthConsumer($consumer_key, $consumer_secret); 
         if (!empty($oauth_token) && !empty($oauth_token_secret)) { 
@@ -134,6 +136,7 @@ class OAuth {
         }  
 
         $request = $this->oAuthRequest($this->requestTokenURL(), 'GET', $parameters); 
+        \Log::info($request);
         $token = OAuthUtil::parse_parameters($request); 
         $this->token = new OAuthConsumer($token['oauth_token'], $token['oauth_token_secret']); 
         return $token; 
