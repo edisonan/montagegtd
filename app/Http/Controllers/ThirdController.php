@@ -45,7 +45,7 @@ class ThirdController extends Controller
     public function fanfouIndex(Request $request)
     {
     	$config = config('services.fanfou');
-    	$o = new OAuth( $config['key'] , $config['secret']  );
+    	$o = new OAuth( $config['client_id'] , $config['client_secret']  );
     	
     	$keys = $o -> getRequestToken();
     	$aurl = $o -> getAuthorizeURL( $keys['oauth_token'] ,false , $config['callback']);
