@@ -48,7 +48,7 @@ class ThirdController extends Controller
     	$o = new OAuth( $config['client_id'] , $config['client_secret']  );
     	
     	$keys = $o -> getRequestToken();
-    	$aurl = $o -> getAuthorizeURL( $keys['oauth_token'] ,false , $config['callback']);
+    	$aurl = $o -> getAuthorizeURL( $keys['oauth_token'] ,false , $config['redirect']);
     	
     	$request->session()->put('temp', $keys);
     	return redirect((string)$aurl)->with('message', 'IT WORKS!');
