@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\OAuth1\OAuth;
-use App\Http\Utils\FFClient;
+use App\Http\Utils\OAuth1\FFClient;
 
 use Illuminate\Http\Request;
 
@@ -65,13 +65,13 @@ class ThirdController extends Controller
     	$config = config('services.fanfou');
     	$temp = $request->session()->get('temp');
     	
-    	$o = new OAuth( $config['key'] , $config['secret'] , $temp['oauth_token'] , $temp['oauth_token_secret']  );
+    	$o = new OAuth( config("services.$driver.client_id"), config("services.$driver.client_secret") , $temp['oauth_token'] , $temp['oauth_token_secret']  );
     	
     	//获取access_token
     	$last_key = $o -> getAccessToken(  $temp['oauth_token'] ) ;
     	
     	//创造一个新的请求
-    	$ff_user = new FFClient( $config['key'] , $config['secret'] , $last_key['oauth_token'] , $last_key['oauth_token_secret']  );
+    	$ff_user = new FFClient( config("services.$driver.client_id"), config("services.$driver.client_secret") , $last_key['oauth_token'] , $last_key['oauth_token_secret']  );
     	$result = $ff_user -> verify_credentials();
     	$result_arr = json_decode($result, true);
     	
@@ -114,7 +114,7 @@ class ThirdController extends Controller
     	$oauth_token_secret = $third['token_secret'];
     	
     	//发表博文
-    	$ff_user = new FFClient( $config['key'] , $config['secret'] , $oauth_token , $oauth_token_secret );
+    	$ff_user = new FFClient( config("services.$driver.client_id"), config("services.$driver.client_secret") , $oauth_token , $oauth_token_secret );
     	$result = $ff_user -> update('test!!!robot dog!!!');
     	
     	echo $result;exit;

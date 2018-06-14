@@ -7,7 +7,6 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 use App\Repositories\TaskRepository;
 use App\Repositories\ThirdRepository;
-use App\Http\Utils\FFClient;
 
 use DB;
 use App\Note;

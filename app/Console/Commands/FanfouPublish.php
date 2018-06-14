@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 
 use App\Repositories\ThirdRepository;
-use App\Http\Utils\FFClient;
+use App\Http\Utils\OAuth1\FFClient;
 
 use Log;
 
@@ -51,7 +51,7 @@ class FanfouPublish extends Command
     		$oauth_token_secret = $third['token_secret'];
     		
     		//fanfou client
-	    	$ff_user = new FFClient( $config['key'] , $config['secret'] , $oauth_token , $oauth_token_secret );
+	    	$ff_user = new FFClient( config("services.$driver.client_id"), config("services.$driver.client_secret") , $oauth_token , $oauth_token_secret );
 	    	
     		$imojs = array('(｀･ω･´) (´･ω･｀)','(ÒωÓױ)呃！！！！','(￣▽￣")','(。-`ω´-)','╮(￣▽￣)╭');
     		
