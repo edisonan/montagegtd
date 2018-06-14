@@ -222,7 +222,7 @@ class FeedRepository
     	$items = $ff_user->friends_timeline(1,50);
     	$items = json_decode($items,true);
     	
-    	if(empty($items)) {
+    	if(empty($items) || isset($items['error'])) {
     		return false;
     	}
     	
