@@ -218,7 +218,8 @@ class CommonUtil{
 						'onload','onlosecapture','onmousedown','onmouseenter','onmouseleave','onmousemove','onmouseout','onmouseover','onmouseup','onmousewheel',
 						'onmove','onmoveend','onmovestart','onpaste','onpropertychange','onreadystatechange','onreset','onresize','onresizeend','onresizestart',
 						'onrowenter','onrowexit','onrowsdelete','onrowsinserted','onscroll','onselect','onselectionchange','onselectstart','onstart','onstop',
-						'onsubmit','onunload','javascript','script','eval','behaviour','expression','style','class');
+// 						'onsubmit','onunload','javascript','script','eval','behaviour','expression','style','class');
+						'onsubmit','onunload','javascript','script','eval','behaviour','expression','class');
 				$skipstr = implode('|', $skipkeys);
 				$value = preg_replace(array("/($skipstr)/i"), '.', $value);
 				if (!preg_match("/^[\/|\s]?($allowtags)(\s+|$)/is", $value)) {
