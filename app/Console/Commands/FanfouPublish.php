@@ -51,7 +51,7 @@ class FanfouPublish extends Command
     		$oauth_token_secret = $third['token_secret'];
     		
     		//fanfou client
-	    	$ff_user = new FFClient( config("services.$driver.client_id"), config("services.$driver.client_secret") , $oauth_token , $oauth_token_secret );
+	    	$ff_user = new FFClient( config("services.fanfou.client_id"), config("services.fanfou.client_secret") , $oauth_token , $oauth_token_secret );
 	    	
     		$imojs = array('(｀･ω･´) (´･ω･｀)','(ÒωÓױ)呃！！！！','(￣▽￣")','(。-`ω´-)','╮(￣▽￣)╭');
     		

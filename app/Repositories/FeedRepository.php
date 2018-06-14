@@ -217,7 +217,7 @@ class FeedRepository
     	$oauth_token = $third['token_value'];
     	$oauth_token_secret = $third['token_secret'];
     	
-    	$ff_user = new FFClient( config("services.$driver.client_id"), config("services.$driver.client_secret") , $oauth_token , $oauth_token_secret );
+    	$ff_user = new FFClient( config("services.fanfou.client_id"), config("services.fanfou.client_secret") , $oauth_token , $oauth_token_secret );
     	
     	$items = $ff_user->friends_timeline(1,50);
     	$items = json_decode($items,true);
