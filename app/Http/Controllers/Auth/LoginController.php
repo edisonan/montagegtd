@@ -8,8 +8,8 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Overtrue\Socialite\SocialiteManager;
 use Illuminate\Http\Request;
 use App\Repositories\OauthInfoRepository;
-use App\User;
-use App\OauthInfo;
+use App\Models\User;
+use App\Models\OauthInfo;
 use Illuminate\Support\Facades\Auth;
 use function Symfony\Component\Debug\header;
 
