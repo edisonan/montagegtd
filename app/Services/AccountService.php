@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\OauthInfoRepository;
+use App\Models\User;
 
 /**
  * 账户管理Controller
