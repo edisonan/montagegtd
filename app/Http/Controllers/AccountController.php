@@ -13,16 +13,16 @@ use App\Services\AccountService;
 class AccountController extends Controller {
 	
 	/**
-	 * The AccountService instance.
+	 * AccountService 实例.
 	 *
 	 * @var AccountService
 	 */
 	protected $accountService;
 	
 	/**
-	 * Create a new controller instance.
+	 * 构造方法
 	 *
-	 * @param OauthInfoRepository $tasks        	
+	 * @param AccountService $accountService        	
 	 * @return void
 	 */
 	public function __construct(AccountService $accountService) {

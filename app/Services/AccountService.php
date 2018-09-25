@@ -6,21 +6,21 @@ use App\Repositories\OauthInfoRepository;
 use App\Models\User;
 
 /**
- * 账户管理Controller
+ * 账号管理Service
  * @author edison.an
  *
  */
 class AccountService {
 	
 	/**
-	 * The oauthInfo repository instance.
+	 * OauthInfoRepository 实例
 	 *
 	 * @var OauthInfoRepository
 	 */
 	protected $oauths;
 	
 	/**
-	 * Create a new controller instance.
+	 * 构造方法
 	 *
 	 * @param OauthInfoRepository $oauths        	
 	 * @return void
@@ -31,7 +31,8 @@ class AccountService {
 	
 	/**
 	 * 获取某用户Oauth账户信息
-	 *
+	 * @param User $user
+	 * @return NULL[][]
 	 */
 	public function getOauthInfos(User $user) {
 		
