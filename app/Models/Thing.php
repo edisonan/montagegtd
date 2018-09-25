@@ -1,18 +1,18 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Setting extends Model
+class Thing extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['day_pomo_goal','week_pomo_goal','month_pomo_goal','pomo_time','pomo_rest_time','kindle_email','is_start_kindle','with_image_push','cal_token'];
+    protected $fillable = ['name','status','start_time','end_time','type'];
     
     /**
      * The attributes that should be cast to native types.
@@ -20,15 +20,14 @@ class Setting extends Model
      * @var array
      */
     protected $casts = [
-        'user_id' => 'int',
+    		'user_id' => 'int',
     ];
-
+    
     /**
      * Get the user that owns the task.
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+    	return $this->belongsTo(User::class);
     }
-    
 }

@@ -1,18 +1,18 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Third extends Model
+class Setting extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['token','token_value','token_secret','source','third_id','third_name'];
+    protected $fillable = ['day_pomo_goal','week_pomo_goal','month_pomo_goal','pomo_time','pomo_rest_time','kindle_email','is_start_kindle','with_image_push','cal_token'];
     
     /**
      * The attributes that should be cast to native types.
@@ -30,4 +30,5 @@ class Third extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Goal;
+use App\Models\Goal;
 use App\Repositories\GoalRepository;
 
 class GoalController extends Controller

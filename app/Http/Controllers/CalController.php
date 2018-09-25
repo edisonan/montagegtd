@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Setting;
+use App\Models\Setting;
 use App\Repositories\CalRepository;
 
 use App\Http\Utils\ICSUtil;

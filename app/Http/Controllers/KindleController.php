@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 
-use App\Setting;
-use App\KindleLog;
+use App\Models\Setting;
+use App\Models\KindleLog;
 use App\Repositories\SettingRepository;
 
 use Develpr\Phindle\Phindle;

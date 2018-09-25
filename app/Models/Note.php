@@ -1,19 +1,18 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\User;
-use App\Article;
 use Illuminate\Database\Eloquent\Model;
 
-class ArticleMark extends Model
+class Note extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['user_id','article_id','content'];
+    protected $fillable = ['name','status','record_path','image_path'];
     
     /**
      * The attributes that should be cast to native types.
@@ -21,19 +20,21 @@ class ArticleMark extends Model
      * @var array
      */
     protected $casts = [
-        'article_id' => 'int',
+        'user_id' => 'int',
     ];
 
     /**
      * Get the user that owns the task.
      */
-    public function article()
-    {
-        return $this->belongsTo(Article::class);
-    }
-    
     public function user()
     {
-    	return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
+    }
+    
+    /**
+     */
+    public function noteTagMaps()
+    {
+    	return $this->hasMany(NoteTagMap::class);
     }
 }

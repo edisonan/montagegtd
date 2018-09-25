@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Note;
+use App\Models\Note;
 use App\Repositories\NoteRepository;
-use App\Tag;
-use App\NoteTagMap;
+use App\Models\Tag;
+use App\Models\NoteTagMap;
 use App\Repositories\TagRepository;
 
 class NoteController extends Controller

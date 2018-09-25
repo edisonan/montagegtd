@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Pomo;
-use App\Thing;
+use App\Models\Pomo;
+use App\Models\Thing;
 use App\Repositories\PomoRepository;
 
 class PomoController extends Controller

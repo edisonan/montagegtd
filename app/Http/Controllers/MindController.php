@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Mind;
+use App\Models\Mind;
 use App\Repositories\MindRepository;
 
 class MindController extends Controller

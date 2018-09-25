@@ -1,18 +1,18 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class NoteTagMap extends Model
+class TaskTagMap extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['tag_id','note_id'];
+    protected $fillable = ['task_id','note_id'];
     
     /**
      * The attributes that should be cast to native types.
@@ -21,7 +21,7 @@ class NoteTagMap extends Model
      */
     protected $casts = [
         'tag_id' => 'int',
-        'note_id' => 'int',
+        'task_id' => 'int',
     ];
 
     /**
@@ -35,8 +35,15 @@ class NoteTagMap extends Model
     /**
      * Get all of the tags for the user.
      */
-    public function note()
+    public function task()
     {
-    	return $this->belongsTo(Note::class);
+    	return $this->belongsTo(Task::class);
+    }
+    
+    /**
+     */
+    public function taskTagMaps()
+    {
+    	return $this->hasMany(TaskTagMap::class);
     }
 }

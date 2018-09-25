@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 use App\Repositories\CategoryRepository;
-use App\Article;
-use App\ArticleMark;
+use App\Models\Article;
+use App\Models\ArticleMark;
 use App\Repositories\ArticleRepository;
-use App\Feed;
-use App\ArticleSub;
+use App\Models\Feed;
+use App\Models\ArticleSub;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
 

@@ -1,18 +1,20 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class ArticleSub extends Model
+class Statistics extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['feed_id','article_id','status'];
+    protected $fillable = ['user_id','date_type','data_type','total','statistic_date'];
+    
+    protected $table = 'statistics';
     
     /**
      * The attributes that should be cast to native types.
@@ -20,19 +22,14 @@ class ArticleSub extends Model
      * @var array
      */
     protected $casts = [
-        'article_id' => 'int',
+        'user_id' => 'int',
     ];
 
     /**
      * Get the user that owns the task.
      */
-    public function article()
-    {
-        return $this->belongsTo(Article::class);
-    }
-    
     public function user()
     {
-    	return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
     }
 }

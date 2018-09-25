@@ -1,20 +1,26 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
-use App\User;
 use Illuminate\Database\Eloquent\Model;
-use App\Goal;
-use App\Task;
 
-class Goal extends Model
+class Pomo extends Model
 {
-    /**
+	const DEFAULT_INTERVAL = 1500;//25min
+	const DEFAULT_REST_INTERVAL = 300;//5min
+	
+	
+	const STATUS_INIT = 1;
+	const STATUS_PROCESSING = 2;
+	const STATUS_FINISHED = 3;
+	const STATUS_RESTING = 4;
+	
+	/**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['name','priority','remindtime','deadline','status'];
+    protected $fillable = ['name','status'];
     
     /**
      * The attributes that should be cast to native types.
@@ -26,15 +32,10 @@ class Goal extends Model
     ];
 
     /**
-     * Get the user that owns the task.
+     * Get the user that owns the pomos.
      */
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-    
-    public function tasks()
-    {
-    	return $this->hasMany(Task::class);
     }
 }

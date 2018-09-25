@@ -7,13 +7,13 @@ use Illuminate\Support\Facades\DB;
 
 use ArandiLopez\Feed\Factories\FeedFactory;
 
-use App\Feed;
+use App\Models\Feed;
 use App\Repositories\FeedRepository;
-use App\FeedSub;
+use App\Models\FeedSub;
 use App\Repositories\FeedSubRepository;
-use App\Category;
+use App\Models\Category;
 use App\Repositories\CategoryRepository;
-use App\Article;
+use App\Models\Article;
 
 
 class FeedController extends Controller

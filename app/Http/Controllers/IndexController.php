@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Pomo;
+use App\Models\Pomo;
 use App\Repositories\TaskRepository;
 use App\Repositories\PomoRepository;
 use App\Repositories\GoalRepository;

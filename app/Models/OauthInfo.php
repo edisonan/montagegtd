@@ -1,20 +1,18 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
 
-class Statistics extends Model
+class OauthInfo extends Model
 {
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $fillable = ['user_id','date_type','data_type','total','statistic_date'];
-    
-    protected $table = 'statistics';
+    protected $fillable = ['user_id','expire','access_token','driver','third_uid','created_at','updated_at'];
     
     /**
      * The attributes that should be cast to native types.
@@ -32,4 +30,5 @@ class Statistics extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
 }

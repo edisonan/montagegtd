@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Task;
-use App\Tag;
-use App\TaskTagMap;
+use App\Models\Task;
+use App\Models\Tag;
+use App\Models\TaskTagMap;
 use App\Repositories\TaskRepository;
 use App\Repositories\TagRepository;
 use App\Repositories\GoalRepository;
-use App\Thing;
+use App\Models\Thing;
 
 
 class TaskController extends Controller
