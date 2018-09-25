@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 use App\Repositories\CategoryRepository;
 use App\Repositories\ArticleRepository;
-use App\ArticleSub;
-use App\NoteTagMap;
+use App\Models\ArticleSub;
+use App\Models\NoteTagMap;
 use App\Models\Tag;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;

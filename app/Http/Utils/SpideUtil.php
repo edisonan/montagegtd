@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Utils;
 
-use App\Article;
-use App\ArticleSub;
-use App\FeedSub;
-use App\Feed;
+use App\Models\Article;
+use App\Models\ArticleSub;
+use App\Models\FeedSub;
+use App\Models\Feed;
 use function GuzzleHttp\json_encode;
 use Illuminate\Support\Facades\Log;
 use Exception;

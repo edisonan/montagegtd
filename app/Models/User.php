@@ -10,7 +10,7 @@ use App\Article;
 use App\Note;
 use App\Third;
 use App\Goal;
-use App\Setting;
+use App\Models\Setting;
 use App\Thing;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;

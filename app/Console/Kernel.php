@@ -17,7 +17,7 @@ use App\Repositories\FeedRepository;
 use App\Feed;
 use App\Article;
 use App\Http\Utils\SpideUtil;
-use App\Setting;
+use App\Models\Setting;
 use App\KindleLog;
 use App\ArticleSub;
 use App\Repositories\SettingRepository;

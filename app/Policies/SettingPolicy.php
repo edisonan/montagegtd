@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Setting;
+use App\Models\Setting;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SettingPolicy

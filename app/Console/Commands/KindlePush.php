@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-use App\Setting;
+use App\Models\Setting;
 use App\KindleLog;
 
 use Develpr\Phindle\Phindle;
