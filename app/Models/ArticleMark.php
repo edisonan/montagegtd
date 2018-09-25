@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\User;
-use App\Article;
 use Illuminate\Database\Eloquent\Model;
 
 class ArticleMark extends Model

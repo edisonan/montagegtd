@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\Third;
+use App\Models\User;
+use App\Models\Third;
 
 class ThirdRepository
 {

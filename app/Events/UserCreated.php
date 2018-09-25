@@ -1,7 +1,7 @@
 <?php
 namespace App\Events;
 
-use App\User;
+use App\Models\User;
 use Illuminate\Queue\SerializesModels;
 
 /**

@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\Note;
+use App\Models\User;
+use App\Models\Note;
 
 class NoteRepository
 {

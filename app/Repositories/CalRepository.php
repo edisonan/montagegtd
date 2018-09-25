@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Cal;
+use App\Models\Cal;
 
 class CalRepository
 {

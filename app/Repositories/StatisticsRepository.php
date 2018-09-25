@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\Statistics;
+use App\Models\User;
+use App\Models\Statistics;
 
 class StatisticsRepository
 {

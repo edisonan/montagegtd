@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\Thing;
+use App\Models\User;
+use App\Models\Thing;
 
 class ThingRepository
 {

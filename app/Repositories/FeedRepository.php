@@ -2,11 +2,11 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\Feed;
-use App\Article;
-use App\FeedSub;
-use App\ArticleSub;
+use App\Models\User;
+use App\Models\Feed;
+use App\Models\Article;
+use App\Models\FeedSub;
+use App\Models\ArticleSub;
 use ArandiLopez\Feed\Factories\FeedFactory; //use SimplePie to parse RSS feeds, see: https://github.com/arandilopez/laravel-feed-parser
 use App\Http\Utils\OAuth1\FFClient;
 

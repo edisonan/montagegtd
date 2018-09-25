@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\Mind;
+use App\Models\User;
+use App\Models\Mind;
 
 class MindRepository
 {

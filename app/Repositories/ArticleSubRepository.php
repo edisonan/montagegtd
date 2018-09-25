@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\ArticleSub;
+use App\Models\User;
+use App\Models\ArticleSub;
 
 class ArticleSubRepository
 {

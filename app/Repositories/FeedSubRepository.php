@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\FeedSub;
+use App\Models\User;
+use App\Models\FeedSub;
 
 class FeedSubRepository
 {

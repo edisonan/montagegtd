@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\Setting;
+use App\Models\User;
+use App\Models\Setting;
 
 class SettingRepository
 {

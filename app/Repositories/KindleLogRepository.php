@@ -2,8 +2,8 @@
 
 namespace App\Repositories;
 
-use App\User;
-use App\KindleLog;
+use App\Models\User;
+use App\Models\KindleLog;
 
 class KindleLogRepository
 {
