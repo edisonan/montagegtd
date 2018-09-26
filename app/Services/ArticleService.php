@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use DB;
 use App\Models\User;
 use App\Models\ArticleSub;
 
