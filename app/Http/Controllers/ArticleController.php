@@ -44,7 +44,7 @@ class ArticleController extends Controller {
 				] 
 		] );
 		
-		$this->$articleService = $articleService;
+		$this->articleService = $articleService;
 	}
 	
 	/**
