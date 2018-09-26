@@ -1,69 +1,73 @@
-@extends('layouts.app')
-
-@section('content')
+@extends('layouts.app') @section('content')
 <style>
-        .lazy{width:100%;height:0;background-size:100%;}
+.lazy {
+	width: 100%;
+	height: 0;
+	background-size: 100%;
+}
 
-        .product-container {
-	      width: 260px;
-	      margin: 5px auto;
-	      border-radius: 10px;
-	      background: #f6f8f7;
-	  	}
-	      .name {
-		        border-bottom: 1px solid @gray-light;
-		        font-size: 20px;
-		        padding: 2px;
-	      }
+.product-container {
+	width: 260px;
+	margin: 5px auto;
+	border-radius: 10px;
+	background: #f6f8f7;
+}
 
-	      .interest {
-		        color: #1da427;
-		        font-size: 70px;
-		        font-weight: bold;
-		        padding: 0px;
-		        margin-bottom: -30px;
-	      }
+.name {
+	border-bottom: 1px solid@gray-light;
+	font-size: 20px;
+	padding: 2px;
+}
 
-	      .percent {
-		         	 font-size: 31px;
-		   }
+.interest {
+	color: #1da427;
+	font-size: 70px;
+	font-weight: bold;
+	padding: 0px;
+	margin-bottom: -30px;
+}
 
-	      .intro {
-	        	padding: 5px;
-	      }
+.percent {
+	font-size: 31px;
+}
 
-	      .strong {
-		        padding: 3px;
-		        font-size: 17px;
-		        color: @white;
-		        background: #326c84;
-		        border-radius: 0 0 10px 10px;
-	      }
-	      .active {
-	      	color:red;
-	      }
+.intro {
+	padding: 5px;
+}
 
-	      .rowone{
-	        overflow: hidden;
-		    text-overflow: ellipsis;
-		    display: -webkit-box;
-		    -webkit-box-orient: vertical;
-		    -webkit-line-clamp: 1;
-	      }
+.strong {
+	padding: 3px;
+	font-size: 17px;
+	color: @white;
+	background: #326c84;
+	border-radius: 0 0 10px 10px;
+}
 
-		  .post-text{
-			padding: 10px;
-			line-height: 1.8;
-			//font-size: 20px;
-		  }
+.active {
+	color: red;
+}
 
-		  img{
-			      max-width: 85%;
-		  }
+.rowone {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 1;
+}
 
-		  .h1,h1,.h2,h2,.h3,h3 {
-		      font-size: 1.5rem;
-		  }
+.post-text {
+	padding: 10px;
+	line-height: 1.8; //
+	font-size: 20px;
+}
+
+img {
+	max-width: 85%;
+}
+
+.h1, h1, .h2, h2, .h3, h3 {
+	font-size: 1.5rem;
+}
 </style>
 <link rel="stylesheet" href="/css/share.min.css">
 
@@ -141,6 +145,7 @@ $(document).ready(function () {
 		$(this).css("display","none");
 		$(this).parent().parent().find(".view-all").css("display","none");
 	});
+	
 	//处理屏蔽图片
 	$("#unable_img").click(function(){
 		if($("#unable_img").is(':checked')){
@@ -182,10 +187,6 @@ $(document).ready(function () {
 
 	if($.cookie("unable_desc") != null && $.cookie("unable_desc")=="true"){
 		$("#unable_desc").prop('checked', true);
-
-// 		$(".post-content").each(function(){
-// 			$(this).css("display","none");
-// 		});
 	}
 
 	var ua =  navigator.userAgent;
@@ -199,10 +200,6 @@ $(document).ready(function () {
 			$(this).css("display","none");
 		});
 	}
-
-	//$(".category_items").click(function(){
-	//	$(this).parent().find(".category_item").toggle();
-	//});
 	
 	$(".unfold_category_item").click(function(){
 		$(this).parent().parent().find(".category_item").toggle();
@@ -238,181 +235,186 @@ $(document).ready(function () {
 	});
 });
 </script>
-    <div class="container">
-    	<div class="row">
-    	<div class=" col-md-4">
-    		@include('common.success')
-    		<div class="card card-default">
-                <div class="card-header">
-                	订阅分类
-                	<div style="float:right">
-                		<a href="{{ url('kindles') }}">[SendKindle]</a>
-                    	<a href="{{'/feeds/setting'}}">[管理]</a>
-                    </div>
-                </div>
+<div class="container">
+	<div class="row">
+		<div class=" col-md-4">
+			@include('common.success')
+			<div class="card card-default">
+				<div class="card-header">
+					订阅分类
+					<div style="float: right">
+						<a href="{{ url('kindles') }}">[SendKindle]</a> <a
+							href="{{'/feeds/setting'}}">[管理]</a>
+					</div>
+				</div>
 
-                <div class="card-body">
-		    		<ul class="nav nav-pills nav-stacked">
-		    			@if(count($nav_infos)>0)
-			    			@foreach($nav_infos as $nav_id=>$nav_info)
-			    			<li role="presentation">
-			    				<span class="category_items">
-			    				<img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="{{ url('articles?category_id='.$nav_id.'&status='.$status) }}">{{ $nav_info['category_info']['category_name'] }}[{{count($nav_info['list'])}}]</a>
-			    				</span>
-			    				@if(count($nav_info['list'])>0)
-			    					<ul class="category_item">
-			    					@foreach($nav_info['list'] as $item)
-			    						<li class="rowone">
-			    							<a href="{{ url('articles?feed_id='.$item['feed_id'].'&status='.$status) }}">
-			    							<span style="/*display: block;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;*/">
-			    							[
-			    							<?php echo $item['feed_count']?>
-			    							]
-			    							{{ $item['feed_name'],0,8 }}
-			    							</span>
-			    							</a>
-			    						</li>
-			    					@endforeach
-			    					</ul>
-			    				@endif
-			    			</li>
-			    			@endforeach
-			    		@endif
-		    		</ul>
-		    	</div>
-    		</div>
-    	</div>
-
-        <div class=" col-md-8">
-            <div class="card card-default">
-                <div class="card-header">
-                		@if(count($articleSubs) == 0 && count($recommend_feeds) > 0)
-							热门推荐
-                		@else
-                			@if($status == 'unread')
-                			未读
-                			@elseif($status == 'read')
-                			已读
-                			@elseif($status == 'star')
-                			收藏
-                			@elseif($status == 'read_later')
-                			稍后阅读
-                			@endif
-                    		文章
-                    	@endif
-                    	[<a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}">未读</a>]
-                    	[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">已读</a>]
-                    	[<a href="{{ url('articles?status=star&feed_id='.$feed_id) }}">加星</a>]
-                    	[<a href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}">稍后阅读</a>]
-                    	<div style="float:right">
-                    		<input type="checkbox" value="" id="unable_desc"/>一目十行
-                    		<input type="checkbox" value="" id="unable_img"/>屏图
-                    		<a href="{{ url('feed/checkNewFeed')}}"><img alt="" src="/img/icon/refresh.png" style="width: 15px;margin-right: 10px;"></a>
-                    		<a href="{{ url('feeds/explorer')}}">[发现<sup style="color:red;"><img alt="" src="/img/icon/recommend.png" style="width: 25px;">推荐</sup>]</a>
-                    		<a href="{{ url('feeds')}}">[添加订阅]</a>
-                    	</div>
-                </div>
+				<div class="card-body">
+					<ul class="nav nav-pills nav-stacked">
+					
+					</ul>
+				</div>
 			</div>
-                <!--<div class="card-body">-->
-                    <!-- Display Validation Errors -->
+		</div>
+
+		<div class=" col-md-8">
+			<div class="card card-default">
+				<div class="card-header">
+					@if(count($articleSubs) == 0 && count($recommend_feeds) > 0) 热门推荐
+					@else @if($status == 'unread') 未读 @elseif($status == 'read') 已读
+					@elseif($status == 'star') 收藏 @elseif($status == 'read_later') 稍后阅读
+					@endif 文章 @endif [<a
+						href="{{ url('articles?status=unread&feed_id='.$feed_id) }}">未读</a>]
+					[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">已读</a>]
+					[<a href="{{ url('articles?status=star&feed_id='.$feed_id) }}">加星</a>]
+					[<a
+						href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}">稍后阅读</a>]
+					<div style="float: right">
+						<input type="checkbox" value="" id="unable_desc" />一目十行 <input
+							type="checkbox" value="" id="unable_img" />屏图 <a
+							href="{{ url('feed/checkNewFeed')}}"><img alt=""
+							src="/img/icon/refresh.png"
+							style="width: 15px; margin-right: 10px;"></a> <a
+							href="{{ url('feeds/explorer')}}">[发现<sup style="color: red;"><img
+								alt="" src="/img/icon/recommend.png" style="width: 25px;">推荐</sup>]
+						</a> <a href="{{ url('feeds')}}">[添加订阅]</a>
+					</div>
+				</div>
+			</div>
+			<!--<div class="card-body">-->
+			<!-- Display Validation Errors -->
                     @include('common.errors')
 
                     		@if (count($articleSubs) > 0)
                     			<?php $article_sub_ids = array();?>
 	                    		@foreach ($articleSubs as $articleSub)
 	                    		<?php $article = $articleSub->article;if(empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
-								<div class="card" style="margin-bottom:10px">
-									<div class="card-block" style="padding: 10px;">
-									  @if(!empty($article->subject))
-									  <h4 class="card-title">
-									  		<img class="playaudio" article_sub_id="{{$articleSub->id}}"  alt="" src="/img/icon/music.png" width="30px">
-											<a href="{{ $article->url }}">[原文]</a>
-											<a href="{{ url('article/view/'.$article->id) }}">{{ $article->subject }}</a>
-									  </h4>
-								      @endif
-									  <p class="card-text"><small class="text-muted">来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
+								<div class="card" style="margin-bottom: 10px">
+				<div class="card-block" style="padding: 10px;">
+					@if(!empty($article->subject))
+					<h4 class="card-title">
+						<img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
+							src="/img/icon/music.png" width="30px"> <a
+							href="{{ $article->url }}">[原文]</a> <a
+							href="{{ url('article/view/'.$article->id) }}">{{
+							$article->subject }}</a>
+					</h4>
+					@endif
+					<p class="card-text">
+						<small class="text-muted">来源：<a
+							href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}"
+							target="_blank">{{ $article->feed->feed_name}}</a> *
+							{{$article->published}}
+						</small>
+					</p>
 
-									  @if($unable_desc == "false")
-									  <div class="card-text post-text">
+					@if($unable_desc == "false")
+					<div class="card-text post-text">
 										<?php
 										$content = $article->content;
-										if($unable_img == "true"){
-											$content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
-											$content = str_replace("src='", "src='/img/unable_img.png' orignal_src='", $content);
+										if ($unable_img == "true") {
+											$content = str_replace ( 'src="', 'src="/img/unable_img.png" orignal_src="', $content );
+											$content = str_replace ( "src='", "src='/img/unable_img.png' orignal_src='", $content );
 										}
-										echo App\Http\Utils\CommonUtil::formatContentHtml($content);
+										echo App\Http\Utils\CommonUtil::formatContentHtml ( $content );
 										?>
 									  </div>
-									  <div class="card-text text-right">
-											<!-- share start -->
-											<p class="social-share" style="display:none" data-mode="prepend" data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}" data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,weibo"  data-mobile-sites="facebook,twitter,google,weibo"  data-wechat-qrcode-title="请打开微信扫一扫">
-												<a href="javascript:void(0);" class="social-share-icon icon-heart" class="" data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}" data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
-											  </p>
-											<!-- share end -->
-											 <a href="javascript:void(0)" target="_blank" class="btn btn-outline-secondary btn-sm share_btn" title="分享"><img src="/img/icon/share.png" width="20px"/>Share</a>
-											 <a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_read @if($articleSub->status == 'read') active @endif" title="已读"><img src="/img/icon/read_already.png" width="20px"/>Read</a>
-											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif" title="稍后阅读"><img src="/img/icon/read_later.png" width="20px"/>Later</a>
-											<a href="javascript:void(0);"  article_sub_id="{{$articleSub->id}}" class="btn btn-outline-secondary btn-sm set_star @if($articleSub->status == 'star') active @endif" title="加星"><img src="/img/icon/read_star.png" width="20px"/>Star</a>
-											<a href="javascript:void(0);" style="display:none" class="btn btn-outline-warning btn-sm view-all"><img src="/img/icon/read_more.png" width="30px"/>View All</a>
-									  </div>
-									  @endif
-									</div>
-								  </div>
+					<div class="card-text text-right">
+						<!-- share start -->
+						<p class="social-share" style="display: none" data-mode="prepend"
+							data-weibo-title="{{ $article->subject }}"
+							data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227"
+							data-title="{{ $article->subject }}"
+							data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"
+							data-image="{{ $article->image_url }}"
+							data-sites="facebook,twitter,google,weibo"
+							data-mobile-sites="facebook,twitter,google,weibo"
+							data-wechat-qrcode-title="请打开微信扫一扫">
+							<a href="javascript:void(0);"
+								class="social-share-icon icon-heart" class=""
+								data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}"
+								data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
+						</p>
+						<!-- share end -->
+						<a href="javascript:void(0)" target="_blank"
+							class="btn btn-outline-secondary btn-sm share_btn" title="分享"><img
+							src="/img/icon/share.png" width="20px" />Share</a> <a
+							href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
+							class="btn btn-outline-secondary btn-sm set_read @if($articleSub->status == 'read') active @endif"
+							title="已读"><img src="/img/icon/read_already.png" width="20px" />Read</a>
+						<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
+							class="btn btn-outline-secondary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif"
+							title="稍后阅读"><img src="/img/icon/read_later.png" width="20px" />Later</a>
+						<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
+							class="btn btn-outline-secondary btn-sm set_star @if($articleSub->status == 'star') active @endif"
+							title="加星"><img src="/img/icon/read_star.png" width="20px" />Star</a>
+						<a href="javascript:void(0);" style="display: none"
+							class="btn btn-outline-warning btn-sm view-all"><img
+							src="/img/icon/read_more.png" width="30px" />View All</a>
+					</div>
+					@endif
+				</div>
+			</div>
 
 
 
-								@endforeach
-								<audio style="position: fixed;float:right"></audio>
-                        		{!! $articleSubs->appends($page_params)->links() !!}
+			@endforeach
+			<audio style="position: fixed; float: right"></audio>
+			{!! $articleSubs->appends($page_params)->links() !!}
 
-                        		@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        		<button class="col-md-12 btn btn-outline-info" id="marked_all_read" ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
-                        		@endif
-                        @endif
+			@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
+			<button class="col-md-12 btn btn-outline-info" id="marked_all_read"
+				ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+			@endif @endif @if(count($articleSubs) == 0)
+
+			@if(!empty($next_recommend_feed))
+			<div class="card" style="margin-top: 10px">
+				<div class="card-block" style="padding: 10px;">
+					<h4 class="card-title">
+						这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:</h4>
+					<p class="card-text text-center">
+						<a
+							href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
+					</p>
+				</div>
+			</div>
+			@endif @if(count($recommend_feeds) > 0)
+			<div class="text-center col-md-12"
+				style="font-size: 20px; margin: 10px;">
+				<a href="/feeds/explorer">还可以逛逛其他的资源~</a>
+			</div>
+			<div class="row" style="margin: 15px">
+				@foreach($recommend_feeds as $recommend_feed)
+				<div class="card col-md-6" style="margin-bottom: 15px">
+					<div class="card-block" style="padding: 5px;">
+						<h4 class="card-title">
+							<a
+								href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}">{{
+								substr($recommend_feed->feed_name,0) }}</a>
+						</h4>
+						<p class="card-text text-center">
+							<small>最近更新:{{
+								date('d日H时',strtotime($recommend_feed->updated_at))
+								}}&nbsp;&nbsp;<a href="javascript:void(0);"
+								feed_id="{{ $recommend_feed->id }}" class="feed_quick_sub">直接订阅</a>
+							</small>
+						</p>
+					</div>
+				</div>
+				@endforeach
+			</div>
+			@endif @endif
+			<!--</div>-->
 
 
-                        @if(count($articleSubs) == 0)
+		</div>
 
-	                        @if(!empty($next_recommend_feed))
-								<div class="card" style="margin-top:10px">
-									<div class="card-block" style="padding: 10px;">
-									  <h4 class="card-title">
-											这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:
-									  </h4>
-									  <p class="card-text text-center"><a href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a></p>
-									</div>
-								  </div>
-	                        @endif
+		<!-- audio -->
+		<audio id="audio" style="position: fixed; float: right" autoplay
+			src=""></audio>
 
-	                        @if(count($recommend_feeds) > 0)
-									<div class="text-center col-md-12" style="font-size: 20px; margin: 10px;">
-	                        			<a href="/feeds/explorer">还可以逛逛其他的资源~</a>
-	                        		</div>
-	                        		<div class="row" style="margin:15px">
-				                    	@foreach($recommend_feeds as $recommend_feed)
-										<div class="card col-md-6" style="margin-bottom:15px">
-											<div class="card-block" style="padding: 5px;">
-											  <h4 class="card-title">
-													<a href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}" >{{ substr($recommend_feed->feed_name,0) }}</a>
-											  </h4>
-											  <p class="card-text text-center"><small>最近更新:{{ date('d日H时',strtotime($recommend_feed->updated_at)) }}&nbsp;&nbsp;<a href="javascript:void(0);"  feed_id="{{ $recommend_feed->id }}" class="feed_quick_sub">直接订阅</a></small></p>
-											</div>
-										  </div>
-				                    	@endforeach
-	                        		</div>
-	                    	@endif
-	                    @endif
-                <!--</div>-->
+	</div>
+</div>
 
-
-        </div>
-        
-        <!-- audio -->
-        <audio id="audio" style="position: fixed;float:right" autoplay src=""></audio>
-        
-        </div>
-    </div>
-	
-	<script src="/js/social-share.js"></script>
-	<script src="/js/qrcode.js"></script>
+<script src="/js/social-share.js"></script>
+<script src="/js/qrcode.js"></script>
 @endsection

@@ -75,28 +75,16 @@ class ArticleController extends Controller {
 		// 获取每页数量，默认参数值为 20
 		$page_count = $request->get('page_count', 20);
 		
-		Log::info(time());
-		// 获取当前状态下，每个订阅的数量
-		$counts_info = $this->articleService->getCountInfos($request->user (), $status);
-		
-		Log::info(time());
-		// 获取导航信息和下个推荐订阅
-		$result = $this->articleService->getNavInfoAndNextRecommend($request->user(), $status);
-		$nav_infos = $result['nav_infos'];
-		$next_recommend_feed = $result['next_recommend_feed'];
-		
-		Log::info(time());
 		// 获取订阅文章
 		$articleSubs = $this->articleService->getArticleSubs($request->user(), $status, $page_count, $feed_id, $category_id);
-		
 		Log::info(time());
+		
 		// if article subs empty ,get recommend feeds
 		if (count ( $articleSubs ) == 0) {
 			$recommend_feeds = Feed::where ( 'user_id', '!=', $request->user ()->id )->where ( 'updated_at', '>', date ( 'Y-m-d' ) )->where ( 'is_recommend', 1 )->orderBy ( DB::raw ( 'RAND()' ) )->take ( 8 )->get ();
 		} else {
 			$recommend_feeds = array ();
 		}
-		Log::info(time());
 		
 		// attr： advoid img load
 		$unable_img = isset ( $_COOKIE ['unable_img'] ) ? $_COOKIE ['unable_img'] : "false";
@@ -112,14 +100,11 @@ class ArticleController extends Controller {
 		);
 		
 		return view ( 'articles.index', [ 
-				'nav_infos' => $nav_infos,
 				'articleSubs' => $articleSubs,
 				'status' => $status,
 				'feed_id' => $feed_id,
 				'page_params' => $page_params,
-				'counts_info' => $counts_info,
 				'recommend_feeds' => $recommend_feeds,
-				'next_recommend_feed' => $next_recommend_feed,
 				'unable_img' => $unable_img,
 				'unable_desc' => $unable_desc 
 		] );
