@@ -9,7 +9,7 @@ use App\Repositories\TaskRepository;
 use App\Repositories\ThirdRepository;
 
 use DB;
-use App\Note;
+use App\Models\Note;
 use App\Task;
 use App\Pomo;
 use App\Statistics;
