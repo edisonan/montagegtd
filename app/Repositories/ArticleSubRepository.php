@@ -28,17 +28,17 @@ class ArticleSubRepository
      */
     public function forUserByStatus(User $user,string $status,$need_page=false,$page_size=30)
     {
-    	$article = DB::table('article_subs')->join('articles', 'article_subs.article_id', '=', 'articles.id')
-    	->join('feeds', 'articles.feed_id', '=', 'feeds.id')->where('article_subs.status',$status)->where('article_subs.user_id', $user->id)
-    	->orderBy('article_subs.updated_at', 'desc')->limit($page_size)->get();
+//     	$article = DB::table('article_subs')->join('articles', 'article_subs.article_id', '=', 'articles.id')
+//     	->join('feeds', 'articles.feed_id', '=', 'feeds.id')->where('article_subs.status',$status)->where('article_subs.user_id', $user->id)
+//     	->orderBy('article_subs.updated_at', 'desc')->limit($page_size)->get();
     	
-    	return $article;
+//     	return $article;
     	
-//     	$article = ArticleSub::with('article.feed')->where('user_id', $user->id)
-// 		    	->where('status',$status)->orderBy('updated_at','desc');
+    	$article = ArticleSub::with('article.feed')->where('user_id', $user->id)
+		    	->where('status',$status)->orderBy('updated_at','desc');
     	
     	if($need_page){
-    		return $article->paginate($page_size);
+    		return $article->simplePaginate($page_size);
     	} else {
     		return $article->get();
     	}
