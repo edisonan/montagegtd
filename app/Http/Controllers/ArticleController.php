@@ -342,21 +342,6 @@ class ArticleController extends Controller {
 	
 	/**
 	 *
-	 * @param array $feeds        	
-	 * @return array
-	 */
-	private function sortFeed($feeds) {
-		foreach ( $feeds as $key => $feed ) {
-			if ($feed ['feed_count'] == 0) {
-				$feeds [] = $feed;
-				unset ( $feeds [$key] );
-			}
-		}
-		return $feeds;
-	}
-	
-	/**
-	 *
 	 * @param Request $request        	
 	 * @param ArticleSub $articleSub        	
 	 */

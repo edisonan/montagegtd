@@ -146,4 +146,14 @@ class ArticleService {
 		return $articleSubs;
 	}
 	
+	private function sortFeed($feeds) {
+		foreach ( $feeds as $key => $feed ) {
+			if ($feed ['feed_count'] == 0) {
+				$feeds [] = $feed;
+				unset ( $feeds [$key] );
+			}
+		}
+		return $feeds;
+	}
+	
 }
