@@ -35,7 +35,7 @@ class ArticleSubRepository
 //     	return $article;
     	
     	$article = ArticleSub::with('article.feed')->where('user_id', $user->id)
-		    	->where('status',$status)->orderBy('updated_at','desc');
+		    	->where('status',$status)->orderBy('id','desc');
     	
     	if($need_page){
     		return $article->simplePaginate($page_size);
