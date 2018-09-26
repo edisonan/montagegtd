@@ -2,7 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\Feedback;
+use App\Models\Feedback;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;

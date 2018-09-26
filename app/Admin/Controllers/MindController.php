@@ -2,7 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\Mind;
+use App\Models\Mind;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;

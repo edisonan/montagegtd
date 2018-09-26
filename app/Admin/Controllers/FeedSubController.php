@@ -2,7 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\FeedSub;
+use App\Models\FeedSub;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;

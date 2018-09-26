@@ -2,7 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\Pomo;
+use App\Models\Pomo;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;

@@ -2,7 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\KindleLog;
+use App\Models\KindleLog;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;

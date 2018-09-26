@@ -2,7 +2,7 @@
 
 namespace App\Admin\Controllers;
 
-use App\Feed;
+use App\Models\Feed;
 
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
