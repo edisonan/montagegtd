@@ -16,8 +16,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-    	$monolog = Log::getMonolog();
-    	$monolog->pushProcessor(new UidProcessor());
+//     	$monolog = Log::getMonolog();
+//     	$monolog->pushProcessor(new UidProcessor());
+
+    	\DB::listen(function($query) { \Log::info($query); });
     	
         //
 // 		LengthAwarePaginator::presenter(function (Paginator $paginator) {
