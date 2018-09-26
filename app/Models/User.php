@@ -7,7 +7,7 @@ use App\Pomo;
 use App\Feed;
 use App\Category;
 use App\Article;
-use App\Note;
+use App\Models\Note;
 use App\Third;
 use App\Goal;
 use App\Models\Setting;
