@@ -1,5 +1,5 @@
 <?php
-namespace App\Utils\Log;
+namespace App\Http\Utils\Log;
 
 use Illuminate\Log\Writer as BaseWriter;
 use Monolog\Formatter\LineFormatter;

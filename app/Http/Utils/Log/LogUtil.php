@@ -1,5 +1,5 @@
 <?php
-namespace App\Utils\Log;
+namespace App\Http\Utils\Log;
 
 class LogUtil
 {

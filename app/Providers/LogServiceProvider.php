@@ -3,8 +3,8 @@ namespace App\Providers;
 
 use Monolog\Logger as Monolog;
 use Illuminate\Support\ServiceProvider;
-use App\Utils\Log;
-use App\Utils\Log\Writer;
+use App\Http\Utils\Log;
+use App\Http\Utils\Log\Writer;
 
 class LogServiceProvider extends ServiceProvider
 {
@@ -28,11 +28,11 @@ class LogServiceProvider extends ServiceProvider
     public function createLogger()
     {
         $processors = [
-            new \App\Utils\Log\RequestTokenProcessor(),
-            new \App\Utils\Log\IntrospectionProcessor()
+            new \App\Http\Utils\Log\RequestTokenProcessor(),
+            new \App\Http\Utils\Log\IntrospectionProcessor()
         ];
         
-        $log = new \App\Utils\Log\Writer(
+        $log = new \App\Http\Utils\Log\Writer(
             new Monolog($this->channel(), [], $processors), $this->app['events']
         );
         
