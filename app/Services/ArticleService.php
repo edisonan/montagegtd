@@ -4,6 +4,11 @@ namespace App\Services;
 
 use App\Models\User;
 
+use App\Repositories\CategoryRepository;
+use App\Repositories\ArticleRepository;
+use App\Repositories\FeedSubRepository;
+use App\Repositories\ArticleSubRepository;
+
 /**
  * ArticleService文章管理相关
  * @author edison.an
