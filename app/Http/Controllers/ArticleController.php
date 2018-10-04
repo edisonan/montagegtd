@@ -77,18 +77,10 @@ class ArticleController extends Controller {
 		
 		// 获取订阅文章
 		$articleSubs = $this->articleService->getArticleSubs($request->user(), $status, $page_count, $feed_id, $category_id);
-		Log::info(time());
 		
-		// if article subs empty ,get recommend feeds
-		if (count ( $articleSubs ) == 0) {
-			$recommend_feeds = Feed::where ( 'user_id', '!=', $request->user ()->id )->where ( 'updated_at', '>', date ( 'Y-m-d' ) )->where ( 'is_recommend', 1 )->orderBy ( DB::raw ( 'RAND()' ) )->take ( 8 )->get ();
-		} else {
-			$recommend_feeds = array ();
-		}
-		
-		// attr： advoid img load
+		// 避免图片加载
 		$unable_img = isset ( $_COOKIE ['unable_img'] ) ? $_COOKIE ['unable_img'] : "false";
-		// attr: advoid desc load
+		// 避免描述加载
 		$unable_desc = isset ( $_COOKIE ['unable_desc'] ) ? $_COOKIE ['unable_desc'] : "false";
 		
 		// page params
@@ -104,7 +96,6 @@ class ArticleController extends Controller {
 				'status' => $status,
 				'feed_id' => $feed_id,
 				'page_params' => $page_params,
-				'recommend_feeds' => $recommend_feeds,
 				'unable_img' => $unable_img,
 				'unable_desc' => $unable_desc 
 		] );

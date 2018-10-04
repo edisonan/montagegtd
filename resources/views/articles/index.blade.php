@@ -228,7 +228,6 @@ $(document).ready(function () {
 	});
 	
 	$(".icon-heart").click(function(){
-		console.log(123);
 		var title = $(this).attr('data-title');
 		var url = $(this).attr('data-url');
 		window.open('/notes?add_content='+url);
@@ -259,24 +258,27 @@ $(document).ready(function () {
 		<div class=" col-md-8">
 			<div class="card card-default">
 				<div class="card-header">
-					@if(count($articleSubs) == 0 && count($recommend_feeds) > 0) 热门推荐
-					@else @if($status == 'unread') 未读 @elseif($status == 'read') 已读
-					@elseif($status == 'star') 收藏 @elseif($status == 'read_later') 稍后阅读
-					@endif 文章 @endif [<a
-						href="{{ url('articles?status=unread&feed_id='.$feed_id) }}">未读</a>]
+					@if($status == 'unread') 未读 
+					@elseif($status == 'read') 已读
+					@elseif($status == 'star') 收藏 
+					@elseif($status == 'read_later') 稍后阅读
+					@endif 文章
+					[<a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}">未读</a>]
 					[<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">已读</a>]
 					[<a href="{{ url('articles?status=star&feed_id='.$feed_id) }}">加星</a>]
-					[<a
-						href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}">稍后阅读</a>]
+					[<a href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}">稍后阅读</a>]
+					
 					<div style="float: right">
-						<input type="checkbox" value="" id="unable_desc" />一目十行 <input
-							type="checkbox" value="" id="unable_img" />屏图 <a
-							href="{{ url('feed/checkNewFeed')}}"><img alt=""
-							src="/img/icon/refresh.png"
-							style="width: 15px; margin-right: 10px;"></a> <a
-							href="{{ url('feeds/explorer')}}">[发现<sup style="color: red;"><img
-								alt="" src="/img/icon/recommend.png" style="width: 25px;">推荐</sup>]
-						</a> <a href="{{ url('feeds')}}">[添加订阅]</a>
+						<input type="checkbox" value="" id="unable_desc" />一目十行 
+						<input type="checkbox" value="" id="unable_img" />屏图 
+						<a href="{{ url('feed/checkNewFeed')}}">
+							<img alt="" src="/img/icon/refresh.png" style="width: 15px; margin-right: 10px;">
+						</a> 
+						<a href="{{ url('feeds/explorer')}}">
+							[发现 <sup style="color: red;"> <img alt="" src="/img/icon/recommend.png" style="width: 25px;">推荐</sup>]
+						</a> 
+						
+						<a href="{{ url('feeds')}}">[添加订阅]</a>
 					</div>
 				</div>
 			</div>
@@ -290,6 +292,7 @@ $(document).ready(function () {
 	                    		<?php $article = $articleSub->article;if(empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
 								<div class="card" style="margin-bottom: 10px">
 				<div class="card-block" style="padding: 10px;">
+				
 					@if(!empty($article->subject))
 					<h4 class="card-title">
 						<img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
@@ -299,6 +302,7 @@ $(document).ready(function () {
 							$article->subject }}</a>
 					</h4>
 					@endif
+					
 					<p class="card-text">
 						<small class="text-muted">来源：<a
 							href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}"
@@ -354,63 +358,21 @@ $(document).ready(function () {
 					@endif
 				</div>
 			</div>
-
-
-
+			
 			@endforeach
-			<audio style="position: fixed; float: right"></audio>
-			{!! $articleSubs->appends($page_params)->links() !!}
+				<audio style="position: fixed; float: right"></audio>
+				{!! $articleSubs->appends($page_params)->links() !!}
 
-			@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-			<button class="col-md-12 btn btn-outline-info" id="marked_all_read"
-				ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
-			@endif @endif @if(count($articleSubs) == 0)
-
-			@if(!empty($next_recommend_feed))
-			<div class="card" style="margin-top: 10px">
-				<div class="card-block" style="padding: 10px;">
-					<h4 class="card-title">
-						这个订阅还有{{$next_recommend_feed['feed_count']}}篇文章:</h4>
-					<p class="card-text text-center">
-						<a
-							href="{{ url('articles?feed_id='.$next_recommend_feed['feed_id'].'&status='.$status) }}">{{$next_recommend_feed['feed_name']}}</a>
-					</p>
-				</div>
-			</div>
-			@endif @if(count($recommend_feeds) > 0)
-			<div class="text-center col-md-12"
-				style="font-size: 20px; margin: 10px;">
-				<a href="/feeds/explorer">还可以逛逛其他的资源~</a>
-			</div>
-			<div class="row" style="margin: 15px">
-				@foreach($recommend_feeds as $recommend_feed)
-				<div class="card col-md-6" style="margin-bottom: 15px">
-					<div class="card-block" style="padding: 5px;">
-						<h4 class="card-title">
-							<a
-								href="{{ url('article/list') }}?feed_id={{$recommend_feed->id}}">{{
-								substr($recommend_feed->feed_name,0) }}</a>
-						</h4>
-						<p class="card-text text-center">
-							<small>最近更新:{{
-								date('d日H时',strtotime($recommend_feed->updated_at))
-								}}&nbsp;&nbsp;<a href="javascript:void(0);"
-								feed_id="{{ $recommend_feed->id }}" class="feed_quick_sub">直接订阅</a>
-							</small>
-						</p>
-					</div>
-				</div>
-				@endforeach
-			</div>
-			@endif @endif
+				@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
+				<button class="col-md-12 btn btn-outline-info" id="marked_all_read"
+					ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+				@endif 
+			@endif 
 			<!--</div>-->
-
-
 		</div>
 
 		<!-- audio -->
-		<audio id="audio" style="position: fixed; float: right" autoplay
-			src=""></audio>
+		<audio id="audio" style="position: fixed; float: right" autoplay src=""></audio>
 
 	</div>
 </div>
