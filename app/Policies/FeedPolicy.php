@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Feed;
+use App\Models\Feed;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class FeedPolicy
