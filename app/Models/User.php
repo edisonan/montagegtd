@@ -8,7 +8,7 @@ use App\Models\Feed;
 use App\Models\Category;
 use App\Models\Article;
 use App\Models\Note;
-use App\Third;
+use App\Models\Third;
 use App\Models\Goal;
 use App\Models\Setting;
 use App\Models\Thing;
