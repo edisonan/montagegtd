@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Pomo;
+use App\Models\Pomo;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PomoPolicy
