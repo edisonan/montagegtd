@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Mind;
+use App\Models\Mind;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class MindPolicy
