@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use App\Task;
-use App\Pomo;
-use App\Feed;
-use App\Category;
-use App\Article;
+use App\Models\Task;
+use App\Models\Pomo;
+use App\Models\Feed;
+use App\Models\Category;
+use App\Models\Article;
 use App\Models\Note;
 use App\Third;
-use App\Goal;
+use App\Models\Goal;
 use App\Models\Setting;
-use App\Thing;
+use App\Models\Thing;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
