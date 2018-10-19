@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Third;
+use App\Models\Third;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ThirdPolicy
