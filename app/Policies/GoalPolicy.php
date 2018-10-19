@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Goal;
+use App\Models\Goal;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class GoalPolicy
