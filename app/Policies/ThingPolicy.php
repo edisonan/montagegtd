@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Thing;
+use App\Models\Thing;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ThingPolicy
