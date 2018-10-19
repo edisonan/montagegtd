@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\KindleLog;
+use App\Models\KindleLog;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class KindleLogPolicy
