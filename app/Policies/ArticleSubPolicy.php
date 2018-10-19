@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\ArticleSub;
+use App\Models\ArticleSub;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ArticleSubPolicy
