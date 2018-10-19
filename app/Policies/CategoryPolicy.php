@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Category;
+use App\Models\Category;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CategoryPolicy
