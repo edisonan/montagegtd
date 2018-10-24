@@ -19,48 +19,48 @@ class FeedRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user,$need_page=false)
+    public function forUser(User $user,$needPage=false)
     {
         $feed = Feed::where('user_id', $user->id)
                 ->orderBy('created_at', 'asc');
         
-        if($need_page){
+        if($needPage){
         	return $feed->paginate(50);
         } else {
         	return $feed->get();
         }
     }
     
-        public function forIsRecommend($is_recommend,$need_page=false)
+        public function forIsRecommend($is_recommend,$needPage=false)
     {
     	$feed = Feed::where('is_recommend', $is_recommend)
     	->orderBy('recommend_order', 'desc');
     
-    	if($need_page){
+    	if($needPage){
     		return $feed->paginate(9);
     	} else {
     		return $feed->get();
     	}
     }
     
-    public function findByRecommendCategoryId($recommend_category_id,$need_page=false)
+    public function findByRecommendCategoryId($recommend_category_id,$needPage=false)
     {
     	$feed = Feed::where('recommend_category_id', $recommend_category_id)
     	->orderBy('recommend_order', 'desc');
     
-    	if($need_page){
+    	if($needPage){
     		return $feed->paginate(48);
     	} else {
     		return $feed->get();
     	}
     }
 	
-	public function findByName($name,$need_page=false)
+	public function findByName($name,$needPage=false)
     {
     	$feed = Feed::where('feed_name', 'like', '%'.$name.'%')
     	->orderBy('recommend_order', 'desc');
     
-    	if($need_page){
+    	if($needPage){
     		return $feed->paginate(48);
     	} else {
     		return $feed->get();
@@ -107,10 +107,10 @@ class FeedRepository
      * @param  int  $goal_id
      * @return Collection
      */
-    public function forFeedId(User $user,$feed_id)
+    public function forFeedId(User $user,$feedId)
     {
     	return Feed::where('user_id', $user->id)
-    	->where('id',$feed_id)
+    	->where('id',$feedId)
     	->get();
     }
     

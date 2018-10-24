@@ -13,11 +13,11 @@ class ThingRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user, $need_page)
+    public function forUser(User $user, $needPage)
     {
         $thing = Thing::where('user_id', $user->id)
                     ->orderBy('updated_at', 'desc');
-        if($need_page){
+        if($needPage){
         	return $thing->paginate(50);
         } else {
         	return $thing->get();

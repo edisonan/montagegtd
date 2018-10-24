@@ -13,24 +13,24 @@ class PomoRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user,$need_page=false)
+    public function forUser(User $user,$needPage=false)
     {
         $pomo = Pomo::where('user_id', $user->id)
                     ->orderBy('updated_at', 'desc');
-        if($need_page){
+        if($needPage){
         	return $pomo->paginate(50);
         } else {
         	return $pomo->get();
         }
     }
     
-    public function forUserByStatus(User $user,$status,$need_page=false)
+    public function forUserByStatus(User $user,$status,$needPage=false)
     {
     	$pomo = Pomo::where('user_id', $user->id)
 	    	->where('status', $status)
 	    	->orderBy('updated_at', 'desc');
     	
-    	if($need_page){
+    	if($needPage){
     		return $pomo->paginate(50);
     	} else {
     		return $pomo->get();

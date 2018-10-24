@@ -13,11 +13,11 @@ class TaskRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user, $need_page)
+    public function forUser(User $user, $needPage)
     {
         $task = Task::where('user_id', $user->id)
                     ->orderBy('updated_at', 'desc');
-        if($need_page){
+        if($needPage){
         	return $task->paginate(50);
         } else {
         	return $task->get();

@@ -20,9 +20,9 @@ class FeedSubRepository
                     ->get();
     }
     
-    public function forUserByFeedId(User $user,$feed_id,$status)
+    public function forUserByFeedId(User $user,$feedId,$status)
     {
-        return FeedSub::where('user_id', $user->id)->where('feed_id', $feed_id)->where('status',$status)
+        return FeedSub::where('user_id', $user->id)->where('feed_id', $feedId)->where('status',$status)
                     ->first();
     }
     
@@ -38,13 +38,13 @@ class FeedSubRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,$status,$need_page=false)
+    public function forUserByStatus(User $user,$status,$needPage=false)
     {
     	$note = FeedSub::with(['feed','category'])->where('status', $status)
     	->where('user_id', $user->id)
     	->orderBy('created_at', 'desc');
     	
-    	if($need_page){
+    	if($needPage){
     		return $note->paginate(50);
     	} else {
     		return $note->get();

@@ -39,14 +39,14 @@ class MindRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,$status,$is_root,$need_page=false)
+    public function forUserByStatus(User $user,$status,$is_root,$needPage=false)
     {
     	$note = Mind::where('status', $status)
     	->where('is_root', $is_root)
     	->where('user_id', $user->id)
     	->orderBy('created_at', 'desc');
     	
-    	if($need_page){
+    	if($needPage){
     		return $note->paginate(50);
     	} else {
     		return $note->get();

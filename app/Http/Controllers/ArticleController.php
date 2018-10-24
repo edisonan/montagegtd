@@ -19,6 +19,7 @@ use App\Services\ArticleService;
 
 /**
  * 文章管理Controller
+ * 
  * @author edison.an
  *        
  */
@@ -49,7 +50,7 @@ class ArticleController extends Controller {
 	
 	/**
 	 * 欢迎页
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
@@ -64,37 +65,35 @@ class ArticleController extends Controller {
 	 */
 	public function index(Request $request) {
 		// 获取分类id 默认为空
-		$category_id = $request->get('category_id', '');
-		
+		$categoryId = $request->get ( 'category_id', '' );
 		// 获取订阅id 默认为空
-		$feed_id = $request->get('feed_id', '');
-		
+		$feedId = $request->get ( 'feed_id', '' );
 		// 获取状态参数，默认参数值为 未读
-		$status = $request->get('status', 'unread');
-		
+		$status = $request->get ( 'status', 'unread' );
 		// 获取每页数量，默认参数值为 20
-		$page_count = $request->get('page_count', 20);
+		$pageCount = $request->get ( 'page_count', 20 );
 		
 		// 获取订阅文章
-		$articleSubs = $this->articleService->getArticleSubs($request->user(), $status, $page_count, $feed_id, $category_id);
+		$articleSubs = $this->articleService->getArticleSubs ( $request->user (), $status, $pageCount, $feedId, $categoryId );
 		
 		// 避免图片加载
 		$unable_img = isset ( $_COOKIE ['unable_img'] ) ? $_COOKIE ['unable_img'] : "false";
+		
 		// 避免描述加载
 		$unable_desc = isset ( $_COOKIE ['unable_desc'] ) ? $_COOKIE ['unable_desc'] : "false";
 		
-		// page params
-		$page_params = array(
-			'page_count' => $page_count,	
-			'status' => $status,	
-			'category_id' => $category_id,	
-			'feed_id' => $feed_id,	
+		// 页面参数
+		$page_params = array (
+				'page_count' => $pageCount,
+				'status' => $status,
+				'category_id' => $categoryId,
+				'feed_id' => $feedId 
 		);
 		
 		return view ( 'articles.index', [ 
-				'articleSubs' => $articleSubs,
+				'article_subs' => $articleSubs,
 				'status' => $status,
-				'feed_id' => $feed_id,
+				'feed_id' => $feedId,
 				'page_params' => $page_params,
 				'unable_img' => $unable_img,
 				'unable_desc' => $unable_desc 
@@ -102,29 +101,30 @@ class ArticleController extends Controller {
 	}
 	
 	/**
-	 *
+	 * 根据feedId展示文章列表
+	 * 
 	 * @param Request $request        	
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
 	public function list(Request $request) {
+		// 获取每页数量，默认参数值为 20
+		$pageCount = $request->get ( 'page_count', 20 );
+		// 获取订阅id
+		$feedId = $request->get ( 'feed_id' );
+		
+		// 查看订阅源
+		$feed = Feed::where ( 'id', $feedId )->first ();
+		if (empty ( $feed )) {
+			abort ( 404 );
+		}
+		
+		// 查询文章集合
+		$articles = $this->articleService->forUserByFeedId ( $request->user (), $feedId, $needPage = true, $pageCount );
+		
+		// 页面参数
 		$page_params = array ();
-		
-		if ($request->has ( 'page_count' ) && is_int ( $request->page_count ) && $request->page_count < 500) {
-			$page_count = $request->page_count;
-		} else {
-			$page_count = 50;
-		}
-		$page_params ['page_count'] = $page_count;
-		
-		if ($request->has ( 'feed_id' )) {
-			$articles = $this->articles->forUserByFeedId ( $request->user (), $request->feed_id, $need_page = true, $page_count );
-			$page_params ['feed_id'] = $request->feed_id;
-		} else {
-			echo 'error param';
-			exit ();
-		}
-		
-		$feed = Feed::where ( 'id', $request->feed_id )->first ();
+		$page_params ['page_count'] = $pageCount;
+		$page_params ['feed_id'] = $request->feed_id;
 		
 		return view ( 'articles.list', [ 
 				'articles' => $articles,
@@ -134,23 +134,19 @@ class ArticleController extends Controller {
 	}
 	
 	/**
-	 *
+	 * 文章详情
+	 * 
 	 * @param Request $request        	
 	 * @param Article $article        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
 	public function view(Request $request, Article $article) {
-		if (empty ( $article )) {
-			echo 'error article';
-			exit ();
-		}
+		// 是否已订阅此源
+		$isFeed = false;
 		
-		$is_feed = false;
+		// 查看是否登录, 如果登录, 查看是否已经订阅
 		if (Auth::check ()) {
-			$articleSub = $this->articleSubs->forUserByStatusFeedId ( $request->user (), '1', $article->feed->id );
-			if (count ( $articleSub ) > 0) {
-				$is_feed = true;
-			}
+			$isFeed = $this->articleService->isFeedArticle ( $request->user (), '1', $article->feed->id );
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
@@ -159,13 +155,14 @@ class ArticleController extends Controller {
 		} else {
 			return view ( 'articles.view', [ 
 					'article' => $article,
-					'is_feed' => $is_feed 
+					'is_feed' => $isFeed 
 			] );
 		}
 	}
 	
 	/**
-	 *
+	 * 收藏文章
+	 * 
 	 * @param Request $request        	
 	 * @param ArticleSub $articleSub        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
@@ -175,11 +172,10 @@ class ArticleController extends Controller {
 		
 		if (! $articleSub->active) {
 			$articleSub->status = 'read';
-			$articleSub->update ();
 		} else {
 			$articleSub->status = 'star';
-			$articleSub->update ();
 		}
+		$articleSub->update ();
 		
 		if ($request->ajax () || $request->wantsJson ()) {
 			$resp = $this->responseJson ( self::OK_CODE, $articleSub->article );
@@ -192,7 +188,8 @@ class ArticleController extends Controller {
 	}
 	
 	/**
-	 *
+	 * 稍后阅读文章
+	 * 
 	 * @param Request $request        	
 	 * @param ArticleSub $articleSub        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
@@ -200,13 +197,8 @@ class ArticleController extends Controller {
 	public function read_later(Request $request, ArticleSub $articleSub) {
 		$this->authorize ( 'destroy', $articleSub );
 		
-		if ($articleSub->status == 'star') {
-			$articleSub->status = 'read';
-			$articleSub->update ();
-		} else {
-			$articleSub->status = 'star';
-			$articleSub->update ();
-		}
+		$articleSub->status = in_array($articleSub->status, array('read_later', 'unread')) ? 'read_later' : $articleSub->status;
+		$articleSub->update ();
 		
 		if ($request->ajax () || $request->wantsJson ()) {
 			$resp = $this->responseJson ( self::OK_CODE, $articleSub->article );
@@ -219,7 +211,8 @@ class ArticleController extends Controller {
 	}
 	
 	/**
-	 *
+	 * 设置文章状态
+	 * 
 	 * @param Request $request        	
 	 * @param ArticleSub $articleSub        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory

@@ -82,10 +82,10 @@ class ArticleService {
 	/**
 	 * 
 	 * @param User $user
-	 * @param string $feed_id
+	 * @param string $feedId
 	 * @return number[][]|unknown[][]|NULL[][]
 	 */
-	public function getNavInfoAndNextRecommend(User $user, $feed_id = ''){
+	public function getNavInfoAndNextRecommend(User $user, $feedId = ''){
 		// get the feed infos by user_id , with the category name and id.
 		$category_feed_infos = DB::select ( 'select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order asc,f.feed_order asc', [
 				':user_id' => $user->id
@@ -110,8 +110,8 @@ class ArticleService {
 			);
 				
 			if ($feed ['feed_count'] != 0 && empty ( $next_recommend_feed )) {
-				if (!empty($feed_id)) {
-					$feed_id != $feed ['feed_id'] ? $next_recommend_feed = $feed : '';
+				if (!empty($feedId)) {
+					$feedId != $feed ['feed_id'] ? $next_recommend_feed = $feed : '';
 				} else {
 					$next_recommend_feed = $feed;
 				}
@@ -128,20 +128,40 @@ class ArticleService {
 	
 	/**
 	 * 
-	 * @param string $feed_id
+	 * @param string $feedId
 	 * @param string $category_id
 	 * @return unknown
 	 */
-	public function getArticleSubs(User $user, $status, $page_count, $feed_id='', $category_id=''){
+	public function getArticleSubs(User $user, $status, $pageCount, $feedId='', $category_id=''){
 		// get article subs by feed_id
-		if (!empty($feed_id)) {
-			$articleSubs = $this->articleSubs->forUserByStatusFeedId ( $user, $status, $feed_id, $need_page = true, $page_count );
+		if (!empty($feedId)) {
+			$articleSubs = $this->articleSubs->forUserByStatusFeedId ( $user, $status, $feedId, $needPage = true, $pageCount );
 		} else if (!empty($category_id)) {
 			// get article subs by category_id
-			$articleSubs = $this->articleSubs->forUserByCategoryStatusFeedId ( $user, $status, $category_id, $need_page = true, $page_count );
+			$articleSubs = $this->articleSubs->forUserByCategoryStatusFeedId ( $user, $status, $category_id, $needPage = true, $pageCount );
 		} else {
 			// get article subs by common status
-			$articleSubs = $this->articleSubs->forUserByStatus ( $user, $status, $need_page = true, $page_count );
+			$articleSubs = $this->articleSubs->forUserByStatus ( $user, $status, $needPage = true, $pageCount );
+		}
+		return $articleSubs;
+	}
+	
+	/**
+	 *
+	 * @param string $feedId
+	 * @param string $category_id
+	 * @return unknown
+	 */
+	public function getArticleSubs(User $user, $pageCount, $feedId='', $category_id=''){
+		// get article subs by feed_id
+		if (!empty($feedId)) {
+			$articleSubs = $this->articleSubs->forUserByStatusFeedId ( $user, $status, $feedId, $needPage = true, $pageCount );
+		} else if (!empty($category_id)) {
+			// get article subs by category_id
+			$articleSubs = $this->articleSubs->forUserByCategoryStatusFeedId ( $user, $status, $category_id, $needPage = true, $pageCount );
+		} else {
+			// get article subs by common status
+			$articleSubs = $this->articleSubs->forUserByStatus ( $user, $status, $needPage = true, $pageCount );
 		}
 		return $articleSubs;
 	}

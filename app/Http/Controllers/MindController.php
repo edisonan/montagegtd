@@ -42,7 +42,7 @@ class MindController extends Controller
      */
     public function index(Request $request,$add_content = '')
     {
-    	$minds = $this->minds->forUserByStatus($request->user(), 1, 1, $need_page=true);
+    	$minds = $this->minds->forUserByStatus($request->user(), 1, 1, $needPage=true);
     	
         return view('minds.index', [
             'minds' => $minds,

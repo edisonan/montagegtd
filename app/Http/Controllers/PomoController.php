@@ -42,7 +42,7 @@ class PomoController extends Controller
     public function index(Request $request)
     {
         return view('pomos.index', [
-            'pomos' => $this->pomos->forUserByStatus($request->user(),2,$need_page=true),
+            'pomos' => $this->pomos->forUserByStatus($request->user(),2,$needPage=true),
         ]);
     }
     

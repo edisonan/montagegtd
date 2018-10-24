@@ -286,9 +286,9 @@ $(document).ready(function () {
 			<!-- Display Validation Errors -->
                     @include('common.errors')
 
-                    		@if (count($articleSubs) > 0)
+                    		@if (count($article_subs) > 0)
                     			<?php $article_sub_ids = array();?>
-	                    		@foreach ($articleSubs as $articleSub)
+	                    		@foreach ($article_subs as $articleSub)
 	                    		<?php $article = $articleSub->article;if(empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
 								<div class="card" style="margin-bottom: 10px">
 				<div class="card-block" style="padding: 10px;">
@@ -361,7 +361,7 @@ $(document).ready(function () {
 			
 			@endforeach
 				<audio style="position: fixed; float: right"></audio>
-				{!! $articleSubs->appends($page_params)->links() !!}
+				{!! $article_subs->appends($page_params)->links() !!}
 
 				@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
 				<button class="col-md-12 btn btn-outline-info" id="marked_all_read"

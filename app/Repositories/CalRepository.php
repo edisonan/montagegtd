@@ -13,11 +13,11 @@ class CalRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forByThemeAndStatus(string $theme, string $status,$need_page=false)
+    public function forByThemeAndStatus(string $theme, string $status,$needPage=false)
     {
     	$cal = Cal::where('status',$status)->where('theme',$theme)->orderBy('id','asc');
     	
-    	if($need_page){
+    	if($needPage){
     		return $cal->paginate(10);
     	} else {
     		return $cal->get();

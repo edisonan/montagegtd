@@ -41,7 +41,7 @@ class GoalController extends Controller
     		$status = 1;
     	}
         return view('goals.index', [
-            'goals' => $this->goals->forUserByStatus($request->user(), $status,$need_page=true),
+            'goals' => $this->goals->forUserByStatus($request->user(), $status,$needPage=true),
         ]);
     }
 

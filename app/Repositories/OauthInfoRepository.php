@@ -13,11 +13,11 @@ class OauthInfoRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUser(User $user, $need_page)
+    public function forUser(User $user, $needPage)
     {
         $oauth_info = OauthInfo::where('user_id', $user->id)
                     ->orderBy('updated_at', 'desc');
-        if($need_page){
+        if($needPage){
         	return $oauth_info->paginate(50);
         } else {
         	return $oauth_info->get();

@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\FeedSub;
+use App\Models\FeedSub;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class FeedSubPolicy

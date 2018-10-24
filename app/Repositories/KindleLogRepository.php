@@ -26,13 +26,13 @@ class KindleLogRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,$status,$is_root,$need_page=false)
+    public function forUserByStatus(User $user,$status,$is_root,$needPage=false)
     {
     	$note = KindleLog::where('status', $status)
     	->where('user_id', $user->id)
     	->orderBy('created_at', 'desc');
     	
-    	if($need_page){
+    	if($needPage){
     		return $note->paginate(50);
     	} else {
     		return $note->get();

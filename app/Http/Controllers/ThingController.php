@@ -37,7 +37,7 @@ class ThingController extends Controller
     public function index(Request $request)
     {
         return view('things.index', [
-            'things' => $this->things->forUser($request->user(), $need_page=true),
+            'things' => $this->things->forUser($request->user(), $needPage=true),
         ]);
     }
 

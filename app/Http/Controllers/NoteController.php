@@ -47,7 +47,7 @@ class NoteController extends Controller
      */
     public function index(Request $request,$add_content = '')
     {
-    	$notes = $this->notes->forUserByStatus($request->user(), 2, $need_page=true);
+    	$notes = $this->notes->forUserByStatus($request->user(), 2, $needPage=true);
     	
     	if($request->has('add_content')){
     		if($request->has('type') && $request->type = 'image'){

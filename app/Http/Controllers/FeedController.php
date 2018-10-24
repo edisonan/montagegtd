@@ -51,7 +51,7 @@ class FeedController extends Controller
      */
     public function index(Request $request)
     {
-    	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);
+    	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $needPage=true);
     	$categorys = $this->categorys->forUser($request->user());
     	
     	if(count($categorys) == 0){
@@ -83,7 +83,7 @@ class FeedController extends Controller
      */
     public function explorer(Request $request)
     {
-    	$feeds = $this->feeds->forIsRecommend(1, $need_page=true);
+    	$feeds = $this->feeds->forIsRecommend(1, $needPage=true);
 		
 		$categorys = $this->categorys->forUser($request->user());
     	
@@ -111,7 +111,7 @@ class FeedController extends Controller
     	if($request->has('recommend_category_id')){
     		$feeds = $this->feeds->findByRecommendCategoryId($request->recommend_category_id);
     	} else if($request->has('name')){
-	    	$feeds = $this->feeds->findByName($request->name , $need_page=true);
+	    	$feeds = $this->feeds->findByName($request->name , $needPage=true);
     	} else {
     		echo 'error params'; exit;
     	}
@@ -123,7 +123,7 @@ class FeedController extends Controller
     
     public function setting(Request $request)
     {
-//     	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $need_page=true);
+//     	$feedSubs = $this->feedSubs->forUserByStatus($request->user(), 1, $needPage=true);
 //     	$categorys = $this->categorys->forUser($request->user());
 
     	$category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name,f.id as feed_sub_id from feed_subs f right join categories c on f.category_id = c.id where c.user_id = :user_id2 and f.user_id = :user_id  and f.status =1 order by c.category_order asc,f.feed_order asc', [':user_id'=>$request->user()->id,':user_id2'=>$request->user()->id]);
