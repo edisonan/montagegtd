@@ -146,26 +146,6 @@ class ArticleService {
 		return $articleSubs;
 	}
 	
-	/**
-	 *
-	 * @param string $feedId
-	 * @param string $category_id
-	 * @return unknown
-	 */
-	public function getArticleSubs(User $user, $pageCount, $feedId='', $category_id=''){
-		// get article subs by feed_id
-		if (!empty($feedId)) {
-			$articleSubs = $this->articleSubs->forUserByStatusFeedId ( $user, $status, $feedId, $needPage = true, $pageCount );
-		} else if (!empty($category_id)) {
-			// get article subs by category_id
-			$articleSubs = $this->articleSubs->forUserByCategoryStatusFeedId ( $user, $status, $category_id, $needPage = true, $pageCount );
-		} else {
-			// get article subs by common status
-			$articleSubs = $this->articleSubs->forUserByStatus ( $user, $status, $needPage = true, $pageCount );
-		}
-		return $articleSubs;
-	}
-	
 	private function sortFeed($feeds) {
 		foreach ( $feeds as $key => $feed ) {
 			if ($feed ['feed_count'] == 0) {
