@@ -233,15 +233,9 @@ $(document).ready(function () {
                             </div>
                         </div>
                     </form>
-                </div>
-            </div>
-            
-            <div class="card card-default">
-                <div class="card-header">
-                	今日完成番茄
-                </div>
-
-                <div class="card-body">
+                    
+                    <hr width=80% size=3 color=#00ffff style="FILTER: alpha(opacity=100,finishopacity=0,style=3)"> 
+                    
                 	空空如也!
                 </div>
             </div>
