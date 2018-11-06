@@ -14,7 +14,7 @@
                     @include('common.errors')
 
                     <!-- New Task Form -->
-                    <form action="{{ url('index/feedbackStore') }}" method="POST" class="form-horizontal">
+                    <form action="{{ url('help/feedbackStore') }}" method="POST" class="form-horizontal">
                         {{ csrf_field() }}
 
                         <!-- Task Name -->

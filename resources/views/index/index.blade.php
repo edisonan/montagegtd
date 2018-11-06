@@ -95,21 +95,7 @@
 	}
 
 	window.onload=function(){  
-// 		var allElements = document.getElementsByTagName('*'); 
-// 		for (var i=0; i< allElements.length; i++ ) 
-// 		{ 
-// 			if (allElements[i].className == "preprepre" ) { 
-// 				var html = allElements[i].textContent;
-				
-// 				var reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|&|-)+)/g;
-// 				html = html.replace(reg, "<a href='$1$2'>$1$2</a>");
-				
-// // 				reg = /(#(\w+|[\u4e00-\u9fa5]+)#)/g;
-// // 				html = html.replace(reg, "<a href='javascript:void(0)'>$1</a>");
-				
-// 				allElements[i].innerHTML = html;
-// 			} 
-// 		}
+		
 	} 
 </script> 
 
@@ -217,78 +203,46 @@ $(document).ready(function () {
     		data-bootstro-content="使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。"
     		data-bootstro-finishButton="返回网站，开启高效生活~"
     	>
-    		
-    		@if($tip_type != 0)
-	    		<div class="alert alert-success alert-dismissible" role="alert">
-					  <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="clearTips(@if($tip_type == 2) 'morning_tip' @elseif($tip_type == 3) 'afternoon_tip'  @endif)"><span aria-hidden="true">&times;</span></button>
-					  <?php echo $tip_message;?>
-				</div>
-    		@endif
-    		
             <div class="card card-default">
                 <div class="card-header">
-                    	@if($runing_pomo_status != 3)
-                    		@if (count($pomos) == 0 && count($tasks) > 0)
-                    			现在还有{{ count($tasks) }}项任务哦，赶紧开始第一个番茄吧
-                    		@else
-                    			开蕃走起
-                    		@endif
-                    	@else
-                    	快来记录一下这个番茄吧
-                    	@endif
+                    	开蕃走起
                     	<div style="float:right">
-                    		<a href="{{'pomos'}}">[历史番]</a>
-                    		<a href="{{'things'}}">[刚做完?]</a>
+                    		<a href="{{'pomos'}}">[历史]</a>
+                    		<a href="{{'things'}}">[记事]</a>
                     		<a href="javascript:void(0)" class="new_user_guide">[?]</a>
                     	</div>
                 </div>
 
                 <div class="card-body">
-                    <!-- Display Validation Errors -->
-                    @include('common.errors')
-                    
                     @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
                     	<a class="btn btn-lg btn-outline-info btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
                     @elseif($runing_pomo_status == 1)
                    		 <a class="btn btn-lg btn-outline-info btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
                     @endif
                     
-                    <!-- New Task Form -->
                     <form action='{{ url("pomo") }}/{{ $active_pomo->id }}' method="POST" class="form-horizontal">
                         {{ csrf_field() }}
-
                         <!-- Pomo Name -->
                         <div class="form-group row" @if($runing_pomo_status != 3) style="display:none" @endif id="formdiv1">
                             <div class="col-md-9"  style="display: -webkit-inline-box;width: 75%;">
                                 <input type="text" name="name" id="pomo_name" class="form-control" value="{{ old('pomo') }}" placeholder="此做了什么？点击任务名快速添加">
                             </div>
                             <div class="col-md-3" style="display: -webkit-inline-box;width: 25%;">
-                                <button type="submit" class="btn btn-success" >
-                                                                                                         记录
-                                </button>
+                                <button type="submit" class="btn btn-success" >记录</button>
                                 <a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
                             </div>
                         </div>
                     </form>
-                    
-                    @if (count($pomos) > 0)
-                    <br/><br/>
-                    <table class="table table-striped task-table table-hover">
-                            <thead>
-                                <th colspan=2>今日完成番茄</th>
-                            </thead>
-                            <tbody>
-                                @foreach ($pomos as $pomo)
-                                    <tr class="active">
-                                    	<td width="5%"  align='left'>
-                                        	<?php echo date('H:i',strtotime($pomo->updated_at));?>
-                                        </td>
-                                        <td class="table-text" width="100%"><div>{{ $pomo->name }}</div></td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                     @endif
+                </div>
+            </div>
+            
+            <div class="card card-default">
+                <div class="card-header">
+                	今日完成番茄
+                </div>
+
+                <div class="card-body">
+                	空空如也!
                 </div>
             </div>
 

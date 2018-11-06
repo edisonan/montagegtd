@@ -144,9 +144,4 @@ class IndexController extends Controller
     		redirect('/index/feedback')->with('message', 'IT WORKS!');
     	}
     }
-    
-    public function test(Request $request)
-    {
-    	 return view('index.test');
-    }
 }

@@ -17,83 +17,12 @@ Route::group(['middleware' => ['web']], function () {
         return view('welcome');
     })->middleware('guest');
     
-    Route::get('/test', function () {
-    	\Log::info('here');
-    	$feedFactory = new ArandiLopez\Feed\Factories\FeedFactory(['cache.enabled' => false]);
-    	\Log::info('here1');
-    	$feeder = $feedFactory->make('https://www.douban.com/location/beijing/events/feed/weekly');
-    	\Log::info('here2');
-    	$simplePieInstance = $feeder->getRawFeederObject();
-    	\Log::info('here3');
-    
-    	if (!empty($simplePieInstance)) {
-    	\Log::info('here4');
-    		$previousweek = date('Y-m-j H:i:s', strtotime('-7 days'));
-    		foreach ($simplePieInstance->get_items() as $item) {
-    	\Log::info('here5');
-    			var_dump($item);
-    		}
-    	} else {
-    	\Log::info('here6');
-    		echo 'empty';
-    	}
-    })->middleware('guest');
-    
-    Route::get('/test3', function () {
-    	$feeds = \App\Feed::get();
-    	foreach ($feeds as $feed){
-    		$feedSub = new \App\FeedSub();
-    		$feedSub->user_id = $feed->user_id;
-    		$feedSub->category_id = $feed->category_id;
-    		$feedSub->feed_id = $feed->id;
-    		$feedSub->feed_name = $feed->feed_name;
-    		$feedSub->save();
-    	}
-    })->middleware('guest');
-    
-    Route::get('/test4', function () {
-    	$articles = \App\Article::select('id','user_id','status','feed_id','published')->get();
-    	foreach ($articles as $article){
-    		$articleSub = new \App\ArticleSub();
-    		$articleSub->user_id = $article->user_id;
-    		$articleSub->status = $article->status;
-    		$articleSub->article_id = $article->id;
-    		$articleSub->feed_id = $article->feed_id;
-    		$articleSub->published = $article->published;
-    		$articleSub->save();
-    	}
-    })->middleware('guest');
-    
-    Route::get('/test2', function () {
-    			$articles = \App\Article::where('user_id',$user->id)->where('status','unread')->where('published','<',$now)->where('published','>',$start_time)->orderBy('feed_id')->limit(100)->get();
-    			$temp = array();
-    			$content = array();
-    			
-    			$chapter_count = 0;
-    			$article_count = 0;
-    			
-    			foreach($articles as $article)
-    			{
-    				if(!isset($temp[$article->feed_id])){
-    					$content[] = array('title'=>$chapter_count.' '.$article->feed->feed_name);
-    					
-    					$temp[$article->feed_id] = $article->feed_id;
-    					
-    					$chapter_count++;
-    					$article_count = 0;
-    				}
-    				$content[] = array('title'=>$chapter_count.' '.$article_count.$article->subject);
-    				
-    				$article_count++;
-    			}
-    			var_dump($content);
-    })->middleware('guest');
-    
     Route::get('/home', 'IndexController@index');
     Route::get('/index', 'IndexController@index');
     Route::get('/index/test', 'IndexController@test');
-    Route::get('/index/feedback', 'IndexController@feedback');
-    Route::post('/index/feedbackStore', 'IndexController@feedbackStore');
+    
+    Route::get('/help/feedback', 'HelpController@feedback');
+    Route::post('/help/feedbackStore', 'HelpController@feedbackStore');
     
     Route::get('/notes', 'NoteController@index');
     Route::post('/notes/upload', 'NoteController@upload');
@@ -196,7 +125,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/thing/{thing}', 'ThingController@update');
     Route::get('/thing/{thing}', 'ThingController@update');
     
-    //Route::auth();
 	Auth::routes();
 	
 	Route::get('login/third/{driver}', 'Auth\LoginController@thirdRedirect');
