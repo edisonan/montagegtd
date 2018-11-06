@@ -234,8 +234,8 @@ $(document).ready(function () {
                         </div>
                     </form>
                     
-                    <hr width=80% size=3 color=#00ffff style="FILTER: alpha(opacity=100,finishopacity=0,style=3)"> 
-                    
+                    <hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity=100,finishopacity=0)"> 
+
                 	空空如也!
                 </div>
             </div>
