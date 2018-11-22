@@ -31,7 +31,8 @@ class AccountService {
 	
 	/**
 	 * 获取某用户Oauth账户信息
-	 * @param User $user
+	 * 
+	 * @param User $user        	
 	 * @return NULL[][]
 	 */
 	public function getOauthInfos(User $user) {

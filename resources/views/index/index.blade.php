@@ -8,13 +8,14 @@
 	    return;
 	  }
 
-	  if (Notification.permission !== "granted")
+	  if (Notification.permission !== "granted"){
 	    Notification.requestPermission();
+	  }
 	});
 	
 	var interval = 1000; 
-	var remain = {{ $runing_pomo_remain }};
-	var status = {{ $runing_pomo_status }};
+	var remain = {{ $current_pomo_remain }};//剩余时间
+	var status = {{ $current_pomo_status }};//当前状态
 
 	function ShowCountDown(leftsecond, divname) 
 	{ 
@@ -97,7 +98,7 @@
 	window.onload=function(){  
 		
 	} 
-</script> 
+</script>
 
 @section('content')
 
@@ -192,204 +193,169 @@ $(document).ready(function () {
     });
 });
 </script>
-    <div class="container">
-    	@include('common.success')
-    	<div class="row">
-    	<div 
-    		class=" col-md-5 bootstro" 
-    		data-bootstro-step="0"
-    		data-bootstro-placement="bottom"
-    		data-bootstro-nextButtonText="下一步"
-    		data-bootstro-content="使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。"
-    		data-bootstro-finishButton="返回网站，开启高效生活~"
-    	>
-            <div class="card card-default">
-                <div class="card-header">
-                    	开蕃走起
-                    	<div style="float:right">
-                    		<a href="{{'pomos'}}">[历史]</a>
-                    		<a href="{{'things'}}">[记事]</a>
-                    		<a href="javascript:void(0)" class="new_user_guide">[?]</a>
-                    	</div>
-                </div>
+<div class="container">
+	@include('common.success')
+	<div class="row">
+		<div class=" col-md-5 bootstro" data-bootstro-step="0"
+			data-bootstro-placement="bottom" data-bootstro-nextButtonText="下一步"
+			data-bootstro-content="使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。"
+			data-bootstro-finishButton="返回网站，开启高效生活~">
+			<div class="card card-default">
+				<div class="card-header">
+					开蕃走起
+					<div style="float: right">
+						<a href="{{'pomos'}}">[历史]</a> <a href="{{'things'}}">[记事]</a> <a
+							href="javascript:void(0)" class="new_user_guide">[?]</a>
+					</div>
+				</div>
 
-                <div class="card-body">
-                    @if($runing_pomo_status == 2 || $runing_pomo_status == 4 )
-                    	<a class="btn btn-lg btn-outline-info btn-shadow btn-block" href="javascript:void(0)" role="button" id = "divdown" onclick="discard()" ></a>
-                    @elseif($runing_pomo_status == 1)
-                   		 <a class="btn btn-lg btn-outline-info btn-shadow btn-block" href="{{url('pomos/start')}}" role="button" > 开始一个新的番茄吧! </a>
-                    @endif
-                    
-                    <form action='{{ url("pomo") }}/{{ $active_pomo->id }}' method="POST" class="form-horizontal">
-                        {{ csrf_field() }}
-                        <!-- Pomo Name -->
-                        <div class="form-group row" @if($runing_pomo_status != 3) style="display:none" @endif id="formdiv1">
-                            <div class="col-md-9"  style="display: -webkit-inline-box;width: 75%;">
-                                <input type="text" name="name" id="pomo_name" class="form-control" value="{{ old('pomo') }}" placeholder="此做了什么？点击任务名快速添加">
-                            </div>
-                            <div class="col-md-3" style="display: -webkit-inline-box;width: 25%;">
-                                <button type="submit" class="btn btn-success" >记录</button>
-                                <a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
-                            </div>
-                        </div>
-                    </form>
-                    
-                    <hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity=100,finishopacity=0)"> 
+				<div class="card-body">
+					@if($current_pomo_status == 2 || $current_pomo_status == 4 ) <a
+						class="btn btn-lg btn-outline-info btn-shadow btn-block"
+						href="javascript:void(0)" role="button" id="divdown"
+						onclick="discard()"></a> @elseif($current_pomo_status == 1) <a
+						class="btn btn-lg btn-outline-info btn-shadow btn-block"
+						href="{{url('pomos/start')}}" role="button"> 开始一个新的番茄吧! </a>
+					@endif
 
-                	空空如也!
-                </div>
-            </div>
+					<form action='{{ url("pomo") }}/{{ $active_pomo->id }}'
+						method="POST" class="form-horizontal">
+						{{ csrf_field() }}
+						<!-- Pomo Name -->
+						<div class="form-group row" @if($current_pomo_status !=3)
+							style="display: none" @endif id="formdiv1">
+							<div class="col-md-9"
+								style="display: -webkit-inline-box; width: 75%;">
+								<input type="text" name="name" id="pomo_name"
+									class="form-control" value="{{ old('pomo') }}"
+									placeholder="此做了什么？点击任务名快速添加">
+							</div>
+							<div class="col-md-3"
+								style="display: -webkit-inline-box; width: 25%;">
+								<button type="submit" class="btn btn-success">记录</button>
+								<a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
+							</div>
+						</div>
+					</form>
 
-        </div>
-    
-    
-    
-        <div 
-        	class=" col-md-7 bootstro" 
-        	data-bootstro-step="1"
-    		data-bootstro-placement="bottom"
-    		data-bootstro-prevButtonText="上一步"
-    		data-bootstro-content="在这里创建待办事项，高级功能里面可以增加提醒、优先级设定等功能"
-    		data-bootstro-finishButton="返回网站，开启高效生活~"
-    		
-        >
-            <div class="card card-default">
-                <div class="card-header">
-                    	新的待办事项
-                    	<div style="float:right">
-                    		<a href="{{'tasks'}}">[已完成待办]</a>
-                    		<a href="javascript:void(0)" class="new_user_guide">[?]</a>
-                    	</div>
-                </div>
+					<hr width=100% size=1 color=#bbbcbc
+						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
-                <div class="card-body">
-                    <!-- Display Validation Errors -->
-                    @include('common.errors')
+					空空如也!
+				</div>
+			</div>
 
-                    <!-- New Task Form -->
-                    <form action="{{ url('task') }}" method="POST" class="form-horizontal">
-                        {{ csrf_field() }}
+		</div>
 
-                        <!-- Task Name -->
-                        <div class="form-group row">
-                            <label for="task-name" class="col-md-3 control-label">待办内容</label>
 
-                            <div class="col-md-8">
-	                                <input type="text" name="name" id="task-name" class="form-control" value="{{ old('task') }}" style="display: -webkit-inline-box;width: 85%;">
-								    <a href="javascript:void(0)" id="task_more"><small>高级</small></a>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group row" id="task_form_div1" style="display:none">
-                            <label for="task-name" class="col-md-3 control-label">优先级</label>
-							
-                            <div class="col-md-8">
-                            	<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio1" value="1" title="不重要不紧急" checked><span title="不重要不紧急"><small>☆</small></span>
+
+		<div class=" col-md-7 bootstro" data-bootstro-step="1"
+			data-bootstro-placement="bottom" data-bootstro-prevButtonText="上一步"
+			data-bootstro-content="在这里创建待办事项，高级功能里面可以增加提醒、优先级设定等功能"
+			data-bootstro-finishButton="返回网站，开启高效生活~">
+			<div class="card card-default">
+				<div class="card-header">
+					新的待办事项
+					<div style="float: right">
+						<a href="{{'tasks'}}">[已完成待办]</a> <a href="javascript:void(0)"
+							class="new_user_guide">[?]</a>
+					</div>
+				</div>
+
+				<div class="card-body">
+					<!-- Display Validation Errors -->
+					@include('common.errors')
+
+					<!-- New Task Form -->
+					<form action="{{ url('task') }}" method="POST"
+						class="form-horizontal">
+						{{ csrf_field() }}
+
+						<!-- Task Name -->
+						<div class="form-group row">
+							<label for="task-name" class="col-md-3 control-label">待办内容</label>
+
+							<div class="col-md-8">
+								<input type="text" name="name" id="task-name"
+									class="form-control" value="{{ old('task') }}"
+									style="display: -webkit-inline-box; width: 85%;"> <a
+									href="javascript:void(0)" id="task_more"><small>高级</small></a>
+							</div>
+						</div>
+
+						<div class="form-group row" id="task_form_div1"
+							style="display: none">
+							<label for="task-name" class="col-md-3 control-label">优先级</label>
+
+							<div class="col-md-8">
+								<label class="radio-inline"> <input type="radio" name="priority"
+									id="inlineRadio1" value="1" title="不重要不紧急" checked><span
+									title="不重要不紧急"><small>☆</small></span>
+								</label> <label class="radio-inline"> <input type="radio"
+									name="priority" id="inlineRadio2" value="2" title="不重要紧急"><span
+									title="不重要紧急"><small>☆☆</small></span>
+								</label> <label class="radio-inline"> <input type="radio"
+									name="priority" id="inlineRadio3" value="3" title="重要不紧急"><span
+									title="重要不紧急"><small>☆☆☆</small></span>
+								</label> <label class="radio-inline"> <input type="radio"
+									name="priority" id="inlineRadio4" value="4" title="重要紧急 "><span
+									title="重要紧急 "><small>☆☆☆☆</small></span>
 								</label>
-								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio2" value="2" title="不重要紧急"><span title="不重要紧急"><small>☆☆</small></span>
-								</label>
-								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio3" value="3" title="重要不紧急"><span title="重要不紧急"><small>☆☆☆</small></span>
-								</label>
-								<label class="radio-inline">
-								  <input type="radio" name="priority" id="inlineRadio4" value="4" title="重要紧急 "><span title="重要紧急 "><small>☆☆☆☆</small></span>
-								</label>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group row" "form-group row" id="task_form_div2" style="display: none;">
-                            <label for="task-name" class="col-md-3 control-label">提醒时间</label>
+							</div>
+						</div>
 
-                            <div class="col-md-6">
-                                <input type="text" name="remindtime" id="task-remindtime" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group row" "form-group row" id="task_form_div3" style="display: none;">
-                            <label for="task-name" class="col-md-3 control-label">截止日期</label>
+						<div class="form-group row" "form-group row" id="task_form_div2"
+							style="display: none;">
+							<label for="task-name" class="col-md-3 control-label">提醒时间</label>
 
-                            <div class="col-md-6">
-                                <input type="text" name="deadline" id="task-deadline" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group row" "form-group row" id="task_form_div4" style="display: none;">
-                            <label for="task-name" class="col-md-3 control-label">所属技能</label>
+							<div class="col-md-6">
+								<input type="text" name="remindtime" id="task-remindtime"
+									class="form-control" value="{{ old('task') }}"
+									onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
+							</div>
+						</div>
 
-                            <div class="col-md-6">
-	                            <select class="form-control" name="goal_id" style="display: -webkit-inline-box;width: 85%;">
-	                            	<option checked></option>
-		                              @foreach ($goals as $goal)
-									  	<option value="{{ $goal->id }}">{{ $goal->name }}</option>
-									  @endforeach
-								</select>
-								<a href="{{ url('goals') }}" ><small>新建</small></a>
-                            </div>
-                        </div>
-                        
-                        <!-- Add Task Button -->
-                        <div class="form-group row">
-                            <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-outline-info">
-                                    <i class="fa fa-btn fa-plus"></i>添加上去！
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                    
-                    
-                    @if (count($tasks) > 0)
-                    <table class="table table-striped task-table table-hover">
-                            <thead>
-                                <th>待办事项</th>
-                                <th>&nbsp;</th>
-                            </thead>
-                            <tbody>
-                                @foreach ($tasks as $task)
-                                    <tr 
-	                                    @if($task->priority == 4) 
-	                                    	class="danger task_tr" title="重要紧急事项" 
-	                                    @elseif($task->priority == 3) 
-	                                    	class="warning task_tr" title="重要不紧急事项"  
-	                                    @elseif($task->priority == 2) 
-	                                    	class="info task_tr" title="不重要紧急事项" 
-	                                    @else
-	                                    	class="task_tr" title="不重要不紧急事项" 
-	                                    @endif
-	                                    
-	                                    id="{{$task->id}}"
-                                    >
-                                        <td class="table-text"  width="90%">
-                                        	<div class="preprepre" <?php if(!empty($task->deadline) && strtotime($task->deadline) < time()) echo 'style="color:red"';?>>
-                                        	
-											<a href="javascript:void(0)" class="finish_task" task_type="finish" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}"><img alt=""     style="width: 20px;" src="/img/icon/unfinished_success.png"></a>                                        	
-											
-											@if(!empty($task->goal->name))
-                                        	<a href="#{{$task->goal->id}}">[{{ $task->goal->name }}]</a>
-                                        	@endif
-                                        	<span class="task_content">{{ $task->name }}</span>
-                                        	</pre>
-                                        </td>
-                                        
+						<div class="form-group row" "form-group row" id="task_form_div3"
+							style="display: none;">
+							<label for="task-name" class="col-md-3 control-label">截止日期</label>
 
-                                        <!-- Task Delete Button -->
-                                        <td align='right'>
-                                        	<div>
-                                        		<a href="javascript:void(0)" class="delete_task" task_type="delete" task_value="{{ $task->id }}" task_token="{{ csrf_token() }}" style="display: none"><img alt=""     style="width: 15px;" src="/img/icon/delete.png"></a> 
-                                        		<a href="javascript:void(0)" class="top_task" task_value="{{ $task->id }}" task_is_top="{{ $task->is_top }}" task_token="{{ csrf_token() }}" @if($task->is_top !=1) style="display: none"  @endif><img alt=""     style="width: 15px;" src="/img/icon/pin.png"></a> 
-                                        	</div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                </div>
-            </div>
+							<div class="col-md-6">
+								<input type="text" name="deadline" id="task-deadline"
+									class="form-control" value="{{ old('task') }}"
+									onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
+							</div>
+						</div>
 
-        </div>
-        </div>
-    </div>
+						<div class="form-group row" "form-group row" id="task_form_div4"
+							style="display: none;">
+							<label for="task-name" class="col-md-3 control-label">所属技能</label>
+
+							<div class="col-md-6">
+								<select class="form-control" name="goal_id"
+									style="display: -webkit-inline-box; width: 85%;">
+									<option checked></option>
+								</select> <a href="{{ url('goals') }}"><small>新建</small></a>
+							</div>
+						</div>
+
+						<!-- Add Task Button -->
+						<div class="form-group row">
+							<div class="col-md-offset-3 col-md-6">
+								<button type="submit" class="btn btn-outline-info">
+									<i class="fa fa-btn fa-plus"></i>添加上去！
+								</button>
+							</div>
+						</div>
+					</form>
+
+					<hr width=100% size=1 color=#bbbcbc
+						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
+
+					空空如也!
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
 @endsection

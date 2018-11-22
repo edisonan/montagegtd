@@ -7,8 +7,9 @@ use App\Services\AccountService;
 
 /**
  * 账户管理Controller
+ * 
  * @author edison.an
- *
+ *        
  */
 class AccountController extends Controller {
 	
@@ -38,7 +39,7 @@ class AccountController extends Controller {
 	 */
 	public function index(Request $request) {
 		return view ( 'accounts.index', [ 
-				'oauths' => $this->accountService->getOauthInfos($request->user ()) 
+				'oauths' => $this->accountService->getOauthInfos ( $request->user () ) 
 		] );
 	}
 }
