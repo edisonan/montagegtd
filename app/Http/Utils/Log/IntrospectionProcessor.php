@@ -59,7 +59,7 @@ class IntrospectionProcessor
         
         $record['extra']['request'] = $request;
         $record['extra']['line'] = $trace[$i - 1]['line'];
-        $record['extra']['ip'] = $_SERVER["REMOTE_ADDR"];
+        $record['extra']['ip'] = isset($_SERVER["REMOTE_ADDR"])?$_SERVER["REMOTE_ADDR"]:'';
         return $record;
     }
 }
