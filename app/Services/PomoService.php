@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Session;
 use App\Models\Pomo;
 use App\Repositories\PomoRepository;
 
