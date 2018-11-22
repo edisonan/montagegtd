@@ -18,11 +18,13 @@ class AccessLog
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if (Auth::guard($guard)->guest()) {
-            Log::info("ACCESS:" . $_SERVER['REQUEST_URI'] . http_build_query($request->all()) . '|IP:' . $_SERVER['REMOTE_ADDR']);
-        } else {
-            Log::info("ACCESS:" . $_SERVER['REQUEST_URI'] . http_build_query($request->all()) . '|IP:' . $_SERVER['REMOTE_ADDR'] . '|USERID:' . $request->user()->id);
-        }
+    	if(!app()->runningInConsole()){
+	        if (Auth::guard($guard)->guest()) {
+	            Log::info("ACCESS:" . $_SERVER['REQUEST_URI'] . http_build_query($request->all()) . '|IP:' . $_SERVER['REMOTE_ADDR']);
+	        } else {
+	            Log::info("ACCESS:" . $_SERVER['REQUEST_URI'] . http_build_query($request->all()) . '|IP:' . $_SERVER['REMOTE_ADDR'] . '|USERID:' . $request->user()->id);
+	        }
+    	}
         
         return $next($request);
     }
