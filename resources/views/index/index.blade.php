@@ -229,8 +229,7 @@ $(document).ready(function () {
 						<div class="col-md-9"
 							style="display: -webkit-inline-box; width: 75%;">
 							<input type="text" name="name" id="pomo_name"
-								class="form-control" value=""
-								placeholder="做了什么？点击任务名快速添加">
+								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
 						</div>
 						<a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
 					</div>
@@ -261,8 +260,7 @@ $(document).ready(function () {
 				<div class="card-body">
 				<div class="form-group row">
 					<input type="text" name="name" id="task-name"
-									class="form-control" value=""
-									style="display: -webkit-inline-box; ">
+									class="form-control" value="" style="display: -webkit-inline-box; " placeholder="添加新任务">
 				</div>
 
 					<hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity = 100, finishopacity = 0)">
