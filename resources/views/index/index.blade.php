@@ -202,7 +202,7 @@ $(document).ready(function () {
 <div class="container">
 	@include('common.success')
 	<div class="row">
-		<div class=" col-md-5 bootstro" data-bootstro-step="0"
+		<div class=" col-md-6 bootstro" data-bootstro-step="0"
 			data-bootstro-placement="bottom" data-bootstro-nextButtonText="下一步"
 			data-bootstro-content="使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。"
 			data-bootstro-finishButton="返回网站，开启高效生活~">
@@ -245,7 +245,7 @@ $(document).ready(function () {
 
 
 
-		<div class=" col-md-7 bootstro" data-bootstro-step="1"
+		<div class=" col-md-6 bootstro" data-bootstro-step="1"
 			data-bootstro-placement="bottom" data-bootstro-prevButtonText="上一步"
 			data-bootstro-content="在这里创建待办事项，高级功能里面可以增加提醒、优先级设定等功能"
 			data-bootstro-finishButton="返回网站，开启高效生活~">
@@ -261,8 +261,8 @@ $(document).ready(function () {
 				<div class="card-body">
 				<div class="form-group row">
 					<input type="text" name="name" id="task-name"
-									class="form-control" value="{{ old('task') }}"
-									style="display: -webkit-inline-box; width: 85%;">
+									class="form-control" value=""
+									style="display: -webkit-inline-box; ">
 				</div>
 
 					<hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity = 100, finishopacity = 0)">
