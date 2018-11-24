@@ -2,6 +2,9 @@
 <script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 <script language="javascript" type="text/javascript"> 
 
+	/**
+	* 尝试获取通知权限
+	*/
 	document.addEventListener('DOMContentLoaded', function () {
 	  if (!Notification) {
 	    alert('Desktop notifications not available in your browser. Try Chromium.'); 
@@ -12,6 +15,25 @@
 	    Notification.requestPermission();
 	  }
 	});
+
+	/**
+	* 通知消息
+	*/
+	function notify(message)
+	{
+		if (Notification.permission !== "granted")
+		    Notification.requestPermission();
+		  else {
+		    var notification = new Notification('蒙太奇-专业GTD,剪辑你自己的生活', {
+		      icon: 'https://task.congcong.us/favicon.ico',
+		      body: message,
+		    });
+
+		    notification.onclick = function () {
+		      window.open("{{'/index'}}");      
+		    };
+		  }
+	}
 	
 	var interval = 1000; 
 	var remain = {{ $current_pomo_remain }};//剩余时间
@@ -35,8 +57,8 @@
 		
 		if(remain < 0){
 			if(status == 2){
-				document.getElementById('divdown').style.display = "none";
-				document.getElementById('formdiv1').style.display = "";
+				document.getElementById('currentPomo').style.display = "none";
+				document.getElementById('recordPomo').style.display = "";
 				return false;
 			} else {
 				location.href = '{{url('/index')}}';
@@ -49,22 +71,6 @@
 		var add_content = status == 2?'#此番茄还剩#':'#休息还剩#';
 		
 		cc.innerHTML = add_content + minute_label +":"+ second_label; 
-	}
-
-	function notify(message)
-	{
-		if (Notification.permission !== "granted")
-		    Notification.requestPermission();
-		  else {
-		    var notification = new Notification('蒙太奇-专业GTD,剪辑你自己的生活', {
-		      icon: 'https://congcong.us/favicon.ico',
-		      body: message,
-		    });
-
-		    notification.onclick = function () {
-		      window.open("{{'/index'}}");      
-		    };
-		  }
 	}
 
 	function discard(){
@@ -92,7 +98,7 @@
 	}
 	
 	if(status == 2 || status == 4){
-		window.setInterval(function(){ShowCountDown( remain, "divdown" );}, interval); 
+		window.setInterval(function(){ShowCountDown( remain, "currentPomo" );}, interval); 
 	}
 
 	window.onload=function(){  
@@ -204,43 +210,33 @@ $(document).ready(function () {
 				<div class="card-header">
 					开蕃走起
 					<div style="float: right">
-						<a href="{{'pomos'}}">[历史]</a> <a href="{{'things'}}">[记事]</a> <a
-							href="javascript:void(0)" class="new_user_guide">[?]</a>
+						<a href="{{'pomos'}}">[历史]</a> <a href="{{'things'}}">[记事]</a> 
+						<a href="javascript:void(0)" class="new_user_guide">[?]</a>
 					</div>
 				</div>
 
 				<div class="card-body">
-					@if($current_pomo_status == 2 || $current_pomo_status == 4 ) <a
-						class="btn btn-lg btn-outline-info btn-shadow btn-block"
-						href="javascript:void(0)" role="button" id="divdown"
-						onclick="discard()"></a> @elseif($current_pomo_status == 1) <a
-						class="btn btn-lg btn-outline-info btn-shadow btn-block"
-						href="{{url('pomos/start')}}" role="button"> 开始一个新的番茄吧! </a>
+					@if($current_pomo_status == 2 || $current_pomo_status == 4 ) 
+					<a class="btn btn-lg btn-outline-info btn-shadow btn-block"
+						href="javascript:void(0)" role="button" id="currentPomo" onclick="discard()"></a> 
+					@elseif($current_pomo_status == 1) 
+					<a class="btn btn-lg btn-outline-info btn-shadow btn-block"
+						href="javascript:void(0)" role="button" id="startPomo"> 开始一个新的番茄吧! </a>
 					@endif
 
-					<form action='{{ url("pomo") }}/{{ $active_pomo->id }}'
-						method="POST" class="form-horizontal">
-						{{ csrf_field() }}
-						<!-- Pomo Name -->
-						<div class="form-group row" @if($current_pomo_status !=3)
-							style="display: none" @endif id="formdiv1">
-							<div class="col-md-9"
-								style="display: -webkit-inline-box; width: 75%;">
-								<input type="text" name="name" id="pomo_name"
-									class="form-control" value="{{ old('pomo') }}"
-									placeholder="此做了什么？点击任务名快速添加">
-							</div>
-							<div class="col-md-3"
-								style="display: -webkit-inline-box; width: 25%;">
-								<button type="submit" class="btn btn-success">记录</button>
-								<a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
-							</div>
+					<div class="form-group row" @if($current_pomo_status !=3)
+						style="display: none" @endif id="recordPomo">
+						<div class="col-md-9"
+							style="display: -webkit-inline-box; width: 75%;">
+							<input type="text" name="name" id="pomo_name"
+								class="form-control" value=""
+								placeholder="做了什么？点击任务名快速添加">
 						</div>
-					</form>
+						<a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
+					</div>
 
-					<hr width=100% size=1 color=#bbbcbc
-						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
-
+					<hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity = 100, finishopacity = 0)">
+					
 					空空如也!
 				</div>
 			</div>
@@ -263,93 +259,13 @@ $(document).ready(function () {
 				</div>
 
 				<div class="card-body">
-					<!-- Display Validation Errors -->
-					@include('common.errors')
-
-					<!-- New Task Form -->
-					<form action="{{ url('task') }}" method="POST"
-						class="form-horizontal">
-						{{ csrf_field() }}
-
-						<!-- Task Name -->
-						<div class="form-group row">
-							<label for="task-name" class="col-md-3 control-label">待办内容</label>
-
-							<div class="col-md-8">
-								<input type="text" name="name" id="task-name"
+				<div class="form-group row">
+					<input type="text" name="name" id="task-name"
 									class="form-control" value="{{ old('task') }}"
-									style="display: -webkit-inline-box; width: 85%;"> <a
-									href="javascript:void(0)" id="task_more"><small>高级</small></a>
-							</div>
-						</div>
-
-						<div class="form-group row" id="task_form_div1"
-							style="display: none">
-							<label for="task-name" class="col-md-3 control-label">优先级</label>
-
-							<div class="col-md-8">
-								<label class="radio-inline"> <input type="radio" name="priority"
-									id="inlineRadio1" value="1" title="不重要不紧急" checked><span
-									title="不重要不紧急"><small>☆</small></span>
-								</label> <label class="radio-inline"> <input type="radio"
-									name="priority" id="inlineRadio2" value="2" title="不重要紧急"><span
-									title="不重要紧急"><small>☆☆</small></span>
-								</label> <label class="radio-inline"> <input type="radio"
-									name="priority" id="inlineRadio3" value="3" title="重要不紧急"><span
-									title="重要不紧急"><small>☆☆☆</small></span>
-								</label> <label class="radio-inline"> <input type="radio"
-									name="priority" id="inlineRadio4" value="4" title="重要紧急 "><span
-									title="重要紧急 "><small>☆☆☆☆</small></span>
-								</label>
-							</div>
-						</div>
-
-						<div class="form-group row" "form-group row" id="task_form_div2"
-							style="display: none;">
-							<label for="task-name" class="col-md-3 control-label">提醒时间</label>
-
-							<div class="col-md-6">
-								<input type="text" name="remindtime" id="task-remindtime"
-									class="form-control" value="{{ old('task') }}"
-									onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
-							</div>
-						</div>
-
-						<div class="form-group row" "form-group row" id="task_form_div3"
-							style="display: none;">
-							<label for="task-name" class="col-md-3 control-label">截止日期</label>
-
-							<div class="col-md-6">
-								<input type="text" name="deadline" id="task-deadline"
-									class="form-control" value="{{ old('task') }}"
-									onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
-							</div>
-						</div>
-
-						<div class="form-group row" "form-group row" id="task_form_div4"
-							style="display: none;">
-							<label for="task-name" class="col-md-3 control-label">所属技能</label>
-
-							<div class="col-md-6">
-								<select class="form-control" name="goal_id"
 									style="display: -webkit-inline-box; width: 85%;">
-									<option checked></option>
-								</select> <a href="{{ url('goals') }}"><small>新建</small></a>
-							</div>
-						</div>
+				</div>
 
-						<!-- Add Task Button -->
-						<div class="form-group row">
-							<div class="col-md-offset-3 col-md-6">
-								<button type="submit" class="btn btn-outline-info">
-									<i class="fa fa-btn fa-plus"></i>添加上去！
-								</button>
-							</div>
-						</div>
-					</form>
-
-					<hr width=100% size=1 color=#bbbcbc
-						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
+					<hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
 					空空如也!
 				</div>
