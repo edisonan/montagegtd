@@ -224,12 +224,11 @@ $(document).ready(function () {
 						href="javascript:void(0)" role="button" id="startPomo"> 开始一个新的番茄吧! </a>
 					@endif
 
-					<div class="form-group row" @if($current_pomo_status !=3)
+					<div class="form-group" @if($current_pomo_status !=3)
 						style="display: none" @endif id="recordPomo">
 						<div class="col-md-9"
 							style="display: -webkit-inline-box; width: 75%;">
-							<input type="text" name="name" id="pomo_name"
-								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
+							<input type="text" name="name" id="pomo_name" class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
 						</div>
 						<a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
 					</div>
@@ -258,10 +257,9 @@ $(document).ready(function () {
 				</div>
 
 				<div class="card-body">
-				<div class="form-group row">
-					<input type="text" name="name" id="task-name"
-									class="form-control" value="" style="display: -webkit-inline-box; " placeholder="添加新任务">
-				</div>
+					<div class="form-group">
+						<input type="text" name="name" id="task-name" class="form-control" value="" style=" " placeholder="添加新任务">
+					</div>
 
 					<hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
