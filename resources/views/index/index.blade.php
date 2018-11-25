@@ -109,7 +109,7 @@ $(document).ready(function () {
 	$("#startPomo").click(function(){
 		
 		$.ajax({
-		    url: "{{ url('pomo/start') }}",
+		    url: "{{ url('pomos/start') }}",
 		    type: 'GET',
 		    data: {"_token":"{{ csrf_token() }}"},
 		    success: function(result) {
