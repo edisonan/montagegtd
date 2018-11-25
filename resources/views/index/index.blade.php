@@ -117,7 +117,7 @@ $(document).ready(function () {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
-					window.setInterval(function(){ShowCountDown( result_arr.data.current_pomo_remain, "currentPomo" );}, interval); 
+					window.setInterval(function(){ShowCountDown( result_arr.result.current_pomo_remain, "currentPomo" );}, interval); 
 				}
 		    }
 		});

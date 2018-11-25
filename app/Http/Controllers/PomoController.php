@@ -64,7 +64,7 @@ class PomoController extends Controller {
 		$pomoInfo = $this->pomoService->startPomo ( $request->user () );
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE, 'ok', $pomoInfo );
+			$resp = $this->responseJson ( self::OK_CODE, $pomoInfo );
 			return response ( $resp );
 		} else {
 			return redirect ( '/index' );
