@@ -201,6 +201,7 @@ $(document).keyup(function(event){
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
+						$("#task_name").val("");
 						console.log("ok");
 					}
 			    }
