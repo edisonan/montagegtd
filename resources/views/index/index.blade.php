@@ -195,7 +195,7 @@ $(document).keyup(function(event){
 			$.ajax({
 			    url: "{{ url('task') }}",
 			    type: 'POST',
-			    data: {"task_name":task_name,"_token":"{{ csrf_token() }}"},
+			    data: {"name":task_name,"_token":"{{ csrf_token() }}"},
 			    success: function(result) {
 			    	result_arr = JSON.parse(result);
 					if(result_arr.code != 9999){
