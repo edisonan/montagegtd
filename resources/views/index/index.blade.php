@@ -217,10 +217,10 @@ $(document).ready(function () {
 
 				<div class="card-body">
 					@if($current_pomo_status == 2 || $current_pomo_status == 4 ) 
-					<a class="btn btn-lg btn-outline-info btn-shadow btn-block"
+					<a class="btn btn-outline-info btn-shadow btn-block"
 						href="javascript:void(0)" role="button" id="currentPomo" onclick="discard()"></a> 
 					@elseif($current_pomo_status == 1) 
-					<a class="btn btn-lg btn-outline-info btn-shadow btn-block"
+					<a class="btn btn-outline-info btn-shadow btn-block"
 						href="javascript:void(0)" role="button" id="startPomo"> 开始一个新的番茄吧! </a>
 					@endif
 
