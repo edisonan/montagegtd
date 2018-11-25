@@ -196,6 +196,13 @@ $(document).ready(function () {
 		 bootstro.start('.bootstro', {stopOnBackdropClick : true, stopOnEsc:true});       
     });
 });
+
+
+	$(document).keyup(function(event){  
+		if(event.keyCode ==13){  
+			console.log(123);
+		}  
+	}); 
 </script>
 <div class="container">
 	@include('common.success')
