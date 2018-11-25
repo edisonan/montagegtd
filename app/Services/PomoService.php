@@ -23,13 +23,24 @@ class PomoService {
 		$this->pomos = $pomos;
 	}
 	
+	public function startPomo($user) {
+		$active_pomo = $this->pomos->forUserActivePomo ( $user );
+		if(empty($active_pomo)){
+			$active_pomo = $this->pomos->create([
+				'name' => '',	
+				'status' => 1,	
+			]);
+		}
+		return $this->getCurrentPomoInfo($user, $active_pomo);
+	}
+	
 	/**
 	 * 获取该用户番茄状态
 	 * 
 	 * @param unknown $user        	
 	 * @return number[]|\App\Models\Pomo[]|unknown[]
 	 */
-	public function getCurrentPomoInfo($user) {
+	public function getCurrentPomoInfo($user, $active_pomo='') {
 		// 获取当前用户设置
 		$setting = $user->setting;
 		
@@ -40,7 +51,9 @@ class PomoService {
 		$pomo_time = isset ( $setting->pomo_time ) && ! empty ( $setting->pomo_time ) ? $setting->pomo_time * 60 : Pomo::DEFAULT_INTERVAL;
 		$pomo_rest_time = isset ( $setting->pomo_time ) && ! empty ( $setting->pomo_rest_time ) ? $setting->pomo_rest_time * 60 : Pomo::DEFAULT_REST_INTERVAL;
 		
-		$active_pomo = $this->pomos->forUserActivePomo ( $user );
+		if(empty($active_pomo)){
+			$active_pomo = $this->pomos->forUserActivePomo ( $user );
+		}
 		if (! empty ( $active_pomo )) {
 			$pomo_start_time = strtotime ( $active_pomo->created_at );
 			$remain_time = $pomo_start_time + $pomo_time - time ();
