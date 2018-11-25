@@ -188,9 +188,9 @@ $(document).ready(function () {
 
 $(document).keyup(function(event){  
 	if(event.keyCode ==13){  
-		if($("..").is(":focus")){
+		if($("#task-name").is(":focus")){
 			console.log(123);
-		} else if($("..").is(":focus")){
+		} else if($("#task-name2").is(":focus")){
 			console.log(1234);
 		} else {
 			console.log(12345);
