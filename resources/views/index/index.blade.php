@@ -170,7 +170,7 @@ $(document).ready(function () {
 		
 	});
 
-	$(".task_tr").hover(function(){
+	$(".task_li").hover(function(){
 		$(this).find(".delete_task").show();
 		$(this).find(".top_task").show();
 	},function(){
@@ -185,15 +185,28 @@ $(document).ready(function () {
     });
 });
 
-
+/**
+ * 监听键盘回车事件
+ */
 $(document).keyup(function(event){  
 	if(event.keyCode ==13){  
-		if($("#task-name").is(":focus")){
-			console.log(123);
-		} else if($("#task-name2").is(":focus")){
-			console.log(1234);
-		} else {
-			console.log(12345);
+		if($("#task_name").is(":focus")){
+			task_name = $("#task_name").val();
+			$.ajax({
+			    url: "{{ url('task') }}",
+			    type: 'POST',
+			    data: {"task_name":task_name,"_token":"{{ csrf_token() }}"},
+			    success: function(result) {
+			    	result_arr = JSON.parse(result);
+					if(result_arr.code != 9999){
+						alert('处理失败，请稍后再试');
+					} else {
+						console.log("ok");
+					}
+			    }
+			});
+		} else if($("#pomo_name").is(":focus")){
+			add_pomo();
 		}
 	}  
 }); 
@@ -257,7 +270,7 @@ $(document).keyup(function(event){
 
 				<div class="card-body">
 					<div class="form-group">
-						<input type="text" name="name" id="task-name" class="form-control" value="" style=" " placeholder="添加新任务">
+						<input type="text" name="name" id="task_name" class="form-control" value="" style=" " placeholder="添加新任务">
 					</div>
 
 					<hr width=100% size=1 color=#bbbcbc style="FILTER: alpha(opacity = 100, finishopacity = 0)">
