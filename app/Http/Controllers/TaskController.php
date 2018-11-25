@@ -119,7 +119,7 @@ class TaskController extends Controller
         }
 
         if ($request->ajax() || $request->wantsJson()) {
-        	$resp = $this->responseJson(self::OK_CODE);
+        	$resp = $this->responseJson(self::OK_CODE,$task);
         	return response($resp);
         } else {
         	return redirect('/index');

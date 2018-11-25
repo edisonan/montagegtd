@@ -247,12 +247,25 @@ $(document).keyup(function(event){
 						alert('处理失败，请稍后再试');
 					} else {
 						$("#task_name").val("");
-						console.log("ok");
+						$("#tasks").prepend('<li><span>'+result_arr.result.name+'</span></li>');
 					}
 			    }
 			});
 		} else if($("#pomo_name").is(":focus")){
-			add_pomo();
+			pomo_name = $("#pomo_name").val();
+			$.ajax({
+			    url: "{{ url('pomo') }}",
+			    type: 'POST',
+			    data: {"name":pomo_name,"_token":"{{ csrf_token() }}"},
+			    success: function(result) {
+			    	result_arr = JSON.parse(result);
+					if(result_arr.code != 9999){
+						alert('处理失败，请稍后再试');
+					} else {
+						$("#pomos").prepend('<li><span>'+result_arr.result.name+'</span></li>');
+					}
+			    }
+			});
 		}
 	}  
 }); 
