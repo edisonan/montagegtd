@@ -25,7 +25,7 @@ class HelpController extends Controller
 
     public function feedback(Request $request)
     {
-    	return view('index.feedback',[
+    	return view('help.feedback',[
     		'from'=>$request->has('from')?$request->from:'',
     	]);
     }
@@ -44,7 +44,7 @@ class HelpController extends Controller
     		$resp = $this->responseJson(self::OK_CODE,array());
     		return response($resp);
     	} else {
-    		redirect('/index/feedback')->with('message', 'IT WORKS!');
+    		redirect('/help/feedback')->with('message', 'IT WORKS!');
     	}
     }
 }
