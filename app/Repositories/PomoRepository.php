@@ -56,4 +56,9 @@ class PomoRepository
                     ->orderBy('created_at', 'desc')
                     ->get();
     }
+    
+    public function create($attr)
+    {
+    	return Pomo::create($attr);
+    }
 }
