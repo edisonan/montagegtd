@@ -106,18 +106,6 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-
-	$("pomo-name").keyup(function(event){  
-		if(event.keyCode ==13){  
-			console.log(123);
-		}  
-	}); 
-
-	$("task-name").keyup(function(event){  
-		if(event.keyCode ==13){  
-			console.log(1234);
-		}  
-	}); 
 	$(".finish_task, .delete_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
@@ -198,11 +186,17 @@ $(document).ready(function () {
 });
 
 
-	$(document).keyup(function(event){  
-		if(event.keyCode ==13){  
+$(document).keyup(function(event){  
+	if(event.keyCode ==13){  
+		if($("..").is(":focus")){
 			console.log(123);
-		}  
-	}); 
+		} else if($("..").is(":focus")){
+			console.log(1234);
+		} else {
+			console.log(12345);
+		}
+	}  
+}); 
 </script>
 <div class="container">
 	@include('common.success')
