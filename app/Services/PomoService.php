@@ -29,6 +29,7 @@ class PomoService {
 			$active_pomo = $this->pomos->create([
 				'name' => '',	
 				'status' => 1,	
+				'user_id' => $user->id,	
 			]);
 		}
 		return $this->getCurrentPomoInfo($user, $active_pomo);
