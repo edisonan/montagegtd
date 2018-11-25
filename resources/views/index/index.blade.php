@@ -206,7 +206,7 @@ $(document).ready(function () {
 			if(result_arr.code != 9999){
 				alert('处理失败，请稍后再试');
 			} else {
-				$.each( result_arr.data, function( index, data ){
+				$.each( result_arr.result.data, function( index, data ){
 					$("#tasks").append('<li><span>'+data.name+'</span></li>');
 				});
 			}
@@ -222,7 +222,7 @@ $(document).ready(function () {
 			if(result_arr.code != 9999){
 				alert('处理失败，请稍后再试');
 			} else {
-				$.each( result_arr.data, function( index, data ){
+				$.each( result_arr.result.data, function( index, data ){
 					$("#pomos").append('<li><span>'+data.name+'</span></li>');
 				});
 			}
