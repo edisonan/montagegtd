@@ -297,12 +297,10 @@ $(document).keyup(function(event){
 
 					<div class="form-group" @if($current_pomo_status !=3)
 						style="display: none" @endif id="recordPomo">
-						<div class="col-md-9"
-							style="display: -webkit-inline-box; width: 75%;">
+						<div class="col-md-12">
 							<input type="text" name="name" id="pomo_name"
 								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
 						</div>
-						<a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
 					</div>
 
 					<hr width=100% size=1 color=#bbbcbc
