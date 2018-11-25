@@ -46,9 +46,15 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        return view('tasks.index', [
-            'tasks' => $this->tasks->forUser($request->user(), $needPage=true),
-        ]);
+    	$tasks = $this->tasks->forUser($request->user(), $needPage=true);
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE,$tasks);
+    		return response($resp);
+    	} else {
+    		return view('tasks.index', [
+	            'tasks' => $tasks,
+	        ]);
+    	}
     }
 
     /**

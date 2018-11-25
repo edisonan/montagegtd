@@ -73,9 +73,6 @@
 		cc.innerHTML = add_content + minute_label +":"+ second_label; 
 	}
 
-	function start(){
-	}
-
 	function discard(){
 		if (confirm("确认要放弃咩？")) {
 			location.href = '{{ url("pomos/discard/") }}/{{ $active_pomo->id }}';
@@ -107,7 +104,6 @@
 $(document).ready(function () {
 
 	$("#startPomo").click(function(){
-		
 		$.ajax({
 		    url: "{{ url('pomos/start') }}",
 		    type: 'GET',
@@ -122,6 +118,7 @@ $(document).ready(function () {
 		    }
 		});
 	});
+	
 	$(".finish_task, .delete_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
@@ -199,6 +196,34 @@ $(document).ready(function () {
 	$(".new_user_guide").click(function(){
 		 bootstro.start('.bootstro', {stopOnBackdropClick : true, stopOnEsc:true});       
     });
+
+	$.ajax({
+	    url: "{{ url('tasks') }}",
+	    type: 'GET',
+	    data: {"_token":"{{ csrf_token() }}"},
+	    success: function(result) {
+	    	result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				
+			}
+	    }
+	});
+
+	$.ajax({
+	    url: "{{ url('pomos') }}",
+	    type: 'GET',
+	    data: {"_token":"{{ csrf_token() }}"},
+	    success: function(result) {
+	    	result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				
+			}
+	    }
+	});
 });
 
 /**
@@ -266,7 +291,9 @@ $(document).keyup(function(event){
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
-					空空如也!
+					<ul id="pomos">
+					
+					</ul>
 				</div>
 			</div>
 
@@ -295,8 +322,10 @@ $(document).keyup(function(event){
 
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
-
-					空空如也!
+					
+					<ul id="tasks">
+					
+					</ul>
 				</div>
 			</div>
 

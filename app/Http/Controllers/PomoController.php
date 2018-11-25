@@ -48,9 +48,15 @@ class PomoController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		return view ( 'pomos.index', [ 
-				'pomos' => $this->pomos->forUserByStatus ( $request->user (), 2, $needPage = true ) 
+		$pomos = $this->pomos->forUserByStatus ( $request->user (), 2, $needPage = true );
+		if ($request->ajax () || $request->wantsJson ()) {
+			$resp = $this->responseJson ( self::OK_CODE, $pomos );
+			return response ( $resp );
+		} else {
+			return view ( 'pomos.index', [ 
+				'pomos' => $pomos 
 		] );
+		}
 	}
 	
 	/**
