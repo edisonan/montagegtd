@@ -39,12 +39,12 @@
 	var remain = {{ $current_pomo_remain }};//剩余时间
 	var status = {{ $current_pomo_status }};//当前状态
 
-	function ShowCountDown(leftsecond, divname) 
+	function ShowCountDown(leftsecond, pomoBtnId) 
 	{ 
 		var minute=Math.floor(leftsecond/60); 
 		var second=Math.floor(leftsecond - minute * 60); 
 		
-		var cc = document.getElementById(divname); 
+		var cc = document.getElementById(pomoBtnId); 
 		
 		remain = remain - 1;
 		if(remain == 0){
@@ -73,17 +73,13 @@
 		cc.innerHTML = add_content + minute_label +":"+ second_label; 
 	}
 
+	function start(){
+	}
+
 	function discard(){
 		if (confirm("确认要放弃咩？")) {
 			location.href = '{{ url("pomos/discard/") }}/{{ $active_pomo->id }}';
 		}
-	}
-	
-	function displayATHiddenDiv(){
-		document.getElementById('task_form_div1').style.display = "";
-		document.getElementById('task_form_div2').style.display = "";
-		document.getElementById('task_form_div3').style.display = "";
-		document.getElementById('task_form_div4').style.display = "";
 	}
 	
 	function clearTips($suffix){
@@ -100,10 +96,6 @@
 	if(status == 2 || status == 4){
 		window.setInterval(function(){ShowCountDown( remain, "currentPomo" );}, interval); 
 	}
-
-	window.onload=function(){  
-		
-	} 
 </script>
 
 @section('content')
@@ -114,12 +106,18 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$("#task_more").click(function(){
-		$('#task_form_div1').toggle();
-		$('#task_form_div2').toggle();
-		$('#task_form_div3').toggle();
-		$('#task_form_div4').toggle();
-	})
+
+	$("pomo-name").keyup(function(event){  
+		if(event.keyCode ==13){  
+			console.log(123);
+		}  
+	}); 
+
+	$("task-name").keyup(function(event){  
+		if(event.keyCode ==13){  
+			console.log(1234);
+		}  
+	}); 
 	$(".finish_task, .delete_task").click(function(){
 		task_value = $(this).attr("task_value");
 		task_token = $(this).attr("task_token");
