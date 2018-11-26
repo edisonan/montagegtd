@@ -99,7 +99,13 @@
 
 <script src="{{'/js/bootstro.min.js'}}"></script>
 <link href="{{'/css/bootstro.min.css'}}" rel="stylesheet">
-
+<style>
+.recent-list {
+    list-style: none;
+    font-size: .9em;
+    line-height: 1.5em;
+    margin: 0;
+</style>
 <script type="text/javascript">
 $(document).ready(function () {
 
@@ -316,7 +322,7 @@ $(document).keyup(function(event){
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
-					<ul id="pomos">
+					<ul id="pomos" class="recent-list">
 					
 					</ul>
 				</div>
