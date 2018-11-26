@@ -271,6 +271,7 @@ $(document).keyup(function(event){
 						alert('处理失败，请稍后再试');
 					} else {
 						$("#pomo_name").val("");
+						$("#pomo_id").val("");
 						remain = result_arr.result.current_pomo_remain;
 						status = result_arr.result.current_pomo_status;
 						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
