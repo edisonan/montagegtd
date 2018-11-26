@@ -105,6 +105,12 @@
     font-size: .9em;
     line-height: 1.5em;
     margin: 0;
+}
+.time {
+    float: left;
+    padding-right: .8em;
+    color: #999;
+}
 </style>
 <script type="text/javascript">
 $(document).ready(function () {
@@ -236,7 +242,7 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result.data, function( index, data ){
-					$("#pomos").append('<li><span>'+data.name+'</span></li>');
+					$("#pomos").append('<li><span class="time">00:18 - 00:36</span><p >'+data.name+'</p></li>');
 				});
 			}
 	    }
