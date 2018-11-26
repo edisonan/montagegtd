@@ -271,12 +271,12 @@ $(document).keyup(function(event){
 						alert('处理失败，请稍后再试');
 					} else {
 						$("#pomo_name").val("");
-						$("#recordPomo").css("display", "none");
-						$("#pomoBtn").css("display", "block");
-						$("#pomos").prepend('<li><span>'+result_arr.result.active_pomo.name+'</span></li>');
 						remain = result_arr.result.current_pomo_remain;
 						status = result_arr.result.current_pomo_status;
 						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
+						$("#recordPomo").css("display", "none");
+						$("#pomoBtn").css("display", "block");
+						$("#pomos").prepend('<li><span>'+result_arr.result.active_pomo.name+'</span></li>');
 					}
 			    }
 			});
