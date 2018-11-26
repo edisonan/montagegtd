@@ -232,7 +232,7 @@ $(document).ready(function () {
 		var url = $(this).attr('data-url');
 		window.open('/notes?add_content='+url);
 	});
-
+	status = {{$status}};
 	$.ajax({
 	    url: "{{ url('article/navinfo') }}",
 	    type: 'GET',
@@ -243,12 +243,12 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result.nav_infos, function( navId, navInfo ){
-					var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id='"+navId+"&status="+'">'+navInfo.category_info.category_name+'['+Object.getOwnPropertyNames(navInfo.list).length+']</a></span>';
+					var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id="+navId+"&status="+status+'">'+navInfo.category_info.category_name+'['+Object.getOwnPropertyNames(navInfo.list).length+']</a></span>';
 					if(Object.getOwnPropertyNames(navInfo.list).length > 0){
 						li += '<ul class="category_item">';
 						$.each(navInfo.list,function(index, item){
 							li += '<li class="rowone">';
-							li += '<a href="'+"{{ url('articles') }}?feed_id=&status="+'">';
+							li += '<a href="'+"{{ url('articles') }}?feed_id="+item.feed_id+"&status="+status+'">';
 							li += '<span>['+ Object.getOwnPropertyNames(item).length+']' + item.feed_name + '</span>';
 						});
 						li += '</ul>';
