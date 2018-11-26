@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Models\ArticleSub;
+use Illuminate\Support\Facades\DB;
 
 class ArticleSubRepository {
 	/**
@@ -43,7 +44,7 @@ class ArticleSubRepository {
 	 * @return Collection
 	 */
 	public function forUserByCategoryStatusFeedId(User $user, string $status, $category_id, $needPage = false, $pageCount = 30) {
-		$feedsubs = \DB::table ( 'feed_subs' )->select ( 'feed_id' )->where ( 'category_id', $category_id )->where ( 'status', 1 )->get ();
+		$feedsubs = DB::table ( 'feed_subs' )->select ( 'feed_id' )->where ( 'category_id', $category_id )->where ( 'status', 1 )->get ();
 		
 		$feedId_arr = array ();
 		foreach ( $feedsubs as $feedsub ) {

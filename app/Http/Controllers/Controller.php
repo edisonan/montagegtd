@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -9,16 +8,20 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Controller extends BaseController
 {
-	const OK_CODE = 9999;
-	
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    const OK_CODE = 9999;
+
+    const SYSTEM_ERROR_CODE = 1000;
     
-    public function responseJson($code, $result = '', $msg = ''){
-    	$resp = array(
-    		'code'=>$code,
-    		'msg'=>$msg,
-    		'result'=>$result,
-    	);
-    	return json_encode($resp);
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    public function responseJson($code, $result = '', $msg = '')
+    {
+        $resp = array(
+            'code' => $code,
+            'msg' => $msg,
+            'result' => $result
+        );
+        return json_encode($resp);
     }
 }
