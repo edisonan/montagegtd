@@ -249,7 +249,7 @@ $(document).ready(function () {
 						$.each(navInfo.list,function(index, item){
 							li += '<li class="rowone">';
 							li += '<a href="'+"{{ url('articles') }}?feed_id="+item.feed_id+"&status="+status+'">';
-							li += '<span>['+ Object.getOwnPropertyNames(item).length+']' + item.feed_name + '</span>';
+							li += '<span>['+ item.feed_count+']' + item.feed_name + '</span>';
 						});
 						li += '</ul>';
 					}
