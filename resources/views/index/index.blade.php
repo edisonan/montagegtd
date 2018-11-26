@@ -75,7 +75,7 @@
 
 	function discard(){
 		if (confirm("确认要放弃咩？")) {
-			location.href = '{{ url("pomos/discard/") }}/{{ $active_pomo->id }}';
+			location.href = '{{ url("pomos/discard/") }}/'+$('#pomo_id').val();
 		}
 	}
 	
