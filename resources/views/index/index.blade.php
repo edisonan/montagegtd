@@ -114,10 +114,10 @@ $(document).ready(function () {
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
+						$("#pomo_id").val(result_arr.result.active_pomo.id);
 						remain = result_arr.result.current_pomo_remain;
 						status = result_arr.result.current_pomo_status;
-						$("#pomo_id").val(result_arr.result.active_pomo.id);
-						window.setInterval(function(){ShowCountDown( result_arr.result.current_pomo_remain, "pomoBtn" );}, interval); 
+						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 					}
 			    }
 			});
@@ -274,6 +274,9 @@ $(document).keyup(function(event){
 						$("#recordPomo").css("display", "none");
 						$("#pomoBtn").css("display", "block");
 						$("#pomos").prepend('<li><span>'+result_arr.result.active_pomo.name+'</span></li>');
+						remain = result_arr.result.current_pomo_remain;
+						status = result_arr.result.current_pomo_status;
+						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 					}
 			    }
 			});
