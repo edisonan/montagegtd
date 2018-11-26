@@ -96,6 +96,18 @@ class ArticleController extends Controller
             'unable_desc' => $unable_desc
         ]);
     }
+    
+    public function navinfo(Request $request)
+    {
+    	// 获取状态参数，默认参数值为 未读
+    	$status = $request->get('status', 'unread');
+    
+    	// 获取分类文章数
+    	$navInfo = $this->articleService->getNavInfoAndNextRecommend($request->user());
+    
+    	$resp = $this->responseJson(self::OK_CODE, $navInfo);
+    	return response($resp);
+    }
 
     /**
      * 根据feedId展示文章列表

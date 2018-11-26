@@ -232,6 +232,33 @@ $(document).ready(function () {
 		var url = $(this).attr('data-url');
 		window.open('/notes?add_content='+url);
 	});
+
+	$.ajax({
+	    url: "{{ url('article/navinfo') }}",
+	    type: 'GET',
+	    data: {"_token":"{{ csrf_token() }}"},
+	    success: function(result) {
+	    	result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				$.each( result_arr.result.nav_infos, function( navId, navInfo ){
+					var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id='"+navId+"&status="+'">'+navInfo.category_info.category_name+'['+count(navInfo.list)+']</a></span>';
+					if(count(navInfo.list) > 0{
+						li += '<ul class="category_item">';
+						$.each(navInfo.list,function(index, item){
+							li += '<li class="rowone">';
+							li += '<a href="'+"{{ url('articles') }}?feed_id=&status="+'">';
+							li += '<span>['+ item.count+']' + item.feed_name + '</span>';
+						});
+						li += '</ul>';
+					}
+					li += '</li>'
+					$("#nav").append(li);
+				});
+			}
+	    }
+	});
 });
 </script>
 <div class="container">
@@ -248,7 +275,7 @@ $(document).ready(function () {
 				</div>
 
 				<div class="card-body">
-					<ul class="nav nav-pills nav-stacked">
+					<ul class="nav nav-pills nav-stacked" id="nav">
 					
 					</ul>
 				</div>

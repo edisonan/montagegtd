@@ -80,6 +80,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/articles/allstatus', 'ArticleController@status');
     Route::delete('/article/{article}', 'ArticleController@destroy');
     Route::get('/article/record/{articleSub}', 'ArticleController@getArticleRecord');
+    Route::get('/article/navinfo', 'ArticleController@navinfo');
     
     Route::get('/pomos', 'PomoController@index');
     Route::get('/pomos/start', 'PomoController@start');
