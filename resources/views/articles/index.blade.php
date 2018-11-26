@@ -232,7 +232,7 @@ $(document).ready(function () {
 		var url = $(this).attr('data-url');
 		window.open('/notes?add_content='+url);
 	});
-	status = {{$status}};
+	var status = '{{$status}}';
 	$.ajax({
 	    url: "{{ url('article/navinfo') }}",
 	    type: 'GET',
