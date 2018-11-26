@@ -111,6 +111,11 @@
     padding-right: .8em;
     color: #999;
 }
+.number {
+    font-size: .9em;
+    color: #666;
+    float: right;
+}
 </style>
 <script type="text/javascript">
 $(document).ready(function () {
@@ -328,6 +333,11 @@ $(document).keyup(function(event){
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
+					<div class = "head">
+						<datetime class="time">11月26日</datetime>
+						<div class="number">完成了 <span id="count">0</span> 个番茄</div>
+					</div>
+					
 					<ul id="pomos" class="recent-list">
 					
 					</ul>
@@ -359,7 +369,7 @@ $(document).keyup(function(event){
 
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
-					
+						
 					<ul id="tasks">
 					
 					</ul>
