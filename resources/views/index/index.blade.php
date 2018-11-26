@@ -301,7 +301,7 @@ $(document).keyup(function(event){
 				</div>
 
 				<div class="card-body">
-					<a class="btn btn-outline-info btn-shadow btn-block" href="javascript:void(0)" role="button" id="pomoBtn">开始一个新的番茄吧!</a> 
+					<a class="btn btn-outline-info btn-shadow btn-block" href="javascript:void(0)"  @if($current_pomo_status ==3) style="display: none" @endif role="button" id="pomoBtn">开始一个新的番茄吧!</a> 
 
 					<div class="form-group" @if($current_pomo_status !=3) style="display: none" @endif id="recordPomo">
 						<div class="col-md-12">
