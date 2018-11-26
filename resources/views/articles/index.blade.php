@@ -243,8 +243,8 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result.nav_infos, function( navId, navInfo ){
-					var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id='"+navId+"&status="+'">'+navInfo.category_info.category_name+'['+count(navInfo.list)+']</a></span>';
-					if(count(navInfo.list) > 0){
+					var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id='"+navId+"&status="+'">'+navInfo.category_info.category_name+'['+navInfo.list.length+']</a></span>';
+					if(navInfo.list.length > 0){
 						li += '<ul class="category_item">';
 						$.each(navInfo.list,function(index, item){
 							li += '<li class="rowone">';
