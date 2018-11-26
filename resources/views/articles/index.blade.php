@@ -236,7 +236,7 @@ $(document).ready(function () {
 	$.ajax({
 	    url: "{{ url('article/navinfo') }}",
 	    type: 'GET',
-	    data: {"_token":"{{ csrf_token() }}"},
+	    data: {"_token":"{{ csrf_token() }}","status":status},
 	    success: function(result) {
 	    	result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
