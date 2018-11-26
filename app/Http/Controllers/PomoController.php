@@ -109,7 +109,6 @@ class PomoController extends Controller
     }
 
     /**
-     * Create a new pomo.
      *
      * @param Request $request
      */
@@ -142,7 +141,9 @@ class PomoController extends Controller
         }
         
         if ($request->ajax() || $request->wantsJson()) {
-            $resp = $this->responseJson(self::OK_CODE, $pomo);
+        	$currentPomoInfo = $this->pomoService->getCurrentPomoInfo($request->user());
+        	$currentPomoInfo['active_pomo'] = $pomo;
+            $resp = $this->responseJson(self::OK_CODE, $currentPomoInfo);
             return response($resp);
         } else {
             return redirect('/index');

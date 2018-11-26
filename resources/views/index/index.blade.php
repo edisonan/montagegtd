@@ -113,6 +113,9 @@ $(document).ready(function () {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
+					remain = result_arr.result.current_pomo_remain;
+					status = result_arr.result.current_pomo_status;
+					$("#pomo_id").val(result_arr.result.active_pomo.id);
 					window.setInterval(function(){ShowCountDown( result_arr.result.current_pomo_remain, "currentPomo" );}, interval); 
 				}
 		    }
@@ -253,8 +256,9 @@ $(document).keyup(function(event){
 			});
 		} else if($("#pomo_name").is(":focus")){
 			pomo_name = $("#pomo_name").val();
+			pomo_id = $("#pomo_id").val();
 			$.ajax({
-			    url: "{{ url('pomo') }}",
+			    url: "{{ url('pomo') }}/"+pomo_id,
 			    type: 'POST',
 			    data: {"name":pomo_name,"_token":"{{ csrf_token() }}"},
 			    success: function(result) {
@@ -262,7 +266,8 @@ $(document).keyup(function(event){
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
-						$("#pomos").prepend('<li><span>'+result_arr.result.name+'</span></li>');
+						$("#pomos").val("");
+						$("#pomos").prepend('<li><span>'+result_arr.result.active_pomo.name+'</span></li>');
 					}
 			    }
 			});
@@ -302,6 +307,8 @@ $(document).keyup(function(event){
 								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
 						</div>
 					</div>
+					
+					<input type="hidden" value="{{ $active_pomo->id }}" id="pomo_id">
 
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
