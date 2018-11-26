@@ -97,12 +97,14 @@ class ArticleService
      * @param string $feedId
      * @return number[][]|array[][]|NULL[][]
      */
-    public function getNavInfoAndNextRecommend(User $user, $feedId = '')
+    public function getNavInfoAndNextRecommend(User $user, $status, $feedId = '')
     {
         // 通过订阅ID获取分类信息.
         $category_feed_infos = DB::select('select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order asc,f.feed_order asc', [
             ':user_id' => $user->id
         ]);
+        
+        $counts_info = $this->getCountInfos($user, $status);
         
         // 导航信息，结构如下:
         // category_id category_info => category_name category_id

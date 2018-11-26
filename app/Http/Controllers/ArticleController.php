@@ -103,7 +103,7 @@ class ArticleController extends Controller
     	$status = $request->get('status', 'unread');
     
     	// 获取分类文章数
-    	$navInfo = $this->articleService->getNavInfoAndNextRecommend($request->user());
+    	$navInfo = $this->articleService->getNavInfoAndNextRecommend($request->user(),$status);
     
     	$resp = $this->responseJson(self::OK_CODE, $navInfo);
     	return response($resp);
