@@ -57,7 +57,7 @@
 		
 		if(remain < 0){
 			if(status == 2){
-				document.getElementById('currentPomo').style.display = "none";
+				document.getElementById('pomoBtn').style.display = "none";
 				document.getElementById('recordPomo').style.display = "";
 				return false;
 			} else {
@@ -91,7 +91,7 @@
 	}
 	
 	if(status == 2 || status == 4){
-		window.setInterval(function(){ShowCountDown( remain, "currentPomo" );}, interval); 
+		window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 	}
 </script>
 
@@ -103,23 +103,27 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$("#startPomo").click(function(){
-		$.ajax({
-		    url: "{{ url('pomos/start') }}",
-		    type: 'GET',
-		    data: {"_token":"{{ csrf_token() }}"},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
-				if(result_arr.code != 9999){
-					alert('处理失败，请稍后再试');
-				} else {
-					remain = result_arr.result.current_pomo_remain;
-					status = result_arr.result.current_pomo_status;
-					$("#pomo_id").val(result_arr.result.active_pomo.id);
-					window.setInterval(function(){ShowCountDown( result_arr.result.current_pomo_remain, "currentPomo" );}, interval); 
-				}
-		    }
-		});
+	$("#pomoBtn").click(function(){
+		if(status == 1){
+			$.ajax({
+			    url: "{{ url('pomos/start') }}",
+			    type: 'GET',
+			    data: {"_token":"{{ csrf_token() }}"},
+			    success: function(result) {
+			    	result_arr = JSON.parse(result);
+					if(result_arr.code != 9999){
+						alert('处理失败，请稍后再试');
+					} else {
+						remain = result_arr.result.current_pomo_remain;
+						status = result_arr.result.current_pomo_status;
+						$("#pomo_id").val(result_arr.result.active_pomo.id);
+						window.setInterval(function(){ShowCountDown( result_arr.result.current_pomo_remain, "pomoBtn" );}, interval); 
+					}
+			    }
+			});
+		} else if( status == 2 || status == 4) {
+			discard();
+		}
 	});
 	
 	$(".finish_task, .delete_task").click(function(){
@@ -266,7 +270,9 @@ $(document).keyup(function(event){
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
-						$("#pomos").val("");
+						$("#pomo_name").val("");
+						$("#recordPomo").css("display", "none");
+						$("#pomoBtn").css("display", "block");
 						$("#pomos").prepend('<li><span>'+result_arr.result.active_pomo.name+'</span></li>');
 					}
 			    }
@@ -292,16 +298,9 @@ $(document).keyup(function(event){
 				</div>
 
 				<div class="card-body">
-					@if($current_pomo_status == 2 || $current_pomo_status == 4 ) <a
-						class="btn btn-outline-info btn-shadow btn-block"
-						href="javascript:void(0)" role="button" id="currentPomo"
-						onclick="discard()"></a> @elseif($current_pomo_status == 1) <a
-						class="btn btn-outline-info btn-shadow btn-block"
-						href="javascript:void(0)" role="button" id="startPomo"> 开始一个新的番茄吧!
-					</a> @endif
+					<a class="btn btn-outline-info btn-shadow btn-block" href="javascript:void(0)" role="button" id="pomoBtn">开始一个新的番茄吧!</a> 
 
-					<div class="form-group" @if($current_pomo_status !=3)
-						style="display: none" @endif id="recordPomo">
+					<div class="form-group" @if($current_pomo_status !=3) style="display: none" @endif id="recordPomo">
 						<div class="col-md-12">
 							<input type="text" name="name" id="pomo_name"
 								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
