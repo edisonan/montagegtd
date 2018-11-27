@@ -2,6 +2,27 @@
 <script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 <script language="javascript" type="text/javascript"> 
 
+	Date.prototype.format = function (fmt) {
+	  var o = {
+	      "M+": this.getMonth() + 1, //月份
+	      "d+": this.getDate(), //日
+	      "h+": this.getHours(), //小时
+	      "m+": this.getMinutes(), //分
+	      "s+": this.getSeconds(), //秒
+	      "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+	      "S": this.getMilliseconds() //毫秒
+	  };
+	  if (/(y+)/.test(fmt)) {
+	    fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+	  }
+	  for (var k in o) {
+	    if (new RegExp("(" + k + ")").test(fmt)) {
+	      fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ?
+	        (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+	    }
+	  }
+	  return fmt;
+	}
 	/**
 	* 尝试获取通知权限
 	*/
@@ -104,7 +125,7 @@
     list-style: none;
     font-size: .9em;
     line-height: 1.5em;
-    margin: 0;
+    margin-left: -30px; 
 }
 .time {
     float: left;
@@ -115,6 +136,54 @@
     font-size: .9em;
     color: #666;
     float: right;
+}
+.head {
+    padding-bottom: 25px;
+}
+
+input[type=checkbox]{        
+   margin-right: 5px;        
+   /*同样，首先去除浏览器默认样式*/  
+   -webkit-appearance: none;        
+   -moz-appearance: none;        
+   appearance: none;        
+   /*编辑我们自己的样式*/   
+   position: relative;        
+   width: 13px;        
+   height: 13px;        
+   background: transparent;        
+   border:1px solid #0b91bd;        
+   -webkit-border-radius: 4px;        
+   -moz-border-radius: 4px;        
+   border-radius: 4px;        
+   outline: none;        
+   cursor: pointer;    
+}
+input[type=checkbox]:after{        
+   content: '√';        
+   position: absolute;        
+   display: block;        
+   width: 100%;        
+   height: 100%;        
+   background: #00BFFF;        
+   color: #fff;        
+   text-align: center;        
+   line-height: 18px;        
+   /*增加动画*/   
+   -webkit-transition: all ease-in-out 300ms;        
+   -moz-transition: all ease-in-out 300ms;        
+   transition: all ease-in-out 300ms;        
+   /*利用border-radius和opacity达到填充的假象，首先隐藏此元素*/  
+    -webkit-border-radius: 20px;        
+   -moz-border-radius: 20px;        
+   border-radius: 20px;        
+   opacity: 0;    
+}
+input[type=checkbox]:checked:after{        
+   -webkit-border-radius: 0;        
+   -moz-border-radius: 0;        
+   border-radius: 0;        
+   opacity: 1;    
 }
 </style>
 <script type="text/javascript">
@@ -145,7 +214,6 @@ $(document).ready(function () {
 	
 	$(".finish_task, .delete_task").click(function(){
 		task_value = $(this).attr("task_value");
-		task_token = $(this).attr("task_token");
 		task_type = $(this).attr("task_type");
 
 		if (task_type == 'delete' && !confirm("确认要删除此任务咩？")) {
@@ -155,7 +223,7 @@ $(document).ready(function () {
 		$.ajax({
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'DELETE',
-		    data: {type:task_type,_token:task_token},
+		    data: {"type":task_type,"_token":"{{ csrf_token() }}"},
 		    success: function(result) {
 		    	result_arr = JSON.parse(result);
 				if(result_arr.code != 9999){
@@ -169,7 +237,6 @@ $(document).ready(function () {
 
 	$(".top_task").click(function(){
 		task_value = $(this).attr("task_value");
-		task_token = $(this).attr("task_token");
 		task_is_top = $(this).attr("task_is_top");
 
 		if(task_is_top != 1){
@@ -181,7 +248,7 @@ $(document).ready(function () {
 		$.ajax({
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'POST',
-		    data: {is_top:task_is_top,_token:task_token},
+		    data: {"is_top":task_is_top,"_token":"{{ csrf_token() }}"},
 		    success: function(result) {
 		    	result_arr = JSON.parse(result);
 				if(result_arr.code != 9999){
@@ -231,8 +298,9 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result.data, function( index, data ){
-					$("#tasks").append('<li><span>'+data.name+'</span></li>');
+					$("#tasks").append('<li><p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>'+data.name+'</p></li>');
 				});
+				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result.data).length);
 			}
 	    }
 	});
@@ -247,8 +315,9 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result.data, function( index, data ){
-					$("#pomos").append('<li><span class="time">00:18 - 00:36</span><p >'+data.name+'</p></li>');
+					$("#pomos").append('<li><span class="time">' + (new Date(data.created_at)).format("hh:mm") + ' - ' + (new Date(data.updated_at)).format("hh:mm") + '</span><p>'+data.name+'</p></li>');
 				});
+				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result.data).length);
 			}
 	    }
 	});
@@ -294,7 +363,7 @@ $(document).keyup(function(event){
 						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 						$("#recordPomo").css("display", "none");
 						$("#pomoBtn").css("display", "block");
-						$("#pomos").prepend('<li><span>'+result_arr.result.active_pomo.name+'</span></li>');
+						$("#pomos").prepend('<li><span class="time">'+ (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm") +'</span><p>'+result_arr.result.active_pomo.name+'</p></li>');
 					}
 			    }
 			});
@@ -334,8 +403,8 @@ $(document).keyup(function(event){
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
 					<div class = "head">
-						<datetime class="time">11月26日</datetime>
-						<div class="number">完成了 <span id="count">0</span> 个番茄</div>
+						<datetime class="time">{{ date('m月d日') }}</datetime>
+						<div class="number">完成了 <span id="pomoCount">0</span> 个番茄</div>
 					</div>
 					
 					<ul id="pomos" class="recent-list">
@@ -370,7 +439,12 @@ $(document).keyup(function(event){
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 						
-					<ul id="tasks">
+					<div class = "head">
+						<datetime class="time"></datetime>
+						<div class="number">共 <span id="taskCount">0</span> 待办任务</div>
+					</div>
+						
+					<ul id="tasks" class="recent-list">
 					
 					</ul>
 				</div>
