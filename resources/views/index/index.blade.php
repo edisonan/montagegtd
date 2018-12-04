@@ -211,7 +211,7 @@ $(document).ready(function () {
 		}
 	});
 	
-	$(".finish_task, .delete_task").on('click',function(){
+	$("#tasks").on('click','finish_task',function(){
 		task_value = $(this).attr("task_value");
 		task_type = $(this).attr("task_type");
 
