@@ -35,8 +35,9 @@ $(document).ready(function () {
 // 			$("#feed_name").val(result_arr.result.title);
 // 		});
 // 	});
-$('#work_mode').click(function(){
-	$('.container').css('max-width', '');
+	$('#work_mode').click(function(){
+		$('.container').css('max-width', '');
+	});
 });
 </script>
 
