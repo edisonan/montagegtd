@@ -212,7 +212,7 @@ $(document).ready(function () {
 		}
 	});
 	
-	$(".finish_task, .delete_task").click(function(){
+	$(".finish_task, .delete_task").live('click',function(){
 		task_value = $(this).attr("task_value");
 		task_type = $(this).attr("task_type");
 
@@ -235,7 +235,7 @@ $(document).ready(function () {
 		});
 	});
 
-	$(".top_task").click(function(){
+	$(".top_task").live('click',function(){
 		task_value = $(this).attr("task_value");
 		task_is_top = $(this).attr("task_is_top");
 
@@ -260,7 +260,7 @@ $(document).ready(function () {
 		});
 	});
 
-	$(".task_content").click(function(){
+	$(".task_content").live('click',function(){
 		task_value = $(this).text();
 		pomo_value = $("#pomo_name").val();
 		
@@ -274,7 +274,7 @@ $(document).ready(function () {
 		
 	});
 
-	$(".task_li").hover(function(){
+	$(".task_li").live('hover',function(){
 		$(this).find(".delete_task").show();
 		$(this).find(".top_task").show();
 	},function(){
