@@ -313,10 +313,10 @@ $(document).ready(function () {
 			if(result_arr.code != 9999){
 				alert('处理失败，请稍后再试');
 			} else {
-				$.each( result_arr.result.data, function( index, data ){
+				$.each( result_arr.result, function( index, data ){
 					$("#pomos").append('<li id="pomo'+data.id+'"><span class="time">' + (new Date(data.created_at)).format("hh:mm") + ' - ' + (new Date(data.updated_at)).format("hh:mm") + '</span><p>'+data.name+'</p></li>');
 				});
-				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result.data).length);
+				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length);
 			}
 	    }
 	});

@@ -53,7 +53,11 @@ class PomoController extends Controller
      */
     public function index(Request $request)
     {
-        $pomos = $this->pomos->forUserByStatus($request->user(), 2, $needPage = true);
+    	if($request->has('type')){
+    		$pomos = $this->pomos->forUserByTime($request->user(), date('Ymd'));
+    	} else {
+	        $pomos = $this->pomos->forUserByStatus($request->user(), 2, $needPage = true);
+    	}
         if ($request->ajax() || $request->wantsJson()) {
             $resp = $this->responseJson(self::OK_CODE, $pomos);
             return response($resp);
