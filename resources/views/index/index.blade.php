@@ -1,5 +1,4 @@
 @extends('layouts.app')
-<script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 <script language="javascript" type="text/javascript"> 
 
 	Date.prototype.format = function (fmt) {
