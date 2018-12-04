@@ -296,10 +296,10 @@ $(document).ready(function () {
 			if(result_arr.code != 9999){
 				alert('处理失败，请稍后再试');
 			} else {
-				$.each( result_arr.result.data, function( index, data ){
+				$.each( result_arr.result, function( index, data ){
 					$("#tasks").append('<li id="task'+data.id+'"><p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>'+data.name+'</p></li>');
 				});
-				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result.data).length);
+				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result).length);
 			}
 	    }
 	});
