@@ -50,7 +50,11 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        $tasks = $this->tasks->forUser($request->user(), $needPage = true);
+    	if($request->has('status')){
+    		$tasks = $this->tasks->forUserByStatus($request->user(), $request->status);
+    	} else {
+	        $tasks = $this->tasks->forUser($request->user(), $needPage = true);
+    	}
         if ($request->ajax() || $request->wantsJson()) {
             $resp = $this->responseJson(self::OK_CODE, $tasks);
             return response($resp);
