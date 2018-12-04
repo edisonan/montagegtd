@@ -274,7 +274,7 @@ $(document).ready(function () {
 		
 	});
 
-	$(".task_li").live('hover',function(){
+	$(".task_li").on('hover',function(){
 		$(this).find(".delete_task").show();
 		$(this).find(".top_task").show();
 	},function(){
