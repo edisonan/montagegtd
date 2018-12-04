@@ -340,7 +340,7 @@ $(document).keyup(function(event){
 						alert('处理失败，请稍后再试');
 					} else {
 						$("#task_name").val("");
-						$("#tasks").prepend('<li><span>'+result_arr.result.name+'</span></li>');
+						$("#tasks").prepend('<li><p class="task_content" task_value="'+result_arr.result.id+'" task_is_top="' + result_arr.result.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+result_arr.result.id+'"/>'+result_arr.result.name+'</p></li>');
 					}
 			    }
 			});
