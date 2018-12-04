@@ -35,6 +35,8 @@ $(document).ready(function () {
 // 			$("#feed_name").val(result_arr.result.title);
 // 		});
 // 	});
+$('#work_mode').click(function(){
+	$('.container').css('max-width', '');
 });
 </script>
 
@@ -48,30 +50,31 @@ $(document).ready(function () {
                     	想法-{{$mind->name}} 
                     	<button class="btn-info" onclick="add_node();">
 	                    	<span  class="glyphicon glyphicon-file"></span>
-	                    	<span>add node</span>
+	                    	<span>增加[Insert]</span>
                     	</button>
                     	<button class="btn-info" onclick="modify_node();">
 	                    	<span  class="glyphicon glyphicon-pencil"></span>
-	                    	<span>modify node</span>
+	                    	<span>修改[F2]</span>
                     	</button>
                     	<button class="btn-info" onclick="show_selected();">
 	                    	<span  class="glyphicon glyphicon-search"></span>
-	                    	<span>get the selected</span>
+	                    	<span>详情[x]</span>
                     	</button>
                     	<button class="btn-info" onclick="remove_node();">
 	                    	<span  class="glyphicon glyphicon-remove"></span>
-	                    	<span>remove node</span>
+	                    	<span>删除[x]</span>
                     	</button>
                     	<button class="btn-info" onclick="toggle();">
 	                    	<span  class="glyphicon glyphicon-fast-forward"></span>
-	                    	<span>toggle node</span>
+	                    	<span>展开[x]</span>
                     	</button>
                     	<button class="btn-info" onclick="screen_shot();">
 	                    	<span  class="glyphicon glyphicon-camera"></span>
-	                    	<span>screen shot</span>
+	                    	<span>截屏[x]</span>
                     	</button>
                     	
                     	<div style="float:right">
+                    		<a href="javascript:void(0)" id="work_mode">[工作模式]</a>
                     		<a href="{{'/minds'}}">[返回]</a>
                     	</div>
                 </div>
