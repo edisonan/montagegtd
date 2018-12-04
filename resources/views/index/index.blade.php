@@ -297,7 +297,7 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result.data, function( index, data ){
-					$("#tasks").append('<li><p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>'+data.name+'</p></li>');
+					$("#tasks").append('<li id="'+data.id+'"><p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>'+data.name+'</p></li>');
 				});
 				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result.data).length);
 			}
@@ -314,7 +314,7 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result.data, function( index, data ){
-					$("#pomos").append('<li><span class="time">' + (new Date(data.created_at)).format("hh:mm") + ' - ' + (new Date(data.updated_at)).format("hh:mm") + '</span><p>'+data.name+'</p></li>');
+					$("#pomos").append('<li id="'+data.id+'"><span class="time">' + (new Date(data.created_at)).format("hh:mm") + ' - ' + (new Date(data.updated_at)).format("hh:mm") + '</span><p>'+data.name+'</p></li>');
 				});
 				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result.data).length);
 			}
@@ -339,7 +339,7 @@ $(document).keyup(function(event){
 						alert('处理失败，请稍后再试');
 					} else {
 						$("#task_name").val("");
-						$("#tasks").prepend('<li><p class="task_content" task_value="'+result_arr.result.id+'" task_is_top="' + result_arr.result.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+result_arr.result.id+'"/>'+result_arr.result.name+'</p></li>');
+						$("#tasks").prepend('<li id="'+result_arr.result.id+'"><p class="task_content" task_value="'+result_arr.result.id+'" task_is_top="' + result_arr.result.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+result_arr.result.id+'"/>'+result_arr.result.name+'</p></li>');
 					}
 			    }
 			});
@@ -362,7 +362,7 @@ $(document).keyup(function(event){
 						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 						$("#recordPomo").css("display", "none");
 						$("#pomoBtn").css("display", "block");
-						$("#pomos").prepend('<li><span class="time">'+ (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm") +'</span><p>'+result_arr.result.active_pomo.name+'</p></li>');
+						$("#pomos").prepend('<li id="'+result_arr.result.id+'"><span class="time">'+ (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm") +'</span><p>'+result_arr.result.active_pomo.name+'</p></li>');
 					}
 			    }
 			});
