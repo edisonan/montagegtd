@@ -36,7 +36,7 @@ $(document).ready(function () {
 // 		});
 // 	});
 	$('#work_mode').click(function(){
-		$('.container').css('max-width', '2000px');
+		$('.container').css('max-width', $(window).width()+'px');
 	});
 });
 </script>
