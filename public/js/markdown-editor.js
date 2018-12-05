@@ -207,14 +207,14 @@
     $defaults = {
         toolbar: {
             toolbarHeaderL: [
-                ['undo', 'redo'],
-                ['bold', 'italic', 'ins', 'del', 'sup', 'sub', 'mark'],
-                ['paragraph', 'newline', 'heading'],
+//                ['undo', 'redo'],
+//                ['bold', 'italic', 'ins', 'del', 'sup', 'sub', 'mark'],
+//                ['paragraph', 'newline', 'heading'],
                 ['link', 'image'],
-                ['indent', 'outdent', 'ul', 'ol', 'dl'],
-                ['footnote', 'blockquote', 'hr'],
+//                ['indent', 'outdent', 'ul', 'ol', 'dl'],
+//                ['footnote', 'blockquote', 'hr'],
                 ['code', 'codeblock'],
-                ['emoji']
+//                ['emoji']
             ],
             toolbarHeaderR: [
                 ['fullscreen']
