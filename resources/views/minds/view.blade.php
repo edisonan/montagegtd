@@ -7,12 +7,36 @@
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.draggable.js')}}"></script>
 
-<link href="/css/bootstrap-markdown-editor.css" rel="stylesheet">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+<!-- Markdown IT Main Library -->
+<script src="/plugins/markdown-it//markdown-it.min.js"></script>
+<!-- Markdown IT Definition List Plugin -->
+<script src="/plugins/markdown-it//markdown-it-deflist.min.js"></script>
+<!-- Markdown IT Footnote Plugin -->
+<script src="/plugins/markdown-it//markdown-it-footnote.min.js"></script>
+<!-- Markdown IT Abbreviation Plugin -->
+<script src="/plugins/markdown-it//markdown-it-abbr.min.js"></script>
+<!-- Markdown IT Subscript Plugin -->
+<script src="/plugins/markdown-it//markdown-it-sub.min.js"></script>
+<!-- Markdown IT Superscript Plugin -->
+<script src="/plugins/markdown-it//markdown-it-sup.min.js"></script>
+<!-- Markdown IT Underline/Inserted Text Plugin -->
+<script src="/plugins/markdown-it//markdown-it-ins.min.js"></script>
+<!-- Markdown IT Mark Plugin -->
+<script src="/plugins/markdown-it//markdown-it-mark.min.js"></script>
+<!-- Markdown IT SmartArrows Plugin -->
+<script src="/plugins/markdown-it//markdown-it-smartarrows.min.js"></script>
+<!-- Markdown IT Checkbox Plugin -->
+<script src="/plugins/markdown-it//markdown-it-checkbox.min.js"></script>
+<!-- Markdown IT East Asian Characters Line Break Plugin -->
+<script src="/plugins/markdown-it//markdown-it-cjk-breaks.min.js"></script>
+<!-- Markdown IT Emoji Plugin -->
+<script src="/plugins/markdown-it//markdown-it-emoji.min.js"></script>
 
-<script src="/js/bootstrap-markdown-editor.js"></script>
+<link href="/css/markdown-editor.css" rel="stylesheet">
+<script src="/js/markdown-editor.js"></script>
+
 <style type="text/css">
 button, input, optgroup, select, textarea {
     margin: 0;
