@@ -114,7 +114,7 @@ $(document).ready(function () {
 					<div id="" class=" col-md-4">
 						<b id="mind_name"  style="margin-top:15px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
                         
-						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
+						<textarea  class="col-md-12" id="mind_content" data-toolbarHeaderL="bold,link,image,code,codeblock,ul" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
