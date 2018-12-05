@@ -7,12 +7,12 @@
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.draggable.js')}}"></script>
 
-<link href="/public/css/bootstrap-markdown-editor.css" rel="stylesheet">
+<link href="/css/bootstrap-markdown-editor.css" rel="stylesheet">
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
 
-<script src="/public/js/bootstrap-markdown-editor.js"></script>
+<script src="/js/bootstrap-markdown-editor.js"></script>
 <style type="text/css">
 button, input, optgroup, select, textarea {
     margin: 0;
