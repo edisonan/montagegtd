@@ -6,6 +6,13 @@
 <script type="text/javascript" src="{{ url('/js/jsmind.js').'?'.time()}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.draggable.js')}}"></script>
+
+<link href="dist/css/bootstrap-markdown-editor.css" rel="stylesheet">
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.2/marked.min.js"></script>
+
+<script src="dist/js/bootstrap-markdown-editor.js"></script>
 <style type="text/css">
 button, input, optgroup, select, textarea {
     margin: 0;
@@ -21,22 +28,18 @@ button, input, optgroup, select, textarea {
       }
 </style>
 <script type="text/javascript">
-$(document).ready(function () {
+jQuery(document).ready(function($) {
+    $('#mind_content').markdownEditor({
+        preview: true,
+        onPreview: function (content, callback) {
+            callback( marked(content) );
+        }
+    });
+});
 
-// 	$("#check_url").click(function(){
-// 		url = $("#url").val();
-// 		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
-// 			result_arr = JSON.parse(result);
-// 			if(result_arr.code != 9999){
-// 				alert('该url未检测到内容，请确认！');
-// 			} else {
-// 				alert('检测成功');
-// 			}
-// 			$("#feed_name").val(result_arr.result.title);
-// 		});
-// 	});
+$(document).ready(function () {
 	$('#work_mode').click(function(){
-		$('.container').css('max-width', $(window).width()+'px');
+		$('.container').css('max-width', '1980px');
 	});
 });
 </script>
