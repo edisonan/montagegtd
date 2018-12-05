@@ -208,6 +208,7 @@
         toolbar: {
             toolbarHeaderL: [
 //                ['undo', 'redo'],
+                ['bold', 'italic', 'ul', 'ol'],
 //                ['bold', 'italic', 'ins', 'del', 'sup', 'sub', 'mark'],
 //                ['paragraph', 'newline', 'heading'],
                 ['link', 'image'],
