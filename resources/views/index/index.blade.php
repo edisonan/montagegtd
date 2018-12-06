@@ -299,7 +299,7 @@ $(document).ready(function () {
 				$.each( result_arr.result, function( index, data ){
 					$("#tasks").append('<li id="task'+data.id+'"><p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>'+data.name+'</p></li>');
 				});
-				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result).length);
+				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
 			}
 	    }
 	});
@@ -316,7 +316,7 @@ $(document).ready(function () {
 				$.each( result_arr.result, function( index, data ){
 					$("#pomos").append('<li id="pomo'+data.id+'"><span class="time">' + (new Date(data.created_at)).format("hh:mm") + ' - ' + (new Date(data.updated_at)).format("hh:mm") + '</span><p>'+data.name+'</p></li>');
 				});
-				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length);
+				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
 			}
 	    }
 	});
