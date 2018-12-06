@@ -9,6 +9,7 @@ use App\Feed;
 use App\Http\Utils\SpideUtil;
 
 use Log;
+use App\Services\FeedService;
 
 /**
  * get new article from common feed
@@ -40,6 +41,7 @@ class FeedCommon extends Command
     {
 		$active_level = $this->argument('active_level');
 		
+		$feedService = app('FeedService');
     	$feedRepository = new FeedRepository();
 		$spideUtil = new SpideUtil();
 		
@@ -47,11 +49,11 @@ class FeedCommon extends Command
 		
     	foreach ($feeds as $feed){
 			if($feed->type == 3){
-				$feedRepository->checkFanfouFeed($feed);
+				$feedService->checkFanfouFeed($feed);
 			} else if($feed->type==2){
 				$spideUtil->processFeed($feed);
 			} else {
-				$feedRepository->checkFeed($feed);
+				$feedService->checkFeed($feed);
 			}
     	}
     }
