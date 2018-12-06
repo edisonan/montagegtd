@@ -167,7 +167,7 @@ class FeedController extends Controller
             'feed_id' => 'required'
         ]);
         
-        $this->feedService->quickStore($request, $request->all());
+        $this->feedService->quickStore($request->user(), $request->all());
         
         if ($request->ajax() || $request->wantsJson()) {
             $resp = $this->responseJson(self::OK_CODE, '', '关注成功');
