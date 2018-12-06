@@ -129,7 +129,7 @@ class MindController extends Controller
                 "\r\n",
                 "\r",
                 "\n"
-            ), "<br/>", $request->content);
+            ), "\\r\\n", $request->content);
             $content = str_replace(array(
                 "'",
                 '"'
@@ -179,7 +179,7 @@ class MindController extends Controller
         $data = array();
         $data['id'] = $mind->id;
         $data['topic'] = $mind->name;
-        $data['content'] = nl2br($mind->content);
+        $data['content'] = $mind->content;
         $data['content'] = str_replace("'", '', $data['content']);
         if (count($mind->childrenMinds) > 0) {
             foreach ($mind->childrenMinds as $childMind) {
