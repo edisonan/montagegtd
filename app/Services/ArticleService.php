@@ -104,7 +104,9 @@ class ArticleService
             ':user_id' => $user->id
         ]);
         
-        $counts_info = $this->getCountInfos($user, $status);
+//         $counts_info = $this->getCountInfos($user, $status);
+		// TODO
+        $counts_info = array();
         
         // 导航信息，结构如下:
         // category_id category_info => category_name category_id
