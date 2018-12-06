@@ -41,7 +41,7 @@ class FeedCommon extends Command
     {
 		$active_level = $this->argument('active_level');
 		
-		$feedService = app('FeedService');
+		$feedService = app(FeedService::class);
     	$feedRepository = new FeedRepository();
 		$spideUtil = new SpideUtil();
 		
