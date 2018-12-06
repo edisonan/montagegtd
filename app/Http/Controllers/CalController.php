@@ -64,7 +64,7 @@ class CalController extends Controller
      */
     public function ics(Request $request, String $theme)
     {
-        $icsInfo = $this->calService->getIcsByTheme($request->user(), $theme);
+        $icsInfo = $this->calService->getIcsByTheme($theme);
         
         header("Content-type:application/octet-stream");
         header("Content-Disposition:attachment;filename = " . $icsInfo['file_name'] . '.ics');

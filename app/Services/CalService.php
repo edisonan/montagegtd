@@ -71,7 +71,7 @@ class CalService
      * @param User $user
      * @return string
      */
-    public function getIcsByTheme(User $user, $theme)
+    public function getIcsByTheme($theme)
     {
         date_default_timezone_set("Asia/Shanghai");
         
