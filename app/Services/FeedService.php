@@ -16,6 +16,7 @@ use Celd\Opml\Importer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use App\Repositories\CategoryRepository;
 
 /**
  * FeedService订阅相关Service
@@ -39,6 +40,13 @@ class FeedService
      * @var FeedRepository
      */
     protected $feeds;
+    
+    /**
+     * CategoryRepository 实例 .
+     *
+     * @var CategoryRepository
+     */
+    protected $categorys;
 
     /**
      * 创建Service
@@ -46,10 +54,11 @@ class FeedService
      * @param FeedSubRepository $feedSubs
      * @param FeedRepository $feeds
      */
-    public function __construct(FeedSubRepository $feedSubs, FeedRepository $feeds)
+    public function __construct(FeedSubRepository $feedSubs, FeedRepository $feeds, CategoryRepository $categorys)
     {
         $this->feedSubs = $feedSubs;
         $this->feeds = $feeds;
+        $this->categorys = $categorys;
     }
 
     /**
