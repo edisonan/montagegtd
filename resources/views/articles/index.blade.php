@@ -201,7 +201,7 @@ $(document).ready(function () {
 		});
 	}
 	
-	$(".unfold_category_item").on('click',function(){
+	$(".unfold_category_item").on('click','.unfold_category_item',function(){
 		$(this).parent().parent().find(".category_item").toggle();
 	});
 	
