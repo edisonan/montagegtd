@@ -246,7 +246,7 @@ $(document).ready(function () {
     function show_selected(){
         var selected_node = _jm.get_selected_node();
         if(!!selected_node){
-        	$("#mind_content_show").html(selected_node.data.content);
+        	//$("#mind_content_show").html(selected_node.data.content);
         	$("#mind_content").val(selected_node.data.content);
         	$("#mind_id").val(selected_node.id);
         	$("#mind_name").html('描述:'+selected_node.topic);
