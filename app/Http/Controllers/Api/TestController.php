@@ -9,6 +9,7 @@ use App\Repositories\CategoryRepository;
 use App\Repositories\ArticleRepository;
 use App\Models\ArticleSub;
 use App\Models\NoteTagMap;
+use App\Models\Thing;
 use App\Models\Tag;
 use App\Models\Pomo;
 use App\Repositories\FeedSubRepository;
