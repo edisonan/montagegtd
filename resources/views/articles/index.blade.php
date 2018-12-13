@@ -82,7 +82,7 @@ img {
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$(".set_star,.set_read,.set_read_later").click(function(){
+	$(".set_star,.set_read,.set_read_later").on('click',function(){
 		article_sub_id = $(this).attr('article_sub_id');
 		active = $(this).hasClass("active");
 
@@ -112,7 +112,7 @@ $(document).ready(function () {
 		});
 	});
 
-	$("#marked_all_read").click(function(){
+	$("#marked_all_read").on('click',function(){
 		var ids = $(this).attr('ids');
 		$.get("{{ url('/articles/allstatus') }}",{"ids":ids,"status":"read"},function(result){
 			result_arr = JSON.parse(result);
@@ -134,20 +134,20 @@ $(document).ready(function () {
 		}
 	});
 
-	$(".view-all").click(function(){
+	$(".view-all").on('click',function(){
 		$(this).parent().parent().children("div.post-text").css("height","auto");
 		$(this).css("display","none");
 		$(this).parent().parent().find(".morecon").css("display","none");
 	});
 
-	$(".morecon").click(function(){
+	$(".morecon").on('click',function(){
 		$(this).parent().children("div.post-text").css("height","auto");
 		$(this).css("display","none");
 		$(this).parent().parent().find(".view-all").css("display","none");
 	});
 	
 	//处理屏蔽图片
-	$("#unable_img").click(function(){
+	$("#unable_img").on('click',function(){
 		if($("#unable_img").is(':checked')){
 			$.cookie('unable_img', true);
 		} else {
@@ -156,7 +156,7 @@ $(document).ready(function () {
 		location.href="";
 	});
 
-	$(".post-text img").click(function(){
+	$(".post-text img").on('click',function(){
 		if($(this).attr("orignal_src") != null){
 			$(this).attr("src", $(this).attr("orignal_src"));//修改图片路径
 		}
@@ -176,7 +176,7 @@ $(document).ready(function () {
 	}
 
 	//处理一目十行
-	$("#unable_desc").click(function(){
+	$("#unable_desc").on('click',function(){
 		if($("#unable_desc").is(':checked')){
 			$.cookie('unable_desc', true);
 		} else {
@@ -201,15 +201,15 @@ $(document).ready(function () {
 		});
 	}
 	
-	$(".unfold_category_item").click(function(){
+	$(".unfold_category_item").on('click','.unfold_category_item',function(){
 		$(this).parent().parent().find(".category_item").toggle();
 	});
 	
-	$(".share_btn").click(function(){
+	$(".share_btn").on('click',function(){
 		$(this).parent().find(".social-share").toggle();
 	});
 
-	$(".feed_quick_sub").click(function(){
+	$(".feed_quick_sub").on('click',function(){
 		var feed_id = $(this).attr('feed_id');
 		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result){
 			result_arr = JSON.parse(result);
@@ -222,12 +222,12 @@ $(document).ready(function () {
 	});
 
 	//play audio
-	$(".playaudio").click(function(){
+	$(".playaudio").on('click',function(){
 		var article_sub_id = $(this).attr('article_sub_id');
 		$("#audio").attr("src","/article/record/"+article_sub_id);
 	});
 	
-	$(".icon-heart").click(function(){
+	$(".icon-heart").on('click',function(){
 		var title = $(this).attr('data-title');
 		var url = $(this).attr('data-url');
 		window.open('/notes?add_content='+url);
