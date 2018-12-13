@@ -10,6 +10,7 @@ use App\Repositories\ArticleRepository;
 use App\Models\ArticleSub;
 use App\Models\NoteTagMap;
 use App\Models\Tag;
+use App\Models\Pomo;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
 use App\Models\User;
