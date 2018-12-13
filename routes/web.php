@@ -151,7 +151,7 @@ Route::group(['middleware' => ['web']], function () {
 	Route::get('/api/pomo/start', 'Api\TestController@start');
 	Route::get('/api/pomo/discard/{pomo}', 'Api\TestController@discard');
 	Route::get('/api/pomo/discard/', 'Api\TestController@discard');
-	Route::post('/api/pomo/{pomo}', 'Api\TestController@store');
-	Route::delete('/pomo/{pomo}', 'PomoController@destroy');
+	Route::post('/api/pomos/{pomo}', 'Api\TestController@store');
+	Route::delete('/api/pomos/{pomo}', 'PomoController@destroy');
 });
 		
