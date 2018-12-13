@@ -67,7 +67,7 @@ class TestController extends Controller {
 		$user = new User ();
 		$user->id = 1;
 		
-		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
+		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $user );
 		
 		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
 		return response ( $resp );
