@@ -119,8 +119,7 @@ class TestController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function store(Request $request, Pomo $pomo) {
-		$user = new User ();
-		$user->id = 1;
+		$user = User::where('id', 1)->first();
 		$setting = $user->setting;
 		$pomo_time = isset ( $setting->pomo_time ) && ! empty ( $setting->pomo_time ) ? $setting->pomo_time * 60 : Pomo::DEFAULT_INTERVAL;
 		
