@@ -147,6 +147,7 @@ Route::group(['middleware' => ['web']], function () {
 	Route::get('/api/wechat/articleSubStatus/{articleSub}', 'Api\WechatController@articleSubStatus');
 	
 	Route::get('/api/pomos', 'Api\TestController@index');
+	Route::get('/api/pomo/info', 'Api\TestController@info');
 	Route::get('/api/pomos/start', 'Api\TestController@start');
 	Route::get('/api/pomos/discard/{pomo}', 'Api\TestController@discard');
 	Route::get('/api/pomos/discard/', 'Api\TestController@discard');
