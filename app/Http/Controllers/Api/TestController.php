@@ -128,7 +128,7 @@ class TestController extends Controller {
 					'name' => 'required|max:255' 
 			] );
 			
-			$this->authorize ( 'destroy', $pomo );
+// 			$this->authorize ( 'destroy', $pomo );
 			$pomo->update ( [ 
 					'name' => $request->name,
 					'status' => 2 
