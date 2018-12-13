@@ -196,10 +196,16 @@ $(document).ready(function () {
 	isIOS = /iPhone|iPad|iPod/i.test(ua);
 	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
 	if(isMobile){
+		$("#navBody").css("display","none");
+		
 		$(".category_item").each(function(){
 			$(this).css("display","none");
 		});
 	}
+
+	$("#navHeader").on('click',function(){
+		$("#navBody").toggle();
+	});
 	
 	$(".unfold_category_item").on('click','.unfold_category_item',function(){
 		$(this).parent().parent().find(".category_item").toggle();
@@ -266,7 +272,7 @@ $(document).ready(function () {
 		<div class=" col-md-4">
 			@include('common.success')
 			<div class="card card-default">
-				<div class="card-header">
+				<div class="card-header" id="navHeader">
 					订阅分类
 					<div style="float: right">
 						<a href="{{ url('kindles') }}">[SendKindle]</a> <a
@@ -274,7 +280,7 @@ $(document).ready(function () {
 					</div>
 				</div>
 
-				<div class="card-body">
+				<div class="card-body" id="navBody">
 					<ul class="nav nav-pills nav-stacked" id="nav">
 					
 					</ul>
