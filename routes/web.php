@@ -145,5 +145,10 @@ Route::group(['middleware' => ['web']], function () {
 	Route::get('/api/wechat/addNote', 'Api\WechatController@addNote');
 	Route::get('/api/wechat/articleSubStatus', 'Api\WechatController@articleSubStatus');
 	Route::get('/api/wechat/articleSubStatus/{articleSub}', 'Api\WechatController@articleSubStatus');
+	
+	Route::get('/api/pomos', 'Api\TestController@index');
+	Route::get('/api/pomos/start', 'Api\TestController@start');
+	Route::get('/api/pomos/discard/{pomo}', 'Api\TestController@discard');
+	Route::get('/api/pomos/discard/', 'Api\TestController@discard');
 });
 		
