@@ -17,6 +17,8 @@ use App\Models\OauthInfo;
 use App\Http\Utils\CommonUtil;
 use function Qiniu\json_decode;
 use App\Repositories\OauthInfoRepository;
+use App\Repositories\PomoRepository;
+use App\Services\PomoService;
 
 class TestController extends Controller {
 	/**
