@@ -2,6 +2,7 @@
 
 @section('title', '登录 - Montage GTD')
 
+@section('content')
 <script type="text/javascript">
 $(document).ready(function () {
 	var ua =  navigator.userAgent;
@@ -15,7 +16,6 @@ $(document).ready(function () {
 	}
 });
 </script>
-@section('content')
 <div class="container">
     <div class="row">
     	<div class="col-md-6" class="right">
