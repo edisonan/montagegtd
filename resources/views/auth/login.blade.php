@@ -3,19 +3,7 @@
 @section('title', '登录 - Montage GTD')
 
 @section('content')
-<script type="text/javascript">
-$(document).ready(function () {
-	var ua =  navigator.userAgent;
-	isAndroid = /Android/i.test(ua);
-	isBlackBerry = /BlackBerry/i.test(ua);
-	isWindowPhone = /IEMobile/i.test(ua);
-	isIOS = /iPhone|iPad|iPod/i.test(ua);
-	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
-	if(isMobile){
-		$(".right").insertAfter(".left");
-	}
-});
-</script>
+
 <div class="container">
     <div class="row">
     	<div class="col-md-6" class="right">
@@ -168,4 +156,17 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
+<script type="text/javascript">
+$(document).ready(function () {
+	var ua =  navigator.userAgent;
+	isAndroid = /Android/i.test(ua);
+	isBlackBerry = /BlackBerry/i.test(ua);
+	isWindowPhone = /IEMobile/i.test(ua);
+	isIOS = /iPhone|iPad|iPod/i.test(ua);
+	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
+	if(isMobile){
+		$(".right").insertAfter(".left");
+	}
+});
+</script>
 @endsection
