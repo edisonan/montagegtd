@@ -108,6 +108,18 @@ class ArticleController extends Controller
     	$resp = $this->responseJson(self::OK_CODE, $navInfo);
     	return response($resp);
     }
+    
+    public function navcountinfo(Request $request)
+    {
+    	// 获取状态参数，默认参数值为 未读
+    	$status = $request->get('status', 'unread');
+    
+    	// 获取分类文章数
+    	$countInfo = $this->articleService->getCountInfos($request->user(),$status);
+    
+    	$resp = $this->responseJson(self::OK_CODE, $countInfo);
+    	return response($resp);
+    }
 
     /**
      * 根据feedId展示文章列表
