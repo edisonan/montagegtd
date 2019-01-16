@@ -3,9 +3,10 @@
 @section('title', '登录 - Montage GTD')
 
 @section('content')
+
 <div class="container">
     <div class="row">
-    	<div class="col-md-6">
+    	<div class="col-md-6 right">
             <div class="card">
                 <div class="card-header">快速注册</div>
                 <div class="card-body">
@@ -80,7 +81,7 @@
             </div>
         </div>
         
-        <div class="col-md-6">
+        <div class="col-md-6 left">
             <div class="card">
                 <div class="card-header">
                 	<!-- 
@@ -155,4 +156,17 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+$(document).ready(function () {
+	var ua =  navigator.userAgent;
+	isAndroid = /Android/i.test(ua);
+	isBlackBerry = /BlackBerry/i.test(ua);
+	isWindowPhone = /IEMobile/i.test(ua);
+	isIOS = /iPhone|iPad|iPod/i.test(ua);
+	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
+	if(isMobile){
+		$(".right").insertAfter(".left");
+	}
+});
+</script>
 @endsection

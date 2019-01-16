@@ -82,7 +82,7 @@ img {
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$(".set_star,.set_read,.set_read_later").click(function(){
+	$(".set_star,.set_read,.set_read_later").on('click',function(){
 		article_sub_id = $(this).attr('article_sub_id');
 		active = $(this).hasClass("active");
 
@@ -112,7 +112,7 @@ $(document).ready(function () {
 		});
 	});
 
-	$("#marked_all_read").click(function(){
+	$("#marked_all_read").on('click',function(){
 		var ids = $(this).attr('ids');
 		$.get("{{ url('/articles/allstatus') }}",{"ids":ids,"status":"read"},function(result){
 			result_arr = JSON.parse(result);
@@ -134,20 +134,20 @@ $(document).ready(function () {
 		}
 	});
 
-	$(".view-all").click(function(){
+	$(".view-all").on('click',function(){
 		$(this).parent().parent().children("div.post-text").css("height","auto");
 		$(this).css("display","none");
 		$(this).parent().parent().find(".morecon").css("display","none");
 	});
 
-	$(".morecon").click(function(){
+	$(".morecon").on('click',function(){
 		$(this).parent().children("div.post-text").css("height","auto");
 		$(this).css("display","none");
 		$(this).parent().parent().find(".view-all").css("display","none");
 	});
 	
 	//处理屏蔽图片
-	$("#unable_img").click(function(){
+	$("#unable_img").on('click',function(){
 		if($("#unable_img").is(':checked')){
 			$.cookie('unable_img', true);
 		} else {
@@ -156,7 +156,7 @@ $(document).ready(function () {
 		location.href="";
 	});
 
-	$(".post-text img").click(function(){
+	$(".post-text img").on('click',function(){
 		if($(this).attr("orignal_src") != null){
 			$(this).attr("src", $(this).attr("orignal_src"));//修改图片路径
 		}
@@ -176,7 +176,7 @@ $(document).ready(function () {
 	}
 
 	//处理一目十行
-	$("#unable_desc").click(function(){
+	$("#unable_desc").on('click',function(){
 		if($("#unable_desc").is(':checked')){
 			$.cookie('unable_desc', true);
 		} else {
@@ -196,20 +196,26 @@ $(document).ready(function () {
 	isIOS = /iPhone|iPad|iPod/i.test(ua);
 	isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
 	if(isMobile){
+		$("#navBody").css("display","none");
+		
 		$(".category_item").each(function(){
 			$(this).css("display","none");
 		});
 	}
+
+	$("#navHeader").on('click',function(){
+		$("#navBody").toggle();
+	});
 	
-	$(".unfold_category_item").click(function(){
+	$(".unfold_category_item").on('click','.unfold_category_item',function(){
 		$(this).parent().parent().find(".category_item").toggle();
 	});
 	
-	$(".share_btn").click(function(){
+	$(".share_btn").on('click',function(){
 		$(this).parent().find(".social-share").toggle();
 	});
 
-	$(".feed_quick_sub").click(function(){
+	$(".feed_quick_sub").on('click',function(){
 		var feed_id = $(this).attr('feed_id');
 		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result){
 			result_arr = JSON.parse(result);
@@ -222,15 +228,42 @@ $(document).ready(function () {
 	});
 
 	//play audio
-	$(".playaudio").click(function(){
+	$(".playaudio").on('click',function(){
 		var article_sub_id = $(this).attr('article_sub_id');
 		$("#audio").attr("src","/article/record/"+article_sub_id);
 	});
 	
-	$(".icon-heart").click(function(){
+	$(".icon-heart").on('click',function(){
 		var title = $(this).attr('data-title');
 		var url = $(this).attr('data-url');
 		window.open('/notes?add_content='+url);
+	});
+	var status = '{{$status}}';
+	$.ajax({
+	    url: "{{ url('article/navinfo') }}",
+	    type: 'GET',
+	    data: {"_token":"{{ csrf_token() }}","status":status},
+	    success: function(result) {
+	    	result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				$.each( result_arr.result.nav_infos, function( navId, navInfo ){
+					var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id="+navId+"&status="+status+'">'+navInfo.category_info.category_name+'['+Object.getOwnPropertyNames(navInfo.list).length+']</a></span>';
+					if(Object.getOwnPropertyNames(navInfo.list).length > 0){
+						li += '<ul class="category_item">';
+						$.each(navInfo.list,function(index, item){
+							li += '<li class="rowone">';
+							li += '<a href="'+"{{ url('articles') }}?feed_id="+item.feed_id+"&status="+status+'">';
+							li += '<span>['+ item.feed_count+']' + item.feed_name + '</span>';
+						});
+						li += '</ul>';
+					}
+					li += '</li>'
+					$("#nav").append(li);
+				});
+			}
+	    }
 	});
 });
 </script>
@@ -239,7 +272,7 @@ $(document).ready(function () {
 		<div class=" col-md-4">
 			@include('common.success')
 			<div class="card card-default">
-				<div class="card-header">
+				<div class="card-header" id="navHeader">
 					订阅分类
 					<div style="float: right">
 						<a href="{{ url('kindles') }}">[SendKindle]</a> <a
@@ -247,8 +280,8 @@ $(document).ready(function () {
 					</div>
 				</div>
 
-				<div class="card-body">
-					<ul class="nav nav-pills nav-stacked">
+				<div class="card-body" id="navBody">
+					<ul class="nav nav-pills nav-stacked" id="nav">
 					
 					</ul>
 				</div>

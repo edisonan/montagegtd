@@ -20,7 +20,7 @@ class Pomo extends Model
      *
      * @var array
      */
-    protected $fillable = ['name','status'];
+    protected $fillable = ['name','status','user_id'];
     
     /**
      * The attributes that should be cast to native types.

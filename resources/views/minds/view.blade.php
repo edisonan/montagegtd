@@ -6,6 +6,37 @@
 <script type="text/javascript" src="{{ url('/js/jsmind.js').'?'.time()}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.screenshot.js')}}"></script>
 <script type="text/javascript" src="{{ url('/js/jsmind.draggable.js')}}"></script>
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+
+<!-- Markdown IT Main Library -->
+<script src="/plugins/markdown-it//markdown-it.min.js"></script>
+<!-- Markdown IT Definition List Plugin -->
+<script src="/plugins/markdown-it//markdown-it-deflist.min.js"></script>
+<!-- Markdown IT Footnote Plugin -->
+<script src="/plugins/markdown-it//markdown-it-footnote.min.js"></script>
+<!-- Markdown IT Abbreviation Plugin -->
+<script src="/plugins/markdown-it//markdown-it-abbr.min.js"></script>
+<!-- Markdown IT Subscript Plugin -->
+<script src="/plugins/markdown-it//markdown-it-sub.min.js"></script>
+<!-- Markdown IT Superscript Plugin -->
+<script src="/plugins/markdown-it//markdown-it-sup.min.js"></script>
+<!-- Markdown IT Underline/Inserted Text Plugin -->
+<script src="/plugins/markdown-it//markdown-it-ins.min.js"></script>
+<!-- Markdown IT Mark Plugin -->
+<script src="/plugins/markdown-it//markdown-it-mark.min.js"></script>
+<!-- Markdown IT SmartArrows Plugin -->
+<script src="/plugins/markdown-it//markdown-it-smartarrows.min.js"></script>
+<!-- Markdown IT Checkbox Plugin -->
+<script src="/plugins/markdown-it//markdown-it-checkbox.min.js"></script>
+<!-- Markdown IT East Asian Characters Line Break Plugin -->
+<script src="/plugins/markdown-it//markdown-it-cjk-breaks.min.js"></script>
+<!-- Markdown IT Emoji Plugin -->
+<script src="/plugins/markdown-it//markdown-it-emoji.min.js"></script>
+
+<link href="/css/markdown-editor.css" rel="stylesheet">
+<script src="/js/markdown-editor.js"></script>
+
 <style type="text/css">
 button, input, optgroup, select, textarea {
     margin: 0;
@@ -21,20 +52,19 @@ button, input, optgroup, select, textarea {
       }
 </style>
 <script type="text/javascript">
-$(document).ready(function () {
+jQuery(document).ready(function($) {
+    $('#mind_content').markdownEditor({
+        preview: true,
+        onPreview: function (content, callback) {
+            callback( marked(content) );
+        }
+    });
+});
 
-// 	$("#check_url").click(function(){
-// 		url = $("#url").val();
-// 		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
-// 			result_arr = JSON.parse(result);
-// 			if(result_arr.code != 9999){
-// 				alert('该url未检测到内容，请确认！');
-// 			} else {
-// 				alert('检测成功');
-// 			}
-// 			$("#feed_name").val(result_arr.result.title);
-// 		});
-// 	});
+$(document).ready(function () {
+	$('#work_mode').click(function(){
+		$('.container').css('max-width', '1980px');
+	});
 });
 </script>
 
@@ -48,30 +78,31 @@ $(document).ready(function () {
                     	想法-{{$mind->name}} 
                     	<button class="btn-info" onclick="add_node();">
 	                    	<span  class="glyphicon glyphicon-file"></span>
-	                    	<span>add node</span>
+	                    	<span>增加[Insert]</span>
                     	</button>
                     	<button class="btn-info" onclick="modify_node();">
 	                    	<span  class="glyphicon glyphicon-pencil"></span>
-	                    	<span>modify node</span>
+	                    	<span>修改[F2]</span>
                     	</button>
                     	<button class="btn-info" onclick="show_selected();">
 	                    	<span  class="glyphicon glyphicon-search"></span>
-	                    	<span>get the selected</span>
+	                    	<span>详情[x]</span>
                     	</button>
                     	<button class="btn-info" onclick="remove_node();">
 	                    	<span  class="glyphicon glyphicon-remove"></span>
-	                    	<span>remove node</span>
+	                    	<span>删除[x]</span>
                     	</button>
                     	<button class="btn-info" onclick="toggle();">
 	                    	<span  class="glyphicon glyphicon-fast-forward"></span>
-	                    	<span>toggle node</span>
+	                    	<span>展开[x]</span>
                     	</button>
                     	<button class="btn-info" onclick="screen_shot();">
 	                    	<span  class="glyphicon glyphicon-camera"></span>
-	                    	<span>screen shot</span>
+	                    	<span>截屏[x]</span>
                     	</button>
                     	
                     	<div style="float:right">
+                    		<a href="javascript:void(0)" id="work_mode">[工作模式]</a>
                     		<a href="{{'/minds'}}">[返回]</a>
                     	</div>
                 </div>
@@ -83,7 +114,7 @@ $(document).ready(function () {
 					<div id="" class=" col-md-4">
 						<b id="mind_name"  style="margin-top:15px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
                         
-						<textarea  class="col-md-12" id="mind_content" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
+						<textarea  class="col-md-12" id="mind_content" data-toolbarHeaderL="" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>
 						<input type="hidden" id="mind_id" value="{{$mind->id}}">
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
@@ -215,7 +246,7 @@ $(document).ready(function () {
     function show_selected(){
         var selected_node = _jm.get_selected_node();
         if(!!selected_node){
-        	$("#mind_content_show").html(selected_node.data.content);
+        	//$("#mind_content_show").html(selected_node.data.content);
         	$("#mind_content").val(selected_node.data.content);
         	$("#mind_id").val(selected_node.id);
         	$("#mind_name").html('描述:'+selected_node.topic);

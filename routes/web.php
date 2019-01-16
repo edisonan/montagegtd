@@ -80,6 +80,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/articles/allstatus', 'ArticleController@status');
     Route::delete('/article/{article}', 'ArticleController@destroy');
     Route::get('/article/record/{articleSub}', 'ArticleController@getArticleRecord');
+    Route::get('/article/navinfo', 'ArticleController@navinfo');
+    Route::get('/article/navcountinfo', 'ArticleController@navcountinfo');
     
     Route::get('/pomos', 'PomoController@index');
     Route::get('/pomos/start', 'PomoController@start');
@@ -144,5 +146,13 @@ Route::group(['middleware' => ['web']], function () {
 	Route::get('/api/wechat/addNote', 'Api\WechatController@addNote');
 	Route::get('/api/wechat/articleSubStatus', 'Api\WechatController@articleSubStatus');
 	Route::get('/api/wechat/articleSubStatus/{articleSub}', 'Api\WechatController@articleSubStatus');
+	
+	Route::get('/api/pomos', 'Api\TestController@index');
+	Route::get('/api/pomo/info', 'Api\TestController@info');
+	Route::get('/api/pomo/start', 'Api\TestController@start');
+	Route::get('/api/pomo/discard/{pomo}', 'Api\TestController@discard');
+	Route::get('/api/pomo/discard/', 'Api\TestController@discard');
+	Route::post('/api/pomos/{pomo}', 'Api\TestController@store');
+	Route::delete('/api/pomos/{pomo}', 'PomoController@destroy');
 });
 		

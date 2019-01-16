@@ -1,140 +1,152 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Category;
-use App\Repositories\CategoryRepository;
+use App\Services\CategoryService;
 
+/**
+ * 订阅分类控制器
+ * 
+ * @author ancongcong
+ *        
+ */
 class CategoryController extends Controller
 {
+
     /**
-     * The category repository instance.
+     * The CategoryService instance.
      *
-     * @var CategoryRepository
+     * @var CategoryService
      */
-    protected $categorys;
+    protected $categoryService;
 
     /**
      * Create a new controller instance.
      *
-     * @param  CategoryRepository  $categorys
+     * @param CategoryService $categoryService
      * @return void
      */
-    public function __construct( CategoryRepository $categorys)
+    public function __construct(CategoryService $categoryService)
     {
         $this->middleware('auth');
-
-        $this->categorys = $categorys;
+        
+        $this->categoryService = $categoryService;
     }
 
     /**
-     * Display a list of all of the user's task.
+     * 展示分类首页
      *
-     * @param  Request  $request
+     * @param Request $request
      */
     public function index(Request $request)
     {
-    	$categorys = $this->categorys->forUser($request->user(), $needPage=true);
-    	
+        $categorys = $this->categoryService->getList($request->user(), $needPage = true);
+        
         return view('categorys.index', [
-            'categorys' => $categorys,
+            'categorys' => $categorys
         ]);
     }
-    
+
     /**
-     * Create a new note.
-     *
-     * @param  Request  $request
+     * 保存
+     * 
+     * @param Request $request
      */
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required',
+            'name' => 'required'
         ]);
         
-        $arr = array('name'=>$request,'category_order'=>$this->categorys->forLastCategoryOrder($request->user()));
+        $category = $request->user()
+            ->categorys()
+            ->create($request->all());
         
-        $note = $request->user()->categorys()->create($request->all());
-
         if ($request->ajax() || $request->wantsJson()) {
-        	$resp = $this->responseJson(self::OK_CODE);
-        	return response($resp);
+            $resp = $this->responseJson(self::OK_CODE, $category);
+            return response($resp);
         } else {
-        	return redirect('/categorys')->with('message', 'IT WORKS!');
+            return redirect('/categorys')->with('message', 'IT WORKS!');
         }
-        
     }
 
     /**
-     * Destroy the given task.
-     *
-     * @param  Request  $request
-     * @param  Category  $category
+     * 删除
+     * 
+     * @param Request $request
+     * @param Category $category
      */
     public function destroy(Request $request, Category $category)
     {
         $this->authorize('destroy', $category);
         
-        if(empty($category->feeds) || count($category->feeds) == 0){
-        	$category->delete();
+        if (empty($category->feeds) || count($category->feeds) == 0) {
+            $category->delete();
         } else {
-        	$resp = $this->responseJson(1000,null,'This category has Feeds!cannot delete!');
-        	return response($resp);
+            $resp = $this->responseJson(1000, null, 'This category has Feeds!cannot delete!');
+            return response($resp);
         }
-
+        
         if ($request->ajax() || $request->wantsJson()) {
-        	$resp = $this->responseJson(self::OK_CODE);
-        	return response($resp);
+            $resp = $this->responseJson(self::OK_CODE);
+            return response($resp);
         } else {
-        	return redirect('/categorys')->with('message', 'IT WORKS!');
+            return redirect('/categorys')->with('message', 'IT WORKS!');
         }
     }
-    
+
+    /**
+     * 更新
+     * 
+     * @param Request $request
+     * @param Category $category
+     * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+     */
     public function update(Request $request, Category $category)
     {
-    	$this->authorize('destroy', $category);
-    	
-    	if($request->method() == 'GET'){
-    		return view('categorys.update',array('category'=>$category));
-    	}
-    	
-    	$this->validate($request, [
-    			'name' => 'required',
-    	]);
-    
-    	$category->update($request->all());
-    
-    	if ($request->ajax() || $request->wantsJson()) {
-    		$resp = $this->responseJson(self::OK_CODE);
-    		return response($resp);
-    	} else {
-    		return redirect('/categorys')->with('message', 'IT WORKS!');
-    	}
+        $this->authorize('destroy', $category);
+        
+        if ($request->method() == 'GET') {
+            return view('categorys.update', array(
+                'category' => $category
+            ));
+        }
+        
+        $this->validate($request, [
+            'name' => 'required'
+        ]);
+        
+        $category->update($request->all());
+        
+        if ($request->ajax() || $request->wantsJson()) {
+            $resp = $this->responseJson(self::OK_CODE);
+            return response($resp);
+        } else {
+            return redirect('/categorys')->with('message', 'IT WORKS!');
+        }
     }
-    
+
+    /**
+     * 设置订阅分类的排序
+     * 
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+     */
     public function sort(Request $request)
     {
-    	$this->validate($request, [
-    		'category_ids' => 'required',
-    	]);
-    	
-    	$category_ids_arr = explode(',', $request->category_ids);
-
-    	$sort = 0;
-    	foreach ($category_ids_arr as $category_id){
-    		$category = $this->categorys->forCategoryId($request->user(), $category_id);
-    		if(!empty($category)){
-		    	$category->update(array('category_order' => $sort++));
-    		}
-    	}
-    	
-    	if ($request->ajax() || $request->wantsJson()) {
-    		$resp = $this->responseJson(self::OK_CODE);
-    		return response($resp);
-    	} else {
-    		return redirect('/categorys')->with('message', 'IT WORKS!');
-    	}
+        $this->validate($request, [
+            'category_ids' => 'required'
+        ]);
+        
+        $categoryIds = explode(',', $request->category_ids);
+        $this->categoryService->setCategorySort($request->user(), $categoryIds);
+        
+        if ($request->ajax() || $request->wantsJson()) {
+            $resp = $this->responseJson(self::OK_CODE);
+            return response($resp);
+        } else {
+            return redirect('/categorys')->with('message', 'IT WORKS!');
+        }
     }
 }

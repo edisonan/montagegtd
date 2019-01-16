@@ -1,7 +1,30 @@
 @extends('layouts.app')
-<script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 <script language="javascript" type="text/javascript"> 
 
+	Date.prototype.format = function (fmt) {
+	  var o = {
+	      "M+": this.getMonth() + 1, //月份
+	      "d+": this.getDate(), //日
+	      "h+": this.getHours(), //小时
+	      "m+": this.getMinutes(), //分
+	      "s+": this.getSeconds(), //秒
+	      "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+	      "S": this.getMilliseconds() //毫秒
+	  };
+	  if (/(y+)/.test(fmt)) {
+	    fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+	  }
+	  for (var k in o) {
+	    if (new RegExp("(" + k + ")").test(fmt)) {
+	      fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ?
+	        (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+	    }
+	  }
+	  return fmt;
+	}
+	/**
+	* 尝试获取通知权限
+	*/
 	document.addEventListener('DOMContentLoaded', function () {
 	  if (!Notification) {
 	    alert('Desktop notifications not available in your browser. Try Chromium.'); 
@@ -12,17 +35,36 @@
 	    Notification.requestPermission();
 	  }
 	});
+
+	/**
+	* 通知消息
+	*/
+	function notify(message)
+	{
+		if (Notification.permission !== "granted")
+		    Notification.requestPermission();
+		  else {
+		    var notification = new Notification('蒙太奇-专业GTD,剪辑你自己的生活', {
+		      icon: 'https://task.congcong.us/favicon.ico',
+		      body: message,
+		    });
+
+		    notification.onclick = function () {
+		      window.open("{{'/index'}}");      
+		    };
+		  }
+	}
 	
 	var interval = 1000; 
 	var remain = {{ $current_pomo_remain }};//剩余时间
 	var status = {{ $current_pomo_status }};//当前状态
 
-	function ShowCountDown(leftsecond, divname) 
+	function ShowCountDown(leftsecond, pomoBtnId) 
 	{ 
 		var minute=Math.floor(leftsecond/60); 
 		var second=Math.floor(leftsecond - minute * 60); 
 		
-		var cc = document.getElementById(divname); 
+		var cc = document.getElementById(pomoBtnId); 
 		
 		remain = remain - 1;
 		if(remain == 0){
@@ -35,8 +77,8 @@
 		
 		if(remain < 0){
 			if(status == 2){
-				document.getElementById('divdown').style.display = "none";
-				document.getElementById('formdiv1').style.display = "";
+				document.getElementById('pomoBtn').style.display = "none";
+				document.getElementById('recordPomo').style.display = "";
 				return false;
 			} else {
 				location.href = '{{url('/index')}}';
@@ -51,33 +93,10 @@
 		cc.innerHTML = add_content + minute_label +":"+ second_label; 
 	}
 
-	function notify(message)
-	{
-		if (Notification.permission !== "granted")
-		    Notification.requestPermission();
-		  else {
-		    var notification = new Notification('蒙太奇-专业GTD,剪辑你自己的生活', {
-		      icon: 'https://congcong.us/favicon.ico',
-		      body: message,
-		    });
-
-		    notification.onclick = function () {
-		      window.open("{{'/index'}}");      
-		    };
-		  }
-	}
-
 	function discard(){
 		if (confirm("确认要放弃咩？")) {
-			location.href = '{{ url("pomos/discard/") }}/{{ $active_pomo->id }}';
+			location.href = '{{ url("pomos/discard/") }}/'+$('#pomo_id').val();
 		}
-	}
-	
-	function displayATHiddenDiv(){
-		document.getElementById('task_form_div1').style.display = "";
-		document.getElementById('task_form_div2').style.display = "";
-		document.getElementById('task_form_div3').style.display = "";
-		document.getElementById('task_form_div4').style.display = "";
 	}
 	
 	function clearTips($suffix){
@@ -92,31 +111,108 @@
 	}
 	
 	if(status == 2 || status == 4){
-		window.setInterval(function(){ShowCountDown( remain, "divdown" );}, interval); 
+		window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 	}
-
-	window.onload=function(){  
-		
-	} 
 </script>
 
 @section('content')
 
 <script src="{{'/js/bootstro.min.js'}}"></script>
 <link href="{{'/css/bootstro.min.css'}}" rel="stylesheet">
+<style>
+.recent-list {
+    list-style: none;
+    font-size: .9em;
+    line-height: 1.5em;
+    margin-left: -30px; 
+}
+.time {
+    float: left;
+    padding-right: .8em;
+    color: #999;
+}
+.number {
+    font-size: .9em;
+    color: #666;
+    float: right;
+}
+.head {
+    padding-bottom: 25px;
+}
 
+input[type=checkbox]{        
+   margin-right: 5px;        
+   /*同样，首先去除浏览器默认样式*/  
+   -webkit-appearance: none;        
+   -moz-appearance: none;        
+   appearance: none;        
+   /*编辑我们自己的样式*/   
+   position: relative;        
+   width: 13px;        
+   height: 13px;        
+   background: transparent;        
+   border:1px solid #0b91bd;        
+   -webkit-border-radius: 4px;        
+   -moz-border-radius: 4px;        
+   border-radius: 4px;        
+   outline: none;        
+   cursor: pointer;    
+}
+input[type=checkbox]:after{        
+   content: '√';        
+   position: absolute;        
+   display: block;        
+   width: 100%;        
+   height: 100%;        
+   background: #00BFFF;        
+   color: #fff;        
+   text-align: center;        
+   line-height: 18px;        
+   /*增加动画*/   
+   -webkit-transition: all ease-in-out 300ms;        
+   -moz-transition: all ease-in-out 300ms;        
+   transition: all ease-in-out 300ms;        
+   /*利用border-radius和opacity达到填充的假象，首先隐藏此元素*/  
+    -webkit-border-radius: 20px;        
+   -moz-border-radius: 20px;        
+   border-radius: 20px;        
+   opacity: 0;    
+}
+input[type=checkbox]:checked:after{        
+   -webkit-border-radius: 0;        
+   -moz-border-radius: 0;        
+   border-radius: 0;        
+   opacity: 1;    
+}
+</style>
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$("#task_more").click(function(){
-		$('#task_form_div1').toggle();
-		$('#task_form_div2').toggle();
-		$('#task_form_div3').toggle();
-		$('#task_form_div4').toggle();
-	})
-	$(".finish_task, .delete_task").click(function(){
+	$("#pomoBtn").click(function(){
+		if(status == 1){
+			$.ajax({
+			    url: "{{ url('pomos/start') }}",
+			    type: 'GET',
+			    data: {"_token":"{{ csrf_token() }}"},
+			    success: function(result) {
+			    	result_arr = JSON.parse(result);
+					if(result_arr.code != 9999){
+						alert('处理失败，请稍后再试');
+					} else {
+						$("#pomo_id").val(result_arr.result.active_pomo.id);
+						remain = result_arr.result.current_pomo_remain;
+						status = result_arr.result.current_pomo_status;
+						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
+					}
+			    }
+			});
+		} else if( status == 2 || status == 4) {
+			discard();
+		}
+	});
+	
+	$("#tasks").on('click','.finish_task',function(){
 		task_value = $(this).attr("task_value");
-		task_token = $(this).attr("task_token");
 		task_type = $(this).attr("task_type");
 
 		if (task_type == 'delete' && !confirm("确认要删除此任务咩？")) {
@@ -126,21 +222,20 @@ $(document).ready(function () {
 		$.ajax({
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'DELETE',
-		    data: {type:task_type,_token:task_token},
+		    data: {"type":task_type,"_token":"{{ csrf_token() }}"},
 		    success: function(result) {
 		    	result_arr = JSON.parse(result);
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
-					$('#'+task_value).remove();
+					$('#task'+task_value).remove();
 				}
 		    }
 		});
 	});
 
-	$(".top_task").click(function(){
+	$(".top_task").on('click',function(){
 		task_value = $(this).attr("task_value");
-		task_token = $(this).attr("task_token");
 		task_is_top = $(this).attr("task_is_top");
 
 		if(task_is_top != 1){
@@ -152,7 +247,7 @@ $(document).ready(function () {
 		$.ajax({
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'POST',
-		    data: {is_top:task_is_top,_token:task_token},
+		    data: {"is_top":task_is_top,"_token":"{{ csrf_token() }}"},
 		    success: function(result) {
 		    	result_arr = JSON.parse(result);
 				if(result_arr.code != 9999){
@@ -164,7 +259,7 @@ $(document).ready(function () {
 		});
 	});
 
-	$(".task_content").click(function(){
+	$(".task_content").on('click',function(){
 		task_value = $(this).text();
 		pomo_value = $("#pomo_name").val();
 		
@@ -178,7 +273,7 @@ $(document).ready(function () {
 		
 	});
 
-	$(".task_tr").hover(function(){
+	$(".task_li").on('hover',function(){
 		$(this).find(".delete_task").show();
 		$(this).find(".top_task").show();
 	},function(){
@@ -191,12 +286,94 @@ $(document).ready(function () {
 	$(".new_user_guide").click(function(){
 		 bootstro.start('.bootstro', {stopOnBackdropClick : true, stopOnEsc:true});       
     });
+
+	$.ajax({
+	    url: "{{ url('tasks') }}",
+	    type: 'GET',
+	    data: {"_token":"{{ csrf_token() }}","status":1},
+	    success: function(result) {
+	    	result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				$.each( result_arr.result, function( index, data ){
+					$("#tasks").append('<li id="task'+data.id+'"><p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>'+data.name+'</p></li>');
+				});
+				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
+			}
+	    }
+	});
+
+	$.ajax({
+	    url: "{{ url('pomos') }}",
+	    type: 'GET',
+	    data: {"_token":"{{ csrf_token() }}",'type':'time'},
+	    success: function(result) {
+	    	result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				$.each( result_arr.result, function( index, data ){
+					$("#pomos").append('<li id="pomo'+data.id+'"><span class="time">' + (new Date(data.created_at)).format("hh:mm") + ' - ' + (new Date(data.updated_at)).format("hh:mm") + '</span><p>'+data.name+'</p></li>');
+				});
+				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
+			}
+	    }
+	});
 });
+
+/**
+ * 监听键盘回车事件
+ */
+$(document).keyup(function(event){  
+	if(event.keyCode ==13){  
+		if($("#task_name").is(":focus")){
+			task_name = $("#task_name").val();
+			$.ajax({
+			    url: "{{ url('task') }}",
+			    type: 'POST',
+			    data: {"name":task_name,"_token":"{{ csrf_token() }}"},
+			    success: function(result) {
+			    	result_arr = JSON.parse(result);
+					if(result_arr.code != 9999){
+						alert('处理失败，请稍后再试');
+					} else {
+						$("#task_name").val("");
+						$("#tasks").prepend('<li id="task'+result_arr.result.id+'"><p class="task_content" task_value="'+result_arr.result.id+'" task_is_top="' + result_arr.result.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+result_arr.result.id+'"/>'+result_arr.result.name+'</p></li>');
+					}
+			    }
+			});
+		} else if($("#pomo_name").is(":focus")){
+			pomo_name = $("#pomo_name").val();
+			pomo_id = $("#pomo_id").val();
+			$.ajax({
+			    url: "{{ url('pomo') }}/"+pomo_id,
+			    type: 'POST',
+			    data: {"name":pomo_name,"_token":"{{ csrf_token() }}"},
+			    success: function(result) {
+			    	result_arr = JSON.parse(result);
+					if(result_arr.code != 9999){
+						alert('处理失败，请稍后再试');
+					} else {
+						$("#pomo_name").val("");
+						$("#pomo_id").val("");
+						remain = result_arr.result.current_pomo_remain;
+						status = result_arr.result.current_pomo_status;
+						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
+						$("#recordPomo").css("display", "none");
+						$("#pomoBtn").css("display", "block");
+						$("#pomos").prepend('<li id="pomo'+result_arr.result.id+'"><span class="time">'+ (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm") +'</span><p>'+result_arr.result.active_pomo.name+'</p></li>');
+					}
+			    }
+			});
+		}
+	}  
+}); 
 </script>
 <div class="container">
 	@include('common.success')
 	<div class="row">
-		<div class=" col-md-5 bootstro" data-bootstro-step="0"
+		<div class=" col-md-6 bootstro" data-bootstro-step="0"
 			data-bootstro-placement="bottom" data-bootstro-nextButtonText="下一步"
 			data-bootstro-content="使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。"
 			data-bootstro-finishButton="返回网站，开启高效生活~">
@@ -210,38 +387,28 @@ $(document).ready(function () {
 				</div>
 
 				<div class="card-body">
-					@if($current_pomo_status == 2 || $current_pomo_status == 4 ) <a
-						class="btn btn-lg btn-outline-info btn-shadow btn-block"
-						href="javascript:void(0)" role="button" id="divdown"
-						onclick="discard()"></a> @elseif($current_pomo_status == 1) <a
-						class="btn btn-lg btn-outline-info btn-shadow btn-block"
-						href="{{url('pomos/start')}}" role="button"> 开始一个新的番茄吧! </a>
-					@endif
+					<a class="btn btn-outline-info btn-shadow btn-block" href="javascript:void(0)"  @if($current_pomo_status ==3) style="display: none" @endif role="button" id="pomoBtn">开始一个新的番茄吧!</a> 
 
-					<form action='{{ url("pomo") }}/{{ $active_pomo->id }}'
-						method="POST" class="form-horizontal">
-						{{ csrf_field() }}
-						<!-- Pomo Name -->
-						<div class="form-group row" @if($current_pomo_status !=3)
-							style="display: none" @endif id="formdiv1">
-							<div class="col-md-9"
-								style="display: -webkit-inline-box; width: 75%;">
-								<input type="text" name="name" id="pomo_name"
-									class="form-control" value="{{ old('pomo') }}"
-									placeholder="此做了什么？点击任务名快速添加">
-							</div>
-							<div class="col-md-3"
-								style="display: -webkit-inline-box; width: 25%;">
-								<button type="submit" class="btn btn-success">记录</button>
-								<a href="javascript:void(0)" onclick="discard()" title="放弃此番茄"><small>x?</small></a>
-							</div>
+					<div class="form-group" @if($current_pomo_status !=3) style="display: none" @endif id="recordPomo">
+						<div class="col-md-12">
+							<input type="text" name="name" id="pomo_name"
+								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
 						</div>
-					</form>
+					</div>
+					
+					<input type="hidden" value="{{ $active_pomo->id }}" id="pomo_id">
 
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 
-					空空如也!
+					<div class = "head">
+						<datetime class="time">{{ date('m月d日') }}</datetime>
+						<div class="number">完成了 <span id="pomoCount">0</span> 个番茄</div>
+					</div>
+					
+					<ul id="pomos" class="recent-list">
+					
+					</ul>
 				</div>
 			</div>
 
@@ -249,7 +416,7 @@ $(document).ready(function () {
 
 
 
-		<div class=" col-md-7 bootstro" data-bootstro-step="1"
+		<div class=" col-md-6 bootstro" data-bootstro-step="1"
 			data-bootstro-placement="bottom" data-bootstro-prevButtonText="上一步"
 			data-bootstro-content="在这里创建待办事项，高级功能里面可以增加提醒、优先级设定等功能"
 			data-bootstro-finishButton="返回网站，开启高效生活~">
@@ -263,95 +430,22 @@ $(document).ready(function () {
 				</div>
 
 				<div class="card-body">
-					<!-- Display Validation Errors -->
-					@include('common.errors')
-
-					<!-- New Task Form -->
-					<form action="{{ url('task') }}" method="POST"
-						class="form-horizontal">
-						{{ csrf_field() }}
-
-						<!-- Task Name -->
-						<div class="form-group row">
-							<label for="task-name" class="col-md-3 control-label">待办内容</label>
-
-							<div class="col-md-8">
-								<input type="text" name="name" id="task-name"
-									class="form-control" value="{{ old('task') }}"
-									style="display: -webkit-inline-box; width: 85%;"> <a
-									href="javascript:void(0)" id="task_more"><small>高级</small></a>
-							</div>
-						</div>
-
-						<div class="form-group row" id="task_form_div1"
-							style="display: none">
-							<label for="task-name" class="col-md-3 control-label">优先级</label>
-
-							<div class="col-md-8">
-								<label class="radio-inline"> <input type="radio" name="priority"
-									id="inlineRadio1" value="1" title="不重要不紧急" checked><span
-									title="不重要不紧急"><small>☆</small></span>
-								</label> <label class="radio-inline"> <input type="radio"
-									name="priority" id="inlineRadio2" value="2" title="不重要紧急"><span
-									title="不重要紧急"><small>☆☆</small></span>
-								</label> <label class="radio-inline"> <input type="radio"
-									name="priority" id="inlineRadio3" value="3" title="重要不紧急"><span
-									title="重要不紧急"><small>☆☆☆</small></span>
-								</label> <label class="radio-inline"> <input type="radio"
-									name="priority" id="inlineRadio4" value="4" title="重要紧急 "><span
-									title="重要紧急 "><small>☆☆☆☆</small></span>
-								</label>
-							</div>
-						</div>
-
-						<div class="form-group row" "form-group row" id="task_form_div2"
-							style="display: none;">
-							<label for="task-name" class="col-md-3 control-label">提醒时间</label>
-
-							<div class="col-md-6">
-								<input type="text" name="remindtime" id="task-remindtime"
-									class="form-control" value="{{ old('task') }}"
-									onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
-							</div>
-						</div>
-
-						<div class="form-group row" "form-group row" id="task_form_div3"
-							style="display: none;">
-							<label for="task-name" class="col-md-3 control-label">截止日期</label>
-
-							<div class="col-md-6">
-								<input type="text" name="deadline" id="task-deadline"
-									class="form-control" value="{{ old('task') }}"
-									onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
-							</div>
-						</div>
-
-						<div class="form-group row" "form-group row" id="task_form_div4"
-							style="display: none;">
-							<label for="task-name" class="col-md-3 control-label">所属技能</label>
-
-							<div class="col-md-6">
-								<select class="form-control" name="goal_id"
-									style="display: -webkit-inline-box; width: 85%;">
-									<option checked></option>
-								</select> <a href="{{ url('goals') }}"><small>新建</small></a>
-							</div>
-						</div>
-
-						<!-- Add Task Button -->
-						<div class="form-group row">
-							<div class="col-md-offset-3 col-md-6">
-								<button type="submit" class="btn btn-outline-info">
-									<i class="fa fa-btn fa-plus"></i>添加上去！
-								</button>
-							</div>
-						</div>
-					</form>
+					<div class="form-group">
+						<input type="text" name="name" id="task_name" class="form-control"
+							value="" style="" placeholder="添加新任务">
+					</div>
 
 					<hr width=100% size=1 color=#bbbcbc
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
-
-					空空如也!
+						
+					<div class = "head">
+						<datetime class="time"></datetime>
+						<div class="number">共 <span id="taskCount">0</span> 待办任务</div>
+					</div>
+						
+					<ul id="tasks" class="recent-list">
+					
+					</ul>
 				</div>
 			</div>
 
