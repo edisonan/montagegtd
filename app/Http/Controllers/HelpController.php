@@ -35,6 +35,7 @@ class HelpController extends Controller
         ]);
         
         $feedback = new Feedback();
+        $feedback->user_id = isset($request->user()->id)?$request->user()->id:null;
         $feedback->from = $request->from;
         $feedback->content = $request->content;
         $feedback->save();
@@ -43,7 +44,7 @@ class HelpController extends Controller
             $resp = $this->responseJson(self::OK_CODE, array());
             return response($resp);
         } else {
-            redirect('/help/feedback')->with('message', 'IT WORKS!');
+            return redirect('/help/feedback')->with('message', 'IT WORKS!');
         }
     }
 }
