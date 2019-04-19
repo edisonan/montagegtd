@@ -67,7 +67,7 @@ class MindController extends Controller
             $parentMind = Mind::where('id', $request->parent_mind_id)->where('user_id', $request->user()->id)
                 ->first();
             if (empty($parentMind)) {
-                redirect('/minds')->with('message', 'IT WORKS!');
+                return redirect('/minds')->with('message', 'IT WORKS!');
             }
             $parent_mind_id = $request->parent_mind_id;
             $is_root = 0;
