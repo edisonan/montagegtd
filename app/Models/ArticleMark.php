@@ -19,6 +19,7 @@ class ArticleMark extends Model
      * @var array
      */
     protected $casts = [
+        'user_id' => 'int',
         'article_id' => 'int',
     ];
 
