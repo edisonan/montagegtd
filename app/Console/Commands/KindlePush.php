@@ -5,12 +5,12 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 
 use App\Models\Setting;
-use App\KindleLog;
+use App\Models\KindleLog;
 
 use Develpr\Phindle\Phindle;
 use Develpr\Phindle\Content;
 
-use App\ArticleSub;
+use App\Models\ArticleSub;
 use App\Http\Utils\SpideUtil;
 use App\Repositories\SettingRepository;
 use App\Repositories\ArticleSubRepository;
