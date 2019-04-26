@@ -70,11 +70,12 @@ class NoteController extends Controller
             } else {
                 $add_content = $request->add_content;
                 if (\App\Http\Utils\CommonUtil::isUrl($add_content)) {
+                    $title = \App\Http\Utils\CommonUtil::page_title($add_content);
                     $shortUrl = \App\Http\Utils\CommonUtil::shortUrl($add_content);
                     if(!empty($shortUrl)){
                         $add_content = $shortUrl;
                     }
-                    $add_content = '#分享链接# ' . $add_content . ' ' . \App\Http\Utils\CommonUtil::page_title($add_content);
+                    $add_content = '#分享链接# ' . $add_content . ' ' . $title;
                 }
                 if (strpos($add_content, '#') === false) {
                     $add_content = '#分享# ' . $add_content;
