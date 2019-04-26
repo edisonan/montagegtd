@@ -338,7 +338,7 @@ $(document).ready(function () {
 					
 					<p class="card-text">
 						<small class="text-muted">来源：<a
-							href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}"
+							href="{{ url('articles?status=unread&feed_id='.$article->feed->id) }}"
 							target="_blank">{{ $article->feed->feed_name}}</a> *
 							{{$article->published}}
 						</small>
