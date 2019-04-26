@@ -37,28 +37,30 @@ class CommonUtil{
 
 	public static function shortUrl($url){
         // 配置headers
-        $headers = array('Content-Type:application/json', 'Token:');
-        
+        $headers = array('Content-Type:application/json', 'Token:7c9d6e49fbac124241c572eacfa14c77');
+
         // 创建连接
-        $curl = curl_init($url);
+        $curl = curl_init('https://dwz.cn/admin/v2/create');
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_FAILONERROR, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode(array('url'=>$url)));
-        
+
         // 发送请求
         $response = curl_exec($curl);
         curl_close($curl);
-        
+
         if(empty($response)){
             return false;
         }
-        
+
         $result = json_decode($response, true);
-        if($result != '0'){
+        if($result['Code'] != '0'){
             return false;
         } else {
             return $result['ShortUrl'];
