@@ -65,15 +65,15 @@ $(document).ready(function () {
                             <label for="thing-name" class="col-md-3 control-label">事情开始时间</label>
 								
                             <div class="col-md-8">
-	                               <input type="text" name="start_time" id="task-remindtime" class="form-control" value="" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
+	                               <input type="text" name="start_time" id="task-remindtime" class="form-control" value="<?php echo date('Y-m-d H:i:00', strtotime("+15 minute"));?>" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
                             </div>
                         </div>
                         
                         <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">事情持续结束</label>
+                            <label for="thing-name" class="col-md-3 control-label">事情结束时间</label>
 								
                             <div class="col-md-8">
-	                               <input type="text" name="end_time" id="task-deadline" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
+	                               <input type="text" name="end_time" id="task-deadline" class="form-control" value="<?php echo date('Y-m-d H:i:00');?>" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
                             </div>
                         </div>
 
