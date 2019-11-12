@@ -395,6 +395,7 @@ $(document).keyup(function(event){
 						<div class="col-md-12">
 							<input type="text" name="name" id="pomo_name"
 								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
+							<a href="javascript:void(0)" onclick="discard()">x</button>
 						</div>
 					</div>
 					
