@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $article->subject.' - Montage GTD')
+@section('title', $article->subject.' - 蒙太奇')
 
 @section('content')
 <link rel="stylesheet" href="/css/share.min.css">

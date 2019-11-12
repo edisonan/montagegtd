@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '登录 - Montage GTD')
+@section('title', '登录 - 蒙太奇')
 
 @section('content')
 

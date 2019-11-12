@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '注册 - Montage GTD')
+@section('title', '注册 - 蒙太奇')
 
 @section('content')
 <div class="container">

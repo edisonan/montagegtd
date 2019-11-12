@@ -7,7 +7,7 @@
 
     <title>@yield('title','蒙太奇 - 但行好事，用心生活')</title>
     <meta name="description" content="@yield('description')">
-    <meta name="keywords" content="Montage GTD,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
+    <meta name="keywords" content="蒙太奇,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
     @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
     	<meta name="referrer" content="never">
     @endif
@@ -60,7 +60,7 @@
 		<nav class="navbar navbar-expand-lg navbar-light bg-light">
 			<a class="navbar-brand" href="{{ url('/') }}">
 	        	<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
-	            <span style="color:#429c4e">Montage GTD</span>
+	            <span style="color:#429c4e">蒙太奇</span>
 	         </a>
 	        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			 	<span class="navbar-toggler-icon"></span>
