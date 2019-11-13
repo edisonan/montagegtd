@@ -100,7 +100,10 @@ class NoteController extends Controller
         return view('notes.index', [
             'add_content' => $add_content,
             'add_image' => isset($add_image) ? $add_image : '',
-            'notes' => $notes
+            'notes' => $notes,
+            'pomo_id' => $request->has('pomo_id') ? $request->pomo_id:'',
+            'task_id' => $request->has('task_id') ? $request->task_id:'',
+            'article_id' => $request->has('article_id') ? $request->article_id:''
         ]);
     }
 
@@ -153,6 +156,9 @@ class NoteController extends Controller
             ->notes()
             ->create([
             'name' => $name,
+            'article_id' => $request->article_id,
+            'task_id' => $request->task_id,
+            'pomo_id' => $request->pomo_id,
             'record_path' => $record_path,
             'image_path' => $add_image,
             'status' => $request->status

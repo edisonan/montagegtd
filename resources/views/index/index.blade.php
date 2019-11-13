@@ -261,6 +261,52 @@ $(document).ready(function () {
 		});
 	});
 
+	$(".top_task").on('click',function(){
+		task_value = $(this).attr("task_value");
+		task_is_top = $(this).attr("task_is_top");
+
+		if(task_is_top != 1){
+			task_is_top = 1;
+		} else {
+			task_is_top = 0;
+		}
+		
+		$.ajax({
+		    url: "{{ url('task') }}"+"/"+task_value,
+		    type: 'POST',
+		    data: {"is_top":task_is_top,"_token":"{{ csrf_token() }}"},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					location.href = '{{url('/index')}}';
+				}
+		    }
+		});
+	});
+
+	$(".record_task").on('click',function(){
+		task_value = $(this).attr("task_value");
+		task_name = $(this).attr("task_name");
+
+		windows.location.href="/notes?add_content=#记录待办#"+task_name+'&task_id='+task_value;
+	});
+
+	$(".update_task").on('click',function(){
+		task_value = $(this).attr("task_value");
+		task_name = $(this).attr("task_name");
+
+		windows.location.href="/task/'+task_value;
+	});
+
+	$(".record_pomo").on('click',function(){
+		pomo_value = $(this).attr("pomo_value");
+		pomo_name = $(this).attr("pomo_name");
+
+		windows.location.href="/notes?add_content=#记录番茄#"+pomo_name+'&pomo_id='+pomo_value;
+	});
+
 	$(".task_content").on('click',function(){
 		task_value = $(this).text();
 		pomo_value = $("#pomo_name").val();
@@ -299,7 +345,17 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result, function( index, data ){
-					$("#tasks").append('<li id="task'+data.id+'"><p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>'+data.name+'</p></li>');
+					$str = '<li id="task'+data.id+'">';;
+					$str .= '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
+					$str .= '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
+					$str .= '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T</a>';
+					$str .= '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U</a>';
+					$str .= '<a href="javascript:void(0)" class="delete_task" task_value="'+data.id+'">X</a>';
+					$str .= '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.id+'">R</a>';
+					$str .= data.name;
+					$str .= '</p>';
+					$str .= '</li>'
+					$("#tasks").append($str);
 				});
 				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
 			}
@@ -316,7 +372,16 @@ $(document).ready(function () {
 				alert('处理失败，请稍后再试');
 			} else {
 				$.each( result_arr.result, function( index, data ){
-					$("#pomos").append('<li id="pomo'+data.id+'"><span class="time">' + (new Date(data.created_at)).format("hh:mm") + ' - ' + (new Date(data.updated_at)).format("hh:mm") + '</span><p>'+data.name+'</p></li>');
+					$str = '<li id="pomo'+data.id+'">';
+					$str .= '<span class="time">';
+					$str .= (new Date(data.created_at)).format("hh:mm") +' - '+ (new Date(data.updated_at)).format("hh:mm");
+					$str .= '</span>';
+					$str .= '<p>';
+					$str .= '<a href="javascript:void(0)" class="record_pomo" pomo_value="'+data.id+'" pomo_name="' + data.name + '">R</a>';
+					$str .= data.name;
+					$str .= '</p>';
+					$str .= '</li>';
+					$("#pomos").append($str);
 				});
 				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
 			}
@@ -340,8 +405,19 @@ $(document).keyup(function(event){
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
+						//temp
 						$("#task_name").val("");
-						$("#tasks").prepend('<li id="task'+result_arr.result.id+'"><p class="task_content" task_value="'+result_arr.result.id+'" task_is_top="' + result_arr.result.is_top + '"><input type="checkbox" class="finish_task" task_type="finish" task_value="'+result_arr.result.id+'"/>'+result_arr.result.name+'</p></li>');
+						var data = result_arr.result;
+						$str = '<li id="task'+data.id+'">';
+						$str .= '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
+						$str .= '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
+						$str .= '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T</a>';
+						$str .= '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U</a>';
+						$str .= '<a href="javascript:void(0)" class="delete_task" task_value="'+data.id+'">X</a>';
+						$str .= '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.id+'">R</a>';
+						$str .= data.name;
+						$str .= '</p>';
+						$str .= '</li>'
 					}
 			    }
 			});
@@ -364,7 +440,16 @@ $(document).keyup(function(event){
 						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 						$("#recordPomo").css("display", "none");
 						$("#pomoBtn").css("display", "block");
-						$("#pomos").prepend('<li id="pomo'+result_arr.result.id+'"><span class="time">'+ (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm") +'</span><p>'+result_arr.result.active_pomo.name+'</p></li>');
+						
+						$str = '<li id="pomo'+result_arr.result.id+'">';
+						$str .= '<span class="time">';
+						$str .= (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm");
+						$str .= '</span>';
+						$str .= '<p>';
+						$str .= result_arr.result.active_pomo.name;
+						$str .= '</p>';
+						$str .= '</li>';
+						$("#pomos").prepend($str);
 					}
 			    }
 			});

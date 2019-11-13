@@ -182,6 +182,9 @@ $(document).ready(function () {
 						        <button id="stop" class="ui-btn ui-btn-primary" disabled title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">停止</button>
 						        <div id="audio-container"></div>
 						        
+						        <input type="hidden" name="task_id" id="task_id" value="{{ $task_id }}"/>
+						        <input type="hidden" name="pomo_id" id="pomo_id" value="{{ $pomo_id }}"/>
+						        <input type="hidden" name="article_id" id="article_id" value="{{ $article_id }}"/>
 						        <input type="hidden" name="fname" id="fname" />
 						        @if(!empty($add_image))
 						        <input type="hidden" name="add_image" id="add_image"  value="{{$add_image}}"/>
