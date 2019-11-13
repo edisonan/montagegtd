@@ -475,7 +475,9 @@ $(document).keyup(function(event){
 				<div class="card-header">
 					新的待办事项
 					<div style="float: right">
-						<a href="{{'tasks'}}">[待办列表]</a> <a href="javascript:void(0)"
+						<a href="{{'tasks'}}">[待办列表]</a> 
+						<a href="{{'/task/priority'}}">[待办四象限]</a> 
+						<a href="javascript:void(0)"
 							class="new_user_guide">[?]</a>
 					</div>
 				</div>
