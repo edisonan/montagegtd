@@ -6,7 +6,7 @@
             <!-- Current Tasks -->
                 <div class="card">
                     <div class="card-header">
-                        	任务汇总
+                        	待办列表
                         	<div style="float:right">
                     		<a href="{{'/index'}}">[返回]</a>
                     	</div>
@@ -17,8 +17,8 @@
 			            @if (count($tasks) > 0)
                         <table class="table table-striped task-table">
                             <thead>
-                                <th>完成的待办事项</th>
-                                <th>完成时间</th>
+                                <th>待办事项</th>
+                                <th>最后时间</th>
                             </thead>
                             <tbody>
                                 @foreach ($tasks as $task)
@@ -35,7 +35,17 @@
                                     >
                                         <td class="table-text"  width="80%">
                                         	<div>
+                                        		<a href="/task/{{ $task->id }}">[U]</a>
+                                        		<a href="/notes?add_content=%23记录待办%23&task_id={{$task->id}}">[R]</a>
+                                        		@if($task->status == 1) 
+			                                    	[进行中]
+			                                    @elseif($task->priority == 2) 
+			                                    	[已完成]
+			                                    @elseif($task->priority == 3) 
+			                                    	[已折叠]
+			                                    @endif
                                         		{{ $task->name }}
+                                        		
                                         	</div>
                                         </td>
                                         

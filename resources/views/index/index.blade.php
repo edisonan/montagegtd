@@ -457,7 +457,7 @@ $(document).keyup(function(event){
 						<div class="col-md-12">
 							<input type="text" name="name" id="pomo_name"
 								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
-							<a href="javascript:void(0)" onclick="discard()">x</button>
+							<a href="javascript:void(0)" onclick="discard()">x</a>
 						</div>
 					</div>
 					
@@ -489,7 +489,7 @@ $(document).keyup(function(event){
 				<div class="card-header">
 					新的待办事项
 					<div style="float: right">
-						<a href="{{'tasks'}}">[已完成待办]</a> <a href="javascript:void(0)"
+						<a href="{{'tasks'}}">[待办列表]</a> <a href="javascript:void(0)"
 							class="new_user_guide">[?]</a>
 					</div>
 				</div>
