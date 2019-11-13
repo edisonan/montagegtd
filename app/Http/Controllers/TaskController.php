@@ -76,7 +76,7 @@ class TaskController extends Controller
     		$resp = $this->responseJson(self::OK_CODE, $tasks);
     		return response($resp);
     	} else {
-    		return view('tasks.index', [
+    		return view('tasks.priority', [
     				'tasks' => $tasks
     		]);
     	}

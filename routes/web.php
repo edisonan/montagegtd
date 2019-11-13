@@ -42,7 +42,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::delete('/task/{task}', 'TaskController@destroy');
     Route::post('/task/{task}', 'TaskController@update');
     Route::get('/task/{task}', 'TaskController@update');
-    Route::get('/task/priority', 'TaskController@priority');
+    Route::get('/taskpriority', 'TaskController@priority');
     
     Route::get('/cals', 'CalController@index');
     Route::get('/calics/{theme}', 'CalController@ics');

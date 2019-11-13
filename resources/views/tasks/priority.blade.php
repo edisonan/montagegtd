@@ -18,36 +18,52 @@
 				<div class="col-md-6">
 					<div class="">
 						<h4>不重要不紧急事项</h4>
-						@foreach ($tasks[1] as $task)
-						<p>{{$task->name}}</p>
-						@endforeach
+						@if(empty($tasks[1]))
+							<p>暂无待办</p>
+						@else
+							@foreach ($tasks[1] as $task)
+							<p>{{$task->name}}</p>
+							@endforeach
+						@endif
 					</div>
 				</div>
 
 				<div class="col-md-6">
 					<div class="">
 						<h4>不重要紧急事项</h4>
-						@foreach ($tasks[2] as $task)
-						<p>{{$task->name}}</p>
-						@endforeach
+						@if(empty($tasks[3]))
+							<p>暂无待办</p>
+						@else
+							@foreach ($tasks[3] as $task)
+							<p>{{$task->name}}</p>
+							@endforeach
+						@endif
 					</div>
 				</div>
 
 				<div class="col-md-6">
 					<div class="">
 						<h4>重要不紧急事项</h4>
-						@foreach ($tasks[3] as $task)
-						<p>{{$task->name}}</p>
-						@endforeach
+						@if(empty($tasks[3]))
+							<p>暂无待办</p>
+						@else
+							@foreach ($tasks[3] as $task)
+							<p>{{$task->name}}</p>
+							@endforeach
+						@endif
 					</div>
 
 				</div>
 				<div class="col-md-6">
 					<div class="">
 						<h4>重要紧急事项</h4>
-						@foreach ($tasks[4] as $task)
-						<p>{{$task->name}}</p>
-						@endforeach
+						@if(empty($tasks[4]))
+							<p>暂无待办</p>
+						@else
+							@foreach ($tasks[4] as $task)
+							<p>{{$task->name}}</p>
+							@endforeach
+						@endif
 					</div>
 				</div>
 
