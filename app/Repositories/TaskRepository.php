@@ -30,14 +30,18 @@ class TaskRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,string $status)
+    public function forUserByStatus(User $user,string $status, $needPage=false)
     {
-    	return Task::with('goal')->where('user_id', $user->id)
+    	$task Task::with('goal')->where('user_id', $user->id)
     	->where('status',$status)
     	->orderBy('is_top', 'desc')
     	->orderBy('priority', 'desc')
     	->orderBy('updated_at', 'desc')
-    	->get();
+    	if($needPage){
+    		return $task->paginate(50);
+    	} else {
+    		return $task->get();
+    	}
     }
     
     public function forUserByRemindTime($start_time, $end_time)
