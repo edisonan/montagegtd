@@ -35,8 +35,8 @@
                                     >
                                         <td class="table-text"  width="80%">
                                         	<div>
-                                        		<a href="/task/{{ $task->id }}">[U]</a>
-                                        		<a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">[R]</a>
+                                        		<a href="/task/{{ $task->id }}">[更新]</a>
+                                        		<a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">[记录]</a>
                                         		@if($task->status == 1) 
 			                                    	[进行中]
 			                                    @elseif($task->priority == 2) 
