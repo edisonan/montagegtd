@@ -70,10 +70,8 @@
 		if(remain == 0){
 			if(status == 2){
 				notify("您已经完成了一个番茄，快来记录一下吧~");
-				window.setInterval(function(){notify("您已经完成了一个番茄，快来记录一下吧~");}, 15*60*1000); 
 			} else if(status == 4){
 				notify("休息完成，快来开始下一个番茄吧~");
-				window.setInterval(function(){notify("休息完成，快来开始下一个番茄吧~");}, 15*60*1000); 
 			}
 		}
 		
