@@ -323,10 +323,10 @@ $(document).ready(function () {
 					$str = '<li id="task'+data.id+'">';;
 					$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 					$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
-					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T </a>';
-					$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U </a>';
-					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'">X </a>';
-					$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.name+'">R </a>';
+					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[T]</a>';
+					$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">[U]</a>';
+					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'">[X]</a>';
+					$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.name+'">[R]</a>';
 					$str += data.name;
 					$str += '</p>';
 					$str += '</li>'
@@ -352,7 +352,7 @@ $(document).ready(function () {
 					$str += (new Date(data.created_at)).format("hh:mm") +' - '+ (new Date(data.updated_at)).format("hh:mm");
 					$str += '</span>';
 					$str += '<p>';
-					$str += '<a href="javascript:void(0)" class="record_pomo" pomo_value="'+data.id+'" pomo_name="' + data.name + '">R</a>';
+					$str += '<a href="javascript:void(0)" class="record_pomo" pomo_value="'+data.id+'" pomo_name="' + data.name + '">[R]</a>';
 					$str += data.name;
 					$str += '</p>';
 					$str += '</li>';
@@ -386,10 +386,10 @@ $(document).keyup(function(event){
 						$str = '<li id="task'+data.id+'">';
 						$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 						$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
-						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T </a>';
-						$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U </a>';
-						$str += '<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="'+data.id+'">X </a>';
-						$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.name+'">R </a>';
+						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[T]</a>';
+						$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">[U]</a>';
+						$str += '<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="'+data.id+'">[X]</a>';
+						$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.name+'">[R]</a>';
 						$str += data.name;
 						$str += '</p>';
 						$str += '</li>'
@@ -421,7 +421,7 @@ $(document).keyup(function(event){
 						$str += (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm");
 						$str += '</span>';
 						$str += '<p>';
-						$str += '<a href="javascript:void(0)" class="record_pomo" pomo_value="'+result_arr.result.active_pomo.id+'" pomo_name="' + result_arr.result.active_pomo.name + '">R</a>';
+						$str += '<a href="javascript:void(0)" class="record_pomo" pomo_value="'+result_arr.result.active_pomo.id+'" pomo_name="' + result_arr.result.active_pomo.name + '">[R]</a>';
 						$str += result_arr.result.active_pomo.name;
 						$str += '</p>';
 						$str += '</li>';

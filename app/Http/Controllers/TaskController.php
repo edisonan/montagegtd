@@ -183,6 +183,12 @@ class TaskController extends Controller
     {
         $this->authorize('destroy', $task);
         
+        if ($request->method() == 'GET') {
+        	return view('tasks.update', array(
+        			'task' => $task
+        	));
+        }
+        
         $flag = $task->update($request->all());
         
         if ($request->ajax() || $request->wantsJson()) {

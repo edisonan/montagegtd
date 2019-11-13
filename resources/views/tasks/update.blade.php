@@ -30,16 +30,16 @@
 								
                             <div class="col-md-8">
 	                            <label class="radio-inline">
-								  <input type="radio" name="priority" id="priority1" value="0" {{ empty($task->priority) ?'checked':'' }}><span>不重要不紧急事项</span>
+								  <input type="radio" name="priority" id="priority1" value="1" {{ empty($task->priority) || $task->priority == 1 ?'checked':'' }}><span>不重要不紧急事项</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="priority2" value="1" {{ $task->priority == 2 ?'checked':'' }}><span>不重要紧急事项</span>
+								  <input type="radio" name="priority" id="priority2" value="2" {{ $task->priority == 2 ?'checked':'' }}><span>不重要紧急事项</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="priority2" value="1" {{ $task->priority == 3 ?'checked':'' }}><span>重要不紧急事项</span>
+								  <input type="radio" name="priority" id="priority3" value="3" {{ $task->priority == 3 ?'checked':'' }}><span>重要不紧急事项</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="priority" id="priority2" value="1" {{ $task->priority == 4 ?'checked':'' }}><span>重要紧急事项</span>
+								  <input type="radio" name="priority" id="priority4" value="4" {{ $task->priority == 4 ?'checked':'' }}><span>重要紧急事项</span>
 								</label>
                             </div>
                         </div>
@@ -65,10 +65,10 @@
 								  <input type="radio" name="status" id="status1" value="1" {{ $task->status == 1 ?'checked':'' }}><span>进行中</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="status" id="status2" value="2" {{ $task->status == 1 ?'checked':'' }}><span>已完成</span>
+								  <input type="radio" name="status" id="status2" value="2" {{ $task->status == 2 ?'checked':'' }}><span>已完成</span>
 								</label>
 								<label class="radio-inline">
-								  <input type="radio" name="status" id="status3" value="3" {{ $task->status == 1 ?'checked':'' }}><span>已折叠</span>
+								  <input type="radio" name="status" id="status3" value="3" {{ $task->status == 3 ?'checked':'' }}><span>已折叠</span>
 								</label>
                             </div>
                         </div>
