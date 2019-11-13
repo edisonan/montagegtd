@@ -20,6 +20,7 @@ class FeedSub extends Model
      */
     protected $casts = [
         'feed_id' => 'int',
+    	'user_id' => 'int',
     ];
     
     protected $appends = array();

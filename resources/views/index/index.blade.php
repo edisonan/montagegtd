@@ -393,6 +393,7 @@ $(document).keyup(function(event){
 						$str += data.name;
 						$str += '</p>';
 						$str += '</li>'
+						$("#tasks").prepend($str);
 					}
 			    }
 			});

@@ -61,7 +61,7 @@ $(document).ready(function () {
                         <!-- Add Task Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-default">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>添加！
                                 </button>
                             </div>

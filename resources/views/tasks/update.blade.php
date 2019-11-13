@@ -76,7 +76,6 @@
                             <label for="task-name" class="col-md-3 control-label">待办置顶</label>
 								
                             <div class="col-md-8">
-	                               <input type="text" name="is_top" id="is_top" class="form-control" value="{{ $task->is_top }}">
 	                               <label class="radio-inline">
 								  <input type="radio" name="is_top" id="is_top1" value="0" {{ empty($task->is_top) ?'checked':'' }}><span>不置顶</span>
 								</label>
@@ -89,7 +88,7 @@
                         <!-- Add Task Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-default">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>
                             </div>

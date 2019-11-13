@@ -54,7 +54,7 @@ $(document).ready(function () {
 
                         <!-- thing Name -->
                         <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">完成事情名称</label>
+                            <label for="thing-name" class="col-md-3 control-label">完事内容</label>
 								
                             <div class="col-md-8">
 	                               <input type="text" name="name" id="name" class="form-control" value="{{ old('thing') }}">
@@ -62,17 +62,11 @@ $(document).ready(function () {
                         </div>
                         
                         <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">事情开始时间</label>
+                            <label for="thing-name" class="col-md-3 control-label">完事时间</label>
 								
                             <div class="col-md-8">
 	                               <input type="text" name="start_time" id="task-remindtime" class="form-control" value="<?php echo date('Y-m-d H:i:00', strtotime("-15 minute"));?>" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">事情结束时间</label>
-								
-                            <div class="col-md-8">
+	                               -
 	                               <input type="text" name="end_time" id="task-deadline" class="form-control" value="<?php echo date('Y-m-d H:i:00');?>" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
                             </div>
                         </div>
@@ -80,7 +74,7 @@ $(document).ready(function () {
                         <!-- Add thing Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-default">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>
                             </div>
