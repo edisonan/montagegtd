@@ -36,7 +36,7 @@ class TaskRepository
     	->where('status',$status)
     	->orderBy('is_top', 'desc')
     	->orderBy('priority', 'desc')
-    	->orderBy('updated_at', 'desc')
+    	->orderBy('updated_at', 'desc');
     	if($needPage){
     		return $task->paginate(50);
     	} else {
