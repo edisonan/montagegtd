@@ -240,7 +240,7 @@ $(document).ready(function () {
 									@endif
 									
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
+									语音记录: <a href="{{ url('note/getRecord') }}/{{ $note->id }}">点击此处播放</a>
 									@endif
 									
 									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
