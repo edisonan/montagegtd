@@ -261,25 +261,11 @@ $(document).ready(function () {
 		});
 	});
 
-	$("#tasks").on('click','.record_task',function(){
-		task_value = $(this).attr("task_value");
-		task_name = $(this).attr("task_name");
-
-		window.location.href="/notes?add_content=%23记录待办%23"+encodeURIComponent(task_name)+'&task_id='+task_value;
-	});
-
 	$("#tasks").on('click','.update_task',function(){
 		task_value = $(this).attr("task_value");
 		task_name = $(this).attr("task_name");
 
 		window.location.href='/task/'+task_value;
-	});
-
-	$("#pomos").on('click','.record_pomo',function(){
-		pomo_value = $(this).attr("pomo_value");
-		pomo_name = $(this).attr("pomo_name");
-
-		window.location.href="/notes?add_content=%23记录番茄%23"+encodeURIComponent(pomo_name)+'&pomo_id='+pomo_value;
 	});
 
 	$(".task_content").on('click',function(){
@@ -326,7 +312,7 @@ $(document).ready(function () {
 					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[置顶]</a>';
 					$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">[更新]</a>';
 					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'">[删除]</a>';
-					$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.name+'">[记录]</a>';
+					$str += '<a href="/notes?add_content=%23记录待办%23"'+encodeURIComponent(data.name)+'&task_id='+data.id+'" target="_blank">[记录]</a>';
 					$str += data.name;
 					$str += '</p>';
 					$str += '</li>'
@@ -352,7 +338,7 @@ $(document).ready(function () {
 					$str += (new Date(data.created_at)).format("hh:mm") +' - '+ (new Date(data.updated_at)).format("hh:mm");
 					$str += '</span>';
 					$str += '<p>';
-					$str += '<a href="javascript:void(0)" class="record_pomo" pomo_value="'+data.id+'" pomo_name="' + data.name + '">[记录]</a>';
+					$str += '<a href="/notes?add_content=%23记录番茄%23"'+encodeURIComponent(data.name)+'&task_id='+data.id+'" target="_blank">[记录]</a>';
 					$str += data.name;
 					$str += '</p>';
 					$str += '</li>';
@@ -389,7 +375,7 @@ $(document).keyup(function(event){
 						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[置顶]</a>';
 						$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">[更新]</a>';
 						$str += '<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="'+data.id+'">[删除]</a>';
-						$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.name+'">[记录]</a>';
+						$str += '<a href="/notes?add_content=%23记录待办%23"'+encodeURIComponent(data.name)+'&task_id='+data.id+'" target="_blank">[记录]</a>';
 						$str += data.name;
 						$str += '</p>';
 						$str += '</li>'
@@ -422,7 +408,7 @@ $(document).keyup(function(event){
 						$str += (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm");
 						$str += '</span>';
 						$str += '<p>';
-						$str += '<a href="javascript:void(0)" class="record_pomo" pomo_value="'+result_arr.result.active_pomo.id+'" pomo_name="' + result_arr.result.active_pomo.name + '">[记录]</a>';
+						$str += '<a href="/notes?add_content=%23记录番茄%23"'+encodeURIComponent(result_arr.result.active_pomo.name)+'&task_id='+result_arr.result.active_pomo.id+'" target="_blank">[记录]</a>';
 						$str += result_arr.result.active_pomo.name;
 						$str += '</p>';
 						$str += '</li>';
