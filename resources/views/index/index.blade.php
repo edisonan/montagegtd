@@ -261,31 +261,6 @@ $(document).ready(function () {
 		});
 	});
 
-	$(".top_task").on('click',function(){
-		task_value = $(this).attr("task_value");
-		task_is_top = $(this).attr("task_is_top");
-
-		if(task_is_top != 1){
-			task_is_top = 1;
-		} else {
-			task_is_top = 0;
-		}
-		
-		$.ajax({
-		    url: "{{ url('task') }}"+"/"+task_value,
-		    type: 'POST',
-		    data: {"is_top":task_is_top,"_token":"{{ csrf_token() }}"},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
-				if(result_arr.code != 9999){
-					alert('处理失败，请稍后再试');
-				} else {
-					location.href = '{{url('/index')}}';
-				}
-		    }
-		});
-	});
-
 	$(".record_task").on('click',function(){
 		task_value = $(this).attr("task_value");
 		task_name = $(this).attr("task_name");
@@ -348,12 +323,12 @@ $(document).ready(function () {
 					$str = '<li id="task'+data.id+'">';;
 					$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 					$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
-					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T</a>';
-					$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U</a>';
-					$str += '<a href="javascript:void(0)" class="delete_task" task_value="'+data.id+'">X</a>';
-					$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.id+'">R</a>';
 					$str += data.name;
 					$str += '</p>';
+					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T</a>';
+					$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U</a>';
+					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'">X</a>';
+					$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.id+'">R</a>';
 					$str += '</li>'
 					$("#tasks").append($str);
 				});
@@ -411,12 +386,12 @@ $(document).keyup(function(event){
 						$str = '<li id="task'+data.id+'">';
 						$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 						$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
-						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T</a>';
-						$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U</a>';
-						$str += '<a href="javascript:void(0)" class="delete_task" task_value="'+data.id+'">X</a>';
-						$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.id+'">R</a>';
 						$str += data.name;
 						$str += '</p>';
+						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">T</a>';
+						$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">U</a>';
+						$str += '<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="'+data.id+'">X</a>';
+						$str += '<a href="javascript:void(0)" class="record_task" task_value="'+data.id+'" task_name="'+data.id+'">R</a>';
 						$str += '</li>'
 					}
 			    }
