@@ -64,6 +64,23 @@ class TaskController extends Controller
             ]);
         }
     }
+    
+    public function priority(Request $request)
+    {
+    	$models = $this->tasks->forUserByStatus($request->user(), 1);
+    	$tasks = array(1=>array(),2=>array(),3=>array(),4=>array());
+    	foreach ($models as $model){
+    		$tasks[$model->priority][] = $model;
+    	}
+    	if ($request->ajax() || $request->wantsJson()) {
+    		$resp = $this->responseJson(self::OK_CODE, $tasks);
+    		return response($resp);
+    	} else {
+    		return view('tasks.index', [
+    				'tasks' => $tasks
+    		]);
+    	}
+    }
 
     /**
      * Create a new task.

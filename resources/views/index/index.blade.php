@@ -310,7 +310,7 @@ $(document).ready(function () {
 					$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 					$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
 					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[置顶]</a>';
-					$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">[更新]</a>';
+					$str += '<a href="/task/'+data.id+'" class="update_task" >[更新]</a>';
 					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'">[删除]</a>';
 					$str += '<a href="/notes?add_content=%23记录待办%23'+encodeURIComponent(data.name)+'&task_id='+data.id+'" target="_blank">[记录]</a>';
 					$str += data.name;
@@ -373,7 +373,7 @@ $(document).keyup(function(event){
 						$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 						$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
 						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[置顶]</a>';
-						$str += '<a href="javascript:void(0)" class="update_task" task_value="'+data.id+'">[更新]</a>';
+						$str += '<a href="/task/'+data.id+'" class="update_task" >[更新]</a>';
 						$str += '<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="'+data.id+'">[删除]</a>';
 						$str += '<a href="/notes?add_content=%23记录待办%23'+encodeURIComponent(data.name)+'&task_id='+data.id+'" target="_blank">[记录]</a>';
 						$str += data.name;
