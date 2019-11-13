@@ -51,7 +51,7 @@ $(document).ready(function () {
                             <tbody>
                                 @foreach ($pomos as $pomo)
                                     <tr id="{{$pomo->id}}">
-                                        <td class="table-text" width="80%"><div><a href="/notes?add_content=%23记录番茄%23&pomo_id={{$pomo->id}}">[R]</a>{{ $pomo->name }} <small>{{ date('y-m-d H:i', strtotime($pomo->updated_at)) }}</small></div></td>
+                                        <td class="table-text" width="80%"><div><a href="/notes?add_content=%23记录番茄%23{{ urlencode($pomo->name) }}&pomo_id={{$pomo->id}}">[R]</a>{{ $pomo->name }} <small>{{ date('y-m-d H:i', strtotime($pomo->updated_at)) }}</small></div></td>
 
                                         <!-- Task Delete Button -->
                                         <td width="20%" align="right">

@@ -265,7 +265,7 @@ $(document).ready(function () {
 		task_value = $(this).attr("task_value");
 		task_name = $(this).attr("task_name");
 
-		window.location.href="/notes?add_content=%23记录待办%23"+task_name+'&task_id='+task_value;
+		window.location.href="/notes?add_content=%23记录待办%23"+escape(task_name)+'&task_id='+task_value;
 	});
 
 	$("#tasks").on('click','.update_task',function(){
@@ -279,7 +279,7 @@ $(document).ready(function () {
 		pomo_value = $(this).attr("pomo_value");
 		pomo_name = $(this).attr("pomo_name");
 
-		window.location.href="/notes?add_content=%23记录番茄%23"+pomo_name+'&pomo_id='+pomo_value;
+		window.location.href="/notes?add_content=%23记录番茄%23"+escape(pomo_name)+'&pomo_id='+pomo_value;
 	});
 
 	$(".task_content").on('click',function(){
