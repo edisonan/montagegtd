@@ -236,7 +236,7 @@ $(document).ready(function () {
 		});
 	});
 
-	$(".top_task").on('click',function(){
+	$("#tasks").on('click','.top_task',function(){
 		task_value = $(this).attr("task_value");
 		task_is_top = $(this).attr("task_is_top");
 
@@ -261,21 +261,21 @@ $(document).ready(function () {
 		});
 	});
 
-	$(".record_task").on('click',function(){
+	$("#tasks").on('click','.record_task',function(){
 		task_value = $(this).attr("task_value");
 		task_name = $(this).attr("task_name");
 
 		windows.location.href="/notes?add_content=#记录待办#"+task_name+'&task_id='+task_value;
 	});
 
-	$(".update_task").on('click',function(){
+	$("#tasks").on('click','.update_task',function(){
 		task_value = $(this).attr("task_value");
 		task_name = $(this).attr("task_name");
 
 		windows.location.href='/task/'+task_value;
 	});
 
-	$(".record_pomo").on('click',function(){
+	$("#pomos").on('click','.record_pomo',function(){
 		pomo_value = $(this).attr("pomo_value");
 		pomo_name = $(this).attr("pomo_name");
 
