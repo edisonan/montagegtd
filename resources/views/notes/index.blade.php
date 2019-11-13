@@ -207,13 +207,23 @@ $(document).ready(function () {
                             <div class="col-md-offset-3 col-md-6">
                             	<input type="hidden" name="status" value="1" id="status_id">
                             	
-                                <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
-                                    <i class="fa fa-btn fa-plus"></i>私密发布
-                                </button>
-                            	
-                                <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
-                                    <i class="fa fa-btn fa-plus"></i>公开发布
-                                </button>
+                                @if(!empty($task_id) || !empty($article_id) || !empty($pomo_id))
+                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">
+                                        <i class="fa fa-btn fa-plus"></i>公开发布
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-primary" onclick="submitProcess(1)">
+                                        <i class="fa fa-btn fa-plus"></i>私密发布
+                                    </button>
+                            	@else 
+                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
+                                        <i class="fa fa-btn fa-plus"></i>私密发布
+                                    </button>
+                                	
+                                    <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
+                                        <i class="fa fa-btn fa-plus"></i>公开发布
+                                    </button>
+                            	@endif
                                 
                                 
                             </div>
