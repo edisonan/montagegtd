@@ -51,7 +51,8 @@ class TaskController extends Controller
     public function index(Request $request)
     {
     	if($request->has('status')){
-    		$tasks = $this->tasks->forUserByStatus($request->user(), $request->status, $needPage = true);
+    		$need_page = $request->has('need_page')?true:false;
+    		$tasks = $this->tasks->forUserByStatus($request->user(), $request->status, $need_page);
     	} else {
 	        $tasks = $this->tasks->forUser($request->user(), $needPage = true);
     	}

@@ -8,9 +8,9 @@
                     <div class="card-header">
                         	待办列表
                         	<div style="float:right">
-                    		<a href="{{'/tasks'}}?status=1">[进行中]</a>
-                    		<a href="{{'/tasks'}}?status=2">[已完成]</a>
-                    		<a href="{{'/tasks'}}?status=3">[已折叠]</a>
+                    		<a href="{{'/tasks'}}?status=1&need_page=1">[进行中]</a>
+                    		<a href="{{'/tasks'}}?status=2&need_page=1">[已完成]</a>
+                    		<a href="{{'/tasks'}}?status=3&need_page=1">[已折叠]</a>
                     		<a href="{{'/index'}}">[返回]</a>
                     	</div>
                     </div>
