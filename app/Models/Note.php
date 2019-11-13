@@ -11,7 +11,7 @@ class Note extends Model
      *
      * @var array
      */
-    protected $fillable = ['name','status','record_path','image_path'];
+    protected $fillable = ['name','status','record_path','image_path','article_id','task_id','pomo_id'];
     
     /**
      * The attributes that should be cast to native types.

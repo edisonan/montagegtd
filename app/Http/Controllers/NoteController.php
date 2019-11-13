@@ -51,7 +51,15 @@ class NoteController extends Controller
      */
     public function index(Request $request, $add_content = '')
     {
-        $notes = $this->notes->forUserByStatus($request->user(), 2, $needPage = true);
+    	if($request->has('pomo_id')){
+	        $notes = $this->notes->forUserByPomo($request->user(), $request->pomo_id, $needPage = true);
+    	} else if($request->has('article_id')){
+	        $notes = $this->notes->forUserByArticle($request->user(), $request->article_id, $needPage = true);
+    	} else if($request->has('task_id')){
+	        $notes = $this->notes->forUserByTask($request->user(), $request->task_id, $needPage = true);
+    	} else {
+	        $notes = $this->notes->forUserByStatus($request->user(), 2, $needPage = true);
+    	}
         
         if ($request->has('add_content')) {
             if ($request->has('type') && $request->type = 'image') {

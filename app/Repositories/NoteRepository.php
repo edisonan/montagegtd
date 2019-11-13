@@ -51,4 +51,42 @@ class NoteRepository
     	}
     }
     
+    public function forUserByArticle(User $user,$article_id,$needPage=false)
+    {
+    	$note = Note::with(['noteTagMaps.tag','user'])
+    	->where('user_id', $user->id)
+    	->where('article_id', $article_id)
+    	->orderBy('created_at', 'desc');
+    	if($needPage){
+    		return $note->paginate(50);
+    	} else {
+    		return $note->get();
+    	}
+    }
+    
+    public function forUserByTask(User $user,$task_id,$needPage=false)
+    {
+    	$note = Note::with(['noteTagMaps.tag','user'])
+    	->where('user_id', $user->id)
+    	->where('task_id', $task_id)
+    	->orderBy('created_at', 'desc');
+    	if($needPage){
+    		return $note->paginate(50);
+    	} else {
+    		return $note->get();
+    	}
+    }
+    
+    public function forUserByPomo(User $user,$pomo_id,$needPage=false)
+    {
+    	$note = Note::with(['noteTagMaps.tag','user'])
+    	->where('user_id', $user->id)
+    	->where('pomo_id', $pomo_id)
+    	->orderBy('created_at', 'desc');
+    	if($needPage){
+    		return $note->paginate(50);
+    	} else {
+    		return $note->get();
+    	}
+    }
 }
