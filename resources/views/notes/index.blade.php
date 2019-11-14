@@ -240,7 +240,7 @@ $(document).ready(function () {
                     </div>
 				</div>
                     	@foreach ($notes as $note)
-							<div class="card" style="margin-bottom:10px">
+							<div class="card" style="margin-bottom:10px" id="{{$note->id}}">
 								<div class="card-block">
 								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://cdn.v2ex.com/gravatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
 								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></small></p>
