@@ -60,21 +60,21 @@ class NoteController extends Controller
 	        if(empty($article)){
 	        	echo 'system error,no pomo or not your pomo';exit;
 	        }
-	        $recommend_add_content = "#记录番茄#".$pomo->name."\n 时间：".date('md H:i',strtotime($pomo->created_at))."  持续时长:20min\n";
+	        $recommend_add_content = "#记录番茄#".$pomo->name."\n开始时间：".date('m月d日 H时i分',strtotime($pomo->created_at))."  持续时长:20分钟\n";
     	} else if($request->has('article_id')){
 	        $notes = $this->notes->forUserByArticle($request->user(), $request->article_id, $needPage = true);
 	        $article = Article::where('id',$request->article_id)->first();
 	        if(empty($article)){
 	        	echo 'system error,no article';exit;
 	        }
-	        $recommend_add_content = "#记录文章#".$article->subject."\n 时间：".date('md H:i')."\n";
+	        $recommend_add_content = "#记录文章#".$article->subject."\n时间：".date('m月d日 H时i分')."\n";
     	} else if($request->has('task_id')){
 	        $notes = $this->notes->forUserByTask($request->user(), $request->task_id, $needPage = true);
 	        $task = Task::where('id',$request->task_id)->where('user_id', $request->user()->id)->first();
 	        if(empty($task)){
 	        	echo 'system error,no task or not your task';exit;
 	        }
-	        $recommend_add_content = "#记录待办#".$task->name."\n 时间：".date('md H:i')." 持续时长:20min\n";
+	        $recommend_add_content = "#记录待办#".$task->name."\n开始时间：".date('m月d日 H时i分')." 持续时长:20分钟\n";
     	} else {
 	        $notes = $this->notes->forUserByStatus($request->user(), 2, $needPage = true);
     	}
