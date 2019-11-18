@@ -60,7 +60,7 @@ class NoteController extends Controller
 	        if(empty($article)){
 	        	echo 'system error,no pomo or not your pomo';exit;
 	        }
-	        $recommend_add_content = "#记录番茄#".$pomo->name."\n开始时间：".date('m月d日 H时i分',strtotime($pomo->created_at))."  持续时长:20分钟\n";
+	        $recommend_add_content = "#记录番茄#".$pomo->name."\n开始时间：".date('m月d日 H时i分',strtotime($pomo->created_at))."\n持续时长:20分钟\n";
     	} else if($request->has('article_id')){
 	        $notes = $this->notes->forUserByArticle($request->user(), $request->article_id, $needPage = true);
 	        $article = Article::where('id',$request->article_id)->first();
@@ -74,7 +74,7 @@ class NoteController extends Controller
 	        if(empty($task)){
 	        	echo 'system error,no task or not your task';exit;
 	        }
-	        $recommend_add_content = "#记录待办#".$task->name."\n开始时间：".date('m月d日 H时i分')." 持续时长:20分钟\n";
+	        $recommend_add_content = "#记录待办#".$task->name."\n开始时间：".date('m月d日 H时i分')."\n持续时长:20分钟\n";
     	} else {
 	        $notes = $this->notes->forUserByStatus($request->user(), 2, $needPage = true);
     	}
