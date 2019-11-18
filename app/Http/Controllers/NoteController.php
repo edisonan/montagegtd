@@ -57,7 +57,7 @@ class NoteController extends Controller
     	if($request->has('pomo_id')){
 	        $notes = $this->notes->forUserByPomo($request->user(), $request->pomo_id, $needPage = true);
 	        $pomo = Pomo::where('id',$request->pomo_id)->where('user_id', $request->user()->id)->first();
-	        if(empty($article)){
+	        if(empty($pomo)){
 	        	echo 'system error,no pomo or not your pomo';exit;
 	        }
 	        $recommend_add_content = "#记录番茄#".$pomo->name."\n开始时间：".date('m月d日 H时i分',strtotime($pomo->created_at))."\n持续时长:20分钟\n";
