@@ -246,11 +246,13 @@ $(document).ready(function () {
 								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></small></p>
 								  <div class="card-text post-text">
 								    @if($note->status != 2)
-									<img alt=""     style="width: 15px;    margin-right: 10px;" src="/img/icon/security.png">
+									<img alt=""     style="height: 15px;    margin-right: 10px;" src="/img/icon/private.png">
+									@else
+									<img alt=""     style="height: 15px;    margin-right: 10px;" src="/img/icon/public.png">
 									@endif
 									
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-									语音记录: <a href="{{ url('note/getRecord') }}/{{ $note->id }}">点击此处播放</a>
+									语音记录: <a href="{{ url('note/getRecord') }}/{{ $note->id }}">请点击播放🎵</a><br/>
 									@endif
 									
 									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))

@@ -7,6 +7,9 @@ use App\Repositories\NoteRepository;
 use App\Models\Tag;
 use App\Models\NoteTagMap;
 use App\Repositories\TagRepository;
+use App\Models\Pomo;
+use App\Models\Task;
+use App\Models\Article;
 
 class NoteController extends Controller
 {
@@ -53,10 +56,25 @@ class NoteController extends Controller
     {
     	if($request->has('pomo_id')){
 	        $notes = $this->notes->forUserByPomo($request->user(), $request->pomo_id, $needPage = true);
+	        $pomo = Pomo::where('id',$request->pomo_id)->where('user_id', $request->user()->id)->first();
+	        if(empty($article)){
+	        	echo 'system error,no pomo or not your pomo';exit;
+	        }
+	        $recommend_add_content = "#记录番茄#".$pomo->name."\n 时间：".date('md H:i',strtotime($pomo->created_at))."  持续时长:20min\n";
     	} else if($request->has('article_id')){
 	        $notes = $this->notes->forUserByArticle($request->user(), $request->article_id, $needPage = true);
+	        $article = Article::where('id',$request->article_id)->first();
+	        if(empty($article)){
+	        	echo 'system error,no article';exit;
+	        }
+	        $recommend_add_content = "#记录文章#".$article->subject."\n 时间：".date('md H:i')."\n";
     	} else if($request->has('task_id')){
 	        $notes = $this->notes->forUserByTask($request->user(), $request->task_id, $needPage = true);
+	        $task = Task::where('id',$request->task_id)->where('user_id', $request->user()->id)->first();
+	        if(empty($task)){
+	        	echo 'system error,no task or not your task';exit;
+	        }
+	        $recommend_add_content = "#记录待办#".$task->name."\n 时间：".date('md H:i')." 持续时长:20min\n";
     	} else {
 	        $notes = $this->notes->forUserByStatus($request->user(), 2, $needPage = true);
     	}
@@ -89,6 +107,8 @@ class NoteController extends Controller
                     $add_content = '#分享# ' . $add_content;
                 }
             }
+        } else if(!empty($recommend_add_content)){
+        	$add_content = $recommend_add_content;
         }
         
         foreach ($notes as $key => $note) {
