@@ -85,6 +85,7 @@
 				return false;
 			} else {
 				location.href = '{{url('/index')}}';
+				return false;
 			}
 		}
 
