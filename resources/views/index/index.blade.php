@@ -1,6 +1,7 @@
 @extends('layouts.app')
 <script language="javascript" type="text/javascript"> 
-
+	var timer;
+	
 	Date.prototype.format = function (fmt) {
 	  var o = {
 	      "M+": this.getMonth() + 1, //月份
@@ -64,6 +65,14 @@
 		var title = "-蒙太奇-但行好事，用心生活";
 		var minute=Math.floor(leftsecond/60); 
 		var second=Math.floor(leftsecond - minute * 60); 
+
+		if(minute<0){
+			minute = 0;
+		}
+
+		if(second<0){
+			second = 0;
+		}
 		
 		var cc = document.getElementById(pomoBtnId); 
 		
@@ -79,9 +88,12 @@
 		}
 		
 		if(remain < 0){
+			clearInterval(timer);
+			remain = 0;
 			if(status == 2){
 				document.getElementById('pomoBtn').style.display = "none";
 				document.getElementById('recordPomo').style.display = "";
+				document.title = "您已经完成了一个番茄，快来记录一下吧~" + title;
 				return false;
 			} else {
 				location.href = '{{url('/index')}}';
@@ -117,7 +129,7 @@
 	}
 	
 	if(status == 2 || status == 4){
-		window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
+		timer = setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 	}
 </script>
 
@@ -208,7 +220,7 @@ $(document).ready(function () {
 						$("#pomo_id").val(result_arr.result.active_pomo.id);
 						remain = result_arr.result.current_pomo_remain;
 						status = result_arr.result.current_pomo_status;
-						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
+						timer = setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 					}
 			    }
 			});
@@ -268,13 +280,6 @@ $(document).ready(function () {
 				}
 		    }
 		});
-	});
-
-	$("#tasks").on('click','.update_task',function(){
-		task_value = $(this).attr("task_value");
-		task_name = $(this).attr("task_name");
-
-		window.location.href='/task/'+task_value;
 	});
 
 	$("#tasks").on('dblclick','.task_content',function(){
@@ -408,7 +413,7 @@ $(document).keyup(function(event){
 						$("#pomo_id").val("");
 						remain = result_arr.result.current_pomo_remain;
 						status = result_arr.result.current_pomo_status;
-						window.setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
+						timer = setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 						$("#recordPomo").css("display", "none");
 						$("#pomoBtn").css("display", "block");
 						
