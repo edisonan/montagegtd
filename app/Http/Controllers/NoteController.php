@@ -74,7 +74,7 @@ class NoteController extends Controller
 	        if(empty($task)){
 	        	echo 'system error,no task or not your task';exit;
 	        }
-	        $recommend_add_content = "#记录待办#".$task->name."\n开始时间：".date('m月d日 H时i分')."\n持续时长:20分钟\n";
+	        $recommend_add_content = "#记录待办#".$task->name."\n开始时间：".date('m月d日 H时i分', strtotime('-30 minute'))."\n持续时长:20分钟\n";
     	} else {
 	        $notes = $this->notes->forUserByStatus($request->user(), 2, $needPage = true);
     	}
