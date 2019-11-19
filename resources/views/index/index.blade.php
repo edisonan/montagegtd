@@ -312,10 +312,10 @@ $(document).ready(function () {
 					$str = '<li id="task'+data.id+'">';;
 					$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 					$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
-					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[置顶]</a>';
-					$str += '<a href="/task/'+data.id+'" class="update_task" >[更新]</a>';
-					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'">[删除]</a>';
-					$str += '<a href="/notes?task_id='+data.id+'" target="_blank">[记录]</a>';
+					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><img src="/img/icon/top.png" style="height: 20px;"></a>';
+					$str += '<a href="/task/'+data.id+'" class="update_task" ><img src="/img/icon/editor.png" style="height: 20px;"></a>';
+					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'"><img src="/img/icon/ashbin.png" style="height: 20px;"></a>';
+					$str += '<a href="/notes?task_id='+data.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
 					$str += data.name;
 					$str += '</p>';
 					$str += '</li>'
@@ -341,7 +341,7 @@ $(document).ready(function () {
 					$str += (new Date(data.created_at)).format("hh:mm") +' - '+ (new Date(data.updated_at)).format("hh:mm");
 					$str += '</span>';
 					$str += '<p>';
-					$str += '<a href="/notes?pomo_id='+data.id+'" target="_blank">[记录]</a>';
+					$str += '<a href="/notes?pomo_id='+data.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
 					$str += data.name;
 					$str += '</p>';
 					$str += '</li>';
@@ -375,10 +375,10 @@ $(document).keyup(function(event){
 						$str = '<li id="task'+data.id+'">';
 						$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
 						$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
-						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '">[置顶]</a>';
-						$str += '<a href="/task/'+data.id+'" class="update_task" >[更新]</a>';
-						$str += '<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="'+data.id+'">[删除]</a>';
-						$str += '<a href="/notes?task_id='+data.id+'" target="_blank">[记录]</a>';
+						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><img src="/img/icon/top.png" style="height: 20px;"></a>';
+						$str += '<a href="/task/'+data.id+'" class="update_task" ><img src="/img/icon/editor.png" style="height: 20px;"></a>';
+						$str += '<a href="javascript:void(0)" class="finish_task" task_type="delete" task_value="'+data.id+'"><img src="/img/icon/ashbin.png" style="height: 20px;"></a>';
+						$str += '<a href="/notes?task_id='+data.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
 						$str += data.name;
 						$str += '</p>';
 						$str += '</li>'
@@ -411,7 +411,7 @@ $(document).keyup(function(event){
 						$str += (new Date(result_arr.result.active_pomo.created_at)).format("hh:mm") +' - '+ (new Date(result_arr.result.active_pomo.updated_at)).format("hh:mm");
 						$str += '</span>';
 						$str += '<p>';
-						$str += '<a href="/notes?pomo_id='+result_arr.result.active_pomo.id+'" target="_blank">[记录]</a>';
+						$str += '<a href="/notes?pomo_id='+result_arr.result.active_pomo.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
 						$str += result_arr.result.active_pomo.name;
 						$str += '</p>';
 						$str += '</li>';
