@@ -61,6 +61,7 @@
 
 	function ShowCountDown(leftsecond, pomoBtnId) 
 	{ 
+		var title = "-蒙太奇-但行好事，用心生活";
 		var minute=Math.floor(leftsecond/60); 
 		var second=Math.floor(leftsecond - minute * 60); 
 		
@@ -69,8 +70,10 @@
 		remain = remain - 1;
 		if(remain == 0){
 			if(status == 2){
+				document.title = "您已经完成了一个番茄，快来记录一下吧~" + title;
 				notify("您已经完成了一个番茄，快来记录一下吧~");
 			} else if(status == 4){
+				document.title = "休息完成，快来开始下一个番茄吧~" + title;
 				notify("休息完成，快来开始下一个番茄吧~");
 			}
 		}
@@ -91,6 +94,8 @@
 		var add_content = status == 2?'#此番茄还剩#':'#休息还剩#';
 		
 		cc.innerHTML = add_content + minute_label +":"+ second_label; 
+		
+		document.title = add_content + minute_label +":"+ second_label + title;
 	}
 
 	function discard(){
