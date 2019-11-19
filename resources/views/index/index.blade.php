@@ -258,6 +258,11 @@ $(document).ready(function () {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
+					if(task_is_top == 1){
+						alert("置顶成功");
+					} else {
+						alert("取消置顶成功");
+					}
 					location.href = '{{url('/index')}}';
 				}
 		    }
@@ -271,7 +276,7 @@ $(document).ready(function () {
 		window.location.href='/task/'+task_value;
 	});
 
-	$(".task_content").on('click',function(){
+	$("#tasks").on('dblclick','.task_content',function(){
 		task_value = $(this).text();
 		pomo_value = $("#pomo_name").val();
 		
