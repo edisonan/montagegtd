@@ -1,2 +1,2 @@
-Hi,{{ $user->name;}}:
-	Task name:{{ $task->name; }} Reminder!
+Hi,{{ $user->name}}:
+	Task name:{{ $task->name }} Reminder!

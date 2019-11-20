@@ -129,7 +129,7 @@ $(document).ready(function () {
         </div>
     </div>
 <script type="text/javascript">
-    var mind = eval('(' +'{{ $jsmind_datas;}}' + ')');
+    var mind = eval('(' +'{{ $jsmind_datas}}' + ')');
     var options = {
         container:'jsmind_container',
         editable:true,

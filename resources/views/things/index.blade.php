@@ -65,9 +65,9 @@ $(document).ready(function () {
                             <label for="thing-name" class="col-md-3 control-label">完事时间</label>
 								
                             <div class="col-md-8">
-	                               <input type="text" name="start_time" id="task-remindtime" class="form-control" value="{{ date('Y-m-d H:i:00', strtotime("-15 minute"));}}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
+	                               <input type="text" name="start_time" id="task-remindtime" class="form-control" value="{{ date('Y-m-d H:i:00', strtotime("-15 minute"))}}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
 	                               -
-	                               <input type="text" name="end_time" id="task-deadline" class="form-control" value="{{ date('Y-m-d H:i:00');}}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
+	                               <input type="text" name="end_time" id="task-deadline" class="form-control" value="{{ date('Y-m-d H:i:00')}}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
                             </div>
                         </div>
 
@@ -103,7 +103,7 @@ $(document).ready(function () {
 				                    	<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
 				                    </a>
 				                    <div style="float:right">
-					                    {{ \App\Http\Utils\CommonUtil::formatTime($thing->start_time, $thing->end_time);}}
+					                    {{ \App\Http\Utils\CommonUtil::formatTime($thing->start_time, $thing->end_time)}}
 				                    </div>
 			                    </div>
 		                    @endforeach

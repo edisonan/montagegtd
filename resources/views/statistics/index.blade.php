@@ -39,35 +39,35 @@
             	// 基于准备好的dom，初始化echarts图表
                 var myPomoChart = ec.init(document.getElementById('pomo_main')); 
              	// 为echarts对象加载数据 
-             	var option =  eval('(' +' {{  $pomo_bar_statistics;}}' + ')');
+             	var option =  eval('(' +' {{  $pomo_bar_statistics}}' + ')');
                 myPomoChart.setOption(option); 
                 
                 // 基于准备好的dom，初始化echarts图表
                 var myTaskChart = ec.init(document.getElementById('task_main')); 
-             	var option =  eval('(' +' {{  $task_bar_statistics;}}' + ')');
+             	var option =  eval('(' +' {{  $task_bar_statistics}}' + ')');
              	// 为echarts对象加载数据 
                 myTaskChart.setOption(option); 
 
              	// 基于准备好的dom，初始化echarts图表
                 var myNoteChart = ec.init(document.getElementById('note_main')); 
-             	var option =  eval('(' +' {{  $note_bar_statistics;}}' + ')');
+             	var option =  eval('(' +' {{  $note_bar_statistics}}' + ')');
              	// 为echarts对象加载数据 
                 myNoteChart.setOption(option); 
 
              // 基于准备好的dom，初始化echarts图表
                 var myMindChart = ec.init(document.getElementById('mind_main')); 
-             	var option =  eval('(' +' {{  $mind_bar_statistics;}}' + ')');
+             	var option =  eval('(' +' {{  $mind_bar_statistics}}' + ')');
              	// 为echarts对象加载数据 
                 myMindChart.setOption(option); 
 
              // 基于准备好的dom，初始化echarts图表
                 var myArticleChart = ec.init(document.getElementById('article_main')); 
-             	var option =  eval('(' +' {{  $article_bar_statistics;}}' + ')');
+             	var option =  eval('(' +' {{  $article_bar_statistics}}' + ')');
              	// 为echarts对象加载数据 
                 myArticleChart.setOption(option); 
 
                 var myPieChart = ec.init(document.getElementById('pie_main')); 
-             	var option =  eval('(' +' {{  $count_pie_statistics;}}' + ')');
+             	var option =  eval('(' +' {{  $count_pie_statistics}}' + ')');
              	// 为echarts对象加载数据 
                 myPieChart.setOption(option); 
                 
