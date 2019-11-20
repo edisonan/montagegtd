@@ -402,7 +402,7 @@ $(document).ready(function () {
 
 				@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
 				<button class="col-md-12 btn btn-outline-info" id="marked_all_read"
-					ids="{{ implode(',', $article_sub_ids); }}">Marked All Read</button>
+					ids="{{ implode(',', $article_sub_ids) }}">Marked All Read</button>
 				@endif 
 			@endif 
 			<!--</div>-->
