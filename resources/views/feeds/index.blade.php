@@ -124,19 +124,12 @@ $(document).ready(function () {
                             </thead>
                             <tbody>
                                 @foreach ($feedSubs as $feedSub)
-                                	<?php $feed = $feedSub->feed;if(empty($feed)) continue;?>
+                                	@if(!empty($feedSub->feed))
                                     <tr id="{{$feedSub->id}}">
                                         <td class="table-text"  width="90%">
                                         	<div class="preprepre">
-                                        	<!-- 
-                                        	@if(!empty($feedSub->category->name))
-                                        	[{{ $feedSub->category->name }}]
-                                        	@endif
                                         	
-                                        	<img alt="" width="50px" src="{{ $feed->favicon}}">
-                                        	 -->
-                                        	
-                                        	<a href="{{ $feed->url }}" title="{{ $feed->feed_desc }}">{{ $feed->feed_name }}</a>
+                                        	<a href="{{ $feedSub->feed->url }}" title="{{ $feedSub->feed->feed_desc }}">{{ $feedSub->feed->feed_name }}</a>
                                         	
                                         	</pre>
                                         </td>
@@ -149,6 +142,7 @@ $(document).ready(function () {
                                         	</a> 
                                         </td>
                                     </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>

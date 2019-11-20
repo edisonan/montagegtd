@@ -114,9 +114,13 @@ $(document).ready(function () {
 
 	$("#marked_all_read").on('click',function(){
 		var ids = $(this).attr('ids');
+		$(this).attr("disabled",true);
+		$(this).text('Submit Article As Reading');
 		$.get("{{ url('/articles/allstatus') }}",{"ids":ids,"status":"read"},function(result){
 			result_arr = JSON.parse(result);
 			if(result_arr.code != 9999){
+				$("#marked_all_read").attr("disabled",false);
+				$("#marked_all_read").text("Marked All Read");
 				alert("设置失败");
 			} else {
 				location.href="";
@@ -398,7 +402,7 @@ $(document).ready(function () {
 
 				@if(!isset($_GET['status']) || $_GET['status'] == 'unread')
 				<button class="col-md-12 btn btn-outline-info" id="marked_all_read"
-					ids="<?php echo implode(',', $article_sub_ids);?>">Marked All Read</button>
+					ids="{{ implode(',', $article_sub_ids); }}">Marked All Read</button>
 				@endif 
 			@endif 
 			<!--</div>-->
