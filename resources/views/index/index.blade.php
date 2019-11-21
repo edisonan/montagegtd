@@ -398,9 +398,10 @@ $(document).ready(function () {
 			mode = 2;
 			$(".mode_name").text("生活模式");
 		}
-		$(".change_mode").text("切换加载中...");
+		setCookie("task_mode",mode,30);
+		$(".change_mode").text("[切换加载中...]");
 		showtasks();
-		$(".change_mode").text("切换");
+		$(".change_mode").text("[切换]");
     });
 
     showtasks();
