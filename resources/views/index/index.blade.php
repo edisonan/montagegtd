@@ -398,7 +398,9 @@ $(document).ready(function () {
 			mode = 2;
 			$(".mode_name").text("生活模式");
 		}
+		$(".change_mode").text("切换加载中...");
 		showtasks();
+		$(".change_mode").text("切换");
     });
 
     showtasks();

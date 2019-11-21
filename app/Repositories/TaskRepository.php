@@ -30,13 +30,18 @@ class TaskRepository
      * @param  User  $user
      * @return Collection
      */
-    public function forUserByStatus(User $user,string $status, $needPage=false)
+    public function forUserByStatus(User $user,string $status, $needPage=false, $mode='')
     {
     	$task = Task::with('goal')->where('user_id', $user->id)
-    	->where('status',$status)
-    	->orderBy('is_top', 'desc')
+    	->where('status',$status);
+    	
+    	if(!empty($mode)){
+    		$task = $task->where('mode',$mode);
+    	}
+    	$task = $task->orderBy('is_top', 'desc')
     	->orderBy('priority', 'desc')
     	->orderBy('updated_at', 'desc');
+    	
     	if($needPage){
     		return $task->paginate(50);
     	} else {
