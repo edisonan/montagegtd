@@ -160,6 +160,7 @@
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
+					$("#tasks").html("");
 					$.each( result_arr.result, function( index, data ){
 						$str = '<li id="task'+data.id+'">';;
 						$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
