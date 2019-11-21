@@ -102,6 +102,7 @@ class TaskController extends Controller {
 		
 		$params = array ();
 		$params ['name'] = $request->name;
+		$params ['mode'] = $request->mode;
 		
 		if ($request->has ( 'priority' ) && in_array ( $request->priority, array (
 				1,

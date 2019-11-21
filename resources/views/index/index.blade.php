@@ -1,6 +1,8 @@
 @extends('layouts.app')
 <script language="javascript" type="text/javascript"> 
 	var timer;
+
+	var mode=1;
 	
 	Date.prototype.format = function (fmt) {
 	  var o = {
@@ -126,6 +128,83 @@
 		var exdate=new Date()
 		exdate.setDate(exdate.getDate()+expiredays)
 		document.cookie=c_name+ "=" +escape(value)+((expiredays==null) ? "" : ";expires="+exdate.toGMTString())
+	}
+
+	function getCookie(c_name) {
+		if(document.cookie.length > 0) {
+			c_start = document.cookie.indexOf(c_name + "=");
+			if(c_start != -1) {
+				c_start = c_start + c_name.length + 1;
+				c_end = document.cookie.indexOf(";", c_start);
+				if(c_end == -1) c_end = document.cookie.length;
+				return decodeURI(document.cookie.substring(c_start, c_end));
+			}
+		}
+		return "";
+	}
+
+	var tempmode = getCookie("mode");
+	if(tempmode == 2){
+		mode = 2;
+	} else {
+		mode = 1;
+	}
+
+	function showtasks() {
+		$.ajax({
+		    url: "{{ url('tasks') }}",
+		    type: 'GET',
+		    data: {"_token":"{{ csrf_token() }}","status":1, "mode":mode},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$.each( result_arr.result, function( index, data ){
+						$str = '<li id="task'+data.id+'">';;
+						$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
+						$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
+						$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><img src="/img/icon/top.png" style="height: 20px;"></a>';
+						$str += '<a href="/task/'+data.id+'" class="update_task" ><img src="/img/icon/editor.png" style="height: 20px;"></a>';
+						$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'"><img src="/img/icon/ashbin.png" style="height: 20px;"></a>';
+						$str += '<a href="/notes?task_id='+data.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
+						$str += data.name;
+						$str += '</p>';
+						$str += '</li>'
+						$("#tasks").append($str);
+					});
+					$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
+				}
+		    }
+		});
+	}
+
+	function showpomos() {
+		$.ajax({
+		    url: "{{ url('pomos') }}",
+		    type: 'GET',
+		    data: {"_token":"{{ csrf_token() }}",'type':'time'},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$.each( result_arr.result, function( index, data ){
+						$str = '<li id="pomo'+data.id+'">';
+						$str += '<span class="time">';
+						$str += (new Date(data.created_at)).format("hh:mm") +' - '+ (new Date(data.updated_at)).format("hh:mm");
+						$str += '</span>';
+						$str += '<p>';
+						$str += '<a href="/notes?pomo_id='+data.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
+						$str += data.name;
+						$str += '</p>';
+						$str += '</li>';
+						$("#pomos").append($str);
+					});
+					$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
+				}
+		    }
+		});
 	}
 	
 	if(status == 2 || status == 4){
@@ -310,58 +389,22 @@ $(document).ready(function () {
 		 bootstro.start('.bootstro', {stopOnBackdropClick : true, stopOnEsc:true});       
     });
 
-	$.ajax({
-	    url: "{{ url('tasks') }}",
-	    type: 'GET',
-	    data: {"_token":"{{ csrf_token() }}","status":1},
-	    success: function(result) {
-	    	result_arr = JSON.parse(result);
-			if(result_arr.code != 9999){
-				alert('处理失败，请稍后再试');
-			} else {
-				$.each( result_arr.result, function( index, data ){
-					$str = '<li id="task'+data.id+'">';;
-					$str += '<p class="task_content" task_value="'+data.id+'" task_is_top="' + data.is_top + '">';
-					$str += '<input type="checkbox" class="finish_task" task_type="finish" task_value="'+data.id+'"/>';
-					$str += '<a href="javascript:void(0)" class="top_task" task_value="'+data.id+'" task_is_top="' + data.is_top + '"><img src="/img/icon/top.png" style="height: 20px;"></a>';
-					$str += '<a href="/task/'+data.id+'" class="update_task" ><img src="/img/icon/editor.png" style="height: 20px;"></a>';
-					$str += '<a href="javascript:void(0)" class="finish_task"  task_type="delete" task_value="'+data.id+'"><img src="/img/icon/ashbin.png" style="height: 20px;"></a>';
-					$str += '<a href="/notes?task_id='+data.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
-					$str += data.name;
-					$str += '</p>';
-					$str += '</li>'
-					$("#tasks").append($str);
-				});
-				$('#taskCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
-			}
-	    }
-	});
+	// 切换模式
+    $(".change_mode").click(function(){
+		if(mode == 2){
+			mode = 1;
+			$(".mode_name").text("工作模式");
+		} else {
+			mode = 2;
+			$(".mode_name").text("生活模式");
+		}
+		showtasks();
+    });
 
-	$.ajax({
-	    url: "{{ url('pomos') }}",
-	    type: 'GET',
-	    data: {"_token":"{{ csrf_token() }}",'type':'time'},
-	    success: function(result) {
-	    	result_arr = JSON.parse(result);
-			if(result_arr.code != 9999){
-				alert('处理失败，请稍后再试');
-			} else {
-				$.each( result_arr.result, function( index, data ){
-					$str = '<li id="pomo'+data.id+'">';
-					$str += '<span class="time">';
-					$str += (new Date(data.created_at)).format("hh:mm") +' - '+ (new Date(data.updated_at)).format("hh:mm");
-					$str += '</span>';
-					$str += '<p>';
-					$str += '<a href="/notes?pomo_id='+data.id+'" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
-					$str += data.name;
-					$str += '</p>';
-					$str += '</li>';
-					$("#pomos").append($str);
-				});
-				$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
-			}
-	    }
-	});
+    showtasks();
+
+    showpomos();
+
 });
 
 /**
@@ -374,7 +417,7 @@ $(document).keyup(function(event){
 			$.ajax({
 			    url: "{{ url('task') }}",
 			    type: 'POST',
-			    data: {"name":task_name,"_token":"{{ csrf_token() }}"},
+			    data: {"name":task_name,"mode":mode,"_token":"{{ csrf_token() }}"},
 			    success: function(result) {
 			    	result_arr = JSON.parse(result);
 					if(result_arr.code != 9999){
@@ -506,7 +549,7 @@ $(document).keyup(function(event){
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 						
 					<div class = "head">
-						<datetime class="time"></datetime>
+						<datetime class="time"><span class="mode_name">工作模式</span><span class="change_mode">[切换]</span></datetime>
 						<div class="number">共 <span id="taskCount">0</span> 待办任务</div>
 					</div>
 						

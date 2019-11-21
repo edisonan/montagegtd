@@ -84,6 +84,18 @@
 								</label>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="task-name" class="col-md-3 control-label">模式</label>
+								
+                            <div class="col-md-8">
+	                               <label class="radio-inline">
+								  <input type="radio" name="mode" id="mode1" value="1" {{ empty($task->mode) ?'checked':'' }}><span>工作</span>
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="mode" id="mode2" value="2" {{ $task->mode == 2 ?'checked':'' }}><span>生活</span>
+								</label>
+                            </div>
+                        </div>
                         
                         <!-- Add Task Button -->
                         <div class="form-group row">
