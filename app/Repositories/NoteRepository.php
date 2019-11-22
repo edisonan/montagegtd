@@ -71,10 +71,14 @@ class NoteRepository
 	    	$query->where('task_id',$conditions['task_id']);
     	}
     	if(isset($conditions['tag_id'])){
-    		$noteids = DB::table('note_tag_maps')
+    		$notes = \DB::table('note_tag_maps')
     		->select(array('note_tag_maps.note_id'))
     		->where('tag_id',$conditions['tag_id'])
-    		->lists("note_id","id");
+    		->get();
+    		$noteids = array();
+    		foreach ($notes as $note){
+    			$noteids[] = $note->note_id;
+    		}
     		$query->whereIn('id',$noteids);
     	}
     	$query->orderBy('created_at', 'desc');
