@@ -53,7 +53,7 @@ class NoteRepository
     	}
     }
     
-    public function getAll($conditions,$pages = array('need_page' => true, 'page_count' => 50))
+    public function getAll($conditions,$pages = array('need_page' => true, 'page_count' => 20))
     {
     	$query = Note::with(['noteTagMaps.tag','user']);
     	$query->where(function ($query) use ($conditions) {
