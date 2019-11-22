@@ -42,13 +42,21 @@
                                         		<a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">[记录]</a>
                                         		@if($task->status == 1) 
 			                                    	[进行中]
-			                                    @elseif($task->priority == 2) 
+			                                    @elseif($task->status == 2) 
 			                                    	[已完成]
-			                                    @elseif($task->priority == 3) 
+			                                    @elseif($task->status == 3) 
 			                                    	[已折叠]
 			                                    @endif
                                         		{{ $task->name }}
                                         		
+                                        		@if(isset($task->parentTask->name))
+                                        			#{{ $task->parentTask->name}}#
+                                        		@endif
+                                        		@if($task->mode == 1)
+                                        			#work#
+                                        		@else 
+                                        			#life#
+                                        		@endif
                                         	</div>
                                         </td>
                                         

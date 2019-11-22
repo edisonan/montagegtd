@@ -38,6 +38,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::post('/mind/{mind}', 'MindController@update');
 
     Route::get('/tasks', 'TaskController@index');
+    Route::get('/tasksall', 'TaskController@getAllList');
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');
     Route::post('/task/{task}', 'TaskController@update');

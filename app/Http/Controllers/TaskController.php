@@ -67,6 +67,36 @@ class TaskController extends Controller {
 			] );
 		}
 	}
+	
+	
+	public function getAllList(Request $request) {
+		$tasks = $this->tasks->forUserByStatus ( $request->user (), $request->status, false, $request->mode );
+		
+		// 组装子待办
+		$temp = '';
+		foreach ($tasks as $task){
+			if($task->parent_task_id != null){
+				$temp[$task->parent_task_id][] = $task;
+			}
+		}
+		
+		// 格式化待办顺序
+		$format_tasks = '';
+		foreach ($tasks as $task){
+			if($task->parent_task_id == null){
+				$format_tasks[] = $task;
+				if(isset($temp[$task->id])){
+					foreach ($temp[$task->id] as $val){
+						$format_tasks[] = $val;
+					}
+				}
+			}
+		}
+		
+		$resp = $this->responseJson ( self::OK_CODE, $format_tasks );
+		return response ( $resp );
+	}
+	
 	public function priority(Request $request) {
 		$models = $this->tasks->forUserByStatus ( $request->user (), 1 );
 		$tasks = array (

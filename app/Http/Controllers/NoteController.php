@@ -82,7 +82,9 @@ class NoteController extends Controller {
 			if (empty ( $task )) {
 				abort ( 404, '系统异常，无此待办!' );
 			}
-			$recommend_add_content = "#记录待办#" . $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
+			$parentTaskName = isset($task->parentTask->name)?"#".$task->parentTask->name."#":"";
+			$modeName = mode == 2 ? "#life#":"#work#";
+			$recommend_add_content = "#记录待办#" .$modeName . $parentTaskName. $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
 		} else {
 			$notes = $this->notes->forUserByStatus ( $request->user (), 2, $needPage = true );
 		}

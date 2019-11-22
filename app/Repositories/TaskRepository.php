@@ -24,6 +24,12 @@ class TaskRepository
         }
     }
     
+    public function forUserById(User $user, $id)
+    {
+        $task = Task::where('user_id', $user->id)->where('id', $id);
+        return $task->first();
+    }
+    
     /**
      * Get all of the tasks for a given user.
      *
