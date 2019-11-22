@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Models\Note;
 
+use Illuminate\Support\Facades\DB;
+
 class NoteRepository
 {
     /**
@@ -71,7 +73,7 @@ class NoteRepository
 	    	$query->where('task_id',$conditions['task_id']);
     	}
     	if(isset($conditions['tag_id'])){
-    		$notes = \DB::table('note_tag_maps')
+    		$notes = DB::table('note_tag_maps')
     		->select(array('note_tag_maps.note_id'))
     		->where('tag_id',$conditions['tag_id'])
     		->get();
