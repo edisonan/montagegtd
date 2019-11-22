@@ -53,16 +53,28 @@ class NoteRepository
     
     public function getAll($conditions,$pages = array('need_page' => true, 'page_count' => 50))
     {
-    	$note = Note::with(['noteTagMaps.tag','user'])->where('status', 1)->orWhere('user_id', $conditions['user_id']);
+    	$query = Note::with(['noteTagMaps.tag','user']);
+    	$query->where(function ($query) use ($conditions) {
+    		$query->where('status',  1)
+    		->orwhere('user_id',  $conditions['user_id']);
+    	});
     	if(isset($conditions['keyword'])){
-	    	$note = $note->where('name','like' , "%".$conditions['keyword']."%");
+	    	$query->where('name','like' , "%".$conditions['keyword']."%");
     	}
-    	
-    	$note = $note->orderBy('created_at', 'desc');
+    	if(isset($conditions['article_id'])){
+	    	$query->where('article_id',$conditions['article_id']);
+    	}
+    	if(isset($conditions['pomo_id'])){
+	    	$query->where('pomo_id',$conditions['pomo_id']);
+    	}
+    	if(isset($conditions['task_id'])){
+	    	$query->where('task_id',$conditions['task_id']);
+    	}
+    	$query->orderBy('created_at', 'desc');
     	if($pages['need_page']){
-    		return $note->paginate($pages['page_count']);
+    		return $query->paginate($pages['page_count']);
     	} else {
-    		return $note->get();
+    		return $query->get();
     	}
     }
     
