@@ -55,7 +55,7 @@ class NoteRepository
     {
     	$query = Note::with(['noteTagMaps.tag','user']);
     	$query->where(function ($query) use ($conditions) {
-    		$query->where('status',  1)
+    		$query->where('status',  2)
     		->orwhere('user_id',  $conditions['user_id']);
     	});
     	if(isset($conditions['keyword'])){
