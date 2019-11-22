@@ -162,7 +162,7 @@ $(document).ready(function () {
                 <div class="card-header">
                     	新的笔记
                     	<div class="form-inline" style="float:right">
-                    		<form action="{{/notes}}">
+                    		<form action="{{url('notes')}}" method="get">
 			                <input type="text" name="keyword" class="" placeholder="搜索笔记" />
 			                <input type="submit" value="搜 索"/>
                     		</form>
