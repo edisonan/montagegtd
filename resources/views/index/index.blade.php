@@ -29,10 +29,10 @@
 	var mode=1;
 	if(getCookie("mode") == 2){
 		mode = 2;
-		$(".mode_name").text("生活");
+		document.getElementsByClassName("mode_name")[0].innerHTML = "生活";
 	} else {
 		mode = 1;
-		$(".mode_name").text("工作");
+		document.getElementsByClassName("mode_name")[0].innerHTML = "工作";
 	}
 
 	//间隔 1S
