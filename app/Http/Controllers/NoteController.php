@@ -63,7 +63,9 @@ class NoteController extends Controller {
 	 */
 	public function index(Request $request, $add_content = '') {
 		$conditions = array('user_id'=>$request->user()->id);
-		if($request->has('keyword')){
+		if($request->has('tag_id')){
+			$conditions['tag_id'] = $request->tag_id;
+		} else if($request->has('keyword')){
 			$conditions['keyword'] = $request->keyword;
 		} else if ($request->has ( 'pomo_id' )) {
 			$conditions['pomo_id'] = $request->pomo_id;

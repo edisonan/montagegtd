@@ -70,6 +70,13 @@ class NoteRepository
     	if(isset($conditions['task_id'])){
 	    	$query->where('task_id',$conditions['task_id']);
     	}
+    	if(isset($conditions['tag_id'])){
+    		$noteids = DB::table('note_tag_maps')
+    		->select(array('note_tag_maps.note_id'))
+    		->where('tag_id',$conditions['tag_id'])
+    		->lists("note_id","id");
+    		$query->whereIn('id',$noteids);
+    	}
     	$query->orderBy('created_at', 'desc');
     	if($pages['need_page']){
     		return $query->paginate($pages['page_count']);
