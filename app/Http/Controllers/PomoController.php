@@ -179,4 +179,11 @@ class PomoController extends Controller {
 			return redirect ( '/index' )->with ( 'message', '操作成功!' );
 		}
 	}
+	
+	public function pomostatus(Request $request) {
+		// 获取当前活动信息
+		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
+		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
+		return response ( $resp );
+	}
 }

@@ -51,42 +51,19 @@ class NoteRepository
     	}
     }
     
-    public function forUserByArticle(User $user,$article_id,$needPage=false)
+    public function getAll($conditions,$pages = array('need_page' => true, 'page_count' => 50))
     {
-    	$note = Note::with(['noteTagMaps.tag','user'])
-    	->where('user_id', $user->id)
-    	->where('article_id', $article_id)
-    	->orderBy('created_at', 'desc');
-    	if($needPage){
-    		return $note->paginate(50);
+    	$note = Note::with(['noteTagMaps.tag','user'])->where('status', 1)->orWhere('user_id', $conditions['user_id']);
+    	if(isset($conditions['keyword'])){
+	    	$note = $note->where('name','like' , "%".$conditions['keyword']."%");
+    	}
+    	
+    	$note = $note->orderBy('created_at', 'desc');
+    	if($pages['need_page']){
+    		return $note->paginate($pages['page_count']);
     	} else {
     		return $note->get();
     	}
     }
     
-    public function forUserByTask(User $user,$task_id,$needPage=false)
-    {
-    	$note = Note::with(['noteTagMaps.tag','user'])
-    	->where('user_id', $user->id)
-    	->where('task_id', $task_id)
-    	->orderBy('created_at', 'desc');
-    	if($needPage){
-    		return $note->paginate(50);
-    	} else {
-    		return $note->get();
-    	}
-    }
-    
-    public function forUserByPomo(User $user,$pomo_id,$needPage=false)
-    {
-    	$note = Note::with(['noteTagMaps.tag','user'])
-    	->where('user_id', $user->id)
-    	->where('pomo_id', $pomo_id)
-    	->orderBy('created_at', 'desc');
-    	if($needPage){
-    		return $note->paginate(50);
-    	} else {
-    		return $note->get();
-    	}
-    }
 }

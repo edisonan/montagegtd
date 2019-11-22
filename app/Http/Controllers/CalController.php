@@ -78,7 +78,7 @@ class CalController extends Controller {
 	 * @param String $cal_token        	
 	 */
 	public function taskics(Request $request, String $cal_token) {
-		$icsInfo = $this->calService->getIcsByCalToken ( $request->user (), $cal_token );
+		$icsInfo = $this->calService->getIcsByCalToken ( $cal_token );
 		
 		header ( "Content-type:application/octet-stream" );
 		header ( "Content-Disposition:attachment;filename = " . $icsInfo ['file_name'] . '.ics' );

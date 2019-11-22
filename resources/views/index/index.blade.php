@@ -177,19 +177,37 @@
 					alert('处理失败，请稍后再试');
 				} else {
 					$.each( result_arr.result, function( index, data ){
-						$("#pomos").append(create_pomo_li(data, data));
+						$("#pomos").append(create_pomo_li(data));
 					});
 					$('#pomoCount').text(Object.getOwnPropertyNames(result_arr.result).length - 1);
 				}
 		    }
 		});
 	}
+	
+	function pomostatus() {
+		$.ajax({
+		    url: "{{ url('pomostatus') }}",
+		    type: 'GET',
+		    data: {"_token":"{{ csrf_token() }}"},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					if(result_arr.result.current_pomo_status != status) {
+						location.href = "";
+					}
+				}
+		    }
+		});
+	}
 
-	function create_pomo_li(pomo_data,active_pomo_data){
+	function create_pomo_li(pomo_data){
 
 		$str = '<li id="pomo'+pomo_data.id+'" class="pomo_li">';
 		$str += '<span class="time">';
-		$str += (new Date(active_pomo_data.created_at)).format("hh:mm") +' - '+ (new Date(active_pomo_data.updated_at)).format("hh:mm");
+		$str += (new Date(pomo_data.created_at)).format("hh:mm") +' - '+ (new Date(pomo_data.updated_at)).format("hh:mm");
 		$str += '</span>';
 		$str += '<p>';
 		$str += '<a href="/notes?pomo_id='+pomo_data.id+'" class="record_pomo" style="display:none" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
@@ -548,7 +566,7 @@ $(document).keyup(function(event){
 						$("#recordPomo").css("display", "none");
 						$("#pomoBtn").css("display", "block");
 						
-						$("#pomos").prepend(create_pomo_li(result_arr.result, result_arr.result.active_pomo));
+						$("#pomos").prepend(create_pomo_li(result_arr.result.active_pomo));
 					}
 			    }
 			});

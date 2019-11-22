@@ -161,6 +161,10 @@ $(document).ready(function () {
             <div class="card">
                 <div class="card-header">
                     	新的笔记
+                    	<div class="form-inline" style="float:right">
+			                <input type="text" name="keyword" class="form-control" placeholder="搜索笔记" />
+			                <button class="btn btn-primary">搜 索</button>
+			            </div>
                 </div>
 
                 <div class="card-body">

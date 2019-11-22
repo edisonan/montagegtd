@@ -105,7 +105,7 @@ class CalService {
 	 * @param string $cal_token        	
 	 * @return string[]
 	 */
-	public function getIcsByCalToken(User $user, $cal_token) {
+	public function getIcsByCalToken( $cal_token) {
 		date_default_timezone_set ( "Asia/Shanghai" );
 		
 		// 获取该用户user_id

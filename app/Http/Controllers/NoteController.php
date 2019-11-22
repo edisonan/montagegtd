@@ -62,22 +62,27 @@ class NoteController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request, $add_content = '') {
-		if ($request->has ( 'pomo_id' )) {
-			$notes = $this->notes->forUserByPomo ( $request->user (), $request->pomo_id, $needPage = true );
+		$conditions = array('user_id'=>$request->user()->id);
+		if($request->has('keyword')){
+			$conditions['keyword'] = $request->keyword;
+		} else if ($request->has ( 'pomo_id' )) {
+			$conditions['pomo_id'] = $request->pomo_id;
 			$pomo = Pomo::where ( 'id', $request->pomo_id )->where ( 'user_id', $request->user ()->id )->first ();
 			if (empty ( $pomo )) {
 				abort ( 404, '系统异常，无此番茄!' );
 			}
 			$recommend_add_content = "#记录番茄#" . $pomo->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $pomo->created_at ) ) . "\n持续时长:20分钟\n";
 		} else if ($request->has ( 'article_id' )) {
-			$notes = $this->notes->forUserByArticle ( $request->user (), $request->article_id, $needPage = true );
+			$conditions['article_id'] = $request->article_id;
+			
 			$article = Article::where ( 'id', $request->article_id )->first ();
 			if (empty ( $article )) {
 				abort ( 404, '系统异常，无此文章!' );
 			}
 			$recommend_add_content = "#记录文章#" . $article->subject . "\n时间：" . date ( 'm月d日 H时i分' ) . "\n";
 		} else if ($request->has ( 'task_id' )) {
-			$notes = $this->notes->forUserByTask ( $request->user (), $request->task_id, $needPage = true );
+			$conditions['task_id'] = $request->task_id;
+			
 			$task = Task::where ( 'id', $request->task_id )->where ( 'user_id', $request->user ()->id )->first ();
 			if (empty ( $task )) {
 				abort ( 404, '系统异常，无此待办!' );
@@ -85,9 +90,9 @@ class NoteController extends Controller {
 			$parentTaskName = isset($task->parentTask->name)?"#".$task->parentTask->name."#":"";
 			$modeName = $task->mode == 2 ? "#life#":"#work#";
 			$recommend_add_content = "#记录待办#" .$modeName . $parentTaskName. $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
-		} else {
-			$notes = $this->notes->forUserByStatus ( $request->user (), 2, $needPage = true );
 		}
+		
+		$notes = $this->notes->getAll($conditions );
 		
 		if ($request->has ( 'add_content' )) {
 			if ($request->has ( 'type' ) && $request->type = 'image') {
