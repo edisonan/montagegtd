@@ -29,8 +29,10 @@
 	var mode=1;
 	if(getCookie("mode") == 2){
 		mode = 2;
+		$(".mode_name").text("生活");
 	} else {
 		mode = 1;
+		$(".mode_name").text("工作");
 	}
 
 	//间隔 1S
@@ -309,6 +311,12 @@ input[type=checkbox]:checked:after{
 <script type="text/javascript">
 $(document).ready(function () {
 
+	//主动加载列表
+    showtasks();
+
+	//主动加载番茄列表
+    showpomos();
+    
 	//开始做番茄
 	$("#pomoBtn").click(function(){
 		if(status == 1){
@@ -492,12 +500,6 @@ $(document).ready(function () {
 		$(".change_mode").text("[切换]");
     });
 
-	//主动加载列表
-    showtasks();
-
-	//主动加载番茄列表
-    showpomos();
-
 });
 
 /**
@@ -625,7 +627,7 @@ $(document).keyup(function(event){
 						style="FILTER: alpha(opacity = 100, finishopacity = 0)">
 						
 					<div class = "head">
-						<datetime class="time"><span class="mode_name">工作</span><span class="change_mode">[切换]</span></datetime>
+						<datetime class="time"><span class="mode_name"></span><span class="change_mode">[切换]</span></datetime>
 						<div class="number">共 <span id="taskCount">0</span> 待办任务</div>
 					</div>
 						
