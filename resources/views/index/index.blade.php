@@ -27,13 +27,6 @@
 
 	//待办列表模式
 	var mode=1;
-	if(getCookie("mode") == 2){
-		mode = 2;
-		document.getElementsByClassName("mode_name")[0].innerHTML = "生活";
-	} else {
-		mode = 1;
-		document.getElementsByClassName("mode_name")[0].innerHTML = "工作";
-	}
 
 	//间隔 1S
 	var interval = 1000; 
@@ -311,6 +304,14 @@ input[type=checkbox]:checked:after{
 <script type="text/javascript">
 $(document).ready(function () {
 
+	if(getCookie("mode") == 2){
+		mode = 2;
+		$(".mode_name").text("生活");
+	} else {
+		mode = 1;
+		$(".mode_name").text("工作");
+	}
+	
 	//主动加载列表
     showtasks();
 
