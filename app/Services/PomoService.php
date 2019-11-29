@@ -6,6 +6,7 @@ use App\Models\Pomo;
 use App\Repositories\PomoRepository;
 use App\Repositories\SettingRepository;
 use Illuminate\Support\Facades\Session;
+use App\Http\Utils\CommonUtil;
 
 /**
  * PomoService番茄相关
@@ -121,9 +122,9 @@ class PomoService {
 	}
 	
 	public function pomonotify($user,$message){
-		$setting = $this->settings->forUser ( $request->user () );
+		$setting = $this->settings->forUser ( $user );
 		if(isset($setting->ifttt_notify)){
-			return \CommonUtil::iftttnotify('做番茄',$message,'https://task.congcong.us/',$setting->ifttt_notify);
+			return CommonUtil::iftttnotify('做番茄',$message,'https://task.congcong.us/',$setting->ifttt_notify);
 		} else {
 			return false;
 		}

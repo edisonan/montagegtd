@@ -36,33 +36,42 @@ class CommonUtil {
 	}
 	
 	public static function iftttnotify($title,$message,$url,$key) {
+		if(empty($title) || empty($message) || empty($url)){
+			Log::info ( "params can not empty" );
+			return false;
+		}
 		$post_params = array(
 				'value1' => $title,
 				'value2' => $message,
 				'value3' => $url,
 		);
+		$headers = array (
+				'Content-Type:application/json',
+		);
 		
-		$ch = curl_init ();
-		curl_setopt ( $ch, CURLOPT_URL, 'https://maker.ifttt.com/trigger/montage/with/key/'.$key );
-		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt ( $ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13' );
-		if (strpos ( $url, 'https://' ) !== false) {
-			curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, FALSE );
-			curl_setopt ( $ch, CURLOPT_SSL_VERIFYHOST, FALSE );
-		}
-		curl_setopt ( $ch, CURLOPT_CONNECTTIMEOUT, 3 );
+		// 创建连接
+		$curl = curl_init ( 'https://maker.ifttt.com/trigger/montage/with/key/'.$key  );
+		curl_setopt ( $curl, CURLOPT_CUSTOMREQUEST, 'POST' );
+		curl_setopt ( $curl, CURLOPT_HTTPHEADER, $headers );
+		curl_setopt ( $curl, CURLOPT_FAILONERROR, false );
+		curl_setopt ( $curl, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt ( $curl, CURLOPT_HEADER, false );
 		curl_setopt ( $curl, CURLOPT_POST, true );
-		curl_setopt ( $curl, CURLOPT_POSTFIELDS, json_encode ( $post_params ) );
-		$fp = curl_exec ( $ch );
-		curl_close ( $ch );
+		curl_setopt ( $curl, CURLOPT_SSL_VERIFYPEER, FALSE );
+		curl_setopt ( $curl, CURLOPT_SSL_VERIFYHOST, FALSE );
+		curl_setopt ( $curl, CURLOPT_POSTFIELDS, json_encode ( $post_params) );
 		
-		if (! $fp) {
-			Log::info ( "can not open" . $url );
+		// 发送请求
+		$response = curl_exec ( $curl );
+		curl_close ( $curl );
+		
+		if (empty($response)) {
+			Log::info ( "request error:" . $url );
 			return false;
 		}
 		
-		if(trim($fp) != 'Congratulations!'){
-			log::info($fp);
+		if(trim($response) != 'Congratulations!'){
+			log::info('request error:'.$response);
 			return false;
 		} else {
 			return true;
