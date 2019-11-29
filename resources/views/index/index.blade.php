@@ -110,12 +110,12 @@
 				document.getElementById('pomoBtn').style.display = "none";
 				document.getElementById('recordPomo').style.display = "";
 				document.title = message + title;
-				notify(message);
+				pomonotify(message);
 				return false;
 			} else if(status == 4){
 				var message = '休息完成，快来开始下一个番茄吧~';
 				document.title = message + title;
-				notify(message);
+				pomonotify(message);
 				location.href = '{{url('/index')}}';
 				return false;
 			} else {
@@ -201,6 +201,29 @@
 				}
 		    }
 		});
+	}
+
+	// 通知
+	function pomonotify(message){
+		// app通知
+		$.ajax({
+		    url: "{{ url('pomonotify') }}",
+		    type: 'GET',
+		    data: {"_token":"{{ csrf_token() }}","message":message},
+		    success: function(result) {
+		    	result_arr = JSON.parse(result);
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					if(result_arr.result.current_pomo_status != status) {
+						location.href = "";
+					}
+				}
+		    }
+		});
+
+		//浏览器通知
+		notify(message);
 	}
 
 	function create_pomo_li(pomo_data){

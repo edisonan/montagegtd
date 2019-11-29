@@ -186,4 +186,10 @@ class PomoController extends Controller {
 		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
 		return response ( $resp );
 	}
+	
+	public function pomonotify(Request $request) {
+		$status = $this->pomoService->pomonotify ( $request->user (),$request->message );
+		$resp = $this->responseJson ( self::OK_CODE , array('status'=>$status));
+		return response ( $resp );
+	}
 }

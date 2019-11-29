@@ -11,7 +11,7 @@ class Setting extends Model
      *
      * @var array
      */
-    protected $fillable = ['day_pomo_goal','week_pomo_goal','month_pomo_goal','pomo_time','pomo_rest_time','kindle_email','is_start_kindle','with_image_push','cal_token'];
+    protected $fillable = ['day_pomo_goal','week_pomo_goal','month_pomo_goal','pomo_time','pomo_rest_time','kindle_email','is_start_kindle','with_image_push','cal_token','ifttt_notify'];
     
     /**
      * The attributes that should be cast to native types.

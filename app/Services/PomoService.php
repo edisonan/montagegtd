@@ -14,13 +14,15 @@ use Illuminate\Support\Facades\Session;
  */
 class PomoService {
 	protected $pomos;
+	protected $settings;
 	
 	/**
 	 *
 	 * @param PomoRepository $pomos        	
 	 */
-	public function __construct(PomoRepository $pomos) {
+	public function __construct(PomoRepository $pomos,SettingRepository $settings) {
 		$this->pomos = $pomos;
+		$this->settings = $settings;
 	}
 	public function startPomo($user) {
 		$active_pomo = $this->pomos->forUserActivePomo ( $user );
@@ -115,5 +117,14 @@ class PomoService {
 				'tip_type' => $tip_type,
 				'tip_message' => $tip_message 
 		);
+	}
+	
+	public function pomonotify($user,$message){
+		$setting = $this->settings->forUser ( $request->user () );
+		if(isset($setting->ifttt_notify)){
+			return \CommonUtil::iftttnotify('做番茄',$message,'https://task.congcong.us/',$setting->ifttt_notify);
+		} else {
+			return false;
+		}
 	}
 }
