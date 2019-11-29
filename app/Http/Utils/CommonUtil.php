@@ -70,7 +70,7 @@ class CommonUtil {
 			return false;
 		}
 		
-		if(trim($response) != 'Congratulations!'){
+		if(trim($response) != "Congratulations! You've fired the montage event"){
 			log::info('request error:'.$response);
 			return false;
 		} else {
