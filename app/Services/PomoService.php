@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Pomo;
 use App\Repositories\PomoRepository;
+use App\Repositories\SettingRepository;
 use Illuminate\Support\Facades\Session;
 
 /**
