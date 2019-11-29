@@ -89,6 +89,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/pomos/start', 'PomoController@start');
     Route::get('/pomos/discard/{pomo}', 'PomoController@discard');
     Route::get('/pomos/discard/', 'PomoController@discard');
+    Route::get('/pomonotify', 'PomoController@pomonotify');
 	
     Route::get('/third/index', 'ThirdController@index');
     Route::get('/third/testFave', 'ThirdController@testFave');
