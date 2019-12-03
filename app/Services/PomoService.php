@@ -7,6 +7,7 @@ use App\Repositories\PomoRepository;
 use App\Repositories\SettingRepository;
 use Illuminate\Support\Facades\Session;
 use App\Http\Utils\CommonUtil;
+use App\Jobs\PomoNotify;
 
 /**
  * PomoService番茄相关
@@ -22,7 +23,7 @@ class PomoService {
 	 *
 	 * @param PomoRepository $pomos        	
 	 */
-	public function __construct(PomoRepository $pomos,SettingRepository $settings) {
+	public function __construct(PomoRepository $pomos, SettingRepository $settings) {
 		$this->pomos = $pomos;
 		$this->settings = $settings;
 	}
@@ -35,7 +36,9 @@ class PomoService {
 					'user_id' => $user->id 
 			] );
 		}
-		return $this->getCurrentPomoInfo ( $user, $active_pomo );
+		$currentPomoInfo = $this->getCurrentPomoInfo ( $user, $active_pomo );
+		$this->pomonotify ( $user, $currentPomoInfo ['current_pomo_status'] == Pomo::STATUS_PROCESSING ? '您已经完成了一个番茄，快来记录一下吧~' : '休息完成，快来开始下一个番茄吧~', $currentPomoInfo ['current_pomo_remain'] );
+		return $currentPomoInfo;
 	}
 	
 	/**
@@ -120,13 +123,11 @@ class PomoService {
 				'tip_message' => $tip_message 
 		);
 	}
-	
-	public function pomonotify($user,$message){
-		$setting = $this->settings->forUser ( $user );
-		if(isset($setting->ifttt_notify)){
-			return CommonUtil::iftttnotify('做番茄',$message,'https://task.congcong.us/',$setting->ifttt_notify);
-		} else {
-			return false;
-		}
+	public function pomonotify($user, $message, $delay) {
+		\Cache::store ( 'file' )->put ( 'NEED_POMO' . $user->id, 'OK', $delay + 300 );
+		$this->dispatch ( new PomoNotify ( $user, $message, $delay ) );
+	}
+	public function clearpomonotify($user) {
+		\Cache::store ( 'file' )->pull ( 'NEED_POMO' . $user->id );
 	}
 }

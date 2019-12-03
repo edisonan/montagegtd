@@ -109,6 +109,7 @@ class PomoController extends Controller {
 			$pomo->update ( array (
 					'status' => 3 
 			) );
+			$this->pomoService->clearpomonotify($request->user);
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
@@ -184,12 +185,6 @@ class PomoController extends Controller {
 		// 获取当前活动信息
 		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
 		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
-		return response ( $resp );
-	}
-	
-	public function pomonotify(Request $request) {
-		$status = $this->pomoService->pomonotify ( $request->user (),$request->message );
-		$resp = $this->responseJson ( self::OK_CODE , array('status'=>$status));
 		return response ( $resp );
 	}
 }

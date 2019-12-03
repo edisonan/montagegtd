@@ -65,6 +65,16 @@ class TaskRepository
     	->get();
     }
     
+    public function forUserByDeadline($start_time, $end_time)
+    {
+    	return Task::where('deadline', '>', $start_time)
+    	->where('deadline', '<', $end_time)
+    	->where('status',1)
+    	->orderBy('priority', 'desc')
+    	->orderBy('updated_at', 'desc')
+    	->get();
+    }
+    
     public function forUserByUserIdRemindTime($user_id, $start_time, $end_time)
     {
     	return Task::where('user_id', $user_id)
