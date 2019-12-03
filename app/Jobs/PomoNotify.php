@@ -7,6 +7,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use App\Http\Utils\CommonUtil;
 
 class PomoNotify implements ShouldQueue
 {
@@ -20,11 +21,10 @@ class PomoNotify implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($user, $message, $delay)
+    public function __construct($user, $message)
     {
         $this->user = $user;
         $this->message = $message;
-        $this->delay($delay);
     }
 
     /**
@@ -34,12 +34,12 @@ class PomoNotify implements ShouldQueue
      */
     public function handle()
     {
-    	$needPomo = \Cache::store('file')->get('NEED_POMO'.$user->id);
+    	$needPomo = \Cache::store('file')->pull('NEED_POMO'.$this->user->id);
     	
     	if(!empty($needPomo)){
-    		if(isset($user->setting->ifttt_notify)){
-    			$notifyResult = CommonUtil::iftttnotify('做番茄',$message,'https://task.congcong.us/',$user->setting->ifttt_notify);
-    			\Log::info('notify result:'.$notifyResult.'|message:'.$message.'|user:'.$user->name);
+    		if(isset($this->user->setting->ifttt_notify)){
+    			$notifyResult = CommonUtil::iftttnotify('做番茄',$this->message,'https://task.congcong.us/',$user->setting->ifttt_notify);
+    			\Log::info('notify result:'.$notifyResult.'|message:'.$this->message.'|user:'.$this->user->name);
     		}
     	}
     	return true;

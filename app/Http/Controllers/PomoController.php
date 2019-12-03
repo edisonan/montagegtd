@@ -109,7 +109,7 @@ class PomoController extends Controller {
 			$pomo->update ( array (
 					'status' => 3 
 			) );
-			$this->pomoService->clearpomonotify($request->user);
+			$this->pomoService->clearpomonotify($request->user());
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
@@ -155,6 +155,7 @@ class PomoController extends Controller {
 		if ($request->ajax () || $request->wantsJson ()) {
 			$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
 			$currentPomoInfo ['active_pomo'] = $pomo;
+			$this->pomoService->pomonotify($request->user(), $currentPomoInfo ['current_pomo_status'] == Pomo::STATUS_PROCESSING ? '您已经完成了一个番茄，快来记录一下吧~' : '休息完成，快来开始下一个番茄吧~', $currentPomoInfo ['current_pomo_remain']);
 			$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
 			return response ( $resp );
 		} else {

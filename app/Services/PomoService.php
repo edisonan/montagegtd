@@ -6,8 +6,8 @@ use App\Models\Pomo;
 use App\Repositories\PomoRepository;
 use App\Repositories\SettingRepository;
 use Illuminate\Support\Facades\Session;
-use App\Http\Utils\CommonUtil;
 use App\Jobs\PomoNotify;
+use App\Jobs\Job;
 
 /**
  * PomoService番茄相关
@@ -125,7 +125,7 @@ class PomoService {
 	}
 	public function pomonotify($user, $message, $delay) {
 		\Cache::store ( 'file' )->put ( 'NEED_POMO' . $user->id, 'OK', $delay + 300 );
-		$this->dispatch ( new PomoNotify ( $user, $message, $delay ) );
+		PomoNotify::dispatch ($user, $message)->delay(now()->addSecond($delay));
 	}
 	public function clearpomonotify($user) {
 		\Cache::store ( 'file' )->pull ( 'NEED_POMO' . $user->id );
