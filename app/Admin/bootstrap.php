@@ -17,5 +17,7 @@
  * Admin::js('/packages/prettydocs/js/main.js');
  *
  */
-
-Encore\Admin\Form::forget(['map', 'editor']);
+Encore\Admin\Form::forget ( [ 
+		'map',
+		'editor' 
+] );

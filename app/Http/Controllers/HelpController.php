@@ -1,49 +1,61 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Feedback;
-use App\Repositories\TaskRepository;
-use App\Repositories\PomoRepository;
-use App\Repositories\GoalRepository;
+use App\Http\Utils\ErrorCodeUtil;
 
-class HelpController extends Controller
-{
-
-    /**
-     * Create a new controller instance.
-     *
-     * @param TaskRepository $tasks
-     * @return void
-     */
-    public function __construct(TaskRepository $tasks, PomoRepository $pomos, GoalRepository $goals)
-    {
-        $this->middleware('auth');
-    }
-
-    public function feedback(Request $request)
-    {
-        return view('help.feedback', [
-            'from' => $request->has('from') ? $request->from : ''
-        ]);
-    }
-
-    public function feedbackStore(Request $request)
-    {
-        $this->validate($request, [
-            'content' => 'required'
-        ]);
-        
-        $feedback = new Feedback();
-        $feedback->from = $request->from;
-        $feedback->content = $request->content;
-        $feedback->save();
-        
-        if ($request->ajax() || $request->wantsJson() || $request->has('json_wants')) {
-            $resp = $this->responseJson(self::OK_CODE, array());
-            return response($resp);
-        } else {
-            redirect('/help/feedback')->with('message', 'IT WORKS!');
-        }
-    }
+/**
+ * 帮助控制器
+ *
+ * @author edison.an
+ *        
+ */
+class HelpController extends Controller {
+	
+	/**
+	 * 构造方法
+	 *
+	 * @return void
+	 */
+	public function __construct() {
+		$this->middleware ( 'auth' );
+	}
+	
+	/**
+	 * 反馈页
+	 * 
+	 * @param Request $request        	
+	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 */
+	public function feedback(Request $request) {
+		return view ( 'help.feedback', [ 
+				'from' => $request->has ( 'from' ) ? $request->from : '' 
+		] );
+	}
+	
+	/**
+	 * 提交反馈
+	 * 
+	 * @param Request $request        	
+	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 */
+	public function feedbackStore(Request $request) {
+		$this->validate ( $request, [ 
+				'content' => 'required' 
+		] );
+		
+		$feedback = new Feedback ();
+		$feedback->from = $request->from;
+		$feedback->content = $request->content;
+		$feedback->save ();
+		
+		if ($request->ajax () || $request->wantsJson () || $request->has ( 'json_wants' )) {
+			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, array () );
+			return response ( $resp );
+		} else {
+			redirect ( '/help/feedback' )->with ( 'message', '反馈成功' );
+		}
+	}
 }

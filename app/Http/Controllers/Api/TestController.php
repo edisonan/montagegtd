@@ -59,7 +59,7 @@ class TestController extends Controller {
 			$pomos = $this->pomos->forUserByStatus ( $user, 2, $needPage = true );
 		}
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE, $pomos );
+			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomos );
 			return response ( $resp );
 		} else {
 			return view ( 'pomos.index', [ 
@@ -73,7 +73,7 @@ class TestController extends Controller {
 		
 		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $user );
 		
-		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $currentPomoInfo );
 		return response ( $resp );
 	}
 	
@@ -89,7 +89,7 @@ class TestController extends Controller {
 		
 		$pomoInfo = $this->pomoService->startPomo ( $user );
 		
-		$resp = $this->responseJson ( self::OK_CODE, $pomoInfo );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomoInfo );
 		return response ( $resp );
 	}
 	
@@ -111,7 +111,7 @@ class TestController extends Controller {
 			) );
 		}
 		
-		$resp = $this->responseJson ( self::OK_CODE );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
 		return response ( $resp );
 	}
 	
@@ -120,7 +120,7 @@ class TestController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function store(Request $request, Pomo $pomo) {
-		$user = User::where('id', 1)->first();
+		$user = User::where ( 'id', 1 )->first ();
 		$setting = $user->setting;
 		$pomo_time = isset ( $setting->pomo_time ) && ! empty ( $setting->pomo_time ) ? $setting->pomo_time * 60 : Pomo::DEFAULT_INTERVAL;
 		
@@ -129,7 +129,7 @@ class TestController extends Controller {
 					'name' => 'required|max:255' 
 			] );
 			
-// 			$this->authorize ( 'destroy', $pomo );
+			// $this->authorize ( 'destroy', $pomo );
 			$pomo->update ( [ 
 					'name' => $request->name,
 					'status' => 2 
@@ -149,7 +149,7 @@ class TestController extends Controller {
 		
 		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $user );
 		$currentPomoInfo ['active_pomo'] = $pomo;
-		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $currentPomoInfo );
 		return response ( $resp );
 	}
 	
@@ -166,7 +166,7 @@ class TestController extends Controller {
 		
 		$pomo->delete ();
 		
-		$resp = $this->responseJson ( self::OK_CODE );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
 		return response ( $resp );
 	}
 }
