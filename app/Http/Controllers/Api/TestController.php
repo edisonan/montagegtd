@@ -3,32 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Repositories\CategoryRepository;
-use App\Repositories\ArticleRepository;
-use App\Models\ArticleSub;
-use App\Models\NoteTagMap;
-use App\Models\Thing;
-use App\Models\Tag;
 use App\Models\Pomo;
-use App\Repositories\FeedSubRepository;
-use App\Repositories\ArticleSubRepository;
+use App\Models\Thing;
 use App\Models\User;
-use App\Models\OauthInfo;
-use App\Http\Utils\CommonUtil;
-use function Qiniu\json_decode;
-use App\Repositories\OauthInfoRepository;
-use App\Repositories\PomoRepository;
 use App\Services\PomoService;
+use Illuminate\Http\Request;
 
 class TestController extends Controller {
-	/**
-	 * The pomo repository instance.
-	 *
-	 * @var PomoRepository
-	 */
-	protected $pomos;
 	
 	/**
 	 * The pomo servie instance.
@@ -40,26 +21,22 @@ class TestController extends Controller {
 	/**
 	 * Create a new controller instance.
 	 *
-	 * @param CategoryRepository $categorys        	
-	 * @param ArticleRepository $articles        	
-	 * @param FeedSubRepository $feedSubs        	
-	 * @param ArticleSubRepository $articleSubs        	
+	 * @param PomoService $pomoService        	
 	 * @return void
 	 */
-	public function __construct(PomoService $pomoService, PomoRepository $pomos) {
+	public function __construct(PomoService $pomoService) {
 		$this->pomoService = $pomoService;
-		$this->pomos = $pomos;
 	}
 	public function index(Request $request) {
 		$user = new User ();
 		$user->id = 1;
 		if ($request->has ( 'type' )) {
-			$pomos = $this->pomos->forUserByTime ( $user, date ( 'Ymd' ) );
+			$pomos = Pomo::where ( 'user_id', $user->id )->where ( 'status', 2 )->where ( 'created_at', '>', date ( 'Ymd' ) )->orderBy ( 'created_at', 'desc' )->get ();
 		} else {
-			$pomos = $this->pomos->forUserByStatus ( $user, 2, $needPage = true );
+			$pomos = $pomo = Pomo::where ( 'user_id', $user->id )->where ( 'status', 2 )->orderBy ( 'updated_at', 'desc' )->paginate ( 50 );
 		}
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE, $pomos );
+			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomos );
 			return response ( $resp );
 		} else {
 			return view ( 'pomos.index', [ 
@@ -67,13 +44,14 @@ class TestController extends Controller {
 			] );
 		}
 	}
+	
 	public function info(Request $request) {
 		$user = new User ();
 		$user->id = 1;
 		
 		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $user );
 		
-		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $currentPomoInfo );
 		return response ( $resp );
 	}
 	
@@ -89,7 +67,7 @@ class TestController extends Controller {
 		
 		$pomoInfo = $this->pomoService->startPomo ( $user );
 		
-		$resp = $this->responseJson ( self::OK_CODE, $pomoInfo );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomoInfo );
 		return response ( $resp );
 	}
 	
@@ -111,7 +89,7 @@ class TestController extends Controller {
 			) );
 		}
 		
-		$resp = $this->responseJson ( self::OK_CODE );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
 		return response ( $resp );
 	}
 	
@@ -120,7 +98,7 @@ class TestController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function store(Request $request, Pomo $pomo) {
-		$user = User::where('id', 1)->first();
+		$user = User::where ( 'id', 1 )->first ();
 		$setting = $user->setting;
 		$pomo_time = isset ( $setting->pomo_time ) && ! empty ( $setting->pomo_time ) ? $setting->pomo_time * 60 : Pomo::DEFAULT_INTERVAL;
 		
@@ -129,7 +107,7 @@ class TestController extends Controller {
 					'name' => 'required|max:255' 
 			] );
 			
-// 			$this->authorize ( 'destroy', $pomo );
+			// $this->authorize ( 'destroy', $pomo );
 			$pomo->update ( [ 
 					'name' => $request->name,
 					'status' => 2 
@@ -149,7 +127,7 @@ class TestController extends Controller {
 		
 		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $user );
 		$currentPomoInfo ['active_pomo'] = $pomo;
-		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $currentPomoInfo );
 		return response ( $resp );
 	}
 	
@@ -166,7 +144,7 @@ class TestController extends Controller {
 		
 		$pomo->delete ();
 		
-		$resp = $this->responseJson ( self::OK_CODE );
+		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
 		return response ( $resp );
 	}
 }

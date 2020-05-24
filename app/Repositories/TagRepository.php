@@ -5,14 +5,13 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Models\Tag;
 
-class TagRepository
-{
+class TagRepository {
 	/**
 	 * get tag by name
-	 * @param unknown $name
+	 * 
+	 * @param unknown $name        	
 	 */
-    public function forTagName($name){
-    	return Tag::where('name', $name)
-    	->first();
-    }
+	public function forTagName($name) {
+		return Tag::where ( 'name', $name )->first ();
+	}
 }

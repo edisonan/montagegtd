@@ -119,7 +119,7 @@ $(document).ready(function () {
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
                         
-						<div id="mind_content_show" style="margin:15px;"></div>
+						<div id="mind_content_show" style="margin:15px;height: 400px;line-height: 180%;"></div>
 					</div>
 
                     
@@ -168,10 +168,26 @@ $(document).ready(function () {
 
     var _jm = new jsMind(options);
 
-    // 让 _jm 显示这个 mind 即可
-    _jm.show(mind); 
-    _jm.select_node({{$mind->id}});
-
+    task_token = "{{ csrf_token() }}";
+	var mind;
+	$.ajax({
+	    url: "{{ url('/mindajaxget') }}"+"/"+<?php echo $mind->id;?>,
+	    type: 'GET',
+	    data: {_token:task_token},
+	    success: function(result) {
+	    	result_arr = JSON.parse(result);
+			if(result_arr.code != 9999){
+				alert('处理失败，请稍后再试');
+			} else {
+				mind = JSON.parse(result_arr.result.jsmind_datas);
+				
+				 // 让 _jm 显示这个 mind 即可
+		        _jm.show(mind); 
+		        _jm.select_node({{$mind->id}});
+			}
+	    }
+	});
+	
     function add_node(){
         var selected_node = _jm.get_selected_node(); // as parent of new node
         if(!selected_node){prompt_info('please select a node first.');return;}
