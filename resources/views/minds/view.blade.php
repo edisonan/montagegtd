@@ -119,7 +119,7 @@ $(document).ready(function () {
 						<input type="hidden" id="mind_token" value="{{ csrf_token() }}">
 						<button class="btn btn-info col-md-12" onclick="mind_update()">保存</button>
                         
-						<div id="mind_content_show" style="margin:15px;"></div>
+						<div id="mind_content_show" style="margin:15px;height: 400px;line-height: 180%;"></div>
 					</div>
 
                     

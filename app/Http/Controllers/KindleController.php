@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Setting;
 use App\Models\KindleLog;
-use App\Repositories\SettingRepository;
 use Develpr\Phindle\Phindle;
 use Develpr\Phindle\Content;
 use App\Http\Utils\ErrorCodeUtil;
@@ -31,7 +30,7 @@ class KindleController extends Controller {
 	/**
 	 * 构造方法
 	 *
-	 * @param SettingRepository $tasks        	
+	 * @param SettingService $settings        	
 	 * @return void
 	 */
 	public function __construct(SettingService $settings) {

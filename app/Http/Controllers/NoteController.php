@@ -6,8 +6,6 @@ use App\Http\Utils\ErrorCodeUtil;
 use App\Models\Note;
 use App\Models\NoteTagMap;
 use App\Models\Tag;
-use App\Repositories\NoteRepository;
-use App\Repositories\TagRepository;
 use App\Services\NoteService;
 use Illuminate\Http\Request;
 use App\Services\TagService;
@@ -37,8 +35,8 @@ class NoteController extends Controller {
 	/**
 	 * 构造方法
 	 *
-	 * @param NoteRepository $notes        	
-	 * @param TagRepository $tags        	
+	 * @param NoteService $noteService        	
+	 * @param TagService $tagService        	
 	 * @return void
 	 */
 	public function __construct(NoteService $noteService, TagService $tagService) {

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Setting;
-use App\Repositories\SettingRepository;
 use App\Http\Utils\ErrorCodeUtil;
 use App\Services\SettingService;
 

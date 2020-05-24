@@ -5,46 +5,29 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Repositories\CategoryRepository;
-use App\Repositories\ArticleRepository;
 use App\Models\ArticleSub;
 use App\Models\NoteTagMap;
 use App\Models\Tag;
-use App\Repositories\FeedSubRepository;
-use App\Repositories\ArticleSubRepository;
 use App\Models\User;
 use App\Models\OauthInfo;
 use App\Http\Utils\CommonUtil;
 use function Qiniu\json_decode;
-use App\Repositories\OauthInfoRepository;
+use App\Services\AccountService;
 
 class WechatController extends Controller {
-	protected $categorys;
-	protected $articles;
-	protected $feedSubs;
-	protected $articleSubs;
 	
 	/**
 	 * Create a new controller instance.
 	 *
-	 * @param CategoryRepository $categorys        	
-	 * @param ArticleRepository $articles        	
-	 * @param FeedSubRepository $feedSubs        	
-	 * @param ArticleSubRepository $articleSubs        	
 	 * @return void
 	 */
-	public function __construct(CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs) {
+	public function __construct() {
 		$this->middleware ( 'tokenauth', [ 
 				'except' => [ 
 						'wechatlogin',
 						'explorer' 
 				] 
 		] );
-		
-		$this->categorys = $categorys;
-		$this->articles = $articles;
-		$this->articleSubs = $articleSubs;
-		$this->articleSubs = $articleSubs;
 	}
 	
 	/**
@@ -62,8 +45,8 @@ class WechatController extends Controller {
 		$openid = $wx_ret ['openid'];
 		$session_key = $wx_ret ['session_key'];
 		
-		$oauthRepository = new OauthInfoRepository ();
-		$oauth = $oauthRepository->forByThirdUidAndDriver ( $openid, 'wechatmini' );
+		$accountService = new AccountService ();
+		$oauth = $accountService->forByThirdUidAndDriver ( $openid, 'wechatmini' );
 		if (empty ( $oauth )) {
 			// add user
 			$data = array ();
