@@ -41,7 +41,7 @@ class ThingController extends Controller {
 	 */
 	public function index(Request $request) {
 		return view ( 'things.index', [ 
-				'things' => $this->things->forUser ( $request->user (), $needPage = true ) 
+				'things' => $this->thingService->forUser ( $request->user (), $needPage = true ) 
 		] );
 	}
 	

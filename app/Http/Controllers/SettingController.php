@@ -71,7 +71,7 @@ class SettingController extends Controller {
 				'pomo_rest_time' => 'integer|min:1|max:10',
 				'is_start_kindle' => 'integer|min:0|max:1',
 				'with_image_push' => 'integer|min:0|max:1',
-				'kindle_email' => 'email' 
+				'kindle_email' => 'nullable|email' 
 		] );
 		
 		if (empty ( $setting->user_id )) {

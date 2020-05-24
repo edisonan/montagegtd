@@ -168,9 +168,6 @@ $(document).ready(function () {
 
     var _jm = new jsMind(options);
 
-
-    var _jm = new jsMind(options);
-
     task_token = "{{ csrf_token() }}";
 	var mind;
 	$.ajax({

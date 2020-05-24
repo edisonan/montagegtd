@@ -132,13 +132,6 @@ class MindController extends Controller {
 					"\r",
 					"\n" 
 			), "\\r\\n", $request->content );
-			$content = str_replace ( array (
-					"'",
-					'"' 
-			), array (
-					'`',
-					'``' 
-			), $content );
 			$mind->content = $content;
 		}
 		$mind->update ();
