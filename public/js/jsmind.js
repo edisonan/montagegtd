@@ -2393,7 +2393,15 @@
             }
             if(!!node){
             	//***********************add self start
-            	$("#mind_content_show").html(node.data.content);
+            	var content = node.data.content;
+                if(content != null){
+                        content = content.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+                        content = content.replace(/\n/g,"<br/>");
+                        content = content.replace(/ /g,"&nbsp;");
+                        content = content.replace(/\t/g,"&nbsp;&nbsp;&nbsp;&nbsp;");
+                        content = '<code>'+content+'</code>';
+                }
+                $("#mind_content_show").html(content);
             	$("#mind_content").val(node.data.content);
             	$("#mind_id").val(node.id);
             	$("#mind_name").html('详细描述:'+node.topic);

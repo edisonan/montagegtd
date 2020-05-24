@@ -38,6 +38,7 @@ Route::group ( [
 	Route::post ( '/mind', 'MindController@store' );
 	Route::delete ( '/mind/{mind}', 'MindController@destroy' );
 	Route::get ( '/mind/{mind}', 'MindController@view' );
+	Route::get ( '/mindajaxget/{mind}', 'MindController@ajaxget' );
 	Route::post ( '/mind/{mind}', 'MindController@update' );
 	
 	Route::get ( '/tasks', 'TaskController@index' );

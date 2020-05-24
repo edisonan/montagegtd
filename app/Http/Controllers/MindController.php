@@ -161,15 +161,15 @@ class MindController extends Controller {
 	public function view(Request $request, Mind $mind) {
 		$this->authorize ( 'destroy', $mind );
 		
-		$datas = $this->getNodeTreeData ( $mind );
-		$jsmind_datas = array ();
-		$jsmind_datas ['meta'] = array (
-				'name' => $mind->name,
-				'author' => $request->user ()->name,
-				'version' => "1.0" 
-		);
-		$jsmind_datas ['format'] = 'node_tree';
-		$jsmind_datas ['data'] = $datas;
+// 		$datas = $this->getNodeTreeData ( $mind );
+// 		$jsmind_datas = array ();
+// 		$jsmind_datas ['meta'] = array (
+// 				'name' => $mind->name,
+// 				'author' => $request->user ()->name,
+// 				'version' => "1.0" 
+// 		);
+// 		$jsmind_datas ['format'] = 'node_tree';
+// 		$jsmind_datas ['data'] = $datas;
 		
 		if ($request->ajax () || $request->wantsJson ()) {
 			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
@@ -177,7 +177,7 @@ class MindController extends Controller {
 		} else {
 			return view ( 'minds.view', [ 
 					'mind' => $mind,
-					'jsmind_datas' => json_encode ( $jsmind_datas ) 
+// 					'jsmind_datas' => json_encode ( $jsmind_datas ) 
 			] );
 		}
 	}
@@ -194,7 +194,7 @@ class MindController extends Controller {
 		$data ['id'] = $mind->id;
 		$data ['topic'] = $mind->name;
 		$data ['content'] = $mind->content;
-		$data ['content'] = str_replace ( "'", '', $data ['content'] );
+		$data ['content'] = str_replace("\\r\\n", "\r\n", $data['content']);
 		if (count ( $mind->childrenMinds ) > 0) {
 			foreach ( $mind->childrenMinds as $childMind ) {
 				$data ['children'] [] = $this->getNodeTreeData ( $childMind, $level + 1 );
