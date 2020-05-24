@@ -7,7 +7,8 @@ use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TaskTagMap;
 use App\Models\Thing;
-use App\Repositories\TaskService;
+use App\Services\TaskService;
+use App\Services\GoalService;
 use Illuminate\Http\Request;
 use App\Services\TagService;
 

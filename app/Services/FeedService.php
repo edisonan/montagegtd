@@ -84,10 +84,13 @@ class FeedService {
 		}
 		
 		if (count ( $navInfos ) == 0) {
-			$category = $user->categorys ()->create ( [ 
-					'name' => '未分类',
-					'category_order' => 0 
-			] );
+			$category = Category::where ( 'user_id', $user->id )->where ( 'name', '未分类' )->first ();
+			if (empty ( $category )) {
+				$category = $user->categorys ()->create ( [ 
+						'name' => '未分类',
+						'category_order' => 0 
+				] );
+			}
 			$navInfos [] = array (
 					'category_info' => array (
 							'category_name' => $category->name,
@@ -135,6 +138,7 @@ class FeedService {
 		}
 		
 		$feedSub = $user->feedSubs ()->create ( [ 
+				'status' => 1,
 				'feed_id' => $feed->id,
 				'feed_name' => $storeParams ['feed_name'],
 				'category_id' => $storeParams ['category_id'] 
@@ -171,6 +175,7 @@ class FeedService {
 		}
 		
 		$feedSub = $user->feedSubs ()->create ( [ 
+				'status' => 1,
 				'feed_id' => $feed->id,
 				'feed_name' => $feed->feed_name,
 				'category_id' => $category->id 
