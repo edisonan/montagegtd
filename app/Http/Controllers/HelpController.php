@@ -47,6 +47,7 @@ class HelpController extends Controller {
 		] );
 		
 		$feedback = new Feedback ();
+		$feedback->user_id = $request->user()->id;
 		$feedback->from = $request->from;
 		$feedback->content = $request->content;
 		$feedback->save ();
@@ -55,7 +56,7 @@ class HelpController extends Controller {
 			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, array () );
 			return response ( $resp );
 		} else {
-			redirect ( '/help/feedback' )->with ( 'message', '反馈成功' );
+			return redirect ( '/help/feedback' )->with ( 'message', '反馈成功' );
 		}
 	}
 }
