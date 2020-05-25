@@ -11,9 +11,6 @@ use App\Services\CategoryService;
 use App\Services\FeedService;
 use ArandiLopez\Feed\Factories\FeedFactory;
 use Illuminate\Http\Request;
-use App\Repositories\CategoryRepository;
-use App\Services\CategoryService;
-use App\Services\FeedService;
 
 /**
  * 订阅源控制器

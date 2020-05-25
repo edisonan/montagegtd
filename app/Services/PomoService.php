@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Session;
 use App\Repositories\PomoRepository;
 use App\Repositories\SettingRepository;
-use Illuminate\Support\Facades\Session;
 use App\Jobs\PomoNotify;
 use App\Jobs\Job;
 

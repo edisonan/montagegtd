@@ -51,7 +51,7 @@ class KindleController extends Controller {
 	public function index(Request $request) {
 		$page_params = array ();
 		
-		$setting = $user->setting;
+		$setting = $request->user()->setting;
 		
 		if (empty ( $setting )) {
 			$setting = new Setting ();

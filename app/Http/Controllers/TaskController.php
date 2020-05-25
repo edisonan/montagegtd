@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\ErrorCodeUtil;
-use Illuminate\Http\Request;
-use App\Models\Task;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TaskTagMap;
@@ -37,7 +35,7 @@ class TaskController extends Controller {
 	 * @param TaskRepository $tasks        	
 	 * @return void
 	 */
-	public function __construct(TaskRepository $tasks, GoalRepository $goals, TagRepository $tags) {
+	public function __construct(TaskService $tasks, GoalService $goals, TagService $tags) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'ics' 
@@ -152,7 +150,7 @@ class TaskController extends Controller {
 		}
 		
 		if ($request->has ( 'parent_task_id' )) {
-			$parent_task = $this->tasks->forUserById ( $request->user (), $request->parent_task_id );
+			$parent_task = Task::where ( 'user_id', $request->user ()->id )->where ( 'id', $request->parent_task_id )->first ();
 			if (! empty ( $parent_task )) {
 				$params ['parent_task_id'] = $request->parent_task_id;
 			}

@@ -149,16 +149,17 @@ class ArticleService {
 	 * @return array
 	 */
 	public function getArticleSubs(User $user, $status, $pageCount, $feedId = '', $category_id = '') {
-		// 不同条件下，获取订阅文章信息
+		$feedIdArr = array ();
 		if (! empty ( $feedId )) {
-			// 通过FeedID获取订阅文章集
-			$articleSubs = $this->articleSubs->forUserByStatusFeedId ( $user, $status, $feedId, $needPage = true, $pageCount );
-		} else if (! empty ( $category_id )) {
+			$feedIdArr [] = $feedId;
+		} else if (! empty ( $categoryId )) {
 			// 通过分类ID获取订阅文章集
-			$articleSubs = $this->articleSubs->forUserByCategoryStatusFeedId ( $user, $status, $category_id, $needPage = true, $pageCount );
-		} else {
-			// 通过状态获取订阅文章集
-			$articleSubs = $this->articleSubs->forUserByStatus ( $user, $status, $needPage = true, $pageCount );
+			$feedsubs = DB::table ( 'feed_subs' )->select ( 'feed_id' )->where ( 'category_id', $categoryId )->where ( 'status', 1 )->get ();
+			
+			$feedIdArr = array ();
+			foreach ( $feedsubs as $feedsub ) {
+				$feedIdArr [] = $feedsub->feed_id;
+			}
 		}
 		
 		$articleSubs = ArticleSub::with ( 'article.feed' )->where ( 'user_id', $user->id )->where ( 'status', $status );

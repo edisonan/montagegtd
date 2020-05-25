@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\CalService;
 use Illuminate\Http\Request;
-use App\Services\CalService;
 
 /**
  * 日历订阅控制器

@@ -28,7 +28,7 @@ class SettingController extends Controller {
 	 * @param SettingRepository $settings        	
 	 * @return void
 	 */
-	public function __construct(SettingRepository $settings) {
+	public function __construct(SettingService $settings) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome' 

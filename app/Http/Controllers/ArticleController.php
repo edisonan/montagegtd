@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\ErrorCodeUtil;
-use App\Models\Article;
 use App\Models\ArticleSub;
 use App\Models\Feed;
 use App\Services\ArticleService;
@@ -11,9 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Article;
 use App\Models\ArticleMark;
-use App\Models\Feed;
-use App\Models\ArticleSub;
-use App\Services\ArticleService;
 
 /**
  * 文章管理控制器
@@ -89,7 +85,7 @@ class ArticleController extends Controller {
 				'article_subs' => $articleSubs,
 				'status' => $status,
 				'feed_id' => $feedId,
-				'page_params' => $page_params,
+				'page_params' => $pageParams,
 				'unable_img' => isset ( $_COOKIE ['unable_img'] ) ? $_COOKIE ['unable_img'] : "false",
 				'unable_desc' => isset ( $_COOKIE ['unable_desc'] ) ? $_COOKIE ['unable_desc'] : "false" 
 		] );
@@ -145,7 +141,7 @@ class ArticleController extends Controller {
 		$articles = $this->articleService->forUserByFeedId ( $request->user (), $feedId, $needPage = true, $pageCount );
 		
 		// 页面参数
-		$page_params = array (
+		$pageParams = array (
 				'page_count' => $pageCount,
 				'feed_id' => $feedId 
 		);

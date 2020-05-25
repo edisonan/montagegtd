@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\ErrorCodeUtil;
-use Illuminate\Http\Request;
 use App\Models\Note;
 use App\Models\NoteTagMap;
 use App\Models\Tag;
@@ -38,7 +37,7 @@ class NoteController extends Controller {
 	 * @param TagRepository $tags        	
 	 * @return void
 	 */
-	public function __construct(NoteRepository $notes, TagRepository $tags) {
+	public function __construct(NoteService $notes, TagService $tags) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome' 
