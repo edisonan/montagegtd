@@ -7,7 +7,7 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * Class UserCreated
- * 
+ *
  * @package App\Events
  */
 class UserCreated extends Event {

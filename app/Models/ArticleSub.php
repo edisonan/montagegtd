@@ -22,7 +22,10 @@ class ArticleSub extends Model {
 	 * @var array
 	 */
 	protected $casts = [ 
-			'article_id' => 'int' 
+			'user_id' => 'int',
+			'feed_id' => 'int',
+			'article_id' => 'int',
+			'star_ind' => 'int' 
 	];
 	
 	/**

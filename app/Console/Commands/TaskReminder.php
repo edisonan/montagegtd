@@ -5,10 +5,11 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Repositories\TaskRepository;
 use Mail;
+use App\Http\Utils\CommonUtil;
 
 /**
  * reminder the deadline task
- * 
+ *
  * @author edison.an
  *        
  */
@@ -42,12 +43,33 @@ class TaskReminder extends Command {
 		$tasks = $taskRepository->forUserByRemindTime ( $start_time, $end_time );
 		foreach ( $tasks as $task ) {
 			$user = $task->user;
+			// 邮件通知
 			Mail::send ( 'emails.reminder', [ 
 					'user' => $user,
 					'task' => $task 
 			], function ($m) use ($user, $task) {
-				$m->to ( $user->email, $user->name )->subject ( 'Task Reminder for :' . $task->name );
+				$m->to ( $user->email, $user->name )->subject ( '[待办提醒]' . $task->name );
 			} );
+			// ifttt通知
+			if (isset ( $task->user->setting->ifttt_notify )) {
+				CommonUtil::iftttnotify ( '待办提醒', $task->name, 'https://task.congcong.us', $task->user->setting->ifttt_notify );
+			}
+		}
+		
+		$tasks = $taskRepository->forUserByDeadline ( $start_time, $end_time );
+		foreach ( $tasks as $task ) {
+			$user = $task->user;
+			// 邮件通知
+			Mail::send ( 'emails.reminder', [ 
+					'user' => $user,
+					'task' => $task 
+			], function ($m) use ($user, $task) {
+				$m->to ( $user->email, $user->name )->subject ( '[待办提醒]' . $task->name );
+			} );
+			// ifttt通知
+			if (isset ( $task->user->setting->ifttt_notify )) {
+				CommonUtil::iftttnotify ( '待办截止提醒', $task->name, 'https://task.congcong.us', $task->user->setting->ifttt_notify );
+			}
 		}
 	}
 }

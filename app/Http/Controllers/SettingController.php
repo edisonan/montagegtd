@@ -16,37 +16,37 @@ use App\Services\SettingService;
 class SettingController extends Controller {
 	
 	/**
-	 * SettingService 实例.
+	 * The settings repository instance.
 	 *
-	 * @var SettingService
+	 * @var SettingRepository
 	 */
-	protected $settingService;
+	protected $settings;
 	
 	/**
-	 * 构造方法
+	 * Create a new controller instance.
 	 *
-	 * @param SettingService $settingService        	
+	 * @param SettingRepository $settings        	
 	 * @return void
 	 */
-	public function __construct(SettingService $settingService) {
+	public function __construct(SettingRepository $settings) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome' 
 				] 
 		] );
 		
-		$this->settingService = $settingService;
+		$this->settings = $settings;
 	}
 	
 	/**
-	 * 首页
+	 * 首页.
 	 *
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
 		$page_params = array ();
 		
-		$setting = $this->settingService->forUser ( $request->user () );
+		$setting = $this->settings->forUser ( $request->user () );
 		
 		if (empty ( $setting )) {
 			$setting = new Setting ();
@@ -57,7 +57,7 @@ class SettingController extends Controller {
 	}
 	
 	/**
-	 * 更新设置
+	 * 更新.
 	 *
 	 * @param Request $request        	
 	 * @param Setting $setting        	
@@ -71,11 +71,11 @@ class SettingController extends Controller {
 				'pomo_rest_time' => 'integer|min:1|max:10',
 				'is_start_kindle' => 'integer|min:0|max:1',
 				'with_image_push' => 'integer|min:0|max:1',
-				'kindle_email' => 'nullable|email' 
+				'kindle_email' => 'email' 
 		] );
 		
 		if (empty ( $setting->user_id )) {
-			$setting = $this->settingService->forUser ( $request->user () );
+			$setting = $this->settings->forUser ( $request->user () );
 			if (! empty ( $setting )) {
 				echo 'error';
 				exit ();
@@ -90,13 +90,13 @@ class SettingController extends Controller {
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
 			if ($request->has ( 'page_info' ) && $request->page_info == 'kindle_page') {
-				return redirect ( '/kindles' )->with ( 'message', 'IT WORKS!' );
+				return redirect ( '/kindles' )->with ( 'message', '操作成功!' );
 			} else {
-				return redirect ( '/settings' )->with ( 'message', 'IT WORKS!' );
+				return redirect ( '/settings' )->with ( 'message', '操作成功!' );
 			}
 		}
 	}

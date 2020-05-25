@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\ThirdService;
 use App\Http\Utils\ErrorCodeUtil;
+use App\Services\ThirdService;
+use Illuminate\Http\Request;
 
 /**
  * 第三方服务控制器
@@ -35,7 +35,7 @@ class ThirdController extends Controller {
 	
 	/**
 	 * 首页
-	 * 
+	 *
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {

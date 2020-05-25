@@ -6,7 +6,18 @@ use Illuminate\Support\Facades\Log;
 
 class CommonUtil {
 	public static function page_title($url) {
-		$fp = @file_get_contents ( $url );
+		$ch = curl_init ();
+		curl_setopt ( $ch, CURLOPT_URL, $url );
+		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
+		curl_setopt ( $ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13' );
+		if (strpos ( $url, 'https://' ) !== false) {
+			curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, FALSE );
+			curl_setopt ( $ch, CURLOPT_SSL_VERIFYHOST, FALSE );
+		}
+		curl_setopt ( $ch, CURLOPT_CONNECTTIMEOUT, 3 );
+		$fp = curl_exec ( $ch );
+		curl_close ( $ch );
+		
 		if (! $fp) {
 			Log::info ( "can not open" . $url );
 			return '';
@@ -22,6 +33,84 @@ class CommonUtil {
 		$title = preg_replace ( '/\s+/', ' ', $title_matches [1] );
 		$title = trim ( $title );
 		return $title;
+	}
+	public static function iftttnotify($title, $message, $url, $key) {
+		if (empty ( $title ) || empty ( $message ) || empty ( $url )) {
+			Log::info ( "params can not empty" );
+			return false;
+		}
+		$post_params = array (
+				'value1' => $title,
+				'value2' => $message,
+				'value3' => $url 
+		);
+		$headers = array (
+				'Content-Type:application/json' 
+		);
+		
+		// 创建连接
+		$curl = curl_init ( 'https://maker.ifttt.com/trigger/montage/with/key/' . $key );
+		curl_setopt ( $curl, CURLOPT_CUSTOMREQUEST, 'POST' );
+		curl_setopt ( $curl, CURLOPT_HTTPHEADER, $headers );
+		curl_setopt ( $curl, CURLOPT_FAILONERROR, false );
+		curl_setopt ( $curl, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt ( $curl, CURLOPT_HEADER, false );
+		curl_setopt ( $curl, CURLOPT_POST, true );
+		curl_setopt ( $curl, CURLOPT_SSL_VERIFYPEER, FALSE );
+		curl_setopt ( $curl, CURLOPT_SSL_VERIFYHOST, FALSE );
+		curl_setopt ( $curl, CURLOPT_POSTFIELDS, json_encode ( $post_params ) );
+		
+		// 发送请求
+		$response = curl_exec ( $curl );
+		curl_close ( $curl );
+		
+		if (empty ( $response )) {
+			Log::info ( "request error:" . $url );
+			return false;
+		}
+		
+		if (trim ( $response ) != "Congratulations! You've fired the montage event") {
+			log::info ( 'request error:' . $response );
+			return false;
+		} else {
+			return true;
+		}
+	}
+	public static function shortUrl($url) {
+		// 配置headers
+		$headers = array (
+				'Content-Type:application/json',
+				'Token:7c9d6e49fbac124241c572eacfa14c77' 
+		);
+		
+		// 创建连接
+		$curl = curl_init ( 'https://dwz.cn/admin/v2/create' );
+		curl_setopt ( $curl, CURLOPT_CUSTOMREQUEST, 'POST' );
+		curl_setopt ( $curl, CURLOPT_HTTPHEADER, $headers );
+		curl_setopt ( $curl, CURLOPT_FAILONERROR, false );
+		curl_setopt ( $curl, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt ( $curl, CURLOPT_HEADER, false );
+		curl_setopt ( $curl, CURLOPT_POST, true );
+		curl_setopt ( $curl, CURLOPT_SSL_VERIFYPEER, FALSE );
+		curl_setopt ( $curl, CURLOPT_SSL_VERIFYHOST, FALSE );
+		curl_setopt ( $curl, CURLOPT_POSTFIELDS, json_encode ( array (
+				'url' => $url 
+		) ) );
+		
+		// 发送请求
+		$response = curl_exec ( $curl );
+		curl_close ( $curl );
+		
+		if (empty ( $response )) {
+			return false;
+		}
+		
+		$result = json_decode ( $response, true );
+		if ($result ['Code'] != '0') {
+			return false;
+		} else {
+			return $result ['ShortUrl'];
+		}
 	}
 	public static function isUrl($s) {
 		return preg_match ( '/^http[s]?:\/\/' . '(([0-9]{1,3}\.){3}[0-9]{1,3}' . // IP形式的URL- 199.194.52.184

@@ -103,7 +103,7 @@ class GoalController extends Controller {
 	
 	/**
 	 * 更新目标
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @param Goal $goal        	
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory

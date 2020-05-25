@@ -18,7 +18,7 @@ class SettingRepository {
 	
 	/**
 	 * Get Setting By cal_token
-	 * 
+	 *
 	 * @param string $cal_token        	
 	 */
 	public function forCalToken(string $cal_token) {

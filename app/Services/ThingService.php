@@ -7,9 +7,9 @@ use App\Models\Thing;
 
 /**
  * 记事管理业务逻辑
- * 
- * @author edison.an
  *
+ * @author edison.an
+ *        
  */
 class ThingService {
 	/**

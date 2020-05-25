@@ -5,12 +5,16 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Models\OauthInfo;
 
+/**
+ *
+ * @author edison.an
+ *        
+ */
 class OauthInfoRepository {
 	/**
-	 * Get all of the tasks for a given user.
 	 *
 	 * @param User $user        	
-	 * @return Collection
+	 * @param unknown $needPage        	
 	 */
 	public function forUser(User $user, $needPage) {
 		$oauth_info = OauthInfo::where ( 'user_id', $user->id )->orderBy ( 'updated_at', 'desc' );
@@ -22,10 +26,9 @@ class OauthInfoRepository {
 	}
 	
 	/**
-	 * Get all of the tasks for a given user.
 	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * @param string $third_uid        	
+	 * @param string $driver        	
 	 */
 	public function forByThirdUidAndDriver(string $third_uid, string $driver) {
 		return OauthInfo::where ( 'third_uid', $third_uid )->where ( 'driver', $driver )->orderBy ( 'updated_at', 'desc' )->first ();

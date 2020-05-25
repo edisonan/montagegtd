@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $article->subject.' - Montage GTD')
+@section('title', $article->subject.' - 蒙太奇')
 
 @section('content')
 <link rel="stylesheet" href="/css/share.min.css">
@@ -172,11 +172,7 @@ window.onload=function(){
 					  <p class="card-text"><small class="text-muted">来源：<a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}" target="_blank">{{ $article->feed->feed_name}}</a> * {{$article->published}}</small></p>
 					  
 					  <div class="card-text post-text" id="card-text">
-						<?php 
-						$content = $article->content; 
-						echo App\Http\Utils\CommonUtil::formatContentHtml($content); 
-						?>
-						 
+						<?php echo App\Http\Utils\CommonUtil::formatContentHtml($article->content); ?>
 					  </div>
 					  
 					  

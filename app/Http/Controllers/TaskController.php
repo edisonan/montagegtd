@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\ErrorCodeUtil;
+use Illuminate\Http\Request;
+use App\Models\Task;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\TaskTagMap;
@@ -13,7 +15,7 @@ use Illuminate\Http\Request;
 use App\Services\TagService;
 
 /**
- * 待办控制器
+ * 待办事项控制器
  *
  * @author edison.an
  *        
@@ -21,57 +23,46 @@ use App\Services\TagService;
 class TaskController extends Controller {
 	
 	/**
-	 * TaskService 实例.
+	 * The task repository instance.
 	 *
-	 * @var TaskService
+	 * @var TaskRepository
 	 */
-	protected $taskService;
+	protected $tasks;
+	protected $goals;
+	protected $tags;
 	
 	/**
-	 * TagService 实例.
+	 * Create a new controller instance.
 	 *
-	 * @var TagService
-	 */
-	protected $tagService;
-	
-	/**
-	 * GoalService 实例.
-	 *
-	 * @var GoalService
-	 */
-	protected $goalService;
-	
-	/**
-	 * 构造方法
-	 *
-	 * @param TaskService $taskService        	
+	 * @param TaskRepository $tasks        	
 	 * @return void
 	 */
-	public function __construct(TaskService $taskService, TagService $tagService, GoalService $goalService) {
+	public function __construct(TaskRepository $tasks, GoalRepository $goals, TagRepository $tags) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'ics' 
 				] 
 		] );
 		
-		$this->taskService = $taskService;
-		$this->tagService = $tagService;
-		$this->goalService = $goalService;
+		$this->tasks = $tasks;
+		$this->goals = $goals;
+		$this->tags = $tags;
 	}
 	
 	/**
-	 * 首页
+	 * 首页.
 	 *
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
 		if ($request->has ( 'status' )) {
-			$tasks = $this->taskService->forUserByStatus ( $request->user (), $request->status );
+			$need_page = $request->has ( 'need_page' ) ? true : false;
+			$tasks = $this->tasks->forUserByStatus ( $request->user (), $request->status, $need_page, $request->has ( "mode" ) ? $request->mode : '' );
 		} else {
-			$tasks = $this->taskService->forUser ( $request->user (), $needPage = true );
+			$tasks = $this->tasks->forUser ( $request->user (), $needPage = true );
 		}
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $tasks );
+			$resp = $this->responseJson ( self::OK_CODE, $tasks );
 			return response ( $resp );
 		} else {
 			return view ( 'tasks.index', [ 
@@ -79,9 +70,56 @@ class TaskController extends Controller {
 			] );
 		}
 	}
+	public function getAllList(Request $request) {
+		$tasks = $this->tasks->forUserByStatus ( $request->user (), $request->status, false, $request->mode );
+		
+		// 组装子待办
+		$temp = '';
+		foreach ( $tasks as $task ) {
+			if ($task->parent_task_id != null) {
+				$temp [$task->parent_task_id] [] = $task;
+			}
+		}
+		
+		// 格式化待办顺序
+		$format_tasks = '';
+		foreach ( $tasks as $task ) {
+			if ($task->parent_task_id == null) {
+				$format_tasks [] = $task;
+				if (isset ( $temp [$task->id] )) {
+					foreach ( $temp [$task->id] as $val ) {
+						$format_tasks [] = $val;
+					}
+				}
+			}
+		}
+		
+		$resp = $this->responseJson ( self::OK_CODE, $format_tasks );
+		return response ( $resp );
+	}
+	public function priority(Request $request) {
+		$models = $this->tasks->forUserByStatus ( $request->user (), 1 );
+		$tasks = array (
+				1 => array (),
+				2 => array (),
+				3 => array (),
+				4 => array () 
+		);
+		foreach ( $models as $model ) {
+			$tasks [$model->priority] [] = $model;
+		}
+		if ($request->ajax () || $request->wantsJson ()) {
+			$resp = $this->responseJson ( self::OK_CODE, $tasks );
+			return response ( $resp );
+		} else {
+			return view ( 'tasks.priority', [ 
+					'tasks' => $tasks 
+			] );
+		}
+	}
 	
 	/**
-	 * 新建
+	 * 创建.
 	 *
 	 * @param Request $request        	
 	 */
@@ -94,6 +132,7 @@ class TaskController extends Controller {
 		
 		$params = array ();
 		$params ['name'] = $request->name;
+		$params ['mode'] = $request->mode;
 		
 		if ($request->has ( 'priority' ) && in_array ( $request->priority, array (
 				1,
@@ -113,14 +152,14 @@ class TaskController extends Controller {
 		}
 		
 		if ($request->has ( 'parent_task_id' )) {
-			$parent_task = $this->taskService->forUserById ( $request->user (), $request->parent_task_id );
+			$parent_task = $this->tasks->forUserById ( $request->user (), $request->parent_task_id );
 			if (! empty ( $parent_task )) {
 				$params ['parent_task_id'] = $request->parent_task_id;
 			}
 		}
 		
 		if (isset ( $request->goal_id )) {
-			$goal = $this->goalService->forGoalId ( $request->user (), $request->goal_id );
+			$goal = $this->goals->forGoalId ( $request->user (), $request->goal_id );
 			if (! empty ( $goal )) {
 				$params ['goal_id'] = $request->goal_id;
 			}
@@ -135,7 +174,7 @@ class TaskController extends Controller {
 				continue;
 			}
 			
-			$tag = $this->tagService->forTagName ( $tag_name );
+			$tag = $this->tags->forTagName ( $tag_name );
 			if (empty ( $tag )) {
 				$tag = Tag::create ( array (
 						'name' => $tag_name 
@@ -150,7 +189,7 @@ class TaskController extends Controller {
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $task );
+			$resp = $this->responseJson ( self::OK_CODE, $task );
 			return response ( $resp );
 		} else {
 			return redirect ( '/index' );
@@ -158,7 +197,7 @@ class TaskController extends Controller {
 	}
 	
 	/**
-	 * 删除
+	 * 删除.
 	 *
 	 * @param Request $request        	
 	 * @param Task $task        	
@@ -183,30 +222,36 @@ class TaskController extends Controller {
 		$flag = $task->update ( $params );
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
-			return redirect ( '/index' )->with ( 'message', 'IT WORKS!' );
+			return redirect ( '/index' )->with ( 'message', '操作成功!' );
 		}
 	}
 	
 	/**
 	 * 更新
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @param Task $task        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
 	public function update(Request $request, Task $task) {
 		$this->authorize ( 'destroy', $task );
 		
+		if ($request->method () == 'GET') {
+			return view ( 'tasks.update', array (
+					'task' => $task 
+			) );
+		}
+		
 		$flag = $task->update ( $request->all () );
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
-			return redirect ( '/index' )->with ( 'message', 'IT WORKS!' );
+			return redirect ( '/index' )->with ( 'message', '操作成功!' );
 		}
 	}
 }

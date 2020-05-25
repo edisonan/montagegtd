@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\CalService;
 use Illuminate\Http\Request;
+use App\Services\CalService;
 
 /**
  * 日历订阅控制器
@@ -12,7 +13,6 @@ use Illuminate\Http\Request;
  *        
  */
 class CalController extends Controller {
-	
 	/**
 	 * CalService 实例.
 	 *
@@ -22,7 +22,7 @@ class CalController extends Controller {
 	
 	/**
 	 * 构造方法
-	 * 
+	 *
 	 * @param CalService $cals        	
 	 * @return void
 	 */
@@ -85,7 +85,7 @@ class CalController extends Controller {
 	 * @param String $cal_token        	
 	 */
 	public function taskics(Request $request, String $cal_token) {
-		$icsInfo = $this->calService->getIcsByCalToken ( $request->user (), $cal_token );
+		$icsInfo = $this->calService->getIcsByCalToken ( $cal_token );
 		
 		header ( "Content-type:application/octet-stream" );
 		header ( "Content-Disposition:attachment;filename = " . $icsInfo ['file_name'] . '.ics' );

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Services\StatisticsService;
 use GuzzleHttp\json_encode;
 use Illuminate\Http\Request;
+use App\Repositories\StatisticsRepository;
+use function GuzzleHttp\json_encode;
 
 /**
  * 统计控制器
@@ -15,26 +17,26 @@ use Illuminate\Http\Request;
 class StatisticsController extends Controller {
 	
 	/**
-	 * StatisticsService 实例.
+	 * The statistics repository instance.
 	 *
-	 * @var StatisticsService
+	 * @var StatisticsRepository
 	 */
-	protected $statisticsService;
+	protected $statistics;
 	
 	/**
-	 * 构造方法
+	 * Create a new controller instance.
 	 *
-	 * @param StatisticsService $statisticsService        	
+	 * @param StatisticsRepository $tasks        	
 	 * @return void
 	 */
-	public function __construct(StatisticsService $statisticsService) {
+	public function __construct(StatisticsRepository $statistics) {
 		$this->middleware ( 'auth' );
 		
-		$this->statisticsService = $statisticsService;
+		$this->statistics = $statistics;
 	}
 	
 	/**
-	 * 首页
+	 * Display a list of all of the user's task.
 	 *
 	 * @param Request $request        	
 	 */
@@ -63,6 +65,8 @@ class StatisticsController extends Controller {
 		// 'data'=>array()
 		// )
 		
+		
+		
 		$pie_basic_arr = array (
 				'tooltip' => array (
 						'trigger' => 'item',
@@ -89,11 +93,11 @@ class StatisticsController extends Controller {
 		
 		$task_arr = $pomo_arr = $note_arr = $mind_arr = $article_arr = $basic_arr;
 		
-		$task_statistics = $this->statisticsService->forUserSpecial ( $request->user (), 'day', 'task', $start_date, $end_date );
-		$pomo_statistics = $this->statisticsService->forUserSpecial ( $request->user (), 'day', 'pomo', $start_date, $end_date );
-		$note_statistics = $this->statisticsService->forUserSpecial ( $request->user (), 'day', 'note', $start_date, $end_date );
-		$article_statistics = $this->statisticsService->forUserSpecial ( $request->user (), 'day', 'article', $start_date, $end_date );
-		$mind_statistics = $this->statisticsService->forUserSpecial ( $request->user (), 'day', 'mind', $start_date, $end_date );
+		$task_statistics = $this->statistics->forUserSpecial ( $request->user (), 'day', 'task', $start_date, $end_date );
+		$pomo_statistics = $this->statistics->forUserSpecial ( $request->user (), 'day', 'pomo', $start_date, $end_date );
+		$note_statistics = $this->statistics->forUserSpecial ( $request->user (), 'day', 'note', $start_date, $end_date );
+		$article_statistics = $this->statistics->forUserSpecial ( $request->user (), 'day', 'article', $start_date, $end_date );
+		$mind_statistics = $this->statistics->forUserSpecial ( $request->user (), 'day', 'mind', $start_date, $end_date );
 		
 		$count_arr = array (
 				'task_count' => array (

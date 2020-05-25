@@ -8,7 +8,7 @@ use Log;
 
 /**
  * get new article from type 3 feed
- * 
+ *
  * @author edison.an
  *        
  */

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Services\AccountService;
 
 /**
- * 账户管理Controller
+ * 账户管理控制器
  *
  * @author edison.an
  *        

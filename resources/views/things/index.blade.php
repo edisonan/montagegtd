@@ -54,7 +54,7 @@ $(document).ready(function () {
 
                         <!-- thing Name -->
                         <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">完成事情名称</label>
+                            <label for="thing-name" class="col-md-3 control-label">完事内容</label>
 								
                             <div class="col-md-8">
 	                               <input type="text" name="name" id="name" class="form-control" value="{{ old('thing') }}">
@@ -62,25 +62,19 @@ $(document).ready(function () {
                         </div>
                         
                         <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">事情开始时间</label>
+                            <label for="thing-name" class="col-md-3 control-label">完事时间</label>
 								
                             <div class="col-md-8">
-	                               <input type="text" name="start_time" id="task-remindtime" class="form-control" value="" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">事情持续结束</label>
-								
-                            <div class="col-md-8">
-	                               <input type="text" name="end_time" id="task-deadline" class="form-control" value="{{ old('task') }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
+	                               <input type="text" name="start_time" id="task-remindtime" class="form-control" value="{{ date('Y-m-d H:i:00', strtotime("-15 minute"))}}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
+	                               -
+	                               <input type="text" name="end_time" id="task-deadline" class="form-control" value="{{ date('Y-m-d H:i:00')}}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
                             </div>
                         </div>
 
                         <!-- Add thing Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-default">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>
                             </div>
@@ -109,7 +103,7 @@ $(document).ready(function () {
 				                    	<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
 				                    </a>
 				                    <div style="float:right">
-					                    <?php echo \App\Http\Utils\CommonUtil::formatTime($thing->start_time, $thing->end_time);?>
+					                    {{ \App\Http\Utils\CommonUtil::formatTime($thing->start_time, $thing->end_time)}}
 				                    </div>
 			                    </div>
 		                    @endforeach

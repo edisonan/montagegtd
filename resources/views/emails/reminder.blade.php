@@ -1,2 +1,2 @@
-Hi,<?php echo $user->name;?>:
-	Task name:<?php echo $task->name; ?> Reminder!
+Hi,{{ $user->name}}:
+	Task name:{{ $task->name }} Reminder!

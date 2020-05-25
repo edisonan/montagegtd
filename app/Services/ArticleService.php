@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Http\Utils\AipSpeech;
+use App\Http\Utils\Aip\AipSpeech;
 use App\Models\User;
 use App\Models\Article;
 use App\Models\ArticleMark;
@@ -26,9 +26,46 @@ use App\Http\Requests\Request;
 class ArticleService {
 	
 	/**
-	 * 构造方法
+	 * CategoryRepository 实例.
+	 *
+	 * @var CategoryRepository
 	 */
-	public function __construct() {
+	protected $categorys;
+	
+	/**
+	 * ArticleRepository 实例.
+	 *
+	 * @var ArticleRepository
+	 */
+	protected $articles;
+	
+	/**
+	 * FeedSubRepository 实例 .
+	 *
+	 * @var FeedSubRepository
+	 */
+	protected $feedSubs;
+	
+	/**
+	 * ArticleSubRepository 实例 .
+	 *
+	 * @var ArticleSubRepository
+	 */
+	protected $articleSubs;
+	
+	/**
+	 * 创建Service
+	 *
+	 * @param CategoryRepository $categorys        	
+	 * @param ArticleRepository $articles        	
+	 * @param FeedSubRepository $feedSubs        	
+	 * @param ArticleSubRepository $articleSubs        	
+	 */
+	public function __construct(CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs) {
+		$this->categorys = $categorys;
+		$this->articles = $articles;
+		$this->feedSubs = $feedSubs;
+		$this->articleSubs = $articleSubs;
 	}
 	
 	/**
@@ -64,16 +101,12 @@ class ArticleService {
 				':user_id' => $user->id 
 		] );
 		
-		// $counts_info = $this->getCountInfos($user, $status);
-		// TODO
 		$counts_info = array ();
 		
-		// 导航信息，结构如下:
-		// category_id category_info => category_name category_id
+		// 导航信息，结构如下: category_id category_info => category_name category_id
 		$nav_infos = array ();
 		
-		// 推荐订阅信息，结构如下:
-		// feed_id feed_name feed_count
+		// 推荐订阅信息，结构如下: feed_id feed_name feed_count
 		$next_recommend_feed = array ();
 		
 		foreach ( $category_feed_infos as $item ) {
@@ -112,21 +145,20 @@ class ArticleService {
 	 * 根据不同条件 获取相关文章信息
 	 *
 	 * @param string $feedId        	
-	 * @param string $categoryId        	
+	 * @param string $category_id        	
 	 * @return array
 	 */
-	public function getArticleSubs(User $user, $status, $pageCount, $feedId = '', $categoryId = '') {
-		$feedIdArr = array ();
+	public function getArticleSubs(User $user, $status, $pageCount, $feedId = '', $category_id = '') {
+		// 不同条件下，获取订阅文章信息
 		if (! empty ( $feedId )) {
-			$feedIdArr [] = $feedId;
-		} else if (! empty ( $categoryId )) {
+			// 通过FeedID获取订阅文章集
+			$articleSubs = $this->articleSubs->forUserByStatusFeedId ( $user, $status, $feedId, $needPage = true, $pageCount );
+		} else if (! empty ( $category_id )) {
 			// 通过分类ID获取订阅文章集
-			$feedsubs = DB::table ( 'feed_subs' )->select ( 'feed_id' )->where ( 'category_id', $categoryId )->where ( 'status', 1 )->get ();
-			
-			$feedIdArr = array ();
-			foreach ( $feedsubs as $feedsub ) {
-				$feedIdArr [] = $feedsub->feed_id;
-			}
+			$articleSubs = $this->articleSubs->forUserByCategoryStatusFeedId ( $user, $status, $category_id, $needPage = true, $pageCount );
+		} else {
+			// 通过状态获取订阅文章集
+			$articleSubs = $this->articleSubs->forUserByStatus ( $user, $status, $needPage = true, $pageCount );
 		}
 		
 		$articleSubs = ArticleSub::with ( 'article.feed' )->where ( 'user_id', $user->id )->where ( 'status', $status );
@@ -148,12 +180,7 @@ class ArticleService {
 	 * @return array
 	 */
 	public function forUserByFeedId($user, $feedId, $needPage = true, $pageCount) {
-		// 查看订阅源
-		$feed = Feed::where ( 'id', $feedId )->first ();
-		if (empty ( $feed )) {
-			abort ( 404 );
-		}
-		return ArticleSub::with ( 'article.feed' )->where ( 'user_id', $user->id )->where ( 'feed_id', $feedId )->orderBy ( 'updated_at', 'desc' )->simplePaginate ( $pageCount );
+		return $this->articleSubs->forUserByFeedId ( $user, $feedId, $needPage, $pageCount );
 	}
 	
 	/**
@@ -165,7 +192,7 @@ class ArticleService {
 	 * @return boolean
 	 */
 	public function isFeedArticle($user, $status, $feedId) {
-		$feedSub = FeedSub::where ( 'user_id', $user->id )->where ( 'feed_id', $feedId )->where ( 'status', $status )->first ();
+		$feedSub = $this->feedSubs->forUserByFeedId ( $user, $feedId, $status );
 		return empty ( $feedSub ) ? false : true;
 	}
 	
@@ -176,9 +203,8 @@ class ArticleService {
 	 * @return string
 	 */
 	public function getActiveRecordUrl($article) {
-		$path = config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3';
-		if (file_exists ( $path )) {
-			return $path;
+		if (file_exists ( config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3' )) {
+			return config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3';
 		} else {
 			// 识别正确返回语音二进制 错误则返回json 参照下面错误码
 			$aipSpeech = new AipSpeech ( env ( 'BD_APP_ID', '' ), env ( 'BD_API_KEY', '' ), env ( 'BD_SECRET_KEY', '' ) );
@@ -186,8 +212,8 @@ class ArticleService {
 					'per' => 3 
 			) );
 			if (! is_array ( $result )) {
-				file_put_contents ( $path, $result );
-				return $path;
+				file_put_contents ( config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3', $result );
+				return config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3';
 			} else {
 				Log::info ( 'create article record error::' . json_encode ( $result ) );
 				return '';
@@ -231,20 +257,6 @@ class ArticleService {
 		$articleSub->status = $status;
 		$articleSub->updated_at = date ( 'Y-m-d H:i:s' );
 		return $articleSub->update ();
-	}
-	public function mark(Request $request) {
-		$article = Article::where ( 'user_id', $request->user ()->id )->where ( 'id', $request->article_id )->first ();
-		
-		if (empty ( $article )) {
-			echo 'error article_id';
-			exit ();
-		}
-		
-		$articleMark = new ArticleMark ();
-		$articleMark->user_id = $request->user ()->id;
-		$articleMark->article_id = $request->article_id;
-		$articleMark->content = $request->content;
-		$articleMark->save ();
 	}
 	
 	/**

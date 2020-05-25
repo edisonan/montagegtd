@@ -45,7 +45,7 @@ class AccountService {
 	
 	/**
 	 * 根据第三方用户信息和类型获取Oatuth账户信息
-	 * 
+	 *
 	 * @param string $thirdUid        	
 	 * @param string $driver        	
 	 */

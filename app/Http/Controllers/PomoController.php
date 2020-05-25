@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\ErrorCodeUtil;
+use Illuminate\Http\Request;
 use App\Models\Pomo;
 use App\Models\Thing;
 use App\Services\PomoService;
 use Illuminate\Http\Request;
+use App\Repositories\PomoRepository;
+use App\Services\PomoService;
 
 /**
  * 番茄工作法控制器
@@ -17,25 +20,33 @@ use Illuminate\Http\Request;
 class PomoController extends Controller {
 	
 	/**
-	 * PomoService 实例.
+	 * The pomo repository instance.
+	 *
+	 * @var PomoRepository
+	 */
+	protected $pomos;
+	
+	/**
+	 * The pomo servie instance.
 	 *
 	 * @var PomoService
 	 */
 	protected $pomoService;
 	
 	/**
-	 * 构造方法
+	 * Create a new controller instance.
 	 *
-	 * @param PomoService $pomoService        	
+	 * @param PomoRepository $pomos        	
 	 * @return void
 	 */
-	public function __construct(PomoService $pomoService) {
+	public function __construct(PomoService $pomoService, PomoRepository $pomos) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome' 
 				] 
 		] );
 		$this->pomoService = $pomoService;
+		$this->pomos = $pomos;
 	}
 	
 	/**
@@ -49,18 +60,18 @@ class PomoController extends Controller {
 	}
 	
 	/**
-	 * 首页
+	 * 首页.
 	 *
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
 		if ($request->has ( 'type' )) {
-			$pomos = $this->pomoService->forUserByTime ( $request->user (), date ( 'Ymd' ) );
+			$pomos = $this->pomos->forUserByTime ( $request->user (), date ( 'Ymd' ) );
 		} else {
-			$pomos = $this->pomoService->forUserByStatus ( $request->user (), 2, $needPage = true );
+			$pomos = $this->pomos->forUserByStatus ( $request->user (), 2, $needPage = true );
 		}
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomos );
+			$resp = $this->responseJson ( self::OK_CODE, $pomos );
 			return response ( $resp );
 		} else {
 			return view ( 'pomos.index', [ 
@@ -70,7 +81,7 @@ class PomoController extends Controller {
 	}
 	
 	/**
-	 * 新建番茄
+	 * 开始做番茄.
 	 *
 	 * @param Request $request        	
 	 */
@@ -80,7 +91,7 @@ class PomoController extends Controller {
 		$pomoInfo = $this->pomoService->startPomo ( $request->user () );
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomoInfo );
+			$resp = $this->responseJson ( self::OK_CODE, $pomoInfo );
 			return response ( $resp );
 		} else {
 			return redirect ( '/index' );
@@ -88,7 +99,7 @@ class PomoController extends Controller {
 	}
 	
 	/**
-	 * 放弃本次番茄
+	 * 放弃番茄/休息.
 	 *
 	 * @param Request $request        	
 	 */
@@ -101,10 +112,11 @@ class PomoController extends Controller {
 			$pomo->update ( array (
 					'status' => 3 
 			) );
+			$this->pomoService->clearpomonotify ( $request->user () );
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
 			return redirect ( '/index' );
@@ -112,7 +124,7 @@ class PomoController extends Controller {
 	}
 	
 	/**
-	 * 存储番茄信息
+	 * 记录番茄
 	 *
 	 * @param Request $request        	
 	 */
@@ -146,7 +158,8 @@ class PomoController extends Controller {
 		if ($request->ajax () || $request->wantsJson ()) {
 			$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
 			$currentPomoInfo ['active_pomo'] = $pomo;
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $currentPomoInfo );
+			$this->pomoService->pomonotify ( $request->user (), $currentPomoInfo ['current_pomo_status'] == Pomo::STATUS_PROCESSING ? '您已经完成了一个番茄，快来记录一下吧~' : '休息完成，快来开始下一个番茄吧~', $currentPomoInfo ['current_pomo_remain'] );
+			$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
 			return response ( $resp );
 		} else {
 			return redirect ( '/index' );
@@ -154,7 +167,7 @@ class PomoController extends Controller {
 	}
 	
 	/**
-	 * 删除番茄
+	 * 删除.
 	 *
 	 * @param Request $request        	
 	 * @param Pomo $pomo        	
@@ -165,10 +178,16 @@ class PomoController extends Controller {
 		$pomo->delete ();
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
-			return redirect ( '/index' )->with ( 'message', 'IT WORKS!' );
+			return redirect ( '/index' )->with ( 'message', '操作成功!' );
 		}
+	}
+	public function pomostatus(Request $request) {
+		// 获取当前活动信息
+		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
+		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
+		return response ( $resp );
 	}
 }

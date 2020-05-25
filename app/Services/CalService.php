@@ -6,20 +6,30 @@ use App\Http\Utils\ICSUtil;
 use App\Http\Utils\ICSUtil2;
 use App\Models\Setting;
 use App\Models\User;
-use App\Models\Task;
+use App\Repositories\CalRepository;
+use App\Repositories\PomoRepository;
+use App\Repositories\SettingRepository;
+use App\Repositories\TaskRepository;
 
 /**
- * 日历订阅业务逻辑
+ * 日历订阅相关Service
  *
  * @author edison.an
  *        
  */
 class CalService {
+	protected $cals;
+	protected $settings;
+	protected $tasks;
 	
 	/**
-	 *构造方法
+	 *
+	 * @param PomoRepository $pomos        	
 	 */
-	public function __construct() {
+	public function __construct(CalRepository $cals, SettingRepository $settings, TaskRepository $tasks) {
+		$this->cals = $cals;
+		$this->settings = $settings;
+		$this->tasks = $tasks;
 	}
 	
 	/**
@@ -30,7 +40,7 @@ class CalService {
 	 */
 	public function getPersonCalUrl(User $user) {
 		$cal_token = '';
-		$setting = Setting::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' )->first ();
+		$setting = $this->settings->forUser ( $user );
 		if (isset ( $setting ['cal_token'] ) && ! empty ( $setting ['cal_token'] )) {
 			$cal_token = $setting ['cal_token'];
 		} else {
@@ -62,8 +72,6 @@ class CalService {
 		date_default_timezone_set ( "Asia/Shanghai" );
 		
 		$cals = $this->cals->forByThemeAndStatus ( $theme, 1 );
-		
-		$cals = Cal::where ( 'status', $status )->where ( 'theme', $theme )->orderBy ( 'id', 'asc' )->paginate ( 10 );
 		
 		$task_props = array ();
 		foreach ( $cals as $cal ) {
@@ -97,11 +105,11 @@ class CalService {
 	 * @param string $cal_token        	
 	 * @return string[]
 	 */
-	public function getIcsByCalToken(User $user, $cal_token) {
+	public function getIcsByCalToken($cal_token) {
 		date_default_timezone_set ( "Asia/Shanghai" );
 		
 		// 获取该用户user_id
-		$setting = Setting::where ( 'cal_token', $cal_token )->first ();
+		$setting = $this->settings->forCalToken ( $cal_token );
 		if (isset ( $setting ['user_id'] )) {
 			$user_id = $setting ['user_id'];
 		} else {
@@ -112,7 +120,7 @@ class CalService {
 		// 根据开始时间和结束时间，查询需要提醒内容
 		$start_time = date ( 'Y-m-d H:i:s', time () - 15768000 );
 		$end_time = date ( 'Y-m-d H:i:s', strtotime ( $start_time ) + 31536000 );
-		$tasks = Task::where ( 'user_id', $user_id )->where ( 'remindtime', '>', $start_time )->where ( 'remindtime', '<', $end_time )->where ( 'status', 1 )->get ();
+		$tasks = $this->tasks->forUserByUserIdRemindTime ( $user_id, $start_time, $end_time );
 		
 		$task_props = array ();
 		foreach ( $tasks as $task ) {

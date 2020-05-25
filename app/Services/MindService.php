@@ -7,9 +7,9 @@ use App\Models\Mind;
 
 /**
  * 思维导图业务逻辑
- * 
- * @author edison.an
  *
+ * @author edison.an
+ *        
  */
 class MindService {
 	/**

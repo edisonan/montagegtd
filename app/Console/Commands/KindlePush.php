@@ -4,10 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Setting;
-use App\KindleLog;
+use App\Models\KindleLog;
 use Develpr\Phindle\Phindle;
 use Develpr\Phindle\Content;
-use App\ArticleSub;
+use App\Models\ArticleSub;
 use App\Http\Utils\SpideUtil;
 use App\Repositories\SettingRepository;
 use App\Repositories\ArticleSubRepository;
@@ -16,7 +16,7 @@ use Mail;
 
 /**
  * push the rss content to kindle
- * 
+ *
  * @author edison.an
  *        
  */
@@ -71,8 +71,8 @@ class KindlePush extends Command {
 					'cover' => 'cover.jpg', // The relative path of your cover image
 					'kindlegenPath' => '/usr/local/bin/kindlegen', // The path to the kindlegen utility
 					'downloadImages' => true 
-			) // Should images be downloaded from the web if found in your html?
- );
+			) ) // Should images be downloaded from the web if found in your html?
+;
 			
 			$start_time = date ( 'Y-m-d H:i:s', strtotime ( date ( 'Y-m-d H:i:s' ) ) - 86400 );
 			$end_time = date ( 'Y-m-d H:i:s' );

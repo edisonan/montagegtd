@@ -10,7 +10,7 @@ use function GuzzleHttp\json_encode;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-include 'simple_html_dom.php';
+include 'Other/simple_html_dom.php';
 class SpideUtil {
 	public function processFeed($feed) {
 		$result = $this->request ( $feed ['url'] );

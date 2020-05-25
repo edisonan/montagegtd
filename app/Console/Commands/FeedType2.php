@@ -9,7 +9,7 @@ use Log;
 
 /**
  * get new article from type 2 feed
- * 
+ *
  * @author edison.an
  *        
  */

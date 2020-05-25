@@ -9,6 +9,11 @@ use App\Models\Feed;
 use App\Services\ArticleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Article;
+use App\Models\ArticleMark;
+use App\Models\Feed;
+use App\Models\ArticleSub;
+use App\Services\ArticleService;
 
 /**
  * 文章管理控制器
@@ -53,20 +58,17 @@ class ArticleController extends Controller {
 	}
 	
 	/**
-	 * 订阅文章列表
+	 * 文章列表
 	 *
 	 * @param Request $request        	
+	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
 	public function index(Request $request) {
-		// 获取分类id 默认为空
-		$categoryId = $request->get ( 'category_id', '' );
-		// 获取订阅id 默认为空
-		$feedId = $request->get ( 'feed_id', '' );
-		// 获取状态参数，默认参数值为 未读
-		$status = $request->get ( 'status', 'unread' );
-		// 获取每页数量，默认参数值为 20
-		$pageCount = $request->get ( 'page_count', 20 );
-		
+		$categoryId = $request->get ( 'category_id', '' ); // 获取分类id 默认为空
+		$pageCount = $request->get ( 'page_count', 20 ); // 获取每页数量，默认参数值为 20
+		$feedId = $request->get ( 'feed_id', '' ); // 获取订阅id 默认为空
+		$status = $request->get ( 'status', 'unread' ); // 获取状态参数，默认参数值为 未读
+		                                                
 		// 获取订阅文章
 		$articleSubs = $this->articleService->getArticleSubs ( $request->user (), $status, $pageCount, $feedId, $categoryId );
 		
@@ -87,44 +89,40 @@ class ArticleController extends Controller {
 				'article_subs' => $articleSubs,
 				'status' => $status,
 				'feed_id' => $feedId,
-				'page_params' => $pageParams,
-				'unable_img' => $unableImg,
-				'unable_desc' => $unableDesc 
+				'page_params' => $page_params,
+				'unable_img' => isset ( $_COOKIE ['unable_img'] ) ? $_COOKIE ['unable_img'] : "false",
+				'unable_desc' => isset ( $_COOKIE ['unable_desc'] ) ? $_COOKIE ['unable_desc'] : "false" 
 		] );
 	}
 	
 	/**
-	 * 订阅导航
+	 * 分类信息
 	 *
 	 * @param Request $request        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
 	public function navinfo(Request $request) {
-		// 获取状态参数，默认参数值为 未读
-		$status = $request->get ( 'status', 'unread' );
-		
+		$status = $request->get ( 'status', 'unread' ); // 获取状态参数，默认参数值为 未读
+		                                                
 		// 获取分类文章数
 		$navInfo = $this->articleService->getNavInfoAndNextRecommend ( $request->user (), $status );
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $navInfo );
-		return response ( $resp );
+		return response ( $this->responseJson ( self::OK_CODE, $navInfo ) );
 	}
 	
 	/**
-	 * 订阅导航数量获取
+	 * 分类文章量信息
 	 *
 	 * @param Request $request        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
 	public function navcountinfo(Request $request) {
-		// 获取状态参数，默认参数值为 未读
-		$status = $request->get ( 'status', 'unread' );
-		
+		$status = $request->get ( 'status', 'unread' ); // 获取状态参数，默认参数值为 未读
+		                                                
 		// 获取分类文章数
 		$countInfo = $this->articleService->getCountInfos ( $request->user (), $status );
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $countInfo );
-		return response ( $resp );
+		return response ( $this->responseJson ( self::OK_CODE, $countInfo ) );
 	}
 	
 	/**
@@ -134,18 +132,23 @@ class ArticleController extends Controller {
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
 	public function list(Request $request) {
-		// 获取每页数量，默认参数值为 20
-		$pageCount = $request->get ( 'page_count', 20 );
-		// 获取订阅id
-		$feedId = $request->get ( 'feed_id' );
+		$feedId = $request->get ( 'feed_id' ); // 获取订阅id
+		$pageCount = $request->get ( 'page_count', 20 ); // 获取每页数量，默认参数值为 20
+		                                                 
+		// 查看订阅源
+		$feed = Feed::where ( 'id', $feedId )->first ();
+		if (empty ( $feed )) {
+			abort ( 404, '该订阅不存在' );
+		}
 		
 		// 查询文章集合
 		$articles = $this->articleService->forUserByFeedId ( $request->user (), $feedId, $needPage = true, $pageCount );
 		
 		// 页面参数
-		$pageParams = array ();
-		$pageParams ['page_count'] = $pageCount;
-		$pageParams ['feed_id'] = $feedId;
+		$page_params = array (
+				'page_count' => $pageCount,
+				'feed_id' => $feedId 
+		);
 		
 		return view ( 'articles.list', [ 
 				'articles' => $articles,
@@ -162,9 +165,8 @@ class ArticleController extends Controller {
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
 	public function view(Request $request, Article $article) {
-		// 是否已订阅此源
-		$isFeed = false;
-		
+		$isFeed = false; // 是否已订阅此源
+		                 
 		// 查看是否登录, 如果登录, 查看是否已经订阅
 		if (Auth::check ()) {
 			$isFeed = $this->articleService->isFeedArticle ( $request->user (), '1', $article->feed->id );
@@ -213,6 +215,7 @@ class ArticleController extends Controller {
 		
 		if ($request->ajax () || $request->wantsJson ()) {
 			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $responseData );
+			$resp = $this->responseJson ( self::OK_CODE, $responseData );
 			return response ( $resp );
 		} else {
 			return view ( 'articles.view', [ 
@@ -236,7 +239,7 @@ class ArticleController extends Controller {
 			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
 			return response ( $resp );
 		} else {
-			return redirect ( '/articles' )->with ( 'message', 'IT WORKS!' );
+			return redirect ( '/articles' )->with ( 'message', '操作成功!' );
 		}
 	}
 	

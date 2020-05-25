@@ -35,7 +35,7 @@ class IndexController extends Controller {
 	
 	/**
 	 * 首页信息展示
-	 * 
+	 *
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {

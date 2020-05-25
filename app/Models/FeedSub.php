@@ -24,7 +24,8 @@ class FeedSub extends Model {
 	 * @var array
 	 */
 	protected $casts = [ 
-			'feed_id' => 'int' 
+			'feed_id' => 'int',
+			'user_id' => 'int' 
 	];
 	protected $appends = array ();
 	

@@ -5,6 +5,11 @@ namespace App\Services;
 use App\Models\Pomo;
 use App\Models\User;
 use Illuminate\Support\Facades\Session;
+use App\Repositories\PomoRepository;
+use App\Repositories\SettingRepository;
+use Illuminate\Support\Facades\Session;
+use App\Jobs\PomoNotify;
+use App\Jobs\Job;
 
 /**
  * 番茄工作法业务逻辑
@@ -13,22 +18,27 @@ use Illuminate\Support\Facades\Session;
  *        
  */
 class PomoService {
+	protected $pomos;
+	protected $settings;
 	
 	/**
-	 *
 	 */
-	public function __construct() {
+	public function __construct(PomoRepository $pomos, SettingRepository $settings) {
+		$this->pomos = $pomos;
+		$this->settings = $settings;
 	}
-	public function startPomo(User $user) {
-		$active_pomo = Pomo::where ( 'user_id', $user->id )->where ( 'status', 1 )->first ();
+	public function startPomo($user) {
+		$active_pomo = $this->pomos->forUserActivePomo ( $user );
 		if (empty ( $active_pomo )) {
-			$active_pomo = $user->pomos()->create ( [ 
+			$active_pomo = $this->pomos->create ( [ 
 					'name' => '',
 					'status' => 1,
 					'user_id' => $user->id 
 			] );
 		}
-		return $this->getCurrentPomoInfo ( $user, $active_pomo );
+		$currentPomoInfo = $this->getCurrentPomoInfo ( $user, $active_pomo );
+		$this->pomonotify ( $user, $currentPomoInfo ['current_pomo_status'] == Pomo::STATUS_PROCESSING ? '您已经完成了一个番茄，快来记录一下吧~' : '休息完成，快来开始下一个番茄吧~', $currentPomoInfo ['current_pomo_remain'] );
+		return $currentPomoInfo;
 	}
 	
 	/**
@@ -113,16 +123,11 @@ class PomoService {
 				'tip_message' => $tip_message 
 		);
 	}
-	public function forUserByTime(User $user, $time) {
-		return Pomo::where ( 'user_id', $user->id )->where ( 'status', 2 )->where ( 'created_at', '>', $time )->orderBy ( 'created_at', 'desc' )->get ();
+	public function pomonotify($user, $message, $delay) {
+		\Cache::store ( 'file' )->put ( 'NEED_POMO' . $user->id, 'OK', $delay + 300 );
+		PomoNotify::dispatch ( $user, $message )->delay ( now ()->addSecond ( $delay ) );
 	}
-	public function forUserByStatus(User $user, $status, $needPage = false) {
-		$pomo = Pomo::where ( 'user_id', $user->id )->where ( 'status', $status )->orderBy ( 'updated_at', 'desc' );
-		
-		if ($needPage) {
-			return $pomo->paginate ( 50 );
-		} else {
-			return $pomo->get ();
-		}
+	public function clearpomonotify($user) {
+		\Cache::store ( 'file' )->pull ( 'NEED_POMO' . $user->id );
 	}
 }

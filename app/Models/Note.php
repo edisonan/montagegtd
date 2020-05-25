@@ -14,7 +14,10 @@ class Note extends Model {
 			'name',
 			'status',
 			'record_path',
-			'image_path' 
+			'image_path',
+			'article_id',
+			'task_id',
+			'pomo_id' 
 	];
 	
 	/**

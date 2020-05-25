@@ -25,7 +25,7 @@ class HelpController extends Controller {
 	
 	/**
 	 * 反馈页
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
@@ -37,7 +37,7 @@ class HelpController extends Controller {
 	
 	/**
 	 * 提交反馈
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
@@ -47,7 +47,7 @@ class HelpController extends Controller {
 		] );
 		
 		$feedback = new Feedback ();
-		$feedback->user_id = $request->user()->id;
+		$feedback->user_id = isset ( $request->user ()->id ) ? $request->user ()->id : null;
 		$feedback->from = $request->from;
 		$feedback->content = $request->content;
 		$feedback->save ();

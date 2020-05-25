@@ -7,9 +7,9 @@ use App\Models\Setting;
 
 /**
  * 设置业务逻辑
- * 
- * @author edison.an
  *
+ * @author edison.an
+ *        
  */
 class SettingService {
 	/**
@@ -24,7 +24,7 @@ class SettingService {
 	
 	/**
 	 * Get Setting By cal_token
-	 * 
+	 *
 	 * @param string $cal_token        	
 	 */
 	public function forCalToken(string $cal_token) {

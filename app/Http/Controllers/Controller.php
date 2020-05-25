@@ -13,6 +13,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
  *        
  */
 class Controller extends BaseController {
+	const OK_CODE = 9999;
+	const SYSTEM_ERROR_CODE = 1000;
 	
 	use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 	public function responseJson($code, $result = '', $msg = '') {

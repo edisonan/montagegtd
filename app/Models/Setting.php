@@ -19,7 +19,8 @@ class Setting extends Model {
 			'kindle_email',
 			'is_start_kindle',
 			'with_image_push',
-			'cal_token' 
+			'cal_token',
+			'ifttt_notify' 
 	];
 	
 	/**

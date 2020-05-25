@@ -27,7 +27,7 @@ class AipHttpClient {
 	
 	/**
 	 * HttpClient
-	 * 
+	 *
 	 * @param array $headers
 	 *        	HTTP header
 	 */
@@ -39,7 +39,7 @@ class AipHttpClient {
 	
 	/**
 	 * 连接超时
-	 * 
+	 *
 	 * @param int $ms
 	 *        	毫秒
 	 */
@@ -49,7 +49,7 @@ class AipHttpClient {
 	
 	/**
 	 * 响应超时
-	 * 
+	 *
 	 * @param int $ms
 	 *        	毫秒
 	 */
@@ -186,7 +186,7 @@ class AipHttpClient {
 	
 	/**
 	 * 构造 header
-	 * 
+	 *
 	 * @param array $headers        	
 	 * @return array
 	 */

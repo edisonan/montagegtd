@@ -25,21 +25,21 @@ class AipSpeech extends AipBase {
 	
 	/**
 	 * url
-	 * 
+	 *
 	 * @var string
 	 */
 	public $asrUrl = 'http://vop.baidu.com/server_api';
 	
 	/**
 	 * url
-	 * 
+	 *
 	 * @var string
 	 */
 	public $ttsUrl = 'http://tsn.baidu.com/text2audio';
 	
 	/**
 	 * 判断认证是否有权限
-	 * 
+	 *
 	 * @param array $authObj        	
 	 * @return boolean
 	 */
@@ -49,7 +49,7 @@ class AipSpeech extends AipBase {
 	
 	/**
 	 * 处理请求参数
-	 * 
+	 *
 	 * @param string $url        	
 	 * @param array $params        	
 	 * @param array $data        	
@@ -71,7 +71,7 @@ class AipSpeech extends AipBase {
 	
 	/**
 	 * 格式化结果
-	 * 
+	 *
 	 * @param $content string        	
 	 * @return mixed
 	 */

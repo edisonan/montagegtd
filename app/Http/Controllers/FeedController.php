@@ -11,6 +11,9 @@ use App\Services\CategoryService;
 use App\Services\FeedService;
 use ArandiLopez\Feed\Factories\FeedFactory;
 use Illuminate\Http\Request;
+use App\Repositories\CategoryRepository;
+use App\Services\CategoryService;
+use App\Services\FeedService;
 
 /**
  * 订阅源控制器
@@ -259,7 +262,7 @@ class FeedController extends Controller {
 	
 	/**
 	 * 检测订阅源基础信息
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
@@ -290,7 +293,7 @@ class FeedController extends Controller {
 	
 	/**
 	 * 通过Opml导入订阅源
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Illuminate\Http\RedirectResponse
 	 */
@@ -308,7 +311,7 @@ class FeedController extends Controller {
 	
 	/**
 	 * 微博订阅页
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
@@ -320,7 +323,7 @@ class FeedController extends Controller {
 	
 	/**
 	 * 微信订阅页
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */
@@ -332,7 +335,7 @@ class FeedController extends Controller {
 	
 	/**
 	 * opml导入订阅页
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
 	 */

@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\ErrorCodeUtil;
+use Illuminate\Http\Request;
 use App\Models\Note;
 use App\Models\NoteTagMap;
 use App\Models\Tag;
 use App\Services\NoteService;
 use Illuminate\Http\Request;
 use App\Services\TagService;
+use App\Repositories\TagRepository;
+use App\Models\Pomo;
+use App\Models\Task;
+use App\Models\Article;
 
 /**
  * 笔记控制器
@@ -19,47 +24,82 @@ use App\Services\TagService;
 class NoteController extends Controller {
 	
 	/**
-	 * NoteService 实例.
+	 * The note repository instance.
 	 *
-	 * @var NoteService
+	 * @var NoteRepository
 	 */
-	protected $noteService;
+	protected $notes;
+	protected $tags;
 	
 	/**
-	 * TagService 实例.
+	 * Create a new controller instance.
 	 *
-	 * @var TagService
-	 */
-	protected $tagService;
-	
-	/**
-	 * 构造方法
-	 *
-	 * @param NoteService $noteService        	
-	 * @param TagService $tagService        	
+	 * @param NoteRepository $notes        	
+	 * @param TagRepository $tags        	
 	 * @return void
 	 */
-	public function __construct(NoteService $noteService, TagService $tagService) {
+	public function __construct(NoteRepository $notes, TagRepository $tags) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome' 
 				] 
 		] );
 		
-		$this->noteService = $noteService;
-		$this->tagService = $tagService;
+		$this->notes = $notes;
+		$this->tags = $tags;
 	}
+	
+	/**
+	 * 欢迎页
+	 *
+	 * @param Request $request        	
+	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 */
 	public function welcome(Request $request) {
 		return view ( 'notes.welcome', [ ] );
 	}
 	
 	/**
-	 * Display a list of all of the user's task.
+	 * 首页.
 	 *
 	 * @param Request $request        	
 	 */
 	public function index(Request $request, $add_content = '') {
-		$notes = $this->noteService->forUserByStatus ( $request->user (), 2, $needPage = true );
+		$conditions = array (
+				'user_id' => $request->user ()->id 
+		);
+		if ($request->has ( 'tag_id' )) {
+			$conditions ['tag_id'] = $request->tag_id;
+		} else if ($request->has ( 'keyword' )) {
+			$conditions ['keyword'] = $request->keyword;
+		} else if ($request->has ( 'pomo_id' )) {
+			$conditions ['pomo_id'] = $request->pomo_id;
+			$pomo = Pomo::where ( 'id', $request->pomo_id )->where ( 'user_id', $request->user ()->id )->first ();
+			if (empty ( $pomo )) {
+				abort ( 404, '系统异常，无此番茄!' );
+			}
+			$recommend_add_content = "#记录番茄#" . $pomo->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $pomo->created_at ) ) . "\n持续时长:20分钟\n";
+		} else if ($request->has ( 'article_id' )) {
+			$conditions ['article_id'] = $request->article_id;
+			
+			$article = Article::where ( 'id', $request->article_id )->first ();
+			if (empty ( $article )) {
+				abort ( 404, '系统异常，无此文章!' );
+			}
+			$recommend_add_content = "#记录文章#" . $article->subject . "\n时间：" . date ( 'm月d日 H时i分' ) . "\n";
+		} else if ($request->has ( 'task_id' )) {
+			$conditions ['task_id'] = $request->task_id;
+			
+			$task = Task::where ( 'id', $request->task_id )->where ( 'user_id', $request->user ()->id )->first ();
+			if (empty ( $task )) {
+				abort ( 404, '系统异常，无此待办!' );
+			}
+			$parentTaskName = isset ( $task->parentTask->name ) ? "#" . $task->parentTask->name . "#" : "";
+			$modeName = $task->mode == 2 ? "#life#" : "#work#";
+			$recommend_add_content = "#记录待办#" . $modeName . $parentTaskName . $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
+		}
+		
+		$notes = $this->notes->getAll ( $conditions );
 		
 		if ($request->has ( 'add_content' )) {
 			if ($request->has ( 'type' ) && $request->type = 'image') {
@@ -78,12 +118,19 @@ class NoteController extends Controller {
 			} else {
 				$add_content = $request->add_content;
 				if (\App\Http\Utils\CommonUtil::isUrl ( $add_content )) {
-					$add_content = '#分享链接# ' . $add_content . ' ' . \App\Http\Utils\CommonUtil::page_title ( $add_content );
+					$title = \App\Http\Utils\CommonUtil::page_title ( $add_content );
+					$shortUrl = \App\Http\Utils\CommonUtil::shortUrl ( $add_content );
+					if (! empty ( $shortUrl )) {
+						$add_content = $shortUrl;
+					}
+					$add_content = '#分享链接# ' . $add_content . ' ' . $title;
 				}
 				if (strpos ( $add_content, '#' ) === false) {
 					$add_content = '#分享# ' . $add_content;
 				}
 			}
+		} else if (! empty ( $recommend_add_content )) {
+			$add_content = $recommend_add_content;
 		}
 		
 		foreach ( $notes as $key => $note ) {
@@ -103,12 +150,15 @@ class NoteController extends Controller {
 		return view ( 'notes.index', [ 
 				'add_content' => $add_content,
 				'add_image' => isset ( $add_image ) ? $add_image : '',
-				'notes' => $notes 
+				'notes' => $notes,
+				'pomo_id' => $request->has ( 'pomo_id' ) ? $request->pomo_id : '',
+				'task_id' => $request->has ( 'task_id' ) ? $request->task_id : '',
+				'article_id' => $request->has ( 'article_id' ) ? $request->article_id : '' 
 		] );
 	}
 	
 	/**
-	 * Create a new note.
+	 * 创建.
 	 *
 	 * @param Request $request        	
 	 */
@@ -153,6 +203,9 @@ class NoteController extends Controller {
 		$name = nl2br ( $name );
 		$note = $request->user ()->notes ()->create ( [ 
 				'name' => $name,
+				'article_id' => $request->article_id,
+				'task_id' => $request->task_id,
+				'pomo_id' => $request->pomo_id,
 				'record_path' => $record_path,
 				'image_path' => $add_image,
 				'status' => $request->status 
@@ -165,7 +218,7 @@ class NoteController extends Controller {
 				continue;
 			}
 			
-			$tag = $this->tagService->forTagName ( $tag_name );
+			$tag = $this->tags->forTagName ( $tag_name );
 			if (empty ( $tag )) {
 				$tag = Tag::create ( array (
 						'name' => $tag_name 
@@ -180,15 +233,15 @@ class NoteController extends Controller {
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
-			return redirect ( '/notes' )->with ( 'message', 'IT WORKS!' );
+			return redirect ( '/notes' )->with ( 'message', '操作成功!' );
 		}
 	}
 	
 	/**
-	 * Destroy the given task.
+	 * 删除.
 	 *
 	 * @param Request $request        	
 	 * @param Note $note        	
@@ -199,12 +252,19 @@ class NoteController extends Controller {
 		$note->delete ();
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
-			return redirect ( '/notes' )->with ( 'message', 'IT WORKS!' );
+			return redirect ( '/notes' )->with ( 'message', '操作成功!' );
 		}
 	}
+	
+	/**
+	 * 上传音频
+	 *
+	 * @param Request $request        	
+	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 */
 	public function upload(Request $request) {
 		if ($_FILES ["file"] ["type"] == 'audio/mp3') {
 			$record_name = $request->user ()->id . $request->fname . '.mp3';
@@ -212,12 +272,19 @@ class NoteController extends Controller {
 		}
 		
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
+			$resp = $this->responseJson ( self::OK_CODE );
 			return response ( $resp );
 		} else {
-			return redirect ( '/notes' )->with ( 'message', 'IT WORKS!' );
+			return redirect ( '/notes' )->with ( 'message', '操作成功!' );
 		}
 	}
+	
+	/**
+	 * 获取音频
+	 *
+	 * @param Request $request        	
+	 * @param Note $note        	
+	 */
 	public function getRecord(Request $request, Note $note) {
 		if ($note->user_id == $request->user ()->id || $note->status == 2) {
 			header ( 'Content-type: audio/mp3' );

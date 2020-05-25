@@ -161,6 +161,12 @@ $(document).ready(function () {
             <div class="card">
                 <div class="card-header">
                     	新的笔记
+                    	<div class="form-inline" style="float:right">
+                    		<form action="{{url('notes')}}" method="get">
+			                <input type="text" name="keyword" class="" placeholder="搜索笔记" />
+			                <input type="submit" value="搜 索"/>
+                    		</form>
+			            </div>
                 </div>
 
                 <div class="card-body">
@@ -182,6 +188,9 @@ $(document).ready(function () {
 						        <button id="stop" class="ui-btn ui-btn-primary" disabled title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">停止</button>
 						        <div id="audio-container"></div>
 						        
+						        <input type="hidden" name="task_id" id="task_id" value="{{ $task_id }}"/>
+						        <input type="hidden" name="pomo_id" id="pomo_id" value="{{ $pomo_id }}"/>
+						        <input type="hidden" name="article_id" id="article_id" value="{{ $article_id }}"/>
 						        <input type="hidden" name="fname" id="fname" />
 						        @if(!empty($add_image))
 						        <input type="hidden" name="add_image" id="add_image"  value="{{$add_image}}"/>
@@ -204,13 +213,23 @@ $(document).ready(function () {
                             <div class="col-md-offset-3 col-md-6">
                             	<input type="hidden" name="status" value="1" id="status_id">
                             	
-                                <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
-                                    <i class="fa fa-btn fa-plus"></i>私密发布
-                                </button>
-                            	
-                                <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
-                                    <i class="fa fa-btn fa-plus"></i>公开发布
-                                </button>
+                                @if(!empty($task_id) || !empty($article_id) || !empty($pomo_id))
+                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">
+                                        <i class="fa fa-btn fa-plus"></i>公开发布
+                                    </button>
+                                    
+                                    <button type="button" class="btn btn-primary" onclick="submitProcess(1)">
+                                        <i class="fa fa-btn fa-plus"></i>私密发布
+                                    </button>
+                            	@else 
+                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
+                                        <i class="fa fa-btn fa-plus"></i>私密发布
+                                    </button>
+                                	
+                                    <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
+                                        <i class="fa fa-btn fa-plus"></i>公开发布
+                                    </button>
+                            	@endif
                                 
                                 
                             </div>
@@ -227,17 +246,19 @@ $(document).ready(function () {
                     </div>
 				</div>
                     	@foreach ($notes as $note)
-							<div class="card" style="margin-bottom:10px">
+							<div class="card" style="margin-bottom:10px" id="{{$note->id}}">
 								<div class="card-block">
 								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://cdn.v2ex.com/gravatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
-								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;"><?php echo date('Y年m月d日 H:i',strtotime($note->created_at));?></small></p>
+								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;">{{ date('Y年m月d日 H:i',strtotime($note->created_at)) }}</small></p>
 								  <div class="card-text post-text">
 								    @if($note->status != 2)
-									<img alt=""     style="width: 15px;    margin-right: 10px;" src="/img/icon/security.png">
+									<img alt=""     style="height: 30px;    margin-right: 10px;" src="/img/icon/private.png">
+									@else
+									<img alt=""     style="height: 20px;    margin-right: 10px;" src="/img/icon/public.png">
 									@endif
 									
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-									<audio src="{{ url('note/getRecord') }}/{{ $note->id }}" controls=""></audio>
+									语音记录: <a href="{{ url('note/getRecord') }}/{{ $note->id }}">请点击播放🎵</a><br/>
 									@endif
 									
 									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
@@ -245,7 +266,7 @@ $(document).ready(function () {
 										<image height="150px" src="{{ $note->image_path }}"/>
 									</a>
 									@endif
-								  <?php echo App\Http\Utils\CommonUtil::formatContentHtml($note->name);?>
+								  <?php echo App\Http\Utils\CommonUtil::formatContentHtml($note->name); ?>
 								  </div>
 								  <p class="card-text text-right post-text">
 								    @if($note->user_id == Auth::user()->id )

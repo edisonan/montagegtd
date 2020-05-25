@@ -7,9 +7,9 @@ use App\Models\Statistics;
 
 /**
  * 统计业务逻辑
- * 
- * @author edison.an
  *
+ * @author edison.an
+ *        
  */
 class StatisticsService {
 	/**

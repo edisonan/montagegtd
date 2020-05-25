@@ -27,35 +27,35 @@ class AipBase {
 	
 	/**
 	 * 获取access token url
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $accessTokenUrl = 'https://aip.baidubce.com/oauth/2.0/token';
 	
 	/**
 	 * appId
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $appId = '';
 	
 	/**
 	 * apiKey
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $apiKey = '';
 	
 	/**
 	 * secretKey
-	 * 
+	 *
 	 * @var string
 	 */
 	protected $secretKey = '';
 	
 	/**
 	 * 权限
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $scope = 'brain_all_scope';
@@ -77,7 +77,7 @@ class AipBase {
 	
 	/**
 	 * 连接超时
-	 * 
+	 *
 	 * @param int $ms
 	 *        	毫秒
 	 */
@@ -87,7 +87,7 @@ class AipBase {
 	
 	/**
 	 * 响应超时
-	 * 
+	 *
 	 * @param int $ms
 	 *        	毫秒
 	 */
@@ -97,7 +97,7 @@ class AipBase {
 	
 	/**
 	 * 处理请求参数
-	 * 
+	 *
 	 * @param string $url        	
 	 * @param array $params        	
 	 * @param array $data        	
@@ -110,7 +110,7 @@ class AipBase {
 	
 	/**
 	 * Api 请求
-	 * 
+	 *
 	 * @param string $url        	
 	 * @param mixed $data        	
 	 * @return mixed
@@ -159,7 +159,7 @@ class AipBase {
 	
 	/**
 	 * Api 多个并发请求
-	 * 
+	 *
 	 * @param string $url        	
 	 * @param mixed $data        	
 	 * @return mixed
@@ -212,7 +212,7 @@ class AipBase {
 	
 	/**
 	 * 格式检查
-	 * 
+	 *
 	 * @param string $url        	
 	 * @param array $data        	
 	 * @return mix
@@ -223,7 +223,7 @@ class AipBase {
 	
 	/**
 	 * 格式化结果
-	 * 
+	 *
 	 * @param $content string        	
 	 * @return mixed
 	 */
@@ -233,7 +233,7 @@ class AipBase {
 	
 	/**
 	 * 返回 access token 路径
-	 * 
+	 *
 	 * @return string
 	 */
 	private function getAuthFilePath() {
@@ -242,7 +242,7 @@ class AipBase {
 	
 	/**
 	 * 写入本地文件
-	 * 
+	 *
 	 * @param array $obj        	
 	 * @return void
 	 */
@@ -258,7 +258,7 @@ class AipBase {
 	
 	/**
 	 * 读取本地缓存
-	 * 
+	 *
 	 * @return array
 	 */
 	private function readAuthObj() {
@@ -277,7 +277,7 @@ class AipBase {
 	
 	/**
 	 * 认证
-	 * 
+	 *
 	 * @param bool $refresh
 	 *        	是否刷新
 	 * @return array
@@ -306,7 +306,7 @@ class AipBase {
 	
 	/**
 	 * 判断认证是否有权限
-	 * 
+	 *
 	 * @param array $authObj        	
 	 * @return boolean
 	 */

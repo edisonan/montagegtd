@@ -4,31 +4,60 @@ namespace App\Services;
 
 use App\Http\Utils\OAuth1\FFClient;
 use App\Models\Article;
-use App\Models\ArticleSub;
 use App\Models\Category;
 use App\Models\Feed;
 use App\Models\FeedSub;
 use App\Models\User;
+use App\Models\ArticleSub;
+use App\Repositories\FeedRepository;
+use App\Repositories\FeedSubRepository;
+use App\Repositories\ThirdRepository;
 use ArandiLopez\Feed\Factories\FeedFactory;
 use Celd\Opml\Importer;
-use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Exception;
+use App\Repositories\CategoryRepository;
 
 /**
- * 订阅业务逻辑
+ * FeedService订阅相关Service
  *
  * @author edison.an
  *        
  */
 class FeedService {
 	
+	/**
+	 * FeedSubRepository 实例 .
+	 *
+	 * @var FeedSubRepository
+	 */
+	protected $feedSubs;
 	
 	/**
-	 * 构造方法
+	 * FeedRepository 实例 .
 	 *
+	 * @var FeedRepository
 	 */
-	public function __construct() {
+	protected $feeds;
+	
+	/**
+	 * CategoryRepository 实例 .
+	 *
+	 * @var CategoryRepository
+	 */
+	protected $categorys;
+	
+	/**
+	 * 创建Service
+	 *
+	 * @param FeedSubRepository $feedSubs        	
+	 * @param FeedRepository $feeds        	
+	 */
+	public function __construct(FeedSubRepository $feedSubs, FeedRepository $feeds, CategoryRepository $categorys) {
+		$this->feedSubs = $feedSubs;
+		$this->feeds = $feeds;
+		$this->categorys = $categorys;
 	}
 	
 	/**
@@ -39,10 +68,7 @@ class FeedService {
 	 * @return \App\Repositories\Collection
 	 */
 	public function getFeedSubListByStatus(User $user, $status, $needPage = true) {
-		return FeedSub::with ( [ 
-				'feed',
-				'category' 
-		] )->where ( 'status', $status )->where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' )->paginate ( 50 );
+		return $this->feedSubs->forUserByStatus ( $user, $status, $needPage );
 	}
 	
 	/**
@@ -52,7 +78,7 @@ class FeedService {
 	 * @return unknown
 	 */
 	public function getRecommendFeed($is_recommend, $needPage = true) {
-		return Feed::where ( 'is_recommend', $is_recommend )->orderBy ( 'recommend_order', 'desc' )->paginate ( 9 );
+		return $this->feeds->forIsRecommend ( $is_recommend, $needPage );
 	}
 	
 	/**
@@ -84,13 +110,10 @@ class FeedService {
 		}
 		
 		if (count ( $navInfos ) == 0) {
-			$category = Category::where ( 'user_id', $user->id )->where ( 'name', '未分类' )->first ();
-			if (empty ( $category )) {
-				$category = $user->categorys ()->create ( [ 
-						'name' => '未分类',
-						'category_order' => 0 
-				] );
-			}
+			$category = $user->categorys ()->create ( [ 
+					'name' => '未分类',
+					'category_order' => 0 
+			] );
 			$navInfos [] = array (
 					'category_info' => array (
 							'category_name' => $category->name,
@@ -102,13 +125,13 @@ class FeedService {
 		return $navInfos;
 	}
 	public function findByRecommendCategoryId($recommendCategoryId, $needPage = true) {
-		return Feed::where ( 'recommend_category_id', $recommendCategoryId )->orderBy ( 'recommend_order', 'desc' )->paginate ( 48 );
+		return $this->feeds->findByRecommendCategoryId ( $recommendCategoryId );
 	}
 	public function findByName($name, $needPage = true) {
-		return $feeds = Feed::where ( 'feed_name', 'like', '%' . $name . '%' )->orderBy ( 'recommend_order', 'desc' )->paginate ( 48 );
+		return $feeds = $this->feeds->findByName ( $name, $needPage = true );
 	}
 	public function store(User $user, $storeParams) {
-		$category = Category::where ( 'user_id', $user->id )->where ( 'id', $storeParams ['category_id'] )->first ();
+		$category = $this->categorys->forCategoryId ( $user, $storeParams ['category_id'] );
 		if (empty ( $category )) {
 			return false;
 		}
@@ -123,7 +146,7 @@ class FeedService {
 			$feed->sub_count = 1;
 			$feed->save ();
 		} else {
-			$feedSub = FeedSub::where ( 'user_id', $user->id )->where ( 'feed_id', $feed->id )->where ( 'status', 1 )->first ();
+			$feedSub = $this->feedSubs->forUserByFeedId ( $user, $feed->id, 1 );
 			
 			if (! empty ( $feedSub )) {
 				return false;
@@ -154,7 +177,7 @@ class FeedService {
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
 	public function quickStore(User $user, $storeParams) {
-		$category = Category::where ( 'user_id', $user->id )->where ( 'name', '未分类' )->first ();
+		$category = $this->categorys->forCategoryName ( $user, '未分类' );
 		if (empty ( $category )) {
 			$category = $user->categorys ()->create ( [ 
 					'name' => '未分类',
@@ -164,7 +187,7 @@ class FeedService {
 		
 		$feed = Feed::where ( 'id', $storeParams ['feed_id'] )->first ();
 		if (! empty ( $feed )) {
-			$feedSub = FeedSub::where ( 'user_id', $user->id )->where ( 'feed_id', $feed->id )->where ( 'status', 1 )->first ();
+			$feedSub = $this->feedSubs->forUserByFeedId ( $user, $feed->id, 1 );
 			
 			if (! empty ( $feedSub )) {
 				$resp = $this->responseJson ( 1000, '', '已经关注' );
@@ -201,7 +224,7 @@ class FeedService {
 				$articleSub->save ();
 			}
 		} else {
-			$this->checkFeed ( $feed );
+			$this->feeds->checkFeed ( $feed );
 		}
 	}
 	
@@ -256,7 +279,7 @@ class FeedService {
 		$importer = new Importer ( file_get_contents ( $path ) );
 		$feedList = $importer->getFeedList ();
 		
-		$categorys = Category::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'asc' )->get ();
+		$categorys = $this->categorys->forUser ( $user );
 		if (count ( $categorys ) == 0) {
 			$category = $user->categorys ()->create ( [ 
 					'name' => '未分类',
@@ -434,7 +457,8 @@ class FeedService {
 		
 		$user = new User ();
 		$user->id = $feed->user_id;
-		$third = Third::where ( 'user_id', $user->id )->where ( 'source', $source )->orderBy ( 'created_at', 'asc' )->first ();
+		$thirdRepository = new ThirdRepository ();
+		$third = $thirdRepository->forUserSource ( $user );
 		if (empty ( $third )) {
 			return;
 		}

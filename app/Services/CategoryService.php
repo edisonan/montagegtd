@@ -3,21 +3,28 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Category;
+use App\Repositories\CategoryRepository;
 
 /**
- * 文章分类业务逻辑
+ * 文章分类相关Service
  *
  * @author edison.an
  *        
  */
 class CategoryService {
 	
+	/**
+	 *
+	 * @var CategoryRepository
+	 */
+	protected $categories;
 	
 	/**
-	 * 构造方法
+	 *
+	 * @param CategoryRepository $categories        	
 	 */
-	public function __construct() {
+	public function __construct(CategoryRepository $categories) {
+		$this->categories = $categories;
 	}
 	
 	/**
@@ -28,8 +35,7 @@ class CategoryService {
 	 *
 	 */
 	public function getList(User $user, $needPage = true, $needAutoCreate = false) {
-		$categories = Category::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'asc' )->paginate ( 50 );
-		
+		$categories = $this->categories->forUser ( $user, $needPage );
 		if ($needAutoCreate && count ( $categories ) == 0) {
 			$category = $user->categorys ()->create ( [ 
 					'name' => '未分类',
@@ -50,8 +56,7 @@ class CategoryService {
 	 *
 	 */
 	public function getByCategoryId(User $user, $categoryId) {
-		$category = Category::where ( 'user_id', $user->id )->where ( 'id', $categoryId )->first ();
-		;
+		$category = $this->categories->forCategoryId ( $user, $categoryId );
 		return $category;
 	}
 	
@@ -64,7 +69,7 @@ class CategoryService {
 	public function setCategorySort($user, $categoryIds) {
 		$sort = 0;
 		foreach ( $categoryIds as $categoryId ) {
-			$category = Category::where ( 'user_id', $user->id )->where ( 'id', $categoryId )->first ();
+			$category = $this->categories->forCategoryId ( $user, $categoryId );
 			if (! empty ( $category )) {
 				$category->update ( array (
 						'category_order' => $sort ++ 

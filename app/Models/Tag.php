@@ -20,7 +20,7 @@ class Tag extends Model {
 	 *
 	 * @var array
 	 */
-	protected $casts = [ ]
+	protected $casts = [ ];
 	// 'user_id' => 'int',
-	;
+	
 }

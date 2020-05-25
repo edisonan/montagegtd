@@ -60,7 +60,7 @@ $(document).ready(function () {
                         <!-- Add category Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-default">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>
                             </div>

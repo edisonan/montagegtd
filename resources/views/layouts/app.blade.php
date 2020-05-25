@@ -5,9 +5,9 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>@yield('title','Montage GTD - 高效你的生活')</title>
+    <title>@yield('title','蒙太奇 - 但行好事，用心生活')</title>
     <meta name="description" content="@yield('description')">
-    <meta name="keywords" content="Montage GTD,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
+    <meta name="keywords" content="蒙太奇,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
     @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
     	<meta name="referrer" content="never">
     @endif
@@ -60,7 +60,7 @@
 		<nav class="navbar navbar-expand-lg navbar-light bg-light">
 			<a class="navbar-brand" href="{{ url('/') }}">
 	        	<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
-	            <span style="color:#429c4e">Montage GTD</span>
+	            <span style="color:#429c4e">蒙太奇</span>
 	         </a>
 	        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 			 	<span class="navbar-toggler-icon"></span>
@@ -126,7 +126,7 @@
 		})();
 		</script>
 		<footer class="footer  text-center">
-		        <p>&copy; 2016 Congcong, Inc.<a href="mailto:accacc@126.com?subject=MontageGTD反馈">遇到问题?联系我~</a></p>
+		        <p>&copy; 2016 Congcong.us<a href="mailto:accacc@126.com?subject=MontageGTD反馈">遇到问题?联系我~</a></p>
 		</footer>
 </body>
 </html>

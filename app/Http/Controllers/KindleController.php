@@ -96,7 +96,6 @@ class KindleController extends Controller {
 				'kindlegenPath' => '/usr/local/bin/kindlegen', // The path to the kindlegen utility
 				'downloadImages' => true 
 		) ); // Should images be downloaded from the web if found in your html?
-
 		
 		$title = '测试文件';
 		$html = '<meta http-equiv="Content-Type" content="text/html;charset=utf-8"><h3>' . $title . '</h3>当你收到此测试文件，说明你的配置正确，快来Montage GTD订阅你喜欢的文档吧!Montage GTD是个综合性的网站，在这里你还可以更高效的完成每一件事，快来体验吧。';

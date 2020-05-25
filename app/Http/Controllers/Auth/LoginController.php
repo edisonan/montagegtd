@@ -86,8 +86,6 @@ class LoginController extends Controller {
 			$ffuser_result = $ffuser->verify_credentials ();
 			$ffuser_info = json_decode ( $ffuser_result, true );
 			
-			var_dump ( $ffuser_info );
-			exit ();
 			$third_user = new User ( [ 
 					'id' => $this->arrayItem ( $user, 'id' ),
 					'nickname' => $this->arrayItem ( $user, 'screen_name' ),

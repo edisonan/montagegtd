@@ -80,6 +80,15 @@ $(document).ready(function () {
                         </div>
                         
                         <div class="form-group row" id="task_form_div1" >
+                            <label for="task-name" class="col-md-3 control-label">Ifttt通知Key</label>
+                            
+                            <div class="col-md-8">
+                            	<input type="text" name="ifttt_notify" id="ifttt_notify" class="form-control" value="{{ $setting->ifttt_notify }}">
+                            </div>
+							
+                        </div>
+                        
+                        <div class="form-group row" id="task_form_div1" >
                             <label for="task-name" class="col-md-3 control-label">是否开启推送</label>
                             
 							<label class="radio-inline">
@@ -103,7 +112,7 @@ $(document).ready(function () {
                         <!-- Add Task Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                                <button type="submit" class="btn btn-default">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>提交！
                                 </button>
                             </div>

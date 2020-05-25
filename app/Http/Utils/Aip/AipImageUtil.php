@@ -21,7 +21,7 @@ class AipImageUtil {
 	
 	/**
 	 * 获取图片信息
-	 * 
+	 *
 	 * @param $content string        	
 	 * @return array
 	 */

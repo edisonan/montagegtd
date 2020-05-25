@@ -44,7 +44,7 @@ class CategoryRepository {
 	
 	/**
 	 * 获取最后一条排序
-	 * 
+	 *
 	 * @param User $user        	
 	 */
 	public function forLastCategoryOrder(User $user) {
@@ -58,7 +58,7 @@ class CategoryRepository {
 	
 	/**
 	 * 根据categoryName获取分类
-	 * 
+	 *
 	 * @param User $user        	
 	 * @param unknown $category_name        	
 	 */

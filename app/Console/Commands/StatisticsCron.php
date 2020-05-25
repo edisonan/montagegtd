@@ -4,17 +4,17 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Note;
-use App\Task;
-use App\Pomo;
-use App\Mind;
-use App\ArticleSub;
-use App\Statistics;
+use App\Models\Task;
+use App\Models\Pomo;
+use App\Models\Mind;
+use App\Models\ArticleSub;
+use App\Models\Statistics;
 use DB;
 use Log;
 
 /**
  * statistics pomo note task etc.
- * 
+ *
  * @author edison.an
  *        
  */

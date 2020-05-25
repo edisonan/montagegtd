@@ -11,7 +11,7 @@ use App\Services\FeedService;
 
 /**
  * get new article from common feed
- * 
+ *
  * @author edison.an
  *        
  */

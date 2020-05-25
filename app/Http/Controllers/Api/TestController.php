@@ -44,7 +44,6 @@ class TestController extends Controller {
 			] );
 		}
 	}
-	
 	public function info(Request $request) {
 		$user = new User ();
 		$user->id = 1;

@@ -114,7 +114,7 @@ class MindController extends Controller {
 	
 	/**
 	 * 更新思维导图
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @param Mind $mind        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
@@ -146,7 +146,7 @@ class MindController extends Controller {
 	
 	/**
 	 * 查看思维导图
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @param Mind $mind        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
@@ -154,30 +154,31 @@ class MindController extends Controller {
 	public function view(Request $request, Mind $mind) {
 		$this->authorize ( 'destroy', $mind );
 		
-// 		$datas = $this->getNodeTreeData ( $mind );
-// 		$jsmind_datas = array ();
-// 		$jsmind_datas ['meta'] = array (
-// 				'name' => $mind->name,
-// 				'author' => $request->user ()->name,
-// 				'version' => "1.0" 
-// 		);
-// 		$jsmind_datas ['format'] = 'node_tree';
-// 		$jsmind_datas ['data'] = $datas;
+		// $datas = $this->getNodeTreeData ( $mind );
+		// $jsmind_datas = array ();
+		// $jsmind_datas ['meta'] = array (
+		// 'name' => $mind->name,
+		// 'author' => $request->user ()->name,
+		// 'version' => "1.0"
+		// );
+		// $jsmind_datas ['format'] = 'node_tree';
+		// $jsmind_datas ['data'] = $datas;
 		
 		if ($request->ajax () || $request->wantsJson ()) {
 			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
 			return response ( $resp );
 		} else {
 			return view ( 'minds.view', [ 
-					'mind' => $mind,
-// 					'jsmind_datas' => json_encode ( $jsmind_datas ) 
-			] );
+					'mind' => $mind 
+			] )
+			// 'jsmind_datas' => json_encode ( $jsmind_datas )
+			;
 		}
 	}
 	
 	/**
 	 * 获取递归展示用数据
-	 * 
+	 *
 	 * @param unknown $mind        	
 	 * @param number $level        	
 	 * @return mixed[]|NULL[]
@@ -187,7 +188,7 @@ class MindController extends Controller {
 		$data ['id'] = $mind->id;
 		$data ['topic'] = $mind->name;
 		$data ['content'] = $mind->content;
-		$data ['content'] = str_replace("\\r\\n", "\r\n", $data['content']);
+		$data ['content'] = str_replace ( "\\r\\n", "\r\n", $data ['content'] );
 		if (count ( $mind->childrenMinds ) > 0) {
 			foreach ( $mind->childrenMinds as $childMind ) {
 				$data ['children'] [] = $this->getNodeTreeData ( $childMind, $level + 1 );
@@ -198,7 +199,7 @@ class MindController extends Controller {
 	
 	/**
 	 * 移除节点
-	 * 
+	 *
 	 * @param unknown $mind        	
 	 * @return boolean
 	 */
@@ -215,7 +216,7 @@ class MindController extends Controller {
 	
 	/**
 	 * 通过获取节点思维导图信息
-	 * 
+	 *
 	 * @param Request $request        	
 	 * @param Mind $mind        	
 	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory

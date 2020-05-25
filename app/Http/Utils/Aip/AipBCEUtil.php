@@ -60,7 +60,7 @@ class AipHttpUtil {
 	
 	/**
 	 * 在uri编码中不能对'/'编码
-	 * 
+	 *
 	 * @param string $path        	
 	 * @return string
 	 */
@@ -70,7 +70,7 @@ class AipHttpUtil {
 	
 	/**
 	 * 使用编码数组编码
-	 * 
+	 *
 	 * @param string $path        	
 	 * @return string
 	 */
@@ -84,7 +84,7 @@ class AipHttpUtil {
 	
 	/**
 	 * 生成标准化QueryString
-	 * 
+	 *
 	 * @param array $parameters        	
 	 * @return array
 	 */
@@ -120,7 +120,7 @@ class AipHttpUtil {
 	
 	/**
 	 * 生成标准化uri
-	 * 
+	 *
 	 * @param string $path        	
 	 * @return string
 	 */
@@ -140,7 +140,7 @@ class AipHttpUtil {
 	
 	/**
 	 * 生成标准化http请求头串
-	 * 
+	 *
 	 * @param array $headers        	
 	 * @return array
 	 */
@@ -200,7 +200,7 @@ class AipSampleSigner {
 	
 	/**
 	 * 签名
-	 * 
+	 *
 	 * @param array $credentials        	
 	 * @param string $httpMethod        	
 	 * @param string $path        	
@@ -271,7 +271,7 @@ class AipSampleSigner {
 	
 	/**
 	 * 根据headsToSign过滤应该参与签名的header
-	 * 
+	 *
 	 * @param array $headers        	
 	 * @param array $headersToSign        	
 	 * @return array
@@ -323,7 +323,7 @@ class AipSampleSigner {
 	 * 检查header是不是默认参加签名的：
 	 * 1.是host、content-type、content-md5、content-length之一
 	 * 2.以x-bce开头
-	 * 
+	 *
 	 * @param array $header        	
 	 * @return boolean
 	 */

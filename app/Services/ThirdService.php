@@ -17,7 +17,6 @@ use App\Http\Utils\ErrorCodeUtil;
 class ThirdService {
 	
 	/**
-	 *
 	 */
 	public function __construct() {
 	}
