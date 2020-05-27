@@ -191,7 +191,9 @@ class MindController extends Controller {
 		$data ['content'] = str_replace ( "\\r\\n", "\r\n", $data ['content'] );
 		if (count ( $mind->childrenMinds ) > 0) {
 			foreach ( $mind->childrenMinds as $childMind ) {
-				$data ['children'] [] = $this->getNodeTreeData ( $childMind, $level + 1 );
+			    if($childMind->status == 1){
+    				$data ['children'] [] = $this->getNodeTreeData ( $childMind, $level + 1 );
+			    }
 			}
 		}
 		return $data;
