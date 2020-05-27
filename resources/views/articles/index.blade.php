@@ -257,9 +257,10 @@ $(document).ready(function () {
 					if(Object.getOwnPropertyNames(navInfo.list).length > 0){
 						li += '<ul class="category_item">';
 						$.each(navInfo.list,function(index, item){
+							var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
 							li += '<li class="rowone">';
 							li += '<a href="'+"{{ url('articles') }}?feed_id="+item.feed_id+"&status="+status+'">';
-							li += '<span>['+ item.feed_count+']' + item.feed_name + '</span>';
+							li += '<span>[' + countInfo + ']' + item.feed_name + '</span>';
 						});
 						li += '</ul>';
 					}

@@ -102,6 +102,19 @@ class ArticleService {
 		] );
 		
 		$counts_info = array ();
+		$sql = '';
+		foreach ( $category_feed_infos as $item ) {
+			if (! empty ( $sql )) {
+				$sql .= ' union ';
+			}
+			$sql .= " select {$item->feed_id} as feed_id,count(1) as count from (select 1 from article_subs where user_id = {$user->id} and status= '{$status}' and feed_id = '{$item->feed_id}' limit 100) as a ";
+		}
+		if(!empty($sql)){
+			$infos = DB::select($sql);
+			foreach ($infos as $info){
+				$counts_info[$info->feed_id] = $info->count;
+			}
+		}
 		
 		// 导航信息，结构如下: category_id category_info => category_name category_id
 		$nav_infos = array ();
