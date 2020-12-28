@@ -79,8 +79,51 @@ https://gitee.com/accacc/task
 ## 如何快速基于此部署或者进行二次开发
 - fork该项目 https://gitee.com/accacc/task
 - 于/database/db.sql 获取sql，进行相关表创建
-- 提前安装php环境，安装相应扩展，配置nginx或者apache虚拟域名等，nginx配置可参考
+- 安装php环境，安装相应扩展，配置nginx或者apache虚拟域名等，nginx配置可参考
 - 执行composer install,即可成功访问
 
+nginx 配置参考：
+```
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name task.congcong.us;
 
+ 	root /project-path/task/public;
+    index index.php;
+
+    access_log /var/log/nginx/task.congcong.us-access.log;
+    error_log /var/log/nginx/task.congcong.us-error.log;
+
+    location / {
+        if (!-e $request_filename) {
+			rewrite ^/(.+)$ /index.php last; 
+        } 
+    }
+
+    location ~ \.php$ {
+        include fastcgi.conf;
+    	fastcgi_buffer_size 256k;
+		fastcgi_buffers 32 32k;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+    
+        fastcgi_param SCHEME $scheme;
+        if (!-e $request_filename)
+        {
+			rewrite ^/(.+)$ /index.php last;
+        }
+    }
+
+    ssl  on;
+    ssl_session_cache  shared:SSL:50m;
+    ssl_session_timeout  300;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers  on;
+
+    ssl_certificate /repalce-cert-path/task.congcong.us.crt;
+    ssl_certificate_key /repalce-cert-path/task.congcong.us.key;
+}
+```
 
