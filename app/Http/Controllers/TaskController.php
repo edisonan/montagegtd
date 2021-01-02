@@ -80,7 +80,7 @@ class TaskController extends Controller {
 		}
 		
 		// 格式化待办顺序
-		$format_tasks = '';
+		$format_tasks = array();
 		foreach ( $tasks as $task ) {
 			if ($task->parent_task_id == null) {
 				$format_tasks [] = $task;
