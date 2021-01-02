@@ -110,7 +110,7 @@ class ThirdService {
 	public function sceduleFanfouFave() {
 		$third = Third::where ( 'third_id', env ( 'FANFOU_ID' ) )->first ();
 		if (empty ( $third )) {
-			Log::info ( "[__CLASS__->__FUNCTION__]:not third info|{env('FANFOU_ID')}" );
+			\Log::info ( "[__CLASS__->__FUNCTION__]:not third info|{env('FANFOU_ID')}" );
 			return null;
 		}
 		
