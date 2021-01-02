@@ -115,7 +115,7 @@ class ArticleService {
 //				$counts_info[$info->feed_id] = $info->count;
 //			}
 //		}
-        $infos = DB::select ("select feed_id,count(*) from article_subs where user_id = {$user->id} and status = '{$status}' group by feed_id");
+        $infos = DB::select ("select feed_id,count(*) as count from article_subs where user_id = {$user->id} and status = '{$status}' group by feed_id");
         foreach ($infos as $info){
             $counts_info[$info->feed_id] = $info->count;
         }
