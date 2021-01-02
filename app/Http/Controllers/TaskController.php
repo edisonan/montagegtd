@@ -72,7 +72,7 @@ class TaskController extends Controller {
 		$tasks = $this->tasks->forUserByStatus ( $request->user (), $request->status, false, $request->mode );
 		
 		// 组装子待办
-		$temp = '';
+		$temp = array();
 		foreach ( $tasks as $task ) {
 			if ($task->parent_task_id != null) {
 				$temp [$task->parent_task_id] [] = $task;
