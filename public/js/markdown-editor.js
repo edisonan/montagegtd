@@ -693,7 +693,7 @@
             }
             self.isBs4 = String(self.bsVersion).substring(0, 1) === '4';
             if (self.exportPrependCssJs === undefined) {
-                self.exportPrependCssJs = '<link href="https://maxcdn.bootstrapcdn.com/bootstrap/' +
+                self.exportPrependCssJs = '<link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/' +
                     (self.isBs4 ? $h.BS4_VER : $h.BS3_VER) + '/css/bootstrap.min.css" rel="stylesheet">';
             }
             self.setDefaults('icons');
