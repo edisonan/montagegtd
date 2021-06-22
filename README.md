@@ -1,4 +1,4 @@
-# Montage GTD 一个基于Laravel 集RSS阅读、思维导图、番茄工作法于一体的GTD Web应用
+# MontageGTD 一个集RSS阅读、思维导图、番茄工作法于一体的GTD应用
 
 ![avatar](public/img/index.jpg)
 
@@ -24,7 +24,7 @@ https://gitee.com/accacc/task
 - [支持] 待办事项支持提醒功能 支持deadline之后醒目提醒
 - [支持] 待办事项支持四象限来管理，即不重要不紧急、重要不紧急、紧急不重要、不紧急不重要
 - [支持] 待办事项支持分目标管理任务，方便后续归纳及总结
-- [即将支持] 待办事项即将支持暂时隐藏长期任务一段时间
+- [支持] 待办事项即将支持暂时隐藏长期任务一段时间
 
 2. 阅读
 - [支持] 支持RSS订阅
@@ -126,4 +126,7 @@ server {
     ssl_certificate_key /repalce-cert-path/task.congcong.us.key;
 }
 ```
+
+## 基于Docker Composer快速搭建项目
+即将支持
 
