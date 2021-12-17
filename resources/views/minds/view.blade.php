@@ -152,7 +152,7 @@ $(document).ready(function () {
         		
             },// 命名的快捷键事件处理器
             mapping:{           // 快捷键映射
-                addchild   : 45,    // <Insert>
+                addchild   : 9,    // <Insert>
                 addbrother : 13,    // <Enter>
                 editnode   : 113,   // <F2>
                 delnode    : 46,    // <Delete>
