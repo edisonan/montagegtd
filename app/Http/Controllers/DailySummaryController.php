@@ -81,7 +81,7 @@ class DailySummaryController extends Controller {
 		$params ['life_content'] = $request->life_content;
 		
 		$dailySummary = new DailySummary();
-		$dailySummary->user_id = Auth::id() ;
+		$dailySummary->user_id = \Auth::id() ;
 		$dailySummary['summary_date'] = $params['summary_date'];
 		$dailySummary['work_content'] = $params['work_content'];
 		$dailySummary['life_content'] = $params['life_content'];
