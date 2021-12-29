@@ -1,12 +1,10 @@
 <?php
 namespace App\Exceptions;
 
-
+use App\Http\Utils\ResponseDataUtil;
 
 class CustomException extends \Exception
 {
-    const ERROR_CODE = 1001;
-    const ERROR_MSG  = 'ApiException';
 
     private $result = [];
 
@@ -19,8 +17,8 @@ class CustomException extends \Exception
      */
     public function __construct(string $message, string $code, $result = [])
     {
-        $this->code = $code  ? : self::ERROR_CODE;
-        $this->message  = $message ? : self::ERROR_MSG;
+        $this->code = $code  ? : ResponseDataUtil::COMMON_ERROR;
+        $this->message  = $message ? : ResponseDataUtil::getMessage($this->code);
         $this->result = $result;
     }
 

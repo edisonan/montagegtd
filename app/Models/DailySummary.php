@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DailyReport extends Model {
-    protected $table = 'daily_reports';
+class DailySummary extends Model {
+    protected $table = 'daily_summarys';
 	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array
 	 */
 	protected $fillable = [
-			'report_date',
+			'summary_date',
 			'work_content',
 			'life_content',
 			'status' 
