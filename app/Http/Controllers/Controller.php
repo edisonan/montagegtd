@@ -17,6 +17,7 @@ class Controller extends BaseController {
 	const SYSTEM_ERROR_CODE = 1000;
 	
 	use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+	
 	public function responseJson($code, $result = '', $msg = '') {
 		$resp = array (
 				'code' => $code,
@@ -25,4 +26,33 @@ class Controller extends BaseController {
 		);
 		return json_encode ( $resp );
 	}
+	
+	public function jsonAndViewAutoResponse($request, $responseData, $viewPage) {
+		if ($request->ajax () || $request->wantsJson ()) {
+			return response()->json($responseData, 200);
+		} else {
+			return view ( $viewPage, $responseData['result'] );
+		}
+	}
+	
+	public function jsonAndRedirectAutoResponse($request, $responseData, $redirectPage) {
+		if ($request->ajax () || $request->wantsJson ()) {
+			return response()->json($responseData, 200);
+		} else {
+			return redirect ( $redirectPage )->with ( 'message', 'IT WORKS!' );
+		}
+	}
+	
+	public function jsonResponse($request, $responseData) {
+		return response()->json($responseData, 200);
+	}
+	
+	public function viewResponse($request, $responseData, $viewPage) {
+		return view ( $viewPage, isset($responseData['result']) ? $responseData['result'] : array() );
+	}
+	
+	public function redirectResponse($request, $redirectPage) {
+		return redirect ( $redirectPage )->with ( 'message', 'IT WORKS!' );
+	}
+	
 }

@@ -112,6 +112,13 @@ Route::group ( [
 	Route::post ( '/goal/{goal}', 'GoalController@update' );
 	Route::get ( '/goal/{goal}', 'GoalController@update' );
 	
+	Route::get ( '/dailysummarys', 'DailySummaryController@index' );
+	Route::get ( '/dailycreate', 'DailySummaryController@create' );
+	Route::post ( '/dailysummary', 'DailySummaryController@store' );
+	Route::delete ( '/dailysummary/{dailySummary}', 'DailySummaryController@destroy' );
+	Route::post ( '/dailysummary/{dailySummary}', 'DailySummaryController@update' );
+	Route::get ( '/dailysummary/{dailySummary}', 'DailySummaryController@update' );
+	
 	// welcome
 	Route::get ( '/pomo/welcome', 'PomoController@welcome' );
 	Route::get ( '/note/welcome', 'NoteController@welcome' );
