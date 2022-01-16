@@ -7,6 +7,8 @@
 ## 快速体验
 [https://task.congcong.us](https://task.congcong.us)
 
+可以体验项目完整功能
+
 ## 开源地址
 https://gitee.com/accacc/task
 
@@ -66,7 +68,7 @@ https://gitee.com/accacc/task
 - [支持] 每日提醒
 - [支持] 书写日总结时，将会把平台所记录事情、导图、想法、阅读进行罗列辅助
 
-## 高效的使用Montage GTD
+## 高效使用Montage GTD
 
 - 快速订阅，chrome浏览器安装 [RSS Subscription Extension](https://chrome.google.com/webstore/detail/rss-subscription-extensio/nlbjncdgjeocebhnmkbbbdekmmmcbfjd) 增加订阅选项之后 点击立即订阅即可
 ```
