@@ -27,7 +27,7 @@ function getInfos($summary_date) {
 					var li = '<li role="presentation" class="col-md-12" style="padding-top: 10px;"><span class="category_items">'+subject+'['+(Object.getOwnPropertyNames(tipInfo.list).length -1 )+']</span>';
 					if(Object.getOwnPropertyNames(tipInfo.list).length > 0){
 						li += '<ul class="category_item">';
-						$.each(tipInfo.list,function(item){
+						$.each(tipInfo.list,function(index, item){
 							li += '<li class="rowone">';
 							if(item.url != '') {
 								li += '<a href="' +item.url+ '">[Go]</a>';

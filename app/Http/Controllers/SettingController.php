@@ -70,8 +70,13 @@ class SettingController extends Controller {
 				'pomo_rest_time' => 'integer|min:1|max:10',
 				'is_start_kindle' => 'integer|min:0|max:1',
 				'with_image_push' => 'integer|min:0|max:1',
-				'kindle_email' => 'email' 
 		] );
+		
+		if($request->is_start_kindle == 1) {
+			$this->validate ( $request, [
+					'kindle_email' => 'email'
+			] );
+		}
 		
 		$setting->update ( $request->all () );
 		

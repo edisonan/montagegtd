@@ -218,7 +218,7 @@ class FeedService {
 			}
 			
 			// 如果未锁定，那么更改Feed的名称
-			if (empty ( $feed->recommend_name ) && $feed->name != $feedName) {
+			if (empty ( $feed->recommend_name ) && $feed->feed_name != $feedName) {
 				$feed->feed_name = $feedName;
 			}
 			$feed->sub_count = $feed->sub_count + 1;
@@ -255,7 +255,7 @@ class FeedService {
 		// 默认订阅到未分类下
 		$category = $this->categoryService->getByCategoryName ( '未分类', true );
 		
-		$this->storeFeedSub ( $feed, $feed->name, $category->id );
+		$this->storeFeedSub ( $feed, $feed->feed_name, $category->id );
 	}
 	
 	/**
@@ -283,7 +283,7 @@ class FeedService {
 			try {
 				$this->checkFeed ( $feed );
 			} catch ( Exception $e ) {
-				Log::error ( 'check feed exception:' . $feed->id . '|' . $feed->name . '|' . $e->getMessage () );
+				Log::error ( 'check feed exception:' . $feed->id . '|' . $feed->feed_name . '|' . $e->getMessage () );
 			}
 		}
 	}
@@ -474,7 +474,7 @@ class FeedService {
 			try {
 				$this->checkFeed ( $feed );
 			} catch ( Exception $e ) {
-				Log::error ( 'check feed exception:' . $feed->id . '|' . $feed->name . '|' . $e->getMessage () );
+				Log::error ( 'check feed exception:' . $feed->id . '|' . $feed->feed_name . '|' . $e->getMessage () );
 			}
 		}
 	}
