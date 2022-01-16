@@ -1,6 +1,8 @@
-# MontageGTD 一个集RSS阅读、思维导图、番茄工作法于一体的GTD应用
+## MontageGTD 简介 
 
-![avatar](public/img/index.jpg)
+不止于GTD的WEB应用，除了支持番茄工作法、任务待办，更是支持笔记、RSS阅读、思维导图于一身的知识管理系统
+
+> 取名蒙太奇，一个有点拗口的电影术语，是将很多镜头通过不同的剪辑表现出来不同的立意。尽管疫情下好多人说电影会消亡，电影也许是最难消亡的一个产业，但是现在国内的电影产业却表现的非常坚挺，电影工业也越来越发达，长津湖几个月就可以完成第二部便足以见得，因为人类很弱小电影给了我们一个机会可以导演我们想象中的空间。这个平台呢？也希望记录一下我们小人物平凡和伟大的不同时刻的浮生一日，在这里导演是你，编剧是你，演员也是你，希望所记录的事情和成长能最终剪辑出我们生活的大电影
 
 ## 快速体验
 [https://task.congcong.us](https://task.congcong.us)
@@ -25,6 +27,7 @@ https://gitee.com/accacc/task
 - [支持] 待办事项支持四象限来管理，即不重要不紧急、重要不紧急、紧急不重要、不紧急不重要
 - [支持] 待办事项支持分目标管理任务，方便后续归纳及总结
 - [支持] 待办事项即将支持暂时隐藏长期任务一段时间
+- [支持] 番茄提醒功能，每日上午下午提醒做番茄，提醒番茄后记录，提醒休息后回归番茄，完善番茄工作法
 
 2. 阅读
 - [支持] 支持RSS订阅
@@ -59,7 +62,11 @@ https://gitee.com/accacc/task
 - [支持] 按月支持针对阅读、番茄、想法等统计的饼图与柱状图记录
 - [即将支持] 更细化的番茄工作法统计，更完善的提醒
 
-## 如何更高效的使用Montage GTD
+7. 日总结
+- [支持] 每日提醒
+- [支持] 书写日总结时，将会把平台所记录事情、导图、想法、阅读进行罗列辅助
+
+## 高效的使用Montage GTD
 
 - 快速订阅，chrome浏览器安装 [RSS Subscription Extension](https://chrome.google.com/webstore/detail/rss-subscription-extensio/nlbjncdgjeocebhnmkbbbdekmmmcbfjd) 增加订阅选项之后 点击立即订阅即可
 ```
@@ -76,57 +83,9 @@ https://gitee.com/accacc/task
 链接菜单：https://task.congcong.us/notes?add_content=%s
 ```
 
-## 如何快速基于此部署或者进行二次开发
-- fork该项目 https://gitee.com/accacc/task
-- 于/database/db.sql 获取sql，进行相关表创建
-- 安装php环境，安装相应扩展，配置nginx或者apache虚拟域名等，nginx配置可参考
-- 执行composer install,即可成功访问
+## 二次开发或部署
 
-nginx 配置参考：
-```
-server {
-    listen 80;
-    listen 443 ssl;
-    server_name task.congcong.us;
+请移步至wiki区域，wiki区域将不断完善技术相关内容
 
- 	root /project-path/task/public;
-    index index.php;
-
-    access_log /var/log/nginx/task.congcong.us-access.log;
-    error_log /var/log/nginx/task.congcong.us-error.log;
-
-    location / {
-        if (!-e $request_filename) {
-			rewrite ^/(.+)$ /index.php last; 
-        } 
-    }
-
-    location ~ \.php$ {
-        include fastcgi.conf;
-    	fastcgi_buffer_size 256k;
-		fastcgi_buffers 32 32k;
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_index index.php;
-    
-        fastcgi_param SCHEME $scheme;
-        if (!-e $request_filename)
-        {
-			rewrite ^/(.+)$ /index.php last;
-        }
-    }
-
-    ssl  on;
-    ssl_session_cache  shared:SSL:50m;
-    ssl_session_timeout  300;
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers  on;
-
-    ssl_certificate /repalce-cert-path/task.congcong.us.crt;
-    ssl_certificate_key /repalce-cert-path/task.congcong.us.key;
-}
-```
-
-## 基于Docker Composer快速搭建项目
-即将支持
+[https://gitee.com/accacc/task/wikis/Home?sort_id=42169](https://gitee.com/accacc/task/wikis/Home?sort_id=42169)
 
