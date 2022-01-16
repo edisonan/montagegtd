@@ -24,7 +24,7 @@ class NoteRepository {
 				'user' 
 		] );
 		$query->where ( function ($query) use ($userId) {
-			$query->where ( 'status', 2 )->orwhere ( 'user_id', \Auth::id () );
+			$query->where ( 'status', 2 )->where('audit_status', 1)->orwhere ( 'user_id', \Auth::id () );
 		} );
 		if (! empty ( $keyword )) {
 			$query->where ( 'name', 'like', "%" . $keyword . "%" );
