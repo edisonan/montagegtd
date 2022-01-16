@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Services\AccountService;
 
@@ -38,7 +39,7 @@ class AccountController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$oauths = $this->accountService->getOauthInfos ( $request->user () );
+		$oauths = $this->accountService->getOauthInfos ();
 		return view ( 'accounts.index', [ 
 				'oauths' => $oauths 
 		] );

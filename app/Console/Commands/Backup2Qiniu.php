@@ -3,13 +3,14 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Repositories\FeedRepository;
-use App\Feed;
-use App\Http\Utils\SpideUtil;
 use Log;
+use Storage;
 
 /**
- * get new article from common feed
+ * 备份到七牛云
+ *
+ * $schedule->command ( 'backup2qiniu', array ( env ( 'TASK_SQL_FILE_PATH' ) ) )->dailyAt ( '18:00' );
+ * $schedule->command ( 'backup2qiniu', array ( env ( 'WWW_SQL_FILE_PATH' ) ) )->dailyAt ( '18:00' );
  *
  * @author edison.an
  *        
@@ -27,7 +28,7 @@ class Backup2Qiniu extends Command {
 	 *
 	 * @var string
 	 */
-	protected $description = 'Backup SQL File To Qiniu!';
+	protected $description = 'Backup File To Qiniu!';
 	
 	/**
 	 * Execute the console command.
@@ -40,13 +41,13 @@ class Backup2Qiniu extends Command {
 		
 		if (file_exists ( $path )) {
 			try {
-				\Storage::disk ( 'qiniu' )->put ( basename ( $path ), fopen ( $path, 'r+' ) );
-				\Log::info ( 'upload to qiniu :' . $path );
+				Storage::disk ( 'qiniu' )->put ( basename ( $path ), fopen ( $path, 'r+' ) );
+				Log::info ( 'upload to qiniu success :' . $path );
 			} catch ( Exception $e ) {
-				\Log::info ( 'ERROR upload to qiniu :' . $path . '|' . serialize ( $e ) );
+				Log::error ( 'backup qiniuyun wrong, upload to qiniu :' . $path . '|' . $e->getMessage () );
 			}
 		} else {
-			\Log::info ( 'path not exist :' . $path );
+			Log::error ( 'backup qiniuyun wrong, path not exist :' . $path );
 		}
 	}
 }

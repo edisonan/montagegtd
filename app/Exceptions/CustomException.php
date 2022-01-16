@@ -12,10 +12,10 @@ class CustomException extends \Exception
      * BusinessException constructor.
      *
      * @param string $message
-     * @param string $code
+     * @param int $code
      * @param array $result
      */
-    public function __construct(string $message, string $code, $result = [])
+    public function __construct(string $message, int $code = 1001, $result = [])
     {
         $this->code = $code  ? : ResponseDataUtil::COMMON_ERROR;
         $this->message  = $message ? : ResponseDataUtil::getMessage($this->code);
@@ -37,7 +37,7 @@ class CustomException extends \Exception
     {
     	if ($request->ajax () || $request->wantsJson ()) {
     		return response()->json([
-	            'result' => $this->getData(),
+	            'result' => $this->getResult(),
 	            'code' => $this->getCode(),
 	            'msg' => $this->getMessage(),
 	        ], 200);

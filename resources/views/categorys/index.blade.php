@@ -17,8 +17,7 @@ $(document).ready(function () {
 		    url: "{{ url('category') }}"+"/"+category_value,
 		    type: 'DELETE',
 		    data: {type:category_type,_token:category_token},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert(result_arr.msg);
 				} else {
@@ -69,7 +68,7 @@ $(document).ready(function () {
                     
                     
                     @if (count($categorys) > 0)
-                    <table class="table table-striped category-table">
+                    <table class="table table-hover category-table">
                             <thead>
                                 <th>分类列表</th>
                                 <th>&nbsp;</th>

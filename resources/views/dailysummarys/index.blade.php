@@ -18,8 +18,7 @@ $(document).ready(function () {
 		    url: "{{ url('dailysummary') }}"+"/"+dailysummary_value,
 		    type: 'DELETE',
 		    data: {type:dailysummary_type,_token:dailysummary_token},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -36,7 +35,7 @@ $(document).ready(function () {
                     <div class="card-header">
                         	日报列表
                         	<div style="float:right">
-	                    		<a href="{{'/dailycreate'}}">[新建]</a>
+	                    		<a href="{{'/dailycreate'}}">[新建日报]</a>
 	                    		<a href="{{'/index'}}">[返回]</a>
 	                    	</div>
                     </div>
@@ -46,7 +45,7 @@ $(document).ready(function () {
                     @include('common.errors')
                     
                     @if (count($dailysummarys) > 0)
-                    <table class="table table-striped dailysummary-table">
+                    <table class="table table-hover dailysummary-table">
                             <thead>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>
@@ -58,8 +57,16 @@ $(document).ready(function () {
                                         	<div class="preprepre">
                                         	{{ $dailysummary->summary_date }}
                                         	</div>
-                                        	<div>{{ $dailysummary->work_content }}</div>
-                                        	<div>{{ $dailysummary->life_content }}</div>
+                                        	<div style="padding-top: 10px;">
+	                                        	<small><b>工作总结</b></small>
+	                                        	<div style="padding-left:20px;"><?php echo nl2br( $dailysummary->work_content); ?></div>
+                                        	</div>
+                                        	<div style="padding-top: 10px;">
+                                        	<small><b>生活总结</b></small>
+                                        	<div style="padding-left:20px;">
+                                        	<?php echo nl2br( $dailysummary->life_content); ?>
+                                        	</div>
+                                        	</div>
                                         </td>
 
                                         <td  width="10%"  align='right'>
@@ -73,6 +80,12 @@ $(document).ready(function () {
                             </tbody>
                         </table>
                          {!! $dailysummarys->links() !!}
+                         
+                    @else
+                    <div>
+			<img src="/img/new/love.png" width="200px">
+			今天发生了点什么，记录一下吧~
+			</div>
                     @endif
                 </div>
                 </div>

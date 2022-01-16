@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Setting;
-use App\Http\Utils\ErrorCodeUtil;
 use App\Services\SettingService;
+use App\Http\Utils\ResponseDataUtil;
 
 /**
  * 设置控制器
@@ -16,26 +16,26 @@ use App\Services\SettingService;
 class SettingController extends Controller {
 	
 	/**
-	 * The settings repository instance.
+	 * The settings service instance.
 	 *
-	 * @var SettingRepository
+	 * @var SettingService
 	 */
-	protected $settings;
+	protected $settingService;
 	
 	/**
 	 * Create a new controller instance.
 	 *
-	 * @param SettingRepository $settings        	
+	 * @param SettingService $settingService        	
 	 * @return void
 	 */
-	public function __construct(SettingService $settings) {
+	public function __construct(SettingService $settingService) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome' 
 				] 
 		] );
 		
-		$this->settings = $settings;
+		$this->settingService = $settingService;
 	}
 	
 	/**
@@ -46,11 +46,8 @@ class SettingController extends Controller {
 	public function index(Request $request) {
 		$page_params = array ();
 		
-		$setting = $this->settings->forUser ( $request->user () );
+		$setting = $this->settingService->getSettingInfo ( true );
 		
-		if (empty ( $setting )) {
-			$setting = new Setting ();
-		}
 		return view ( 'settings.index', [ 
 				'setting' => $setting 
 		] );
@@ -63,6 +60,8 @@ class SettingController extends Controller {
 	 * @param Setting $setting        	
 	 */
 	public function update(Request $request, Setting $setting) {
+		$this->authorize ( 'destroy', $setting );
+		
 		$this->validate ( $request, [ 
 				'day_pomo_goal' => 'integer|min:1',
 				'week_pomo_goal' => 'integer|min:1',
@@ -74,30 +73,13 @@ class SettingController extends Controller {
 				'kindle_email' => 'email' 
 		] );
 		
-		if (empty ( $setting->user_id )) {
-			$setting = $this->settings->forUser ( $request->user () );
-			if (! empty ( $setting )) {
-				echo 'error';
-				exit ();
-			}
-			
-			$setting = new Setting ();
-			$setting->user_id = $request->user ()->id;
-			$setting->save ( $request->all () );
-		} else {
-			$this->authorize ( 'destroy', $setting );
-			$setting->update ( $request->all () );
+		$setting->update ( $request->all () );
+		
+		$redirectPage = '/settings';
+		if ($request->has ( 'page_info' ) && $request->page_info == 'kindle_page') {
+			$redirectPage = '/kindles';
 		}
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE );
-			return response ( $resp );
-		} else {
-			if ($request->has ( 'page_info' ) && $request->page_info == 'kindle_page') {
-				return redirect ( '/kindles' )->with ( 'message', '操作成功!' );
-			} else {
-				return redirect ( '/settings' )->with ( 'message', '操作成功!' );
-			}
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), $redirectPage );
 	}
 }

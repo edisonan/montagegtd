@@ -72,8 +72,7 @@
 				 		    url: "{{ url('categorys/sort') }}",
 				 		    type: 'POST',
 				 		    data: {"category_ids":vals, "_token":"{{ csrf_token() }}"},
-				 		    success: function(result) {
-				 		    	result_arr = JSON.parse(result);
+				 		    success: function(result_arr) {
 				 				if(result_arr.code != 9999){
 				 					alert('处理失败，请稍后再试');
 				 				}
@@ -118,8 +117,7 @@
 				 		    url: "{{ url('feeds') }}"+"/sort",
 				 		    type: 'POST',
 				 		    data: {"feed_sub_ids":vals, "_token":"{{ csrf_token() }}" , "change_feed_sub_id":change_feed_sub_id, "change_feed_sub_category":change_feed_sub_category},
-				 		    success: function(result) {
-				 		    	result_arr = JSON.parse(result);
+				 		    success: function(result_arr) {
 				 				if(result_arr.code != 9999){
 				 					alert('处理失败，请稍后再试');
 				 				} else {

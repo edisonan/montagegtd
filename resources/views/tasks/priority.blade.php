@@ -8,6 +8,8 @@
 		<div class="card-header">
 			待办四象限
 			<div style="float: right">
+				<a href="{{'/taskpriority?mode=1'}}">[工作]</a>
+				<a href="{{'/taskpriority?mode=2'}}">[生活]</a>
 				<a href="{{'/index'}}">[返回]</a>
 			</div>
 		</div>
@@ -16,56 +18,78 @@
 
 			<div class="row">
 				<div class="col-md-6">
-					<div class="">
-						<h4>不重要不紧急事项</h4>
-						@if(empty($tasks[1]))
-							<p>暂无待办</p>
-						@else
-							@foreach ($tasks[1] as $task)
-							<p>{{$task->name}}</p>
-							@endforeach
-						@endif
-					</div>
-				</div>
-
-				<div class="col-md-6">
-					<div class="">
-						<h4>不重要紧急事项</h4>
-						@if(empty($tasks[3]))
-							<p>暂无待办</p>
-						@else
-							@foreach ($tasks[3] as $task)
-							<p>{{$task->name}}</p>
-							@endforeach
-						@endif
-					</div>
-				</div>
-
-				<div class="col-md-6">
-					<div class="">
-						<h4>重要不紧急事项</h4>
-						@if(empty($tasks[3]))
-							<p>暂无待办</p>
-						@else
-							@foreach ($tasks[3] as $task)
-							<p>{{$task->name}}</p>
-							@endforeach
-						@endif
-					</div>
-
-				</div>
-				<div class="col-md-6">
-					<div class="">
+					<div class="p-3 mb-2 bg-success bg-gradient text-white">
 						<h4>重要紧急事项</h4>
 						@if(empty($tasks[4]))
 							<p>暂无待办</p>
 						@else
 							@foreach ($tasks[4] as $task)
-							<p>{{$task->name}}</p>
+							<p>
+                                                        @if(!empty($task->parent_task_id))
+                                                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                                        @endif
+                                                        {{$task->name}}
+                                                        </p>
 							@endforeach
 						@endif
 					</div>
 				</div>
+				<div class="col-md-6">
+					<div class="p-3 mb-2 bg-info bg-gradient text-dark">
+						<h4>重要不紧急事项</h4>
+						@if(empty($tasks[3]))
+							<p>暂无待办</p>
+						@else
+							@foreach ($tasks[3] as $task)
+							<p>
+							@if(!empty($task->parent_task_id))
+								&nbsp;&nbsp;&nbsp;&nbsp;
+							@endif
+							{{$task->name}}
+							</p>
+							@endforeach
+						@endif
+					</div>
+
+				</div>
+
+				<div class="col-md-6">
+					<div class="p-3 mb-2 bg-warning bg-gradient text-dark">
+						<h4>不重要紧急事项</h4>
+						@if(empty($tasks[2]))
+							<p>暂无待办</p>
+						@else
+							@foreach ($tasks[2] as $task)
+							<p>
+                                                        @if(!empty($task->parent_task_id))
+                                                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                                        @endif
+                                                        {{$task->name}}
+                                                        </p>
+							@endforeach
+						@endif
+					</div>
+				</div>
+
+				<div class="col-md-6">
+					<div class="p-3 mb-2 bg-secondary bg-gradient text-white">
+						<h4>不重要不紧急事项</h4>
+						@if(empty($tasks[1]))
+							<p>暂无待办</p>
+						@else
+							@foreach ($tasks[1] as $task)
+							<p>
+                                                        @if(!empty($task->parent_task_id))
+                                                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                                        @endif
+                                                        {{$task->name}}
+                                                        </p>
+
+							@endforeach
+						@endif
+					</div>
+				</div>
+
 
 			</div>
 		</div>

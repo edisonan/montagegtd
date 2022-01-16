@@ -49,8 +49,7 @@ $(document).ready(function () {
 
 	$(".feed_quick_sub").click(function(){
 		var feed_id = $(this).attr('feed_id');
-		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result){
-			result_arr = JSON.parse(result);
+		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result_arr){
 			if(result_arr.code != 9999){
 				alert(result_arr.msg);
 			} else {

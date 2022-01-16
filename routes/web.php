@@ -39,6 +39,8 @@ Route::group ( [
 	Route::delete ( '/mind/{mind}', 'MindController@destroy' );
 	Route::get ( '/mind/{mind}', 'MindController@view' );
 	Route::get ( '/mindajaxget/{mind}', 'MindController@ajaxget' );
+	Route::get ( '/mindoutlineview/{mind}', 'MindController@outlineView' );
+	Route::get ( '/mindajaxoutlineget/{mind}', 'MindController@ajaxoutlineget' );
 	Route::post ( '/mind/{mind}', 'MindController@update' );
 	
 	Route::get ( '/tasks', 'TaskController@index' );
@@ -90,6 +92,7 @@ Route::group ( [
 	Route::get ( '/article/navcountinfo', 'ArticleController@navcountinfo' );
 	
 	Route::get ( '/pomos', 'PomoController@index' );
+	Route::get ( '/pomostoday', 'PomoController@todayPomos' );
 	Route::get ( '/pomos/start', 'PomoController@start' );
 	Route::get ( '/pomos/discard/{pomo}', 'PomoController@discard' );
 	Route::get ( '/pomos/discard/', 'PomoController@discard' );
@@ -114,6 +117,7 @@ Route::group ( [
 	
 	Route::get ( '/dailysummarys', 'DailySummaryController@index' );
 	Route::get ( '/dailycreate', 'DailySummaryController@create' );
+	Route::get ( '/dailytips', 'DailySummaryController@getTipInfos' );
 	Route::post ( '/dailysummary', 'DailySummaryController@store' );
 	Route::delete ( '/dailysummary/{dailySummary}', 'DailySummaryController@destroy' );
 	Route::post ( '/dailysummary/{dailySummary}', 'DailySummaryController@update' );

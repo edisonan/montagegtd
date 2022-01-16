@@ -13,6 +13,7 @@ use App\Models\OauthInfo;
 use App\Http\Utils\CommonUtil;
 use function Qiniu\json_decode;
 use App\Services\AccountService;
+use App\Http\Utils\ResponseDataUtil;
 
 class WechatController extends Controller {
 	
@@ -83,11 +84,11 @@ class WechatController extends Controller {
 		
 		\Cache::store ( 'file' )->put ( $wechat_mini_token, $token_value, $token_expire_time );
 		
-		return $this->responseJson ( ErrorCodeUtil::OK_CODE, array (
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( array (
 				'openid' => $openid,
 				'token' => $wechat_mini_token,
 				'token_expire_time' => $token_expire_time 
-		), 'succ' );
+		) ) );
 	}
 	
 	/**
@@ -138,8 +139,7 @@ class WechatController extends Controller {
 			$articles [$key] = $val;
 		}
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $articles );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $articles ) );
 	}
 	public function articleview(Request $request) {
 		// $user = $request->user();
@@ -164,23 +164,22 @@ class WechatController extends Controller {
 			exit ();
 		}
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $article );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $article ) );
 	}
 	
 	/**
 	 * 发现
 	 *
 	 * @param Request $request        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function explorer(Request $request) {
 		$sql = 'select id,feed_name,feed_desc,favicon from feeds where is_recommend = 1 order by rand() limit 10';
 		$sql_param = [ ];
 		$articles = DB::select ( $sql, $sql_param );
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $articles );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $articles ) );
 	}
 	public function notes(Request $request) {
 		$user = new User ();
@@ -191,8 +190,7 @@ class WechatController extends Controller {
 		$sql_param = [ ];
 		$articles = DB::select ( $sql, $sql_param );
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $articles );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $articles ) );
 	}
 	public function addNote(Request $request) {
 		$user = new User ();
@@ -242,8 +240,7 @@ class WechatController extends Controller {
 			) );
 		}
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $note );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $note ) );
 	}
 	public function articleSubStatus(Request $request, ArticleSub $articleSub) {
 		$user = new User ();
@@ -292,7 +289,6 @@ class WechatController extends Controller {
 			}
 		}
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $articleSub->article );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $articleSub->article ) );
 	}
 }

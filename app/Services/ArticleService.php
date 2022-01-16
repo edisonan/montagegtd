@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Article;
 use App\Models\ArticleMark;
 use App\Models\ArticleSub;
+use App\Models\FeedSub;
+use App\Models\Feed;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ArticleRepository;
 use App\Repositories\FeedSubRepository;
@@ -30,42 +32,102 @@ class ArticleService {
 	 *
 	 * @var CategoryRepository
 	 */
-	protected $categorys;
+	protected $categoryRepository;
 	
 	/**
 	 * ArticleRepository 实例.
 	 *
 	 * @var ArticleRepository
 	 */
-	protected $articles;
+	protected $articleRepository;
 	
 	/**
 	 * FeedSubRepository 实例 .
 	 *
 	 * @var FeedSubRepository
 	 */
-	protected $feedSubs;
+	protected $feedSubRepository;
 	
 	/**
 	 * ArticleSubRepository 实例 .
 	 *
 	 * @var ArticleSubRepository
 	 */
-	protected $articleSubs;
+	protected $articleSubRepository;
 	
 	/**
 	 * 创建Service
 	 *
-	 * @param CategoryRepository $categorys        	
-	 * @param ArticleRepository $articles        	
-	 * @param FeedSubRepository $feedSubs        	
-	 * @param ArticleSubRepository $articleSubs        	
+	 * @param CategoryRepository $categoryRepository        	
+	 * @param ArticleRepository $articleRepository        	
+	 * @param FeedSubRepository $feedSubRepository        	
+	 * @param ArticleSubRepository $articleSubRepository        	
 	 */
-	public function __construct(CategoryRepository $categorys, ArticleRepository $articles, FeedSubRepository $feedSubs, ArticleSubRepository $articleSubs) {
-		$this->categorys = $categorys;
-		$this->articles = $articles;
-		$this->feedSubs = $feedSubs;
-		$this->articleSubs = $articleSubs;
+	public function __construct(CategoryRepository $categoryRepository, ArticleRepository $articleRepository, FeedSubRepository $feedSubRepository, ArticleSubRepository $articleSubRepository) {
+		$this->categoryRepository = $categoryRepository;
+		$this->articleRepository = $articleRepository;
+		$this->feedSubRepository = $feedSubRepository;
+		$this->articleSubRepository = $articleSubRepository;
+	}
+	
+	/**
+	 * 根据不同条件 获取相关文章信息
+	 *
+	 * @param string $status        	
+	 * @param int $pageCount        	
+	 * @param string $feedId        	
+	 * @param string $categoryId        	
+	 * @return unknown
+	 */
+	public function getArticleSubList(string $status, int $pageCount = 20, $feedId = '', $categoryId = '') {
+		// 组装订阅源ids
+		$feedIds = array ();
+		if (! empty ( $feedId )) {
+			$feedIds [] = $feedId;
+		} else if (! empty ( $categoryId )) {
+			$feedIds [] = $this->feedSubRepository->getFeedIdsByCategoryId ( $categoryId );
+		}
+		
+		// 获取文章列表
+		$articleSubs = $this->articleSubRepository->getArticleSubList ( Auth::id (), $status, $feedIds, $pageCount );
+		return $articleSubs;
+	}
+	
+	/**
+	 * 获取文章分类导航
+	 *
+	 * @param string $status        	
+	 */
+	public function getNavInfo(string $status) {
+		$userId = \Auth::id ();
+		
+		// 获取所有的订阅信息及其分类信息.
+		$categoryFeedInfos = $this->feedSubRepository->getCategoryFeedInfos ( $userId );
+		
+		// 每个订阅源该状态下数量
+		$feedCountInfos = $this->getFeedCountInfos ( $userId, $status );
+		
+		// 导航信息，结构如下:
+		// [category_id_value] [category_info] => {category_name/category_id}
+		// [category_id_value] [list] => {feed_id1/feed_name1/feed_count1}, {feed_id2/feed_name2/feed_count2}...
+		$navInfos = array ();
+		foreach ( $categoryFeedInfos as $item ) {
+			$navInfos [$item->category_id] ['category_info'] = array (
+					'category_name' => $item->category_name,
+					'category_id' => $item->category_id 
+			);
+			
+			$navInfos [$item->category_id] ['list'] [] = array (
+					'feed_id' => $item->feed_id,
+					'feed_name' => $item->feed_name,
+					'feed_count' => isset ( $feedCountInfos [$item->feed_id] ) ? $feedCountInfos [$item->feed_id] : 0 
+			);
+		}
+		
+		foreach ( $navInfos as $key => $val ) {
+			$navInfos [$key] ['list'] = $this->sortFeed ( $val ['list'] );
+		}
+		return $navInfos;
 	}
 	
 	/**
@@ -75,200 +137,112 @@ class ArticleService {
 	 * @param int $status        	
 	 * @return array like feed_id=>count
 	 */
-	public function getCountInfos(User $user, $status) {
-		// 获取每个订阅的数量
-		$temp_counts = ArticleSub::select ( 'feed_id', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user->id )->where ( 'status', $status )->groupBy ( 'feed_id' )->get ();
-		
-		// 将订阅组合成如下结构: feed_id=>count
-		$counts_info = array ();
-		foreach ( $temp_counts as $temp_count ) {
-			$counts_info [$temp_count ['feed_id']] = $temp_count ['total'];
+	public function getFeedCountInfos($userId, $status) {
+		$originalCountInfos = $this->articleSubRepository->getFeedCountInfos ( $userId, $status );
+		$countsInfo = array ();
+		foreach ( $originalCountInfos as $originalCountInfo ) {
+			$countsInfo [$originalCountInfo->feed_id] = $originalCountInfo->count;
 		}
-		
-		return $counts_info;
-	}
-	
-	/**
-	 * 获取文章分类导航和下一篇推荐信息
-	 *
-	 * @param User $user        	
-	 * @param string $feedId        	
-	 * @return number[][]|array[][]|NULL[][]
-	 */
-	public function getNavInfoAndNextRecommend(User $user, $status, $feedId = '') {
-		// 通过订阅ID获取分类信息.
-		$category_feed_infos = DB::select ( 'select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order asc,f.feed_order asc', [ 
-				':user_id' => $user->id 
-		] );
-		
-		$counts_info = array ();
-//		$sql = '';
-//		foreach ( $category_feed_infos as $item ) {
-//			if (! empty ( $sql )) {
-//				$sql .= ' union ';
-//			}
-//			$sql .= " select {$item->feed_id} as feed_id,count(1) as count from (select 1 from article_subs where user_id = {$user->id} and status= '{$status}' and feed_id = '{$item->feed_id}' limit 100) as a ";
-//		}
-//		if(!empty($sql)){
-//			$infos = DB::select($sql);
-//			foreach ($infos as $info){
-//				$counts_info[$info->feed_id] = $info->count;
-//			}
-//		}
-        $infos = DB::select ("select feed_id,count(*) as count from article_subs where user_id = {$user->id} and status = '{$status}' group by feed_id");
-        foreach ($infos as $info){
-            $counts_info[$info->feed_id] = $info->count;
-        }
-		
-		// 导航信息，结构如下: category_id category_info => category_name category_id
-		$nav_infos = array ();
-		
-		// 推荐订阅信息，结构如下: feed_id feed_name feed_count
-		$next_recommend_feed = array ();
-		
-		foreach ( $category_feed_infos as $item ) {
-			$nav_infos [$item->category_id] ['category_info'] = array (
-					'category_name' => $item->category_name,
-					'category_id' => $item->category_id 
-			);
-			
-			$feed = array (
-					'feed_id' => $item->feed_id,
-					'feed_name' => $item->feed_name,
-					'feed_count' => isset ( $counts_info [$item->feed_id] ) ? $counts_info [$item->feed_id] : 0 
-			);
-			
-			if ($feed ['feed_count'] != 0 && empty ( $next_recommend_feed )) {
-				if (! empty ( $feedId )) {
-					$feedId != $feed ['feed_id'] ? $next_recommend_feed = $feed : '';
-				} else {
-					$next_recommend_feed = $feed;
-				}
-			}
-			
-			$nav_infos [$item->category_id] ['list'] [] = $feed;
-		}
-		
-		foreach ( $nav_infos as $key => $val ) {
-			$nav_infos [$key] ['list'] = $this->sortFeed ( $nav_infos [$key] ['list'] );
-		}
-		return array (
-				'nav_infos' => $nav_infos,
-				'next_recommend_feed' => $next_recommend_feed 
-		);
-	}
-	
-	/**
-	 * 根据不同条件 获取相关文章信息
-	 *
-	 * @param string $feedId        	
-	 * @param string $category_id        	
-	 * @return array
-	 */
-	public function getArticleSubs(User $user, $status, $pageCount, $feedId = '', $category_id = '') {
-		$feedIdArr = array ();
-		if (! empty ( $feedId )) {
-			$feedIdArr [] = $feedId;
-		} else if (! empty ( $categoryId )) {
-			// 通过分类ID获取订阅文章集
-			$feedsubs = DB::table ( 'feed_subs' )->select ( 'feed_id' )->where ( 'category_id', $categoryId )->where ( 'status', 1 )->get ();
-			
-			$feedIdArr = array ();
-			foreach ( $feedsubs as $feedsub ) {
-				$feedIdArr [] = $feedsub->feed_id;
-			}
-		}
-		
-		$articleSubs = ArticleSub::with ( 'article.feed' )->where ( 'user_id', $user->id )->where ( 'status', $status );
-		if (! empty ( $feedIdArr )) {
-			$articleSubs = $articleSubs->whereIn ( 'feed_id', $feedIdArr );
-		}
-		
-		$articleSubs = $articleSubs->orderBy ( 'updated_at', 'desc' )->simplePaginate ( $pageCount );
-		return $articleSubs;
+		return $countsInfo;
 	}
 	
 	/**
 	 * 获取文章列表
 	 *
-	 * @param string $user        	
-	 * @param string $feedId        	
-	 * @param boolean $needPage        	
-	 * @param int $pageCount        	
+	 * @param string $feedId
+	 *        	订阅源
+	 * @param int $pageCount
+	 *        	每页数量
 	 * @return array
 	 */
-	public function forUserByFeedId($user, $feedId, $needPage = true, $pageCount) {
-		return $this->articleSubs->forUserByFeedId ( $user, $feedId, $needPage, $pageCount );
+	public function getArticleListByFeedId($feedId, $pageCount) {
+		// 查看订阅源
+		$feed = Feed::where ( 'id', $feedId )->first ();
+		if (empty ( $feed )) {
+			throw new CustomException ( "该订阅不存在" );
+		}
+		
+		// 获取文章列表
+		$articles = $this->articleSubRepository->getArticleListByFeedId ( Auth::id (), $feedId, $pageCount );
+		
+		return [ 
+				'articles' => $articles,
+				'feed' => $feed 
+		];
 	}
 	
 	/**
-	 * 判断是否订阅
+	 * 判断是否订阅此源
 	 *
-	 * @param User $user        	
-	 * @param string $status        	
-	 * @param string $feedId        	
+	 * @param int $feedId
+	 *        	订阅源id
 	 * @return boolean
 	 */
-	public function isFeedArticle($user, $status, $feedId) {
-		$feedSub = $this->feedSubs->forUserByFeedId ( $user, $feedId, $status );
+	public function isFeed($feedId) {
+		$feedSub = $this->feedSubRepository->getUserFeedSubByFeedIdStatus ( Auth::id (), $feedId );
 		return empty ( $feedSub ) ? false : true;
 	}
 	
 	/**
-	 * 获取语音地址
+	 * 获取语音地址,如果不存在则生成语音
 	 *
-	 * @param Article $article        	
+	 * @param Article $article
+	 *        	文章实体
 	 * @return string
 	 */
 	public function getActiveRecordUrl($article) {
-		if (file_exists ( config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3' )) {
-			return config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3';
+		$path = config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3';
+		if (file_exists ( $path )) {
+			return $path;
+		}
+		
+		// 识别正确返回语音二进制 错误则返回json 参照下面错误码
+		$aipSpeech = new AipSpeech ( env ( 'BD_APP_ID', '' ), env ( 'BD_API_KEY', '' ), env ( 'BD_SECRET_KEY', '' ) );
+		$result = $aipSpeech->synthesis ( strip_tags ( $article->content ), 'zh', 1, array (
+				'per' => 3 
+		) );
+		if (! is_array ( $result )) {
+			file_put_contents ( $path, $result );
+			return $path;
 		} else {
-			// 识别正确返回语音二进制 错误则返回json 参照下面错误码
-			$aipSpeech = new AipSpeech ( env ( 'BD_APP_ID', '' ), env ( 'BD_API_KEY', '' ), env ( 'BD_SECRET_KEY', '' ) );
-			$result = $aipSpeech->synthesis ( strip_tags ( $article->content ), 'zh', 1, array (
-					'per' => 3 
-			) );
-			if (! is_array ( $result )) {
-				file_put_contents ( config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3', $result );
-				return config ( "app.storage_path" ) . 'article_records/' . $article->id . '.mp3';
-			} else {
-				Log::info ( 'create article record error::' . json_encode ( $result ) );
-				return '';
-			}
+			Log::info ( 'create article record error::' . json_encode ( $result ) );
+			return '';
 		}
 	}
 	
 	/**
 	 * 设置文章阅读状态
 	 *
-	 * @param array $ids        	
+	 * @param array $ids
+	 *        	文章订阅关系ids
+	 * @param string $status
+	 *        	状态
 	 * @return boolean
 	 */
 	public function setArticleSubStatusByIds($ids, $status = 'read') {
-		return ArticleSub::whereIn ( 'id', $ids )->where ( 'user_id', Auth::user ()->id )->where ( 'status', 'unread' )->update ( [ 
-				'status' => $status,
-				'updated_at' => date ( 'Y-m-d H:i:s' ) 
-		] );
+		return $this->articleSubRepository->setArticleSubStatusByIds ( Auth::id (), $ids, $status );
 	}
 	
 	/**
 	 * 设置文章阅读状态
 	 *
-	 * @param array $ids        	
+	 * @param array $feedId
+	 *        	订阅源id
+	 * @param string $status
+	 *        	状态
 	 * @return boolean
 	 */
 	public function setArticleSubStatusByFeedId($feedId, $status = 'read') {
-		return ArticleSub::where ( 'feed_id', $feedId )->where ( 'user_id', Auth::user ()->id )->where ( 'status', 'unread' )->update ( [ 
-				'status' => $status,
-				'updated_at' => date ( 'Y-m-d H:i:s' ) 
-		] );
+		return $this->articleSubRepository->setArticleSubStatusByFeedId ( Auth::id (), $feedId, $status );
 	}
 	
 	/**
 	 * 设置文章阅读状态
 	 *
-	 * @param array $ids        	
+	 * @param array $articleSub
+	 *        	文章订阅关系实体
+	 * @param string $status
+	 *        	状态
 	 * @return boolean
 	 */
 	public function setArticleSubStatus($articleSub, $status = 'read') {
@@ -278,9 +252,56 @@ class ArticleService {
 	}
 	
 	/**
+	 * 文章标记
+	 *
+	 * @param int $articleId
+	 *        	文章id
+	 * @param string $content
+	 *        	标注内容
+	 */
+	public function mark($articleId, $content) {
+		$articleMark = new ArticleMark ();
+		$articleMark->user_id = Auth::id ();
+		$articleMark->article_id = $articleId;
+		$articleMark->content = $content;
+		$articleMark->save ();
+		return $articleMark;
+	}
+	
+	/**
+	 * 为新订阅用户添加该订阅源系统内最新已有文章关联关系
+	 *
+	 * @param int $feedId
+	 *        	订阅源id
+	 * @return \App\Models\ArticleSub[]
+	 */
+	public function processNewFeedArticle($feedId, $userId) {
+		// 获取某订阅源最近发布的文章列表
+		$articles = $this->articleRepository->getRecentPublishArticleListByFeedId ( $feedId, 30 );
+		
+		// 生成订阅关系
+		$articleSubs = array ();
+		foreach ( $articles as $article ) {
+			try {
+				$articleSub = new ArticleSub ();
+				$articleSub->feed_id = $feedId;
+				$articleSub->user_id = $userId;
+				$articleSub->article_id = $article->id;
+				$articleSub->status = 'unread';
+				$articleSub->save ();
+				$articleSubs [] = $articleSub;
+			} catch ( Exception $e ) {
+				Log::info ( "process new feed article exception : " . $e->getMessage () );
+			}
+		}
+		return $articleSubs;
+	}
+	
+	/**
 	 * 按照数量针对订阅进行排序
 	 *
-	 * @param array $feeds        	
+	 * @param array $feeds
+	 *        	订阅源s
 	 * @return array
 	 */
 	private function sortFeed($feeds) {

@@ -8,6 +8,7 @@ use App\Models\Thing;
 use App\Models\User;
 use App\Services\PomoService;
 use Illuminate\Http\Request;
+use App\Http\Utils\ResponseDataUtil;
 
 class TestController extends Controller {
 	
@@ -36,13 +37,15 @@ class TestController extends Controller {
 			$pomos = $pomo = Pomo::where ( 'user_id', $user->id )->where ( 'status', 2 )->orderBy ( 'updated_at', 'desc' )->paginate ( 50 );
 		}
 		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomos );
-			return response ( $resp );
+			return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $pomos ) );
 		} else {
 			return view ( 'pomos.index', [ 
 					'pomos' => $pomos 
 			] );
 		}
+		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
+				'pomos' => $pomos 
+		] ), 'pomos.index' );
 	}
 	public function info(Request $request) {
 		$user = new User ();
@@ -50,8 +53,7 @@ class TestController extends Controller {
 		
 		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $user );
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $currentPomoInfo );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $currentPomoInfo ) );
 	}
 	
 	/**
@@ -66,8 +68,7 @@ class TestController extends Controller {
 		
 		$pomoInfo = $this->pomoService->startPomo ( $user );
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $pomoInfo );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $pomoInfo ) );
 	}
 	
 	/**
@@ -88,8 +89,7 @@ class TestController extends Controller {
 			) );
 		}
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc () );
 	}
 	
 	/**
@@ -126,8 +126,8 @@ class TestController extends Controller {
 		
 		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $user );
 		$currentPomoInfo ['active_pomo'] = $pomo;
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $currentPomoInfo );
-		return response ( $resp );
+		
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $currentPomoInfo ) );
 	}
 	
 	/**
@@ -143,7 +143,6 @@ class TestController extends Controller {
 		
 		$pomo->delete ();
 		
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc () );
 	}
 }

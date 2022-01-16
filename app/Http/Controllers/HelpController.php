@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Feedback;
-use App\Http\Utils\ErrorCodeUtil;
+use App\Services\HelpService;
+use App\Http\Utils\ResponseDataUtil;
 
 /**
  * 帮助控制器
@@ -13,25 +14,34 @@ use App\Http\Utils\ErrorCodeUtil;
  *        
  */
 class HelpController extends Controller {
+	/**
+	 * HelpService 实例
+	 *
+	 * @var HelpService
+	 */
+	protected $helpService;
 	
 	/**
 	 * 构造方法
 	 *
 	 * @return void
 	 */
-	public function __construct() {
+	public function __construct(HelpService $helpService) {
 		$this->middleware ( 'auth' );
+		
+		$this->helpService = $helpService;
 	}
 	
 	/**
 	 * 反馈页
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function feedback(Request $request) {
 		return view ( 'help.feedback', [ 
-				'from' => $request->has ( 'from' ) ? $request->from : '' 
+				'from' => $request->input ( 'from', '' ) 
 		] );
 	}
 	
@@ -39,24 +49,19 @@ class HelpController extends Controller {
 	 * 提交反馈
 	 *
 	 * @param Request $request        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function feedbackStore(Request $request) {
 		$this->validate ( $request, [ 
 				'content' => 'required' 
 		] );
 		
-		$feedback = new Feedback ();
-		$feedback->user_id = isset ( $request->user ()->id ) ? $request->user ()->id : null;
-		$feedback->from = $request->from;
-		$feedback->content = $request->content;
-		$feedback->save ();
+		$from = $request->input ( 'from', '' );
+		$content = $request->content;
 		
-		if ($request->ajax () || $request->wantsJson () || $request->has ( 'json_wants' )) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, array () );
-			return response ( $resp );
-		} else {
-			return redirect ( '/help/feedback' )->with ( 'message', '反馈成功' );
-		}
+		$this->helpService->storeFeedback ( $from, $content );
+		
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/index' );
 	}
 }

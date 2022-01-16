@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Utils\ErrorCodeUtil;
 use App\Models\ArticleSub;
-use App\Models\Feed;
 use App\Services\ArticleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Article;
-use App\Models\ArticleMark;
+use App\Http\Utils\ResponseDataUtil;
+use App\Exceptions\CustomException;
 
 /**
  * 文章管理控制器
@@ -47,7 +46,8 @@ class ArticleController extends Controller {
 	 * 欢迎页
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function welcome(Request $request) {
 		return view ( 'articles.welcome', [ ] );
@@ -57,35 +57,29 @@ class ArticleController extends Controller {
 	 * 文章列表
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function index(Request $request) {
-		$categoryId = $request->get ( 'category_id', '' ); // 获取分类id 默认为空
-		$pageCount = $request->get ( 'page_count', 20 ); // 获取每页数量，默认参数值为 20
-		$feedId = $request->get ( 'feed_id', '' ); // 获取订阅id 默认为空
-		$status = $request->get ( 'status', 'unread' ); // 获取状态参数，默认参数值为 未读
-		                                                
-		// 获取订阅文章
-		$articleSubs = $this->articleService->getArticleSubs ( $request->user (), $status, $pageCount, $feedId, $categoryId );
-		
 		// 页面参数
-		$pageParams = array (
-				'page_count' => $pageCount,
-				'status' => $status,
-				'category_id' => $categoryId,
-				'feed_id' => $feedId 
-		);
+		$pageCount = $request->input ( 'page_count', 20 );
+		$status = $request->input ( 'status', 'unread' );
+		$categoryId = $request->input ( 'category_id', '' );
+		$feedId = $request->input ( 'feed_id', '' );
 		
-		// 避免图片加载
-		$unableImg = isset ( $_COOKIE ['unable_img'] ) ? $_COOKIE ['unable_img'] : "false";
-		// 避免描述加载
-		$unableDesc = isset ( $_COOKIE ['unable_desc'] ) ? $_COOKIE ['unable_desc'] : "false";
+		// 获取订阅文章
+		$articleSubs = $this->articleService->getArticleSubList ( $status, $pageCount, $feedId, $categoryId );
 		
 		return view ( 'articles.index', [ 
 				'article_subs' => $articleSubs,
+				'page_params' => [ 
+						'page_count',
+						'status',
+						'category_id',
+						'feed_id' 
+				],
 				'status' => $status,
 				'feed_id' => $feedId,
-				'page_params' => $pageParams,
 				'unable_img' => isset ( $_COOKIE ['unable_img'] ) ? $_COOKIE ['unable_img'] : "false",
 				'unable_desc' => isset ( $_COOKIE ['unable_desc'] ) ? $_COOKIE ['unable_desc'] : "false" 
 		] );
@@ -95,62 +89,57 @@ class ArticleController extends Controller {
 	 * 分类信息
 	 *
 	 * @param Request $request        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function navinfo(Request $request) {
-		$status = $request->get ( 'status', 'unread' ); // 获取状态参数，默认参数值为 未读
-		                                                
-		// 获取分类文章数
-		$navInfo = $this->articleService->getNavInfoAndNextRecommend ( $request->user (), $status );
+		// 获取状态参数，默认参数值为 未读
+		$status = $request->input ( 'status', 'unread' );
 		
-		return response ( $this->responseJson ( self::OK_CODE, $navInfo ) );
+		// 获取分类文章数
+		$navInfo = $this->articleService->getNavInfo ( $status );
+		
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( array (
+				'nav_infos' => $navInfo 
+		) ) );
 	}
 	
 	/**
 	 * 分类文章量信息
 	 *
-	 * @param Request $request        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @param Request $requests        	
+	 * @return
+	 *
 	 */
 	public function navcountinfo(Request $request) {
-		$status = $request->get ( 'status', 'unread' ); // 获取状态参数，默认参数值为 未读
-		                                                
+		$status = $request->input ( 'status', 'unread' ); // 获取状态参数，默认参数值为 未读
+		                                                  
 		// 获取分类文章数
-		$countInfo = $this->articleService->getCountInfos ( $request->user (), $status );
+		$feedCountInfos = $this->articleService->getFeedCountInfos ( Auth::id (), $status );
 		
-		return response ( $this->responseJson ( self::OK_CODE, $countInfo ) );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $feedCountInfos ) );
 	}
 	
 	/**
 	 * 根据feedId展示文章列表
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function list(Request $request) {
 		$feedId = $request->get ( 'feed_id' ); // 获取订阅id
-		$pageCount = $request->get ( 'page_count', 20 ); // 获取每页数量，默认参数值为 20
-		                                                 
-		// 查看订阅源
-		$feed = Feed::where ( 'id', $feedId )->first ();
-		if (empty ( $feed )) {
-			abort ( 404, '该订阅不存在' );
-		}
-		
+		$pageCount = $request->input ( 'page_count', 20 ); // 获取每页数量，默认参数值为 20
+		                                                   
 		// 查询文章集合
-		$articles = $this->articleService->forUserByFeedId ( $request->user (), $feedId, $needPage = true, $pageCount );
+		$articleInfos = $this->articleService->getArticleListByFeedId ( $feedId, $pageCount );
 		
-		// 页面参数
-		$pageParams = array (
-				'page_count' => $pageCount,
-				'feed_id' => $feedId 
-		);
-		
-		return view ( 'articles.list', [ 
-				'articles' => $articles,
-				'feed' => $feed,
-				'page_params' => $pageParams 
-		] );
+		return view ( 'articles.list', array_merge ( $articleInfos, [ 
+				'page_params' => [ 
+						'page_count' => $pageCount,
+						'feed_id' => $feedId 
+				] 
+		] ) );
 	}
 	
 	/**
@@ -158,25 +147,22 @@ class ArticleController extends Controller {
 	 *
 	 * @param Request $request        	
 	 * @param Article $article        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function view(Request $request, Article $article) {
-		$isFeed = false; // 是否已订阅此源
-		                 
+		// 是否已订阅此源
+		$isFeed = false;
+		
 		// 查看是否登录, 如果登录, 查看是否已经订阅
 		if (Auth::check ()) {
-			$isFeed = $this->articleService->isFeedArticle ( $request->user (), '1', $article->feed->id );
+			$isFeed = $this->articleService->isFeed ( $article->feed->id );
 		}
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $article );
-			return response ( $resp );
-		} else {
-			return view ( 'articles.view', [ 
-					'article' => $article,
-					'is_feed' => $isFeed 
-			] );
-		}
+		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
+				'article' => $article,
+				'is_feed' => $isFeed 
+		] ), 'articles.view' );
 	}
 	
 	/**
@@ -184,40 +170,33 @@ class ArticleController extends Controller {
 	 *
 	 * @param Request $request        	
 	 * @param ArticleSub $articleSub        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function status(Request $request, ArticleSub $articleSub) {
-		$responseData = array ();
-		$count = 0;
+		$processCount = 0;
 		
 		if ($request->has ( 'ids' )) {
-			$idArr = explode ( ',', $request->ids );
-			$count = $this->articleService->setArticleSubStatusByIds ( $idArr );
+			$processCount = $this->articleService->setArticleSubStatusByIds ( explode ( ',', $request->ids ) );
 		} else if ($request->has ( 'feed_id' )) {
-			$count = $this->articleService->setArticleSubStatusByFeedId ( $request->feed_id );
+			$processCount = $this->articleService->setArticleSubStatusByFeedId ( $request->feed_id );
 		} else {
 			$this->authorize ( 'destroy', $articleSub );
-			if (in_array ( $request->status, array (
+			if (! in_array ( $request->status, array (
 					'read',
 					'unread',
 					'read_later',
 					'star' 
 			) )) {
-				$count = $this->articleService->setArticleSubStatus ( $articleSub, $request->status );
+				throw new CustomException ( "status状态上送错误" );
 			}
+			$processCount = $this->articleService->setArticleSubStatus ( $articleSub, $request->status );
 		}
 		
-		$responseData ['count'] = $count;
-		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $responseData );
-			$resp = $this->responseJson ( self::OK_CODE, $responseData );
-			return response ( $resp );
-		} else {
-			return view ( 'articles.view', [ 
-					'article' => $articleSub->article 
-			] );
-		}
+		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
+				'article' => $articleSub->article,
+				'count' => $processCount 
+		] ), 'articles.view' );
 	}
 	
 	/**
@@ -231,28 +210,27 @@ class ArticleController extends Controller {
 		
 		$articleSub->delete ();
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/articles' )->with ( 'message', '操作成功!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
+				'article' => $articleSub->article 
+		] ), '/articles' );
 	}
 	
 	/**
 	 * 标注文章笔记
 	 *
 	 * @param Request $request        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function mark(Request $request) {
 		$this->validate ( $request, [ 
 				'content' => 'required',
 				'article_id' => 'required' 
 		] );
-		$this->articleService->mark ( $request );
-		$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, null, '标注成功' );
-		return response ( $resp );
+		
+		$this->articleService->mark ( $request->article_id, $request->content );
+		
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc () );
 	}
 	
 	/**
@@ -262,15 +240,12 @@ class ArticleController extends Controller {
 	 * @param ArticleSub $articleSub        	
 	 */
 	public function getArticleRecord(Request $request, ArticleSub $articleSub) {
-		if ($articleSub->user_id != $request->user ()->id) {
-			$resp = $this->responseJson ( ErrorCodeUtil::SYSTEM_ERROR_CODE );
-			return response ( $resp );
-		}
+		$this->authorize ( 'destroy', $articleSub );
 		
-		$url = $this->articleService->getArticleRecordUrl ( $articleSub->article );
+		$url = $this->articleService->getActiveRecordUrl ( $articleSub->article );
+		
 		if (empty ( $url )) {
-			$resp = $this->responseJson ( ErrorCodeUtil::SYSTEM_ERROR_CODE );
-			return response ( $resp );
+			throw new CustomException ( '未获取到语音url' );
 		} else {
 			header ( 'Content-type: audio/mp3' );
 			readfile ( $url );

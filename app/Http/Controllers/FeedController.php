@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\CommonUtil;
-use App\Http\Utils\ErrorCodeUtil;
 use App\Models\Category;
 use App\Models\Feed;
 use App\Models\FeedSub;
 use App\Services\CategoryService;
 use App\Services\FeedService;
-use ArandiLopez\Feed\Factories\FeedFactory;
 use Illuminate\Http\Request;
+use App\Exceptions\CustomException;
+use App\Http\Utils\ResponseDataUtil;
 
 /**
  * 订阅源控制器
@@ -53,22 +53,8 @@ class FeedController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$feedSubs = $this->feedService->getFeedSubListByStatus ( $request->user (), 1, $needPage = true );
-		$categorys = $this->categoryService->getList ( $request->user (), false, true );
-		
-		$title = $url = '';
-		
-		if ($request->has ( 'url' )) {
-			$url = $request->url;
-			$title = CommonUtil::page_title ( $request->url );
-		}
-		
-		return view ( 'feeds.index', [ 
-				'feedSubs' => $feedSubs,
-				'categorys' => $categorys,
-				'url' => $url,
-				'title' => $title 
-		] );
+		$indexInfo = $this->feedService->getIndexInfo ( $request->input ( 'url', '' ) );
+		return view ( 'feeds.index', $indexInfo );
 	}
 	
 	/**
@@ -77,14 +63,8 @@ class FeedController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function explorer(Request $request) {
-		$feeds = $this->feedService->getRecommendFeed ( 1, $needPage = true );
-		$categorys = $this->categoryService->getList ( $request->user (), false, true );
-		
-		return view ( 'feeds.explorer', [ 
-				'feeds' => $feeds,
-				'categorys' => $categorys,
-				'recommend_categorys' => Feed::$recommend_categorys 
-		] );
+		$explorerInfo = $this->feedService->getExplorerInfo ();
+		return view ( 'feeds.explorer', $explorerInfo );
 	}
 	
 	/**
@@ -93,14 +73,13 @@ class FeedController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function search(Request $request) {
-		if ($request->has ( 'recommend_category_id' )) {
-			$feeds = $this->feedService->findByRecommendCategoryId ( $request->recommend_category_id );
-		} else if ($request->has ( 'name' )) {
-			$feeds = $this->feedService->findByName ( $request->name, $needPage = true );
-		} else {
-			echo 'error params';
-			exit ();
+		$recommendCategoryId = $request->input ( 'recommend_category_id', '' );
+		$name = $request->input ( 'name', '' );
+		if (empty ( $recommendCategoryId ) && empty ( $name )) {
+			throw new CustomException ( "error params" );
 		}
+		
+		$feeds = $this->feedService->getSearchFeeds ( $recommendCategoryId, $name );
 		
 		return view ( 'feeds.search', [ 
 				'feeds' => $feeds 
@@ -111,10 +90,11 @@ class FeedController extends Controller {
 	 * 订阅源管理页面
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function setting(Request $request) {
-		$navInfos = $this->feedService->getNavInfo ( $request->user () );
+		$navInfos = $this->feedService->getNavInfo ();
 		
 		return view ( 'feeds.setting', [ 
 				'nav_infos' => $navInfos 
@@ -133,21 +113,22 @@ class FeedController extends Controller {
 				'category_id' => 'required' 
 		] );
 		
-		if ($request->has ( 'feed_type' )) {
-			if ($request->feed_type == 'weibo') {
-				$request->url = 'https://api.prprpr.me/weibo/rss/' . $request->weibo_user_id;
-				$request->feed_name = CommonUtil::page_title ( $request->url );
-			}
+		$feedName = $request->input ( 'feed_name' );
+		$url = $request->input ( 'url' );
+		$categoryId = $request->input ( 'category_id' );
+		
+		// 微博订阅特殊处理到特定订阅源
+		$feedType = $request->input ( 'feed_type', '' );
+		if ($feedType == 'weibo') {
+			$weiboId = $request->input ( 'weibo_user_id' );
+			// todo weibo
+			$url = env ( 'WEIBO_RSS_ADDR' ) . $weiboId;
+			$feedName = CommonUtil::page_title ( $url );
 		}
 		
-		$this->feedService->store ( $request->user (), $request->all () );
+		$this->feedService->store ( $feedName, $url, $categoryId );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/feeds' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/feeds' );
 	}
 	
 	/**
@@ -162,14 +143,9 @@ class FeedController extends Controller {
 				'feed_id' => 'required' 
 		] );
 		
-		$this->feedService->quickStore ( $request->user (), $request->all () );
+		$this->feedService->quickStore ( $request->input ( "feed_id" ) );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, '', '关注成功' );
-			return response ( $resp );
-		} else {
-			return redirect ( '/feeds' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/feeds' );
 	}
 	
 	/**
@@ -188,12 +164,7 @@ class FeedController extends Controller {
 		$feed->sub_count = $feed->sub_count - 1;
 		$feed->save ();
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/feeds' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/feeds' );
 	}
 	
 	/**
@@ -218,20 +189,14 @@ class FeedController extends Controller {
 				'category_id' => 'required' 
 		] );
 		
-		$category = $this->categoryService->getByCategoryId ( $request->user (), $request->category_id );
+		$category = $this->categoryService->getByCategoryId ( $request->category_id );
 		if (empty ( $category )) {
-			echo 'error:' . $request->category_id;
-			exit ();
+			throw new CustomException ( "分类不存在" );
 		}
 		
 		$feedSub->update ( $request->all () );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/feeds' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/feeds' );
 	}
 	
 	/**
@@ -246,46 +211,32 @@ class FeedController extends Controller {
 		] );
 		
 		$feedSubIdsArr = explode ( ',', $request->feed_sub_ids );
+		$changeFeedSubId = $request->input ( 'change_feed_sub_id', '' );
+		$changeFeedSubCategoryId = $request->input ( 'change_feed_sub_category', '' );
 		
-		$this->feedService->sort ( $request->user (), $feedSubIdsArr, $request->input ( 'change_feed_sub_id', '' ), $request->input ( 'change_feed_sub_category', '' ) );
+		$this->feedService->sort ( $feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/feeds' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/feeds' );
 	}
 	
 	/**
 	 * 检测订阅源基础信息
 	 *
 	 * @param Request $request        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function checkFeedUrl(Request $request) {
 		$this->validate ( $request, [ 
 				'url' => 'required' 
 		] );
 		
-		$result_code = 1001;
+		$feedUrl = $request->url;
+		$this->feedService->validateFeedUrl ( $feedUrl );
 		
-		$feedFactory = new FeedFactory ( [ 
-				'cache.enabled' => false 
-		] );
-		$feeder = $feedFactory->make ( $request->url );
-		$simplePieInstance = $feeder->getRawFeederObject ();
-		
-		if (! empty ( $simplePieInstance )) {
-			$result_code = ErrorCodeUtil::OK_CODE;
-		}
-		
-		$title = \App\Http\Utils\CommonUtil::page_title ( $request->url );
-		
-		$resp = $this->responseJson ( $result_code, array (
-				'title' => $title 
-		) );
-		return response ( $resp );
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( array (
+				'title' => CommonUtil::page_title ( $feedUrl ) 
+		) ) );
 	}
 	
 	/**
@@ -295,22 +246,20 @@ class FeedController extends Controller {
 	 * @return \Illuminate\Http\RedirectResponse
 	 */
 	public function importOpml(Request $request) {
-		if ($request->file ( 'opml_file' )->isValid ()) {
-			$path = $request->opml_file->path ();
-			$this->feedService->importOpml ( $request->user (), $path );
-			return redirect ( '/feeds' )->with ( 'message', 'IT WORKS!' );
-		} else {
-			echo 'error param!';
-			exit ();
+		if (! $request->file ( 'opml_file' )->isValid ()) {
+			throw new CustomException ( "上送opml文件验证错误" );
 		}
-		exit ();
+		$path = $request->opml_file->path ();
+		$this->feedService->importOpml ( $path );
+		return redirect ( '/feeds' )->with ( 'message', 'IT WORKS!' );
 	}
 	
 	/**
 	 * 微博订阅页
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function weiborss(Request $request) {
 		return view ( 'feeds.weiborss', [ 
@@ -322,7 +271,8 @@ class FeedController extends Controller {
 	 * 微信订阅页
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function weixinrss(Request $request) {
 		return view ( 'feeds.weixinrss', [ 
@@ -334,7 +284,8 @@ class FeedController extends Controller {
 	 * opml导入订阅页
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function opml(Request $request) {
 		return view ( 'feeds.opml', [ 

@@ -67,6 +67,7 @@ class MindController extends Controller {
 	 */
 	protected function grid() {
 		return Admin::grid ( Mind::class, function (Grid $grid) {
+			$grid->model ()->orderBy ( 'id', 'desc' );
 			
 			$grid->model ()->where ( 'is_root', 1 );
 			
@@ -80,6 +81,10 @@ class MindController extends Controller {
 			$grid->disableActions ();
 			$grid->disableCreation ();
 			$grid->disableRowSelector ();
+                        $grid->filter ( function ($filter) {
+                                $filter->equal ( 'user_id');
+                        } );
+
 		} );
 	}
 	

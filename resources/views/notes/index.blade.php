@@ -143,8 +143,7 @@ $(document).ready(function () {
 		    url: "{{ url('note') }}"+"/"+note_value,
 		    type: 'DELETE',
 		    data: {type:note_type,_token:note_token},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -248,15 +247,15 @@ $(document).ready(function () {
                     	@foreach ($notes as $note)
 							<div class="card" style="margin-bottom:10px" id="{{$note->id}}">
 								<div class="card-block">
-								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://cdn.v2ex.com/gravatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
-								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;">{{ date('Y年m月d日 H:i',strtotime($note->created_at)) }}</small></p>
-								  <div class="card-text post-text">
-								    @if($note->status != 2)
-									<img alt=""     style="height: 30px;    margin-right: 10px;" src="/img/icon/private.png">
-									@else
-									<img alt=""     style="height: 20px;    margin-right: 10px;" src="/img/icon/public.png">
-									@endif
-									
+								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://gravatar.loli.net/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
+								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;">{{ date('Y年m月d日 H:i',strtotime($note->created_at)) }} &nbsp;
+@if($note->status != 2)
+<span style="color:#f98282">仅个人可见</span>
+                                                                        @else
+<span style="color:green">公开</span>
+                                                                        @endif
+</small></p>
+								  <div class="card-text post-text">									
 									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
 									语音记录: <a href="{{ url('note/getRecord') }}/{{ $note->id }}">请点击播放🎵</a><br/>
 									@endif

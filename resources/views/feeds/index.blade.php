@@ -11,8 +11,7 @@ $(document).ready(function () {
 		$("#processTips").text("处理中");
 		
 		url = $("#url").val();
-		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
-			result_arr = JSON.parse(result);
+		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result_arr){
 			if(result_arr.code != 9999){
 				alert('该url未检测到内容，请确认！');
 			}
@@ -34,8 +33,7 @@ $(document).ready(function () {
 		    url: "{{ url('feed') }}"+"/"+feed_value,
 		    type: 'DELETE',
 		    data: {type:feed_type,_token:feed_token},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -117,7 +115,7 @@ $(document).ready(function () {
                     
                     
                     @if (count($feedSubs) > 0)
-                    <table class="table table-striped task-table">
+                    <table class="table table-hover task-table">
                             <thead>
                                 <th>订阅列表</th>
                                 <th>&nbsp;</th>

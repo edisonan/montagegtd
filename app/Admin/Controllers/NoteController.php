@@ -67,6 +67,7 @@ class NoteController extends Controller {
 	 */
 	protected function grid() {
 		return Admin::grid ( Note::class, function (Grid $grid) {
+			$grid->model ()->orderBy ( 'id', 'desc' );
 			
 			$grid->id ( 'ID' )->sortable ();
 			
@@ -77,6 +78,10 @@ class NoteController extends Controller {
 			$grid->disableActions ();
 			$grid->disableCreation ();
 			$grid->disableRowSelector ();
+                        $grid->filter ( function ($filter) {
+                                $filter->equal ( 'user_id');
+                        } );
+
 		} );
 	}
 	

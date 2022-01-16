@@ -25,7 +25,7 @@ class DailySummaryController extends Controller {
 	/**
 	 * 构造方法
 	 *
-	 * @param DailySummaryService $dailySummaryService
+	 * @param DailySummaryService $dailySummaryService        	
 	 * @return void
 	 */
 	public function __construct(DailySummaryService $dailySummaryService) {
@@ -40,38 +40,60 @@ class DailySummaryController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-	    $dailySummarys = $this->dailySummaryService->getList();
-
-		return view ( 'dailysummarys.index', [
-                'dailysummarys' => $dailySummarys
-        ] );
-	}
-
-	public function create(Request $request) {
-	    // 如果存在参数，则按照参数处理，如果不存在，则默认为今天日报
-        if($request->has("summary_date")) {
-            $summaryDate = $request->summary_date;
-        } else {
-            $summaryDate = date("Y-m-d");
-        }
-        
-        $dailySummary = $this->dailySummaryService->getBySummaryDate($summaryDate);
-        if(!empty($dailySummary)) {
-        	return $this->redirectResponse($request, '/dailysummary/' . $dailySummary->id);
-        }
+		$dailySummarys = $this->dailySummaryService->getList ();
 		
-        return $this->viewResponse($request, 
-        		ResponseDataUtil::genSimpleSucc(array('summary_date' => $summaryDate,)), 
-        		'dailysummarys.create');
-    }
+		return view ( 'dailysummarys.index', [ 
+				'dailysummarys' => $dailySummarys 
+		] );
+	}
 	
 	/**
+	 * 获取特定日期的所做事情
 	 * 
+	 * @param Request $request        	
+	 */
+	public function getTipInfos(Request $request) {
+		$this->validate ( $request, [ 
+				'summary_date' => 'required' 
+		] );
+		
+		$summaryDate = $request->get ( 'summary_date' );
+		$infos = $this->dailySummaryService->getTipInfos ( $summaryDate );
+		
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( array (
+				'infos' => $infos 
+		) ) );
+	}
+	
+	/**
+	 * 新建日报
+	 * 
+	 * @param Request $request        	
+	 */
+	public function create(Request $request) {
+		// 如果存在参数，则按照参数处理，如果不存在，则默认为今天日报
+		if ($request->has ( "summary_date" )) {
+			$summaryDate = $request->summary_date;
+		} else {
+			$summaryDate = date ( "Y-m-d" );
+		}
+		
+		$dailySummary = $this->dailySummaryService->getBySummaryDate ( $summaryDate );
+		if (! empty ( $dailySummary )) {
+			return redirect ( '/dailysummary/' . $dailySummary->id )->with ( 'message', 'IT WORKS!' );
+		} else {
+			return view ( 'dailysummarys.create', array (
+					'summary_date' => $summaryDate 
+			) );
+		}
+	}
+	
+	/**
 	 *
 	 * @param Request $request        	
 	 */
 	public function store(Request $request) {
-		$this->validate ( $request, [
+		$this->validate ( $request, [ 
 				'summary_date' => 'required' 
 		] );
 		
@@ -80,23 +102,20 @@ class DailySummaryController extends Controller {
 		$params ['work_content'] = $request->work_content;
 		$params ['life_content'] = $request->life_content;
 		
-		$dailySummary = new DailySummary();
-		$dailySummary->user_id = \Auth::id() ;
-		$dailySummary['summary_date'] = $params['summary_date'];
-		$dailySummary['work_content'] = $params['work_content'];
-		$dailySummary['life_content'] = $params['life_content'];
+		$dailySummary = new DailySummary ();
+		$dailySummary->user_id = \Auth::id ();
+		$dailySummary ['summary_date'] = $params ['summary_date'];
+		$dailySummary ['work_content'] = $params ['work_content'];
+		$dailySummary ['life_content'] = $params ['life_content'];
 		$dailySummary->save ();
 		
-		return $this->jsonAndRedirectAutoResponse($request,
-				ResponseDataUtil::genSimpleSucc(),
-				'/dailysummarys');
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/dailysummarys' );
 	}
 	
 	/**
-	 * 
 	 *
 	 * @param Request $request        	
-	 * @param DailySummary $dailySummary
+	 * @param DailySummary $dailySummary        	
 	 */
 	public function destroy(Request $request, DailySummary $dailySummary) {
 		$this->authorize ( 'destroy', $dailySummary );
@@ -105,25 +124,24 @@ class DailySummaryController extends Controller {
 		$params ['status'] = 2;
 		$flag = $dailySummary->update ( $params );
 		
-		return $this->jsonAndRedirectAutoResponse($request,
-				ResponseDataUtil::genSimpleSucc(),
-				'/dailysummarys');
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/dailysummarys' );
 	}
 	
 	/**
 	 * 更新
 	 *
 	 * @param Request $request        	
-	 * @param DailySummary $dailySummary
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @param DailySummary $dailySummary        	
+	 * @return
+	 *
 	 */
 	public function update(Request $request, DailySummary $dailySummary) {
 		$this->authorize ( 'destroy', $dailySummary );
 		
 		if ($request->method () == 'GET') {
-			return $this->viewResponse($request, ResponseDataUtil::genSimpleSucc(array (
-					'dailysummary' => $dailySummary
-			)), 'dailysummarys.update');
+			return view ( 'dailysummarys.update', array (
+					'dailysummary' => $dailySummary 
+			) );
 		}
 		
 		$params = array ();
@@ -132,8 +150,6 @@ class DailySummaryController extends Controller {
 		
 		$flag = $dailySummary->update ( $params );
 		
-		return $this->jsonAndRedirectAutoResponse($request,
-				ResponseDataUtil::genSimpleSucc(),
-				'/dailysummarys');
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/dailysummarys' );
 	}
 }

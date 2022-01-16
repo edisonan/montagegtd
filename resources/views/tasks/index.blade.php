@@ -1,5 +1,15 @@
 @extends('layouts.app')
 
+<style>
+.rowone {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+}
+</style>
+
 @section('content')
     <div class="container">
     		@include('common.success')
@@ -18,12 +28,13 @@
                     <div class="card-body">
                     	
 			            @if (count($tasks) > 0)
-                        <table class="table table-striped task-table">
+                        <table class="table table-hover task-table">
                             <thead>
                                 <th>待办事项</th>
-                                <th>最后时间</th>
+                                <th>操作</th>
                             </thead>
                             <tbody>
+                            <?php $lastDate = '';?>
                                 @foreach ($tasks as $task)
                                     <tr
                                     	@if($task->priority == 4) 
@@ -37,9 +48,24 @@
 	                                    @endif
                                     >
                                         <td class="table-text"  width="80%">
-                                        	<div>
-                                        		<a href="/task/{{ $task->id }}">[更新]</a>
-                                        		<a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">[记录]</a>
+                                        	<div class="rowone">
+                                        	 <?php
+$currentDate = date('m-d', strtotime($task->updated_at));
+if($currentDate != $lastDate)
+{
+$lastDate = $currentDate;
+$style="";
+}
+else 
+{
+$style = "color:rgb(0,0,0,0);";
+}
+?>
+<span style="{{ $style}}">
+{{ $currentDate }}
+</span>
+<small>{{ date('H:i', strtotime($task->updated_at)) }} </small>
+                                        		
                                         		@if($task->status == 1) 
 			                                    	[进行中]
 			                                    @elseif($task->status == 2) 
@@ -47,43 +73,34 @@
 			                                    @elseif($task->status == 3) 
 			                                    	[已折叠]
 			                                    @endif
-                                        		{{ $task->name }}
                                         		
-                                        		@if(isset($task->parentTask->name))
-                                        			#{{ $task->parentTask->name}}#
-                                        		@endif
                                         		@if($task->mode == 1)
                                         			#work#
                                         		@else 
                                         			#life#
                                         		@endif
+                                        		@if(isset($task->parentTask->name))
+                                        			{{ $task->parentTask->name}}--
+                                        		@endif
+                                        		{{ $task->name }}
                                         	</div>
                                         </td>
                                         
                                         <td  width="20%" align="right">
-                                        	{{ date('y-m-d H:i', strtotime($task->updated_at)) }}
+                                        	<a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">[记录]</a>
+                                        	<a href="/task/{{ $task->id }}">[更新]</a>
                                         </td>
 
-                                        <!-- Task Delete Button -->
-                                        <!-- 
-                                        <td  width="20%" align="right">
-                                            <form action="{{url('task/' . $task->id)}}" method="POST">
-                                                {{ csrf_field() }}
-                                                {{ method_field('DELETE') }}
-
-                                                <button type="submit" id="delete-task-{{ $task->id }}" class="btn btn-danger">
-                                                    <i class="fa fa-btn fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                         -->
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                          {!! $tasks->links() !!}
                         @else
+                        <div>
+						<img src="/img/new/love.png" width="200px">
                     	暂时还没有完成哦，快去<a href="{{url('/index')}}">开始第一个任务</a>吧！
+                    	</div>
 			            @endif
                     </div>
                 </div>

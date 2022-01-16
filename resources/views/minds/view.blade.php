@@ -78,7 +78,7 @@ $(document).ready(function () {
                     	想法-{{$mind->name}} 
                     	<button class="btn-info" onclick="add_node();">
 	                    	<span  class="glyphicon glyphicon-file"></span>
-	                    	<span>增加[Insert]</span>
+	                    	<span>增加[Tab]</span>
                     	</button>
                     	<button class="btn-info" onclick="modify_node();">
 	                    	<span  class="glyphicon glyphicon-pencil"></span>
@@ -102,6 +102,7 @@ $(document).ready(function () {
                     	</button>
                     	
                     	<div style="float:right">
+                    		<a href="{{'/mindoutlineview/'}} {{$mind->id}}">[大纲模式]</a>
                     		<a href="javascript:void(0)" id="work_mode">[工作模式]</a>
                     		<a href="{{'/minds'}}">[返回]</a>
                     	</div>
@@ -132,7 +133,7 @@ $(document).ready(function () {
     var options = {
         container:'jsmind_container',
         editable:true,
-        theme:'primary',
+        theme:'cc',
         mode :'side',           // 显示模式
         support_html : true,    // 是否支持节点里的HTML元素
         view:{
@@ -152,7 +153,7 @@ $(document).ready(function () {
         		
             },// 命名的快捷键事件处理器
             mapping:{           // 快捷键映射
-                addchild   : 9,    // <Insert>
+                addchild   : 9,    // <Tab>
                 addbrother : 13,    // <Enter>
                 editnode   : 113,   // <F2>
                 delnode    : 46,    // <Delete>
@@ -173,8 +174,7 @@ $(document).ready(function () {
 	    url: "{{ url('/mindajaxget') }}"+"/"+<?php echo $mind->id;?>,
 	    type: 'GET',
 	    data: {_token:task_token},
-	    success: function(result) {
-	    	result_arr = JSON.parse(result);
+	    success: function(result_arr) {
 			if(result_arr.code != 9999){
 				alert('处理失败，请稍后再试');
 			} else {
@@ -202,8 +202,7 @@ $(document).ready(function () {
     		    url: "{{ url('mind') }}",
     		    type: 'POST',
     		    data: {_token:task_token,name:name,parent_mind_id:selected_id},
-    		    success: function(result) {
-    		    	result_arr = JSON.parse(result);
+    		    success: function(result_arr) {
     				if(result_arr.code != 9999){
     					alert('处理失败，请稍后再试');
     				} else {
@@ -230,8 +229,7 @@ $(document).ready(function () {
     		    url: "{{ url('mind') }}"+"/"+selected_id,
     		    type: 'DELETE',
     		    data: {_token:task_token},
-    		    success: function(result) {
-    		    	result_arr = JSON.parse(result);
+    		    success: function(result_arr) {
     				if(result_arr.code != 9999){
     					alert('处理失败，请稍后再试');
     				} else {
@@ -293,8 +291,7 @@ $(document).ready(function () {
     		    url: "{{ url('mind') }}"+"/"+selected_id,
     		    type: 'POST',
     		    data: {_token:task_token,name:name},
-    		    success: function(result) {
-    		    	result_arr = JSON.parse(result);
+    		    success: function(result_arr) {
     				if(result_arr.code != 9999){
     					alert('处理失败，请稍后再试');
     				} else {
@@ -324,8 +321,7 @@ $(document).ready(function () {
     		    url: "{{ url('mind') }}"+"/"+selected_id,
     		    type: 'POST',
     		    data: {_token:task_token,content:content},
-    		    success: function(result) {
-    		    	result_arr = JSON.parse(result);
+    		    success: function(result_arr) {
     				if(result_arr.code != 9999){
     					alert('处理失败，请稍后再试');
     				} else {

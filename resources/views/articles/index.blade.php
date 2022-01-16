@@ -82,7 +82,7 @@ img {
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$(".set_star,.set_read,.set_read_later").on('click',function(){
+	$(".set_star,.set_read,.set_read_later,.set_read_later_another").on('click',function(){
 		article_sub_id = $(this).attr('article_sub_id');
 		active = $(this).hasClass("active");
 
@@ -92,13 +92,14 @@ $(document).ready(function () {
 			status = active?"unread":"star";
 		} else if($(this).hasClass("set_read_later")){
 			status = active?"unread":"read_later";
+		}  else if($(this).hasClass("set_read_later_another")){
+			status = active?"unread":"read_later";
 		} else {
 			return '';
 		}
 
 		item = $(this);
-		$.get("{{ url('/articles/status') }}"+"/"+article_sub_id,{"status":status},function(result){
-			result_arr = JSON.parse(result);
+		$.get("{{ url('/articles/status') }}"+"/"+article_sub_id,{"status":status},function(result_arr){
 			if(result_arr.code != 9999){
 				alert("设置失败");
 			} else {
@@ -116,8 +117,7 @@ $(document).ready(function () {
 		var ids = $(this).attr('ids');
 		$(this).attr("disabled",true);
 		$(this).text('Submit Article As Reading');
-		$.get("{{ url('/articles/allstatus') }}",{"ids":ids,"status":"read"},function(result){
-			result_arr = JSON.parse(result);
+		$.get("{{ url('/articles/allstatus') }}",{"ids":ids,"status":"read"},function(result_arr){
 			if(result_arr.code != 9999){
 				$("#marked_all_read").attr("disabled",false);
 				$("#marked_all_read").text("Marked All Read");
@@ -221,8 +221,7 @@ $(document).ready(function () {
 
 	$(".feed_quick_sub").on('click',function(){
 		var feed_id = $(this).attr('feed_id');
-		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result){
-			result_arr = JSON.parse(result);
+		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result_arr){
 			if(result_arr.code != 9999){
 				alert(result_arr.msg);
 			} else {
@@ -231,6 +230,11 @@ $(document).ready(function () {
 		});
 	});
 
+	$(".expand").on('click',function(){
+		var article_sub_id = $(this).attr('article_sub_id');
+		$("#desc"+article_sub_id).toggle();
+	});
+	
 	//play audio
 	$(".playaudio").on('click',function(){
 		var article_sub_id = $(this).attr('article_sub_id');
@@ -247,8 +251,7 @@ $(document).ready(function () {
 	    url: "{{ url('article/navinfo') }}",
 	    type: 'GET',
 	    data: {"_token":"{{ csrf_token() }}","status":status},
-	    success: function(result) {
-	    	result_arr = JSON.parse(result);
+	    success: function(result_arr) {
 			if(result_arr.code != 9999){
 				alert('处理失败，请稍后再试');
 			} else {
@@ -309,11 +312,15 @@ $(document).ready(function () {
 					<div style="float: right">
 						<input type="checkbox" value="" id="unable_desc" />一目十行 
 						<input type="checkbox" value="" id="unable_img" />屏图 
-						<a href="{{ url('feed/checkNewFeed')}}">
-							<img alt="" src="/img/icon/refresh.png" style="width: 15px; margin-right: 10px;">
-						</a> 
+						@if(!empty($feed_id)) 
+<!--
+    						<a href="{{ url('feed/checkNewFeed/'.$feed_id)}}">
+    							<img alt="" src="/img/icon/refresh.png" style="width: 15px; margin-right: 10px;">
+    						</a> 
+-->
+						@endif
 						<a href="{{ url('feeds/explorer')}}">
-							[发现 <sup style="color: red;"> <img alt="" src="/img/icon/recommend.png" style="width: 25px;">推荐</sup>]
+							[发现 <sup style="color: red;"> 推荐</sup>]
 						</a> 
 						
 						<a href="{{ url('feeds')}}">[添加订阅]</a>
@@ -335,7 +342,7 @@ $(document).ready(function () {
 					<h4 class="card-title">
 						<img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
 							src="/img/icon/music.png" width="30px"> <a
-							href="{{ $article->url }}">[原文]</a> <a
+							href="{{ str_replace('v2ex.com', 'xa8.net',$article->url) }}">[原文]</a> <a
 							href="{{ url('article/view/'.$article->id) }}">{{
 							$article->subject }}</a>
 					</h4>
@@ -346,11 +353,16 @@ $(document).ready(function () {
 							href="{{ url('articles?status=unread&feed_id='.$article->feed->id) }}"
 							target="_blank">{{ $article->feed->feed_name}}</a> *
 							{{$article->published}}
+							@if($unable_desc == "true")
+							<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}" class="set_read_later_another @if($articleSub->status == 'read_later') active @endif">&nbsp;稍后阅读</a>
+							<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}" class="expand">&nbsp;展开/收起</a>
+							@endif
 						</small>
 					</p>
 
-					@if($unable_desc == "false")
-					<div class="card-text post-text">
+					
+					<div id="desc{{$articleSub->id}}" @if($unable_desc == "true") style="display:none" @endif>
+						<div class="card-text post-text">
 										<?php
 										$content = $article->content;
 										if ($unable_img == "true") {
@@ -360,40 +372,41 @@ $(document).ready(function () {
 										echo App\Http\Utils\CommonUtil::formatContentHtml ( $content );
 										?>
 									  </div>
-					<div class="card-text text-right">
-						<!-- share start -->
-						<p class="social-share" style="display: none" data-mode="prepend"
-							data-weibo-title="{{ $article->subject }}"
-							data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227"
-							data-title="{{ $article->subject }}"
-							data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"
-							data-image="{{ $article->image_url }}"
-							data-sites="facebook,twitter,google,weibo"
-							data-mobile-sites="facebook,twitter,google,weibo"
-							data-wechat-qrcode-title="请打开微信扫一扫">
-							<a href="javascript:void(0);"
-								class="social-share-icon icon-heart" class=""
-								data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}"
-								data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
-						</p>
-						<!-- share end -->
-						<a href="javascript:void(0)" target="_blank"
-							class="btn btn-outline-secondary btn-sm share_btn" title="分享"><img
-							src="/img/icon/share.png" width="20px" />Share</a> <a
-							href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-							class="btn btn-outline-secondary btn-sm set_read @if($articleSub->status == 'read') active @endif"
-							title="已读"><img src="/img/icon/read_already.png" width="20px" />Read</a>
-						<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-							class="btn btn-outline-secondary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif"
-							title="稍后阅读"><img src="/img/icon/read_later.png" width="20px" />Later</a>
-						<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-							class="btn btn-outline-secondary btn-sm set_star @if($articleSub->status == 'star') active @endif"
-							title="加星"><img src="/img/icon/read_star.png" width="20px" />Star</a>
-						<a href="javascript:void(0);" style="display: none"
-							class="btn btn-outline-warning btn-sm view-all"><img
-							src="/img/icon/read_more.png" width="30px" />View All</a>
+    					<div class="card-text text-right">
+    						<!-- share start -->
+    						<p class="social-share" style="display: none" data-mode="prepend"
+    							data-weibo-title="{{ $article->subject }}"
+    							data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227"
+    							data-title="{{ $article->subject }}"
+    							data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"
+    							data-image="{{ $article->image_url }}"
+    							data-sites="facebook,twitter,google,weibo"
+    							data-mobile-sites="facebook,twitter,google,weibo"
+    							data-wechat-qrcode-title="请打开微信扫一扫">
+    							<a href="javascript:void(0);"
+    								class="social-share-icon icon-heart" class=""
+    								data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}"
+    								data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
+    						</p>
+    						<!-- share end -->
+    						<a href="javascript:void(0);"
+    							class="btn btn-outline-secondary btn-sm share_btn" title="分享"><img
+    							src="/img/icon/share.png" width="20px" />Share</a> <a
+    							href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
+    							class="btn btn-outline-secondary btn-sm set_read @if($articleSub->status == 'read') active @endif"
+    							title="已读"><img src="/img/icon/read_already.png" width="20px" />Read</a>
+    						<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
+    							class="btn btn-outline-secondary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif"
+    							title="稍后阅读"><img src="/img/icon/read_later.png" width="20px" />Later</a>
+    						<a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
+    							class="btn btn-outline-secondary btn-sm set_star @if($articleSub->status == 'star') active @endif"
+    							title="加星"><img src="/img/icon/read_star.png" width="20px" />Star</a>
+    						<a href="javascript:void(0);" style="display: none"
+    							class="btn btn-outline-warning btn-sm view-all"><img
+    							src="/img/icon/read_more.png" width="30px" />View All</a>
+    					</div>
 					</div>
-					@endif
+					
 				</div>
 			</div>
 			
@@ -405,6 +418,12 @@ $(document).ready(function () {
 				<button class="col-md-12 btn btn-outline-info" id="marked_all_read"
 					ids="{{ implode(',', $article_sub_ids) }}">Marked All Read</button>
 				@endif 
+				
+			@else
+			<div>
+			<img src="/img/new/love.png" width="200px">
+			好像没有更多了，阅读一下其他的文章或者开始新的订阅吧~
+			</div>
 			@endif 
 			<!--</div>-->
 		</div>
@@ -418,3 +437,4 @@ $(document).ready(function () {
 <script src="/js/social-share.js"></script>
 <script src="/js/qrcode.js"></script>
 @endsection
+

@@ -2,22 +2,26 @@
 
 namespace App\Repositories;
 
-use App\Models\User;
 use App\Models\Thing;
 
 class ThingRepository {
 	/**
-	 * Get all of the tasks for a given user.
+	 * 获取记事列表
 	 *
-	 * @param User $user        	
 	 * @return Collection
 	 */
-	public function forUser(User $user, $needPage) {
-		$thing = Thing::where ( 'user_id', $user->id )->orderBy ( 'updated_at', 'desc' );
-		if ($needPage) {
-			return $thing->paginate ( 50 );
-		} else {
-			return $thing->get ();
-		}
+	public function getUserList($userId) {
+		return Thing::where ( 'user_id', $userId )->orderBy ( 'updated_at', 'desc' )->paginate ( 50 );
+	}
+	
+	/**
+	 * 为总结获取记事列表
+	 * 
+	 * @param unknown $userId        	
+	 * @param unknown $startTime        	
+	 * @param unknown $endTime        	
+	 */
+	public function getListForSummary($userId, $startTime, $endTime) {
+		return Thing::where ( 'user_id', $userId )->where ( 'updated_at', '>', $startTime )->where ( 'updated_at', '<=', $endTime )->orderBy ( 'id', 'desc' )->get ();
 	}
 }

@@ -9,6 +9,8 @@
 		    display: -webkit-box;
 		    -webkit-box-orient: vertical;
 		    -webkit-line-clamp: 1;
+		    padding-left: 10px;
+		    padding-top: 10px;
 	      }
 	      
 	      .rowtwo{
@@ -17,6 +19,8 @@
 		    display: -webkit-box;
 		    -webkit-box-orient: vertical;
 		    -webkit-line-clamp: 1;
+		    padding-left: 10px;
+		    padding-top: 10px;
 	      }
 </style>
 
@@ -25,8 +29,7 @@ $(document).ready(function () {
 
 	$(".feed_quick_sub").click(function(){
 		var feed_id = $(this).attr('feed_id');
-		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result){
-			result_arr = JSON.parse(result);
+		$.get("{{ url('/feeds/quickstore') }}",{"feed_id":feed_id},function(result_arr){
 			if(result_arr.code != 9999){
 				alert(result_arr.msg);
 			} else {
@@ -142,7 +145,7 @@ $(document).ready(function () {
 				                    	<a href="{{ url('article/list') }}?feed_id={{$feed->id}}" >{{ $feed->feed_name }}</a>
 				                      </b>
 								      <p class="card-text rowtwo">{{ $feed->feed_desc }} &nbsp;</p>
-  									  <a class="card-link text-right" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
+  									  <a class="card-link text-right" style="padding-right:10px" href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
 								    </div>
 			                    </div>
 		                    @endforeach

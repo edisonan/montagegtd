@@ -4,41 +4,82 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Models\Mind;
+use DB;
 
 class MindRepository {
 	/**
-	 * Get all of the notes for a given user.
-	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * 获取时间段内统计情况
+	 * 
+	 * @param unknown $startTime        	
+	 * @param unknown $endTime        	
 	 */
-	public function forUser(User $user) {
-		return Mind::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' )->get ();
+	public function getStatisticCounts($startTime, $endTime) {
+		return Mind::select ( 'user_id', DB::raw ( 'count(*) as total' ) )->where ( 'created_at', '>', $startTime )->where ( 'created_at', '<=', $endTime )->groupBy ( 'user_id' )->get ();
 	}
 	
 	/**
-	 * Get all of the notes for a given user.
-	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * 获取思维导图列表
+	 * 
+	 * @param unknown $userId        	
 	 */
-	public function forStatus($status) {
-		return Mind::where ( 'status', $status )->orderBy ( 'created_at', 'desc' )->get ();
+	public function getUserRootMindList($userId) {
+		return Mind::where ( 'status', 1 )->where ( 'is_root', 1 )->where ( 'user_id', $userId )->orderBy ( 'id', 'desc' )->paginate ( 50 );
 	}
 	
 	/**
-	 * Get all of the notes for a given user.
-	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * 根据id获取思维导图节点
+	 * 
+	 * @param unknown $userId        	
+	 * @param unknown $id        	
 	 */
-	public function forUserByStatus(User $user, $status, $is_root, $needPage = false) {
-		$note = Mind::where ( 'status', $status )->where ( 'is_root', $is_root )->where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' );
-		
-		if ($needPage) {
-			return $note->paginate ( 50 );
-		} else {
-			return $note->get ();
-		}
+	public function getUserMindById($userId, $id) {
+		return Mind::where ( 'id', $id )->where ( 'user_id', $userId )->first ();
 	}
+	
+	/**
+	 * 为总结获取记事列表
+	 * 
+	 * @param unknown $userId        	
+	 * @param unknown $startTime        	
+	 * @param unknown $endTime        	
+	 */
+	public function getListForSummary($userId, $startTime, $endTime) {
+		return Mind::where ( 'user_id', $userId )->where ( 'is_root', 1 )->where ( 'updated_at', '>', $startTime )->where ( 'updated_at', '<=', $endTime )->orderBy ( 'id', 'desc' )->get ();
+	}
+	
+	// /**
+	// * Get all of the notes for a given user.
+	// *
+	// * @param User $user
+	// * @return Collection
+	// */
+	// public function forUser(User $user) {
+	// return Mind::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' )->get ();
+	// }
+	
+	// /**
+	// * Get all of the notes for a given user.
+	// *
+	// * @param User $user
+	// * @return Collection
+	// */
+	// public function forStatus($status) {
+	// return Mind::where ( 'status', $status )->orderBy ( 'created_at', 'desc' )->get ();
+	// }
+	
+	// /**
+	// * Get all of the notes for a given user.
+	// *
+	// * @param User $user
+	// * @return Collection
+	// */
+	// public function forUserByStatus(User $user, $status, $is_root, $needPage = false) {
+	// $note = Mind::where ( 'status', $status )->where ( 'is_root', $is_root )->where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' );
+	
+	// if ($needPage) {
+	// return $note->paginate ( 50 );
+	// } else {
+	// return $note->get ();
+	// }
+	// }
 }

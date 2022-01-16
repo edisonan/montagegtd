@@ -32,11 +32,12 @@ class Kernel extends ConsoleKernel {
 			// Commands\Inspire::class,
 			Commands\FanfouPublish::class,
 			Commands\FeedCommon::class,
-			Commands\FeedType2::class,
-			Commands\FeedType3::class,
 			Commands\KindlePush::class,
-			Commands\StatisticsCron::class,
-			Commands\TaskReminder::class 
+			Commands\StatisticsDaily::class,
+			Commands\TaskReminder::class,
+			Commands\PomoDailyReminder::class,
+			Commands\PomoRecordReminder::class,
+			Commands\PomoRestedReminder::class 
 	];
 	
 	/**
@@ -50,7 +51,21 @@ class Kernel extends ConsoleKernel {
 		
 		$schedule->command ( 'fanfou_publish' )->daily ();
 		$schedule->command ( 'task_reminder' )->everyMinute ();
-		$schedule->command ( 'statistics_cron' )->dailyAt ( '00:30' );
+		
+		// 上午提醒
+		$schedule->command ( 'pomo_daily_reminder', array (
+				1 
+		) )->dailyAt ( '10:10' );
+		// 下午提醒
+		$schedule->command ( 'pomo_daily_reminder', array (
+				1 
+		) )->dailyAt ( '13:40' );
+		$schedule->command ( 'pomo_record_reminder' )->everyMinute ();
+		$schedule->command ( 'pomo_rested_reminder' )->everyMinute ();
+		
+		$schedule->command ( 'statistics_daily', array (
+				1 
+		) )->dailyAt ( '00:30' );
 		$schedule->command ( 'feed_common', array (
 				1 
 		) )->everyTenMinutes ();
@@ -63,14 +78,16 @@ class Kernel extends ConsoleKernel {
 		$schedule->command ( 'feed_common', array (
 				4 
 		) )->daily ();
-		$schedule->command ( 'kindle_push' )->dailyAt ( '18:00' );
 		
-		$schedule->command ( 'backup2qiniu', array (
-				env ( 'TASK_SQL_FILE_PATH' ) 
-		) )->dailyAt ( '18:00' );
-		$schedule->command ( 'backup2qiniu', array (
-				env ( 'WWW_SQL_FILE_PATH' ) 
-		) )->dailyAt ( '18:00' );
+		$schedule->command ( 'kindle_push' )->dailyAt ( '18:00' );
+		$schedule->command ( 'daily_summary_reminder' )->dailyAt ( '18:10' );
+		
+		// $schedule->command ( 'backup2qiniu', array (
+		// env ( 'TASK_SQL_FILE_PATH' )
+		// ) )->dailyAt ( '18:00' );
+		// $schedule->command ( 'backup2qiniu', array (
+		// env ( 'WWW_SQL_FILE_PATH' )
+		// ) )->dailyAt ( '18:00' );
 	}
 	
 	/**

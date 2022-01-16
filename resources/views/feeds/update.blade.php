@@ -6,8 +6,7 @@ $(document).ready(function () {
 
 	$("#check_url").click(function(){
 		url = $("#url").val();
-		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result){
-			result_arr = JSON.parse(result);
+		$.get("{{ url('feed/checkFeedUrl') }}",{url:url},function(result_arr){
 			if(result_arr.code != 9999){
 				alert('该url未检测到内容，请确认！');
 			} else {

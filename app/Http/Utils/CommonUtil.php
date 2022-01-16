@@ -529,4 +529,31 @@ class CommonUtil {
 		
 		return $string;
 	}
+	public static function getImageFromHtmlText($htmlText) {
+		$imageUrl = '';
+		preg_match ( '/<img.+src=[\'"](?P<src>.+?)[\'"].*>/i', $htmlText, $image );
+		if (array_key_exists ( 'src', $image )) {
+			try {
+				$arr = @getimagesize ( $image ['src'] );
+				if (! empty ( $arr ) && $arr [0] > 50 && $arr [1] > 50) {
+					$imageUrl = $image ['src'];
+				}
+			} catch ( Exception $e ) {
+				Log::info ( "getimagesize error:" . $image ['src'] );
+			}
+		}
+		return $imageUrl;
+	}
+	
+	/**
+	 * 提取网址中的host信息
+	 * 
+	 * @param unknown $url
+	 *        	网址
+	 * @return mixed
+	 */
+	public static function getUrlHost($url) {
+		$urlArr = parse_url ( $url );
+		return $urlArr ['host'];
+	}
 }

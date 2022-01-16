@@ -150,8 +150,7 @@
 		    url: "{{ url('tasksall') }}",
 		    type: 'GET',
 		    data: {"_token":"{{ csrf_token() }}","status":1, "mode":mode},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -168,11 +167,10 @@
 	//展示番茄列表
 	function showpomos() {
 		$.ajax({
-		    url: "{{ url('pomos') }}",
+		    url: "{{ url('pomostoday') }}",
 		    type: 'GET',
 		    data: {"_token":"{{ csrf_token() }}",'type':'time'},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -190,8 +188,7 @@
 		    url: "{{ url('pomostatus') }}",
 		    type: 'GET',
 		    data: {"_token":"{{ csrf_token() }}"},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -215,7 +212,7 @@
 
 		$str = '<li id="pomo'+pomo_data.id+'" class="pomo_li">';
 		$str += '<span class="time">';
-		$str += (new Date(pomo_data.created_at)).format("hh:mm") +' - '+ (new Date(pomo_data.updated_at)).format("hh:mm");
+		$str += (new Date(pomo_data.start_time)).format("hh:mm") +' - '+ (new Date(pomo_data.end_time)).format("hh:mm");
 		$str += '</span>';
 		$str += '<p>';
 		$str += '<a href="/notes?pomo_id='+pomo_data.id+'" class="record_pomo" style="display:none" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
@@ -351,8 +348,7 @@ $(document).ready(function () {
 			    url: "{{ url('pomos/start') }}",
 			    type: 'GET',
 			    data: {"_token":"{{ csrf_token() }}"},
-			    success: function(result) {
-			    	result_arr = JSON.parse(result);
+			    success: function(result_arr) {
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
@@ -381,8 +377,7 @@ $(document).ready(function () {
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'DELETE',
 		    data: {"type":task_type,"_token":"{{ csrf_token() }}"},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -407,8 +402,7 @@ $(document).ready(function () {
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'POST',
 		    data: {"is_top":task_is_top,"_token":"{{ csrf_token() }}"},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -436,8 +430,7 @@ $(document).ready(function () {
 			    url: "{{ url('task') }}",
 			    type: 'POST',
 			    data: {"name":name,"mode":mode,"parent_task_id":task_value,"_token":"{{ csrf_token() }}"},
-			    success: function(result) {
-			    	result_arr = JSON.parse(result);
+			    success: function(result_arr) {
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 						
@@ -454,8 +447,7 @@ $(document).ready(function () {
 		    url: "{{ url('task') }}"+"/"+task_value,
 		    type: 'POST',
 		    data: {"is_top":task_is_top,"_token":"{{ csrf_token() }}"},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -541,8 +533,7 @@ $(document).keyup(function(event){
 			    url: "{{ url('task') }}",
 			    type: 'POST',
 			    data: {"name":task_name,"mode":mode,"_token":"{{ csrf_token() }}"},
-			    success: function(result) {
-			    	result_arr = JSON.parse(result);
+			    success: function(result_arr) {
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
@@ -561,15 +552,19 @@ $(document).keyup(function(event){
 			    url: "{{ url('pomo') }}/"+pomo_id,
 			    type: 'POST',
 			    data: {"name":pomo_name,"_token":"{{ csrf_token() }}"},
-			    success: function(result) {
-			    	result_arr = JSON.parse(result);
+			    success: function(result_arr) {
 					if(result_arr.code != 9999){
 						alert('处理失败，请稍后再试');
 					} else {
 						$("#pomo_name").val("");
-						$("#pomo_id").val("");
+						$("#pomo_id").val(result_arr.result.active_pomo.id);
 						remain = result_arr.result.current_pomo_remain;
 						status = result_arr.result.current_pomo_status;
+
+						var add_content = (status == 2?'准备开始新的番茄吧~':'准备休息一下吧~');
+						document.title = add_content + title;
+						document.getElementById("pomoBtn").innerHTML = add_content; 
+
 						timer = setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 						$("#recordPomo").css("display", "none");
 						$("#pomoBtn").css("display", "block");
@@ -603,9 +598,9 @@ $(document).keyup(function(event){
 
 					<div class="form-group" @if($current_pomo_status !=3) style="display: none" @endif id="recordPomo">
 						<div class="col-md-12">
+							<a href="javascript:void(0)" onclick="discard()" style="float:right">x</a>
 							<input type="text" name="name" id="pomo_name"
 								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
-							<a href="javascript:void(0)" onclick="discard()">x</a>
 						</div>
 					</div>
 					

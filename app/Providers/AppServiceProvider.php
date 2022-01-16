@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider {
 		// $monolog = Log::getMonolog();
 		// $monolog->pushProcessor(new UidProcessor());
 		\DB::listen ( function ($query) {
-			\Log::info ( $query->sql );
+			Log::info ( $query->sql );
 		} );
 		
 		//

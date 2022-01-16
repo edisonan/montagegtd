@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class DailySummary extends Model {
-    protected $table = 'daily_summarys';
+	protected $table = 'daily_summarys';
 	/**
 	 * The attributes that are mass assignable.
 	 *
 	 * @var array
 	 */
-	protected $fillable = [
+	protected $fillable = [ 
 			'summary_date',
 			'work_content',
 			'life_content',

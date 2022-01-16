@@ -40,11 +40,12 @@ class CalController extends Controller {
 	 * 日历订阅首页
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function index(Request $request) {
 		// 处理个人日历提醒相关内容
-		$personCalUrl = $this->calService->getPersonCalUrl ( $request->user () );
+		$personCalUrl = $this->calService->getPersonCalUrl ();
 		
 		// 处理公共日历相关内容
 		$cals = array (

@@ -20,7 +20,12 @@ class Pomo extends Model {
 	protected $fillable = [ 
 			'name',
 			'status',
-			'user_id' 
+			'user_id',
+			'start_time',
+			'end_time',
+			'rest_start_time',
+			'rest_end_time',
+			'rest_status' 
 	];
 	
 	/**

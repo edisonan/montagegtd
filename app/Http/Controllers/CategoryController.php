@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Services\CategoryService;
-use App\Http\Utils\ErrorCodeUtil;
+use App\Exceptions\CustomException;
+use App\Http\Utils\ResponseDataUtil;
 
 /**
  * 订阅分类控制器
@@ -40,7 +41,7 @@ class CategoryController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$categorys = $this->categoryService->getList ( $request->user (), $needPage = true );
+		$categorys = $this->categoryService->getList ();
 		
 		return view ( 'categorys.index', [ 
 				'categorys' => $categorys 
@@ -57,14 +58,11 @@ class CategoryController extends Controller {
 				'name' => 'required' 
 		] );
 		
-		$category = $request->user ()->categorys ()->create ( $request->all () );
+		$category = $request->user ()->categorys ()->create ( array (
+				'name' => $request->name 
+		) );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE, $category );
-			return response ( $resp );
-		} else {
-			return redirect ( '/categorys' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $category ), '/categorys' );
 	}
 	
 	/**
@@ -79,16 +77,10 @@ class CategoryController extends Controller {
 		if (empty ( $category->feeds ) || count ( $category->feeds ) == 0) {
 			$category->delete ();
 		} else {
-			$resp = $this->responseJson ( 1000, null, 'This category has Feeds!cannot delete!' );
-			return response ( $resp );
+			throw new CustomException ( 'This category has Feeds! cannot delete!' );
 		}
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/categorys' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $category ), '/categorys' );
 	}
 	
 	/**
@@ -96,7 +88,8 @@ class CategoryController extends Controller {
 	 *
 	 * @param Request $request        	
 	 * @param Category $category        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function update(Request $request, Category $category) {
 		$this->authorize ( 'destroy', $category );
@@ -111,35 +104,27 @@ class CategoryController extends Controller {
 				'name' => 'required' 
 		] );
 		
-		$category->update ( $request->all () );
+		$category->update ( array (
+				'name' => $request->name 
+		) );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/categorys' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $category ), '/categorys' );
 	}
 	
 	/**
 	 * 设置订阅分类的排序
 	 *
 	 * @param Request $request        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function sort(Request $request) {
 		$this->validate ( $request, [ 
 				'category_ids' => 'required' 
 		] );
 		
-		$categoryIds = explode ( ',', $request->category_ids );
-		$this->categoryService->setCategorySort ( $request->user (), $categoryIds );
+		$this->categoryService->setCategorySort ( explode ( ',', $request->category_ids ) );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/categorys' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $category ), '/categorys' );
 	}
 }

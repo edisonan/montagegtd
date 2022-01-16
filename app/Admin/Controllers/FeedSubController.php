@@ -80,8 +80,13 @@ class FeedSubController extends Controller {
 			$grid->disableActions ();
 			$grid->disableCreation ();
 			$grid->disableRowSelector ();
+                        $grid->filter ( function ($filter) {
+                                $filter->equal ( 'user_id');
+                        } );
+
 		} );
 	}
+
 	
 	/**
 	 * Make a form builder.

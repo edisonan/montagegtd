@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Mind;
+use App\Exceptions\CustomException;
+use App\Repositories\MindRepository;
+use Auth;
 
 /**
  * 思维导图业务逻辑
@@ -13,38 +15,181 @@ use App\Models\Mind;
  */
 class MindService {
 	/**
-	 * Get all of the notes for a given user.
 	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * @var MindRepository
 	 */
-	public function forUser(User $user) {
-		return Mind::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' )->get ();
+	protected $mindRepository;
+	
+	/**
+	 *
+	 * @param MindRepository $mindRepository        	
+	 */
+	public function __construct(MindRepository $mindRepository) {
+		$this->mindRepository = $mindRepository;
 	}
 	
 	/**
-	 * Get all of the notes for a given user.
-	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * 获取首页数据
 	 */
-	public function forStatus($status) {
-		return Mind::where ( 'status', $status )->orderBy ( 'created_at', 'desc' )->get ();
+	public function getIndexList() {
+		return $this->mindRepository->getUserRootMindList ( Auth::id () );
 	}
 	
 	/**
-	 * Get all of the notes for a given user.
-	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * 保存思维导图节点
+	 * 
+	 * @param unknown $name        	
+	 * @param unknown $parentMindId        	
+	 * @throws CustomException
+	 * @return \App\Models\Mind
 	 */
-	public function forUserByStatus(User $user, $status, $is_root, $needPage = false) {
-		$note = Mind::where ( 'status', $status )->where ( 'is_root', $is_root )->where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' );
+	public function store($name, $parentMindId) {
+		$isRoot = 1;
 		
-		if ($needPage) {
-			return $note->paginate ( 50 );
-		} else {
-			return $note->get ();
+		if (! empty ( $parentMindId )) {
+			$parentMind = $this->mindRepository->getUserMindById ( Auth::id (), $parentMindId );
+			if (empty ( $parentMind )) {
+				throw new CustomException ( "父节点信息上送错误" );
+			}
+			$isRoot = 0;
 		}
+		
+		$mind = new Mind ();
+		$mind->name = htmlspecialchars ( $name );
+		$mind->parent_mind_id = $parentMindId;
+		$mind->is_root = $isRoot;
+		$mind->user_id = \Auth::id ();
+		$mind->save ();
+		
+		return $mind;
+	}
+	
+	/**
+	 * 移除节点
+	 *
+	 * @param unknown $mind        	
+	 * @return boolean
+	 */
+	public function removeMind($mind) {
+		if (count ( $mind->childrenMinds ) != 0) {
+			foreach ( $mind->childrenMinds as $childMind ) {
+				$this->removeMind ( $childMind );
+			}
+		}
+		$mind->status = 2;
+		$mind->save ();
+		return true;
+	}
+	
+	/**
+	 * 获取格式化后的jsmind完整思维导图数据
+	 * 
+	 * @param unknown $mind        	
+	 * @return string[]|\App\Services\mixed[][]|\App\Services\NULL[][]|string[][]|NULL[][]
+	 */
+	public function getJsMindFormatInfo($mind) {
+		$jsmindDatas = array ();
+		$jsmindDatas ['meta'] = array (
+				'name' => $mind->name,
+				'author' => $mind->name,
+				'version' => "1.0" 
+		);
+		$jsmindDatas ['format'] = 'node_tree';
+		$jsmindDatas ['data'] = $this->getNodeTreeData ( $mind );
+		return $jsmindDatas;
+	}
+	
+	/**
+	 * 获取递归展示用数据
+	 *
+	 * @param unknown $mind        	
+	 * @param number $level        	
+	 * @return mixed[]|NULL[]
+	 */
+	public function getNodeTreeData($mind, $level = 0) {
+		$data = array ();
+		$data ['id'] = $mind->id;
+		$data ['topic'] = $mind->name;
+		$data ['content'] = $mind->content;
+		$data ['content'] = str_replace ( "\\r\\n", "\r\n", $data ['content'] );
+		if (count ( $mind->childrenMinds ) > 0) {
+			foreach ( $mind->childrenMinds as $childMind ) {
+				if ($childMind->status == 1) {
+					$data ['children'] [] = $this->getNodeTreeData ( $childMind, $level + 1 );
+				}
+			}
+		}
+		return $data;
+	}
+	
+	/**
+	 * 获取markdown版思维导图完整数据
+	 * 
+	 * @param unknown $mind        	
+	 * @param number $level        	
+	 * @return string
+	 */
+	public function getNodeTreeMarkDownData($mind, $level = 0) {
+		$name = $mind->name;
+		$content = $mind->content;
+		
+		$prefix = "";
+		for($i = 0; $i < $level; $i ++) {
+			$prefix .= "	";
+		}
+		
+		$data = $prefix . "* **" . $name . "**\n";
+		if (false && ! empty ( $content )) {
+			$data .= $prefix . "\n";
+			$data .= $prefix . "```\n";
+			$data .= $prefix . " " . str_replace ( "\\r\\n", "", str_replace ( "```", "", $content ) ) . "\n";
+			$data .= $prefix . "```\n";
+		}
+		
+		if (count ( $mind->childrenMinds ) > 0) {
+			foreach ( $mind->childrenMinds as $childMind ) {
+				if ($childMind->status == 1) {
+					$data .= $this->getNodeTreeMarkdownData ( $childMind, $level + 1 );
+				}
+			}
+		}
+		
+		return $data;
+	}
+	
+	/**
+	 * 获取html版思维导图完整数据
+	 * 
+	 * @param unknown $mind        	
+	 * @param number $level        	
+	 * @return string
+	 */
+	public function getNodeTreeHtmlData($mind, $level = 0) {
+		$name = $mind->name;
+		$content = $mind->content;
+		
+		$prefix = "";
+		for($i = 0; $i < $level; $i ++) {
+			$prefix .= "	";
+		}
+		
+		$data = $prefix . "<li> <strong>" . $name . "<strong>\n";
+		if (true && ! empty ( $content )) {
+			$data .= $prefix . "<br><code>";
+			$data .= $prefix . " " . str_replace ( "\\r\\n", "<br>", $content ) . "\n";
+			$data .= $prefix . "</code>";
+		}
+		
+		if (count ( $mind->childrenMinds ) > 0) {
+			$data .= "<ul>";
+			foreach ( $mind->childrenMinds as $childMind ) {
+				if ($childMind->status == 1) {
+					$data .= $this->getNodeTreeHtmlData ( $childMind, $level + 1 );
+				}
+			}
+			$data .= "</ul>";
+		}
+		
+		return $data;
 	}
 }

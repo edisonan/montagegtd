@@ -67,6 +67,7 @@ class ArticleController extends Controller {
 	 */
 	protected function grid() {
 		return Admin::grid ( Article::class, function (Grid $grid) {
+			$grid->model ()->orderBy ( 'id', 'desc' );
 			
 			$grid->id ( 'ID' )->sortable ();
 			

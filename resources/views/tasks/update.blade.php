@@ -1,4 +1,5 @@
 @extends('layouts.app')
+<script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 
 @section('content')
     <div class="container">
@@ -47,14 +48,14 @@
                             <label for="task-name" class="col-md-3 control-label">待办提醒时间</label>
 								
                             <div class="col-md-8">
-	                               <input type="text" name="remindtime" id="remindtime" class="form-control" value="{{ $task->remindtime }}">
+	                               <input type="text" name="remindtime" id="remindtime" class="form-control" value="{{ $task->remindtime }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="task-name" class="col-md-3 control-label">待办截止时间</label>
 								
                             <div class="col-md-8">
-	                               <input type="text" name="deadline" id="deadline" class="form-control" value="{{ $task->deadline }}">
+	                               <input type="text" name="deadline" id="deadline" class="form-control" value="{{ $task->deadline }}" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})">
                             </div>
                         </div>
                         <div class="form-group row">

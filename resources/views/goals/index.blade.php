@@ -18,8 +18,7 @@ $(document).ready(function () {
 		    url: "{{ url('goal') }}"+"/"+goal_value,
 		    type: 'DELETE',
 		    data: {type:goal_type,_token:goal_token},
-		    success: function(result) {
-		    	result_arr = JSON.parse(result);
+		    success: function(result_arr) {
 				if(result_arr.code != 9999){
 					alert('处理失败，请稍后再试');
 				} else {
@@ -70,7 +69,7 @@ $(document).ready(function () {
                     
                     
                     @if (count($goals) > 0)
-                    <table class="table table-striped goal-table">
+                    <table class="table table-hover goal-table">
                             <thead>
                                 <th>&nbsp;</th>
                                 <th>&nbsp;</th>

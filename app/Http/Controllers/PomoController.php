@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Utils\ErrorCodeUtil;
 use Illuminate\Http\Request;
 use App\Models\Pomo;
 use App\Models\Thing;
 use App\Repositories\PomoRepository;
 use App\Services\PomoService;
+use App\Http\Utils\ResponseDataUtil;
+use App\Exceptions\CustomException;
 
 /**
  * 番茄工作法控制器
@@ -16,13 +17,6 @@ use App\Services\PomoService;
  *        
  */
 class PomoController extends Controller {
-	
-	/**
-	 * The pomo repository instance.
-	 *
-	 * @var PomoRepository
-	 */
-	protected $pomos;
 	
 	/**
 	 * The pomo servie instance.
@@ -34,24 +28,24 @@ class PomoController extends Controller {
 	/**
 	 * Create a new controller instance.
 	 *
-	 * @param PomoRepository $pomos        	
+	 * @param PomoService $pomoService        	
 	 * @return void
 	 */
-	public function __construct(PomoService $pomoService, PomoRepository $pomos) {
+	public function __construct(PomoService $pomoService) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome' 
 				] 
 		] );
 		$this->pomoService = $pomoService;
-		$this->pomos = $pomos;
 	}
 	
 	/**
 	 * 欢迎页
 	 *
 	 * @param Request $request        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function welcome(Request $request) {
 		return view ( 'pomos.welcome', [ ] );
@@ -63,19 +57,22 @@ class PomoController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		if ($request->has ( 'type' )) {
-			$pomos = $this->pomos->forUserByTime ( $request->user (), date ( 'Ymd' ) );
-		} else {
-			$pomos = $this->pomos->forUserByStatus ( $request->user (), 2, $needPage = true );
-		}
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE, $pomos );
-			return response ( $resp );
-		} else {
-			return view ( 'pomos.index', [ 
-					'pomos' => $pomos 
-			] );
-		}
+		$pomos = $this->pomoService->getList ();
+		
+		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
+				'pomos' => $pomos 
+		] ), 'pomos.index' );
+	}
+	
+	/**
+	 * 今日番茄.
+	 *
+	 * @param Request $request        	
+	 */
+	public function todayPomos(Request $request) {
+		$pomos = $this->pomoService->getTodayList ();
+		
+		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $pomos ), 'pomos.index' );
 	}
 	
 	/**
@@ -84,16 +81,9 @@ class PomoController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function start(Request $request) {
-		$request->session ()->forget ( 'rest_start_time' );
-		
 		$pomoInfo = $this->pomoService->startPomo ( $request->user () );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE, $pomoInfo );
-			return response ( $resp );
-		} else {
-			return redirect ( '/index' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $pomoInfo ), '/index' );
 	}
 	
 	/**
@@ -107,18 +97,16 @@ class PomoController extends Controller {
 		} else {
 			// 判断是否有权限，并置失败
 			$this->authorize ( 'destroy', $pomo );
-			$pomo->update ( array (
-					'status' => 3 
-			) );
-			$this->pomoService->clearpomonotify ( $request->user () );
+			$updateParams = array ();
+			if ($pomo->status == 1) {
+				$updateParams ['status'] = 3;
+			} else {
+				$updateParams ['rest_status'] = 3;
+			}
+			$pomo->update ( $updateParams );
 		}
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/index' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/index' );
 	}
 	
 	/**
@@ -127,41 +115,22 @@ class PomoController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function store(Request $request, Pomo $pomo) {
-		$setting = $request->user ()->setting;
-		$pomo_time = isset ( $setting->pomo_time ) && ! empty ( $setting->pomo_time ) ? $setting->pomo_time * 60 : Pomo::DEFAULT_INTERVAL;
+		$this->validate ( $request, [ 
+				'name' => 'required|max:255' 
+		] );
 		
-		if (time () > strtotime ( $pomo->created_at ) + $pomo_time) {
-			$this->validate ( $request, [ 
-					'name' => 'required|max:255' 
-			] );
-			
-			$this->authorize ( 'destroy', $pomo );
-			$pomo->update ( [ 
-					'name' => $request->name,
-					'status' => 2 
-			] );
-			
-			$thing = new Thing ();
-			$thing->user_id = $request->user ()->id;
-			$thing->type = 3;
-			$thing->name = $pomo->name;
-			$thing->end_time = $pomo->created_at;
-			$thing->start_time = date ( 'Y-m-d H:i:s' );
-			$thing->save ();
-			
-			// auto resting
-			$request->session ()->put ( 'rest_start_time', time () );
+		$this->authorize ( 'destroy', $pomo );
+		
+		if (time () < strtotime ( $pomo->end_time )) {
+			throw new CustomException ( "还未到番茄完成时间" );
 		}
-		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
-			$currentPomoInfo ['active_pomo'] = $pomo;
-			$this->pomoService->pomonotify ( $request->user (), $currentPomoInfo ['current_pomo_status'] == Pomo::STATUS_PROCESSING ? '您已经完成了一个番茄，快来记录一下吧~' : '休息完成，快来开始下一个番茄吧~', $currentPomoInfo ['current_pomo_remain'] );
-			$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
-			return response ( $resp );
+		if ($pomo->status == 1) {
+			$currentPomoInfo = $this->pomoService->store ( $pomo, $request->name );
 		} else {
-			return redirect ( '/index' );
+			$currentPomoInfo = $this->pomoService->getRecentFormatPomo ();
 		}
+		
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $currentPomoInfo ), '/index' );
 	}
 	
 	/**
@@ -175,17 +144,19 @@ class PomoController extends Controller {
 		
 		$pomo->delete ();
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( self::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/index' )->with ( 'message', '操作成功!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/index' );
 	}
+	
+	/**
+	 * 查看当前番茄状态
+	 * 
+	 * @param Request $request        	
+	 * @return unknown
+	 */
 	public function pomostatus(Request $request) {
 		// 获取当前活动信息
-		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
-		$resp = $this->responseJson ( self::OK_CODE, $currentPomoInfo );
-		return response ( $resp );
+		$currentPomoInfo = $this->pomoService->getRecentFormatPomo ();
+		
+		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $currentPomoInfo ) );
 	}
 }

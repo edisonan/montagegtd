@@ -16,8 +16,8 @@ class ResponseDataUtil {
 	
 	/**
 	 * 根据code获取message信息
-	 * 
-	 * @param int $code
+	 *
+	 * @param int $code        	
 	 * @return string
 	 */
 	public static function getMessage($code) {
@@ -32,72 +32,76 @@ class ResponseDataUtil {
 	
 	/**
 	 * 生成成功响应数据
-	 * @param string $message
-	 * @param array $result
+	 *
+	 * @param string $message        	
+	 * @param array $result        	
 	 * @return string[]|unknown[]
 	 */
 	public static function genSucc($message, $result = array()) {
-		$response = array();
-		$response['code'] = self::OK;
-		$response['msg'] = $message ? $message : self::getMessage(self::OK);
-		$response['result'] = $result;
+		$response = array ();
+		$response ['code'] = self::OK;
+		$response ['msg'] = $message ? $message : self::getMessage ( self::OK );
+		$response ['result'] = $result;
 		return $response;
 	}
 	
 	/**
 	 * 生成成功响应数据 (只上送result场景使用)
-	 * @param array $result
+	 *
+	 * @param array $result        	
 	 * @return string[]|unknown[]
 	 */
 	public static function genSimpleSucc($result = array()) {
-		$response = array();
-		$response['code'] = self::OK;
-		$response['msg'] = self::getMessage(self::OK);
-		$response['result'] = $result;
+		$response = array ();
+		$response ['code'] = self::OK;
+		$response ['msg'] = self::getMessage ( self::OK );
+		$response ['result'] = $result;
 		return $response;
 	}
 	
 	/**
 	 * 生成失败响应数据（上送code、messsage、result场景）
-	 * @param int $code
-	 * @param string $message
-	 * @param array $result
+	 *
+	 * @param int $code        	
+	 * @param string $message        	
+	 * @param array $result        	
 	 * @return unknown[]|string[]
 	 */
 	public static function genFail($code, $message, $result = array()) {
-		$response = array();
-		$response['code'] = $code;
-		$response['msg'] = $message ? $message : self::getMessage($code);
-		$response['result'] = $result;
+		$response = array ();
+		$response ['code'] = $code;
+		$response ['msg'] = $message ? $message : self::getMessage ( $code );
+		$response ['result'] = $result;
 		return $response;
 	}
 	
 	/**
 	 * 生成失败响应数据（只上送code、result场景）
-	 * @param int $code
-	 * @param array $result
+	 *
+	 * @param int $code        	
+	 * @param array $result        	
 	 * @return unknown[]|string[]
 	 */
 	public static function genSimpleFail($code, $result = array()) {
-		$response = array();
-		$response['code'] = $code;
-		$response['msg'] = self::getMessage($code);
-		$response['result'] = $result;
+		$response = array ();
+		$response ['code'] = $code;
+		$response ['msg'] = self::getMessage ( $code );
+		$response ['result'] = $result;
 		return $response;
 	}
 	
 	/**
 	 * 生成失败响应数据（只上送messsage、result场景）
-	 * @param string $message
-	 * @param array $result
+	 *
+	 * @param string $message        	
+	 * @param array $result        	
 	 * @return string[]|unknown[]
 	 */
 	public static function genCommonFail($message, $result = array()) {
-		$response = array();
-		$response['code'] = self::COMMON_ERROR;
-		$response['msg'] = $message ? $message : self::getMessage($code);
-		$response['result'] = $result;
+		$response = array ();
+		$response ['code'] = self::COMMON_ERROR;
+		$response ['msg'] = $message ? $message : self::getMessage ( $code );
+		$response ['result'] = $result;
 		return $response;
 	}
-	
 }

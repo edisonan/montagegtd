@@ -7,9 +7,11 @@ use App\Http\Utils\ICSUtil2;
 use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\CalRepository;
-use App\Repositories\PomoRepository;
 use App\Repositories\SettingRepository;
 use App\Repositories\TaskRepository;
+use App\Exceptions\CustomException;
+use App\Http\Utils\CommonUtil;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * 日历订阅相关Service
@@ -18,18 +20,34 @@ use App\Repositories\TaskRepository;
  *        
  */
 class CalService {
-	protected $cals;
-	protected $settings;
-	protected $tasks;
+	/**
+	 *
+	 * @var CalRepository
+	 */
+	protected $calRepository;
 	
 	/**
 	 *
-	 * @param PomoRepository $pomos        	
+	 * @var SettingRepository
 	 */
-	public function __construct(CalRepository $cals, SettingRepository $settings, TaskRepository $tasks) {
-		$this->cals = $cals;
-		$this->settings = $settings;
-		$this->tasks = $tasks;
+	protected $settingRepository;
+	
+	/**
+	 *
+	 * @var TaskRepository
+	 */
+	protected $taskRepository;
+	
+	/**
+	 *
+	 * @param CalRepository $calRepository        	
+	 * @param SettingRepository $settingRepository        	
+	 * @param TaskRepository $taskRepository        	
+	 */
+	public function __construct(CalRepository $calRepository, SettingRepository $settingRepository, TaskRepository $taskRepository) {
+		$this->calRepository = $calRepository;
+		$this->settingRepository = $settingRepository;
+		$this->taskRepository = $taskRepository;
 	}
 	
 	/**
@@ -38,28 +56,21 @@ class CalService {
 	 * @param User $user        	
 	 * @return string
 	 */
-	public function getPersonCalUrl(User $user) {
-		$cal_token = '';
-		$setting = $this->settings->forUser ( $user );
+	public function getPersonCalUrl() {
+		$userId = Auth::id ();
+		
+		$setting = $this->settingRepository->getUserSettingInfo ( $userId );
 		if (isset ( $setting ['cal_token'] ) && ! empty ( $setting ['cal_token'] )) {
-			$cal_token = $setting ['cal_token'];
+			$calToken = $setting ['cal_token'];
 		} else {
-			$default_cal_token = md5 ( $user->id . '_' . time () );
-			if (empty ( $setting )) {
-				$setting = new Setting ();
-				$setting->user_id = $user->id;
-				$setting->save ( array (
-						'cal_token' => $default_cal_token 
-				) );
-			} else if (empty ( $setting ['cal_token'] )) {
-				$setting->update ( array (
-						'cal_token' => $default_cal_token 
-				) );
-			}
-			$cal_token = $default_cal_token;
+			$calToken = md5 ( $userId . '_' . time () );
+			$setting->update ( array (
+					'cal_token' => $calToken 
+			) );
 		}
 		
-		return 'webcal://task.congcong.us/taskics/' . $cal_token;
+		$host = CommonUtil::getUrlHost ( config ( 'app.url' ) );
+		return 'webcal://' . $host . '/taskics/' . $calToken;
 	}
 	
 	/**
@@ -71,11 +82,11 @@ class CalService {
 	public function getIcsByTheme($theme) {
 		date_default_timezone_set ( "Asia/Shanghai" );
 		
-		$cals = $this->cals->forByThemeAndStatus ( $theme, 1 );
+		$cals = $this->calRepository->getListByThemeAndStatus ( $theme, 1 );
 		
-		$task_props = array ();
+		$taskProps = array ();
 		foreach ( $cals as $cal ) {
-			$task_props [] = array (
+			$taskProps [] = array (
 					'description' => $cal->desc,
 					'dtend' => $cal->dtend,
 					'dtstart' => $cal->dtstart,
@@ -85,10 +96,11 @@ class CalService {
 			);
 		}
 		
-		$ics = new ICSUtil ( $task_props );
+		$ics = new ICSUtil ( $taskProps );
 		$ics->cal_name = $theme;
 		$ics_file_contents = $ics->to_string ();
 		
+		// TODO 换用封装方式存储 方便后续更换为S3等地方
 		$file_name = 'task_ics_' . md5 ( $theme );
 		file_put_contents ( config ( "app.storage_path" ) . '/' . $file_name, $ics_file_contents );
 		
@@ -101,30 +113,28 @@ class CalService {
 	/**
 	 * 根据日历token获取个人日历订阅
 	 *
-	 * @param User $user        	
-	 * @param string $cal_token        	
+	 * @param string $calToken        	
 	 * @return string[]
 	 */
-	public function getIcsByCalToken($cal_token) {
+	public function getIcsByCalToken($calToken) {
 		date_default_timezone_set ( "Asia/Shanghai" );
 		
 		// 获取该用户user_id
-		$setting = $this->settings->forCalToken ( $cal_token );
-		if (isset ( $setting ['user_id'] )) {
-			$user_id = $setting ['user_id'];
+		$setting = $this->settingRepository->getSettingInfoByCalToken ( $calToken );
+		if (! empty ( $setting )) {
+			$userId = $setting ['user_id'];
 		} else {
-			echo 'error cal_token';
-			exit ();
+			throw new CustomException ( "错误的日历token" );
 		}
 		
 		// 根据开始时间和结束时间，查询需要提醒内容
-		$start_time = date ( 'Y-m-d H:i:s', time () - 15768000 );
-		$end_time = date ( 'Y-m-d H:i:s', strtotime ( $start_time ) + 31536000 );
-		$tasks = $this->tasks->forUserByUserIdRemindTime ( $user_id, $start_time, $end_time );
+		$startTime = date ( 'Y-m-d H:i:s', time () - 15768000 );
+		$endTime = date ( 'Y-m-d H:i:s', strtotime ( $startTime ) + 31536000 );
+		$tasks = $this->taskRepository->getListByRemindTime ( $userId, $startTime, $endTime );
 		
-		$task_props = array ();
+		$taskProps = array ();
 		foreach ( $tasks as $task ) {
-			$task_props [] = array (
+			$taskProps [] = array (
 					'dtend' => $task->remindtime,
 					'dtstart' => $task->remindtime,
 					'due' => $task->remindtime,
@@ -135,13 +145,14 @@ class CalService {
 			);
 		}
 		
-		$ics = new ICSUtil2 ( $task_props );
+		$ics = new ICSUtil2 ( $taskProps );
 		$ics_file_contents = $ics->to_string ();
 		
-		file_put_contents ( config ( "app.storage_path" ) . '/task_ics_' . $user_id, $ics_file_contents );
+		// TODO 换用封装方式存储 方便后续更换为S3等地方
+		file_put_contents ( config ( "app.storage_path" ) . '/task_ics_' . $userId, $ics_file_contents );
 		
 		return array (
-				'file_name' => "task_ics_" . $user_id,
+				'file_name' => "task_ics_" . $userId,
 				'file_content' => $ics_file_contents 
 		);
 	}

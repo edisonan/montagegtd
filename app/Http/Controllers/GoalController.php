@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Goal;
 use App\Services\GoalService;
-use App\Http\Utils\ErrorCodeUtil;
+use App\Exceptions\CustomException;
+use App\Http\Utils\ResponseDataUtil;
 
 /**
  * 目标控制器
@@ -40,15 +41,18 @@ class GoalController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$status = $request->status;
-		if (empty ( $status ) || ! in_array ( $status, array (
+		$status = $request->input ( 'status', 1 );
+		if (! in_array ( $status, array (
 				1,
 				2 
 		) )) {
-			$status = 1;
+			throw new CustomException ( "状态不合法" );
 		}
+		
+		$goals = $this->goalService->getList ( $status );
+		
 		return view ( 'goals.index', [ 
-				'goals' => $this->goalService->forUserByStatus ( $request->user (), $status, $needPage = true ) 
+				'goals' => $goals 
 		] );
 	}
 	
@@ -62,17 +66,9 @@ class GoalController extends Controller {
 				'name' => 'required|max:255' 
 		] );
 		
-		$params = array ();
-		$params ['name'] = $request->name;
+		$this->goalService->store ( $request->name );
 		
-		$request->user ()->goals ()->create ( $params );
-		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/goals' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/goals' );
 	}
 	
 	/**
@@ -93,12 +89,7 @@ class GoalController extends Controller {
 		}
 		$flag = $goal->update ( $params );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/goals' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/goals' );
 	}
 	
 	/**
@@ -106,7 +97,8 @@ class GoalController extends Controller {
 	 *
 	 * @param Request $request        	
 	 * @param Goal $goal        	
-	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+	 * @return
+	 *
 	 */
 	public function update(Request $request, Goal $goal) {
 		$this->authorize ( 'destroy', $goal );
@@ -117,13 +109,13 @@ class GoalController extends Controller {
 			) );
 		}
 		
-		$flag = $goal->update ( $request->all () );
+		$this->validate ( $request, [ 
+				'name' => 'required|max:255' 
+		] );
+		$flag = $goal->update ( array (
+				'name' => $request->name 
+		) );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/goals' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/goals' );
 	}
 }
