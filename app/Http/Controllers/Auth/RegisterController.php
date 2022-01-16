@@ -66,7 +66,7 @@ class RegisterController extends Controller {
 		] );
 		
 		// 创建默认配置
-		$settingService = new SettingService ();
+		$settingService = app(SettingService::class);
 		$settingService->createDefaultSetting ( $user->id );
 		return $user;
 	}

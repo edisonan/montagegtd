@@ -90,8 +90,7 @@ $(document).ready(function () {
                             <tbody>
                             <?php $lastDate = '';?>
                                 @foreach ($minds as $mind)
-                                    <tr
-                                    >
+                                    <tr id="{{ $mind->id }}">
                                         <td class="table-text"  width="80%">
                                         	<div class="rowone">
                                         	 <?php
