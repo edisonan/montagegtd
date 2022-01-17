@@ -173,9 +173,9 @@ class MindService {
 			$prefix .= "	";
 		}
 		
-		$data = $prefix . "<li> <strong>" . $name . "<strong>\n";
+		$data = $prefix . "<li> " . $name . "</li>";
 		if (true && ! empty ( $content )) {
-			$data .= $prefix . "<br><code>";
+			$data .= $prefix . "<code>";
 			$data .= $prefix . " " . str_replace ( "\\r\\n", "<br>", $content ) . "\n";
 			$data .= $prefix . "</code>";
 		}
