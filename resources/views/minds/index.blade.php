@@ -110,8 +110,8 @@ $style = "color:rgb(0,0,0,0);";
 </span>
 <small>{{ date('H:i', strtotime($mind->updated_at)) }} </small>
                                         		
-                                        		<a href="{{url('mindoutlineview/' . $mind->id)}}" title="">
-														[大纲]
+                                        		<a href="{{url('mindoutlineview/' . $mind->id)}}" title="大纲预览">
+								<i class="bi-file-text" style="font-size: 1.3rem;"></i>
 												</a>
                                         		<span title="{{ $mind->content }}">
                                         		<a href="{{url('mind/' . $mind->id)}}" title="">
@@ -122,11 +122,11 @@ $style = "color:rgb(0,0,0,0);";
                                         </td>
                                         
                                         <td  width="20%" align="right">
-                                        	<a href="{{ url('mind/'.$mind->id)}}" style="color:blue">
-			                                			<img alt="" style="width: 15px;" src="/img/icon/edit.png">
+                                        	<a href="{{ url('mind/'.$mind->id)}}" >
+ <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
 			                                </a>
 			                                <a href="javascript:void(0)" class="delete_mind" mind_type="delete" mind_value="{{ $mind->id }}" mind_token="{{ csrf_token() }}"  style="cursor:pointer;" class="text-right">
-			                                        	<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+<i class="bi-trash" style="font-size: 1.5rem;"></i>
 			                                        </a> 
                                         </td>
 

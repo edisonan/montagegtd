@@ -83,9 +83,11 @@ $(document).ready(function () {
                                         </td>
 
                                         <td  width="1"  align='right'>
-	                                        <a href="{{ url('category/'.$category->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
+	                                        <a href="{{ url('category/'.$category->id)}}" style="">
+							<i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
+						</a>
 	                                        	<a href="javascript:void(0)" class="delete_category" category_type="delete" category_value="{{ $category->id }}" category_token="{{ csrf_token() }}"  style="cursor:pointer;">
-	                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+								<i class="bi-trash" style="font-size: 1.5rem;"></i>
 	                                        	</a> 
                                         </td>
                                     </tr>

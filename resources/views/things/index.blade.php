@@ -173,11 +173,11 @@ $style = "color:rgb(0,0,0,0);";
 				                   </td>
 				                   
 				                   <td width="20%" align="right">
-					                    <a href="{{ url('thing/'.$thing->id)}}" style="color:blue">
-					                    	<img alt=""     style="width: 15px;" src="/img/icon/edit.png">
+					                    <a href="{{ url('thing/'.$thing->id)}}" style="">
+								<i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
 					                    </a>
 					                    <a href="javascript:void(0)" class="delete_thing" thing_type="delete" thing_value="{{ $thing->id }}" thing_token="{{ csrf_token() }}"  style="cursor:pointer;">
-					                    	<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+									<i class="bi-trash" style="font-size: 1.5rem;"></i>
 					                    </a>
 				                   </td>
 				                   </tr>

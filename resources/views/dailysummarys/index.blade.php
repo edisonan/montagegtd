@@ -70,9 +70,9 @@ $(document).ready(function () {
                                         </td>
 
                                         <td  width="10%"  align='right'>
-                                        	<a href="{{ url('dailysummary/'.$dailysummary->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
+                                        	<a href="{{ url('dailysummary/'.$dailysummary->id)}}" > <i class="bi-pencil-square" style="font-size: 1.5rem;"></i></a>
                                         	<a href="javascript:void(0)" class="delete_dailysummary" dailysummary_type="delete" dailysummary_value="{{ $dailysummary->id }}" dailysummary_token="{{ csrf_token() }}"  style="cursor:pointer;">
-                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+                                        		<i class="bi-trash" style="font-size: 1.5rem;"></i>
                                         	</a> 
                                         </td>
                                     </tr>

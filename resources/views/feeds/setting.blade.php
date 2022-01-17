@@ -33,9 +33,9 @@
 				                                				 {{ $feed['feed_name'] }}
 			                                				</span>
 			                                				<span class="col-md-5 text-right">
-				                                				<a href="{{ url('feed/'.$feed['feed_sub_id'])}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></span>
+				                                				<a href="{{ url('feed/'.$feed['feed_sub_id'])}}" style=""> <i class="bi-pencil-square" style="font-size: 1.5rem;"></i></span>
 					                                        	<a href="javascript:void(0)" class="delete_feed" task_type="delete" feed_value="{{ $feed['feed_sub_id'] }}" feed_token="{{ csrf_token() }}"  style="cursor:pointer;">
-					                                        		<img alt="" style="width: 15px;" src="/img/icon/delete.png">
+<i class="bi-trash" style="font-size: 1.5rem;"></i>
 						                        				</a> 
 			                                				</span>
 		                                				</div>

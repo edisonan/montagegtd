@@ -80,6 +80,39 @@ img {
   });
 </script>
 <script type="text/javascript">
+var status = '{{$status}}';
+var processNavFlag = false
+function processNav(status) {
+	$('#nav').html('<li>加载中...</li>');
+    $.ajax({
+        url: "{{ url('article/navinfo') }}",
+        type: 'GET',
+        data: {"_token":"{{ csrf_token() }}","status":status},
+        success: function(result_arr) {
+    		if(result_arr.code != 9999){
+    			alert('处理失败，请稍后再试');
+    		} else {
+        		processFlag = true;
+        		$('#nav').html('');
+    			$.each( result_arr.result.nav_infos, function( navId, navInfo ){
+    				var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id="+navId+"&status="+status+'">'+navInfo.category_info.category_name+'['+Object.getOwnPropertyNames(navInfo.list).length+']</a></span>';
+    				if(Object.getOwnPropertyNames(navInfo.list).length > 0){
+    					li += '<ul class="category_item">';
+    					$.each(navInfo.list,function(index, item){
+    						var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
+    						li += '<li class="rowone">';
+    						li += '<a href="'+"{{ url('articles') }}?feed_id="+item.feed_id+"&status="+status+'">';
+    						li += '<span>[' + countInfo + ']' + item.feed_name + '</span>';
+    					});
+    					li += '</ul>';
+    				}
+    				li += '</li>'
+    				$("#nav").append(li);
+    			});
+    		}
+        }
+    });
+}
 $(document).ready(function () {
 
 	$(".set_star,.set_read,.set_read_later,.set_read_later_another").on('click',function(){
@@ -205,10 +238,15 @@ $(document).ready(function () {
 		$(".category_item").each(function(){
 			$(this).css("display","none");
 		});
+	} else {
+processNav(status);
 	}
 
 	$("#navHeader").on('click',function(){
 		$("#navBody").toggle();
+if(processNavFlag == false) {
+			processNav(status);
+		}
 	});
 	
 	$(".unfold_category_item").on('click','.unfold_category_item',function(){
@@ -245,33 +283,6 @@ $(document).ready(function () {
 		var title = $(this).attr('data-title');
 		var url = $(this).attr('data-url');
 		window.open('/notes?add_content='+url);
-	});
-	var status = '{{$status}}';
-	$.ajax({
-	    url: "{{ url('article/navinfo') }}",
-	    type: 'GET',
-	    data: {"_token":"{{ csrf_token() }}","status":status},
-	    success: function(result_arr) {
-			if(result_arr.code != 9999){
-				alert('处理失败，请稍后再试');
-			} else {
-				$.each( result_arr.result.nav_infos, function( navId, navInfo ){
-					var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="'+"{{ url('articles') }}?category_id="+navId+"&status="+status+'">'+navInfo.category_info.category_name+'['+Object.getOwnPropertyNames(navInfo.list).length+']</a></span>';
-					if(Object.getOwnPropertyNames(navInfo.list).length > 0){
-						li += '<ul class="category_item">';
-						$.each(navInfo.list,function(index, item){
-							var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
-							li += '<li class="rowone">';
-							li += '<a href="'+"{{ url('articles') }}?feed_id="+item.feed_id+"&status="+status+'">';
-							li += '<span>[' + countInfo + ']' + item.feed_name + '</span>';
-						});
-						li += '</ul>';
-					}
-					li += '</li>'
-					$("#nav").append(li);
-				});
-			}
-	    }
 	});
 });
 </script>

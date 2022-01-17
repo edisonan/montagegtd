@@ -270,11 +270,11 @@ $(document).ready(function () {
 								  <p class="card-text text-right post-text">
 								    @if($note->user_id == Auth::user()->id )
 											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="cursor:pointer;">
-											<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+												<i class="bi-trash" style="font-size: 1.5rem;"></i>
 											</a> 
                                             @else
                                             <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" style="cursor:pointer;">
-											<img alt=""     style="width: 15px;" src="/img/icon/like.png">
+												<i class="bi-hand-thumbs-up" style="font-size: 1.5rem;"></i>
 											</a> 
                                     @endif
 								  </p>

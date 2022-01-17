@@ -84,9 +84,9 @@ $(document).ready(function () {
                                         </td>
 
                                         <td  width="10%"  align='right'>
-                                        	<a href="{{ url('goal/'.$goal->id)}}" style="color:blue"><img alt=""     style="width: 15px;" src="/img/icon/edit.png"></a>
+                                        	<a href="{{ url('goal/'.$goal->id)}}" style=""><i class="bi-pencil-square" style="font-size: 1.5rem;"></i></a>
                                         	<a href="javascript:void(0)" class="delete_goal" task_type="delete" task_value="{{ $goal->id }}" goal_token="{{ csrf_token() }}"  style="cursor:pointer;">
-                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+							<i class="bi-trash" style="font-size: 1.5rem;"></i>
                                         	</a> 
                                         </td>
                                     </tr>

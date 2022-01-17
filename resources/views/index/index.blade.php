@@ -60,6 +60,15 @@
 	  return fmt;
 	}
 	
+
+	// 展示当前番茄时间信息
+	function showPomoTime($id, $time) {
+		console.log($id);
+		console.log($time);
+		console.log((new Date($time)).format("hh:mm"));
+		$('#' + $id).html((new Date($time)).format("hh:mm"));
+	}
+
 	//尝试获取通知权限
 	document.addEventListener('DOMContentLoaded', function () {
 	  if (!Notification) {
@@ -326,6 +335,12 @@ input[type=checkbox]:checked:after{
 </style>
 <script type="text/javascript">
 $(document).ready(function () {
+	// 番茄进行中或者已完成状态
+        if(status == 2 || status == 3) {
+                showPomoTime('pomo_start_time_show', "{{ $active_pomo->start_time }}");
+                showPomoTime('pomo_end_time_show', "{{ $active_pomo->end_time }}");
+        }
+
 
 	if(getCookie("mode") == 2){
 		mode = 2;
@@ -355,6 +370,8 @@ $(document).ready(function () {
 						$("#pomo_id").val(result_arr.result.active_pomo.id);
 						remain = result_arr.result.current_pomo_remain;
 						status = result_arr.result.current_pomo_status;
+                				showPomoTime('pomo_start_time_show', result_arr.result.active_pomo.start_time);
+                				showPomoTime('pomo_end_time_show', result_arr.result.active_pomo.end_time);
 						timer = setInterval(function(){ShowCountDown( remain, "pomoBtn" );}, interval); 
 					}
 			    }
@@ -598,7 +615,12 @@ $(document).keyup(function(event){
 
 					<div class="form-group" @if($current_pomo_status !=3) style="display: none" @endif id="recordPomo">
 						<div class="col-md-12">
-							<a href="javascript:void(0)" onclick="discard()" style="float:right">x</a>
+							<div style="float:left;">
+									<span id="pomo_start_time_show"></span> - <span id="pomo_end_time_show"></span>&nbsp;
+								</div>
+							<div style="float:right;">
+									<a href="javascript:void(0)" onclick="discard()">x</a>
+								</div>
 							<input type="text" name="name" id="pomo_name"
 								class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
 						</div>

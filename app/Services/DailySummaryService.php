@@ -9,6 +9,8 @@ use App\Repositories\ArticleRepository;
 use App\Repositories\ArticleSubRepository;
 use App\Repositories\MindRepository;
 use App\Repositories\NoteRepository;
+use App\Models\User;
+use App\Http\Utils\CommonUtil;
 
 /**
  * 业务逻辑

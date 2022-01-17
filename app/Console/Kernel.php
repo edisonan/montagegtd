@@ -37,7 +37,8 @@ class Kernel extends ConsoleKernel {
 			Commands\TaskReminder::class,
 			Commands\PomoDailyReminder::class,
 			Commands\PomoRecordReminder::class,
-			Commands\PomoRestedReminder::class 
+			Commands\PomoRestedReminder::class, 
+			Commands\DailySummaryReminder::class 
 	];
 	
 	/**

@@ -12,7 +12,7 @@ use App\Services\DailySummaryService;
  * @author edison.an
  *        
  */
-class TaskReminderReminder extends Command {
+class DailySummaryReminder extends Command {
 	/**
 	 * The name and signature of the console command.
 	 *

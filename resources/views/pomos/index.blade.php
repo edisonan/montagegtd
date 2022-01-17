@@ -86,7 +86,7 @@ $style = "color:rgb(0,0,0,0);";
                                         <td width="20%" align="right">
                                         	
                                         	<a href="javascript:void(0)" class="delete_pomo" task_type="delete" task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}"  style="cursor:pointer;">
-                                        		<img alt=""     style="width: 15px;" src="/img/icon/delete.png">
+							<i class="bi-trash" style="font-size: 1.5rem;"></i>
                                         	</a> 
                                         	<!-- 
                                             <form action="{{url('pomo/' . $pomo->id)}}" method="POST">
