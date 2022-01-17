@@ -87,8 +87,13 @@ $style = "color:rgb(0,0,0,0);";
                                         </td>
                                         
                                         <td  width="20%" align="right">
-                                        	<a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">[记录]</a>
-                                        	<a href="/task/{{ $task->id }}">[更新]</a>
+                                        	<a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">
+                                                        <i class="bi-textarea-t" style="font-size: 1.5rem;"></i>
+</a>
+                                        	<a href="/task/{{ $task->id }}">
+ <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
+
+</a>
                                         </td>
 
                                     </tr>
@@ -99,7 +104,7 @@ $style = "color:rgb(0,0,0,0);";
                         @else
                         <div>
 						<img src="/img/new/love.png" width="200px">
-                    	暂时还没有完成哦，快去<a href="{{url('/index')}}">开始第一个任务</a>吧！
+                    	暂时还没有完成哦，快去<a href="{{url('/index')}}" style="color:green">开始第一个任务</a>吧！
                     	</div>
 			            @endif
                     </div>

@@ -159,6 +159,10 @@ class ArticleController extends Controller {
 			$isFeed = $this->articleService->isFeed ( $article->feed->id );
 		}
 		
+		if($isFeed == false && $article->feed->audit_status == 0) {
+			throw new CustomException("订阅源审核中,审核通过后可正常分享");
+		}
+		
 		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
 				'article' => $article,
 				'is_feed' => $isFeed 

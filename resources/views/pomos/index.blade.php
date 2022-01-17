@@ -79,11 +79,14 @@ $style = "color:rgb(0,0,0,0);";
 {{ $currentDate }}
 </span>
 <small>{{ date('H:i', strtotime($pomo->start_time)) }} - {{ date('H:i', strtotime($pomo->end_time)) }} </small>
-<a href="/notes?add_content=%23记录番茄%23{{ urlencode($pomo->name) }}&pomo_id={{$pomo->id}}">[记录]</a>{{ $pomo->name }} 
+{{ $pomo->name }} 
 </div>
 </td>
                                         <!-- Task Delete Button -->
                                         <td width="20%" align="right">
+<a href="/notes?add_content=%23记录番茄%23{{ urlencode($pomo->name) }}&pomo_id={{$pomo->id}}" title="记录更多当时的想法吧">
+							<i class="bi-textarea-t" style="font-size: 1.5rem;"></i>
+</a>
                                         	
                                         	<a href="javascript:void(0)" class="delete_pomo" task_type="delete" task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}"  style="cursor:pointer;">
 							<i class="bi-trash" style="font-size: 1.5rem;"></i>
@@ -107,7 +110,7 @@ $style = "color:rgb(0,0,0,0);";
                     @else
                     <div>
 						<img src="/img/new/love.png" width="200px">
-                    	暂时还没有完成哦，快去<a href="{{url('/index')}}">开始第一个番茄</a>吧！
+                    	暂时还没有完成哦，快去<a href="{{url('/index')}}" style="color:green">开始第一个番茄</a>吧！
                     	</div>
 		            @endif
                     </div>

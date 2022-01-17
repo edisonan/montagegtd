@@ -149,6 +149,14 @@ class MindController extends Controller {
 		] ), 'minds.outlineview' );
 	}
 	
+	public function outlineViewv2(Request $request, Mind $mind) {
+		$this->authorize ( 'destroy', $mind );
+		
+		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
+				'mind' => $mind 
+		] ), 'minds.outlineviewv2' );
+	}
+	
 	/**
 	 * 通过获取节点思维导图信息
 	 *

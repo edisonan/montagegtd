@@ -433,7 +433,7 @@ if(processNavFlag == false) {
 			@else
 			<div>
 			<img src="/img/new/love.png" width="200px">
-			好像没有更多了，阅读一下其他的文章或者开始新的订阅吧~
+			好像没有更多了，阅读一下<a href="/articles" style="color:green;">其他的文章</a>或者<a href="/feeds/explorer" style="color:green">开始新的订阅</a>吧~
 			</div>
 			@endif 
 			<!--</div>-->

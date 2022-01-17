@@ -35,7 +35,7 @@ $(document).ready(function () {
                     <div class="card-header">
                         	日报列表
                         	<div style="float:right">
-	                    		<a href="{{'/dailycreate'}}">[新建日报]</a>
+	                    		<a href="{{'/dailycreate'}}">[新的日总结]</a>
 	                    		<a href="{{'/index'}}">[返回]</a>
 	                    	</div>
                     </div>
@@ -84,7 +84,7 @@ $(document).ready(function () {
                     @else
                     <div>
 			<img src="/img/new/love.png" width="200px">
-			今天发生了点什么，记录一下吧~
+			今天发生了点什么，<a href="{{'/dailycreate'}}" style="color:green">记录一下</a>吧~
 			</div>
                     @endif
                 </div>

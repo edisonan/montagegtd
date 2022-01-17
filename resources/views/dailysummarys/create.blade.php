@@ -24,15 +24,16 @@ function getInfos($summary_date) {
 			} else {
 				$('#tips').html("");
 				$.each( result_arr.result.infos, function( subject, tipInfo ){
-					var li = '<li role="presentation" class="col-md-12" style="padding-top: 10px;"><span class="category_items">'+subject+'['+(Object.getOwnPropertyNames(tipInfo.list).length -1 )+']</span>';
+					var li = '<li role="presentation" class="col-md-12" style="padding-top: 10px;"><span class="category_items">'+tipInfo.name+'['+(Object.getOwnPropertyNames(tipInfo.list).length -1 )+']</span>';
 					if(Object.getOwnPropertyNames(tipInfo.list).length > 0){
 						li += '<ul class="category_item">';
 						$.each(tipInfo.list,function(index, item){
 							li += '<li class="rowone">';
 							if(item.url != '') {
-								li += '<a href="' +item.url+ '">[Go]</a>';
+								li += '<a href="' +item.url+ '"><span>'+item.content+'</span></a>';
+							} else {
+								li += '<span>' + item.content + '</span>';
 							}
-							li += '<span>' + item.content + '</span>';
 						});
 						li += '</ul>';
 					}
@@ -101,7 +102,7 @@ function getInfos($summary_date) {
                 
                 <div class="card">
                     <div class="card-header">
-                        Tips
+                        日总结小提示
                     </div>
                     
                     <div class="card-body" id="tipBody" >

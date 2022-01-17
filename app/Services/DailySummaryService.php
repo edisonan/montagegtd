@@ -91,10 +91,17 @@ class DailySummaryService {
 		$minds = $this->mindRepository->getListForSummary ( Auth::id (), $startTime, $endTime );
 		$notes = $this->noteRepository->getListForSummary ( Auth::id (), $startTime, $endTime );
 		
-		$infos = array ();
+		$thingTypeInfos = array(1=>'事情', 2=>'任务', 3=>'番茄');
+		$infos = array (
+			'thing'=>array('name'=>'事情', 'list'=>array()),
+			'article'=>array('name'=>'文章', 'list'=>array()),
+			'mind'=>array('name'=>'导图', 'list'=>array()),
+			'note'=>array('name'=>'笔记', 'list'=>array()),
+		);
 		foreach ( $things as $thing ) {
+			$type = isset($thingTypeInfos[$thing->type]) ? '['.$thingTypeInfos[$thing->type].']':'';
 			$infos ['thing'] ['list'] [] = array (
-					'content' => $thing->name,
+					'content' => $type . $thing->name,
 					'url' => '' 
 			);
 		}

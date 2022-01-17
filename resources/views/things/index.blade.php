@@ -188,7 +188,7 @@ $style = "color:rgb(0,0,0,0);";
                         @else
                         <div>
 			<img src="/img/new/love.png" width="200px">
-                    	暂时还没有事情哦，快去<a href="{{url('/index')}}">开始做点番茄或者考虑一下待办</a>吧！
+                    	暂时还没有事情哦，快去<a href="{{url('/index')}}" style="color:green">开始做点番茄或者考虑一下待办</a>吧！
                     	</div>
                     @endif
                 </div>

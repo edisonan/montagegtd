@@ -40,6 +40,7 @@ Route::group ( [
 	Route::get ( '/mind/{mind}', 'MindController@view' );
 	Route::get ( '/mindajaxget/{mind}', 'MindController@ajaxget' );
 	Route::get ( '/mindoutlineview/{mind}', 'MindController@outlineView' );
+	Route::get ( '/mindoutlineviewv2/{mind}', 'MindController@outlineViewv2' );
 	Route::get ( '/mindajaxoutlineget/{mind}', 'MindController@ajaxoutlineget' );
 	Route::post ( '/mind/{mind}', 'MindController@update' );
 	

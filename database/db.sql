@@ -266,6 +266,7 @@ CREATE TABLE IF NOT EXISTS `feeds` (
   `recommend_category_id` tinyint(4) DEFAULT '0' COMMENT '推荐分类',
   `active_level` tinyint(4) DEFAULT '0' COMMENT '活跃等级（1/2/3/4 活跃性依次递减）',
   `last_published` timestamp NULL DEFAULT NULL COMMENT '上次发布时间',
+  `audit_status` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '修改时间',
   PRIMARY KEY (`id`),

@@ -110,7 +110,7 @@ $style = "color:rgb(0,0,0,0);";
 </span>
 <small>{{ date('H:i', strtotime($mind->updated_at)) }} </small>
                                         		
-                                        		<a href="{{url('mindoutlineview/' . $mind->id)}}" title="大纲预览">
+                                        		<a href="{{url('mindoutlineviewv2/' . $mind->id)}}" title="大纲预览">
 								<i class="bi-file-text" style="font-size: 1.3rem;"></i>
 												</a>
                                         		<span title="{{ $mind->content }}">

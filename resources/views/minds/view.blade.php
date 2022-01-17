@@ -102,8 +102,8 @@ $(document).ready(function () {
                     	</button>
                     	
                     	<div style="float:right">
-                    		<a href="{{'/mindoutlineview/'}} {{$mind->id}}">[大纲模式]</a>
-                    		<a href="javascript:void(0)" id="work_mode">[工作模式]</a>
+                    		<a href="{{'/mindoutlineviewv2/'}} {{$mind->id}}">[大纲预览]</a>
+                    		<a href="javascript:void(0)" id="work_mode">[大屏]</a>
                     		<a href="{{'/minds'}}">[返回]</a>
                     	</div>
                 </div>
