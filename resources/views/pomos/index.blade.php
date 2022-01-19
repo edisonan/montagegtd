@@ -37,6 +37,29 @@ $(document).ready(function () {
 		    }
 		});
 	});
+	$(".update_pomo").click(function(){
+		$pomo_name = $(this).attr('pomo_name');
+		$pomo_id = $(this).attr('pomo_id');
+
+	    var $pomo_name = prompt("Please enter content!", $pomo_name)
+	    if ($pomo_name != null && $pomo_name != "")
+	    {
+	    	task_token = "{{ csrf_token() }}";
+	    	
+	    	$.ajax({
+			    url: "{{ url('pomoupdate') }}"+"/" + $pomo_id,
+			    type: 'POST',
+			    data: {_token:task_token, name:$pomo_name},
+			    success: function(result_arr) {
+					if(result_arr.code != 9999){
+						alert('处理失败，请稍后再试');
+					} else {
+						$('#name'+$pomo_id).html($pomo_name);
+					}
+			    }
+			});
+	    }
+	});
 });
 </script>
     <div class="container">
@@ -79,7 +102,9 @@ $style = "color:rgb(0,0,0,0);";
 {{ $currentDate }}
 </span>
 <small>{{ date('H:i', strtotime($pomo->start_time)) }} - {{ date('H:i', strtotime($pomo->end_time)) }} </small>
+<span id="name{{ $pomo->id }}">
 {{ $pomo->name }} 
+</span>
 </div>
 </td>
                                         <!-- Task Delete Button -->
@@ -87,6 +112,10 @@ $style = "color:rgb(0,0,0,0);";
 <a href="/notes?add_content=%23记录番茄%23{{ urlencode($pomo->name) }}&pomo_id={{$pomo->id}}" title="记录更多当时的想法吧">
 							<i class="bi-textarea-t" style="font-size: 1.5rem;"></i>
 </a>
+
+<a href="javascript:void(0)" class="update_pomo" style="" pomo_name="{{ $pomo->name }}" pomo_id="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}">
+                                            <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
+                                        </a>
                                         	
                                         	<a href="javascript:void(0)" class="delete_pomo" task_type="delete" task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}"  style="cursor:pointer;">
 							<i class="bi-trash" style="font-size: 1.5rem;"></i>

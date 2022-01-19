@@ -57,7 +57,10 @@ class CategoryController extends Controller {
 		$this->validate ( $request, [ 
 				'name' => 'required' 
 		] );
-		
+		$categorys = $this->categoryService->getList ();
+		if(count($categorys) > 20) {
+			throw new CustomException("超过分类数量，最多20个");
+		}	
 		$category = $request->user ()->categorys ()->create ( array (
 				'name' => $request->name 
 		) );

@@ -24,7 +24,14 @@ class NoteRepository {
 				'user' 
 		] );
 		$query->where ( function ($query) use ($userId) {
-			$query->where ( 'status', 2 )->where('audit_status', 1)->orwhere ( 'user_id', \Auth::id () );
+			//$query->where ( 'status', 2 )->where('audit_status', 1)->orwhere ( 'user_id', \Auth::id () );
+			$query->where ( function ($query) use ($userId) {
+                                $query->where ( 'user_id', $userId );
+			});
+			$query->orWhere ( function ($query) use ($userId) {
+				$query->where ( 'status', 2 )->where('audit_status', 1);
+                        });
+	
 		} );
 		if (! empty ( $keyword )) {
 			$query->where ( 'name', 'like', "%" . $keyword . "%" );

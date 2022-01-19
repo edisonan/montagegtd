@@ -33,6 +33,8 @@ Route::group ( [
 	Route::post ( '/note', 'NoteController@store' );
 	Route::delete ( '/note/{note}', 'NoteController@destroy' );
 	Route::get ( '/note/getRecord/{note}', 'NoteController@getRecord' );
+	Route::get ( '/noteupdate/{note}', 'NoteController@update' );
+	Route::post ( '/noteupdate/{note}', 'NoteController@update' );
 	
 	Route::get ( '/minds', 'MindController@index' );
 	Route::post ( '/mind', 'MindController@store' );
@@ -105,6 +107,7 @@ Route::group ( [
 	Route::get ( '/third/twitterIndex', 'ThirdController@twitterIndex' );
 	Route::get ( '/third/twitterCallback', 'ThirdController@twitterCallback' );
 	
+	Route::post ( '/pomoupdate/{pomo}', 'PomoController@update' );
 	Route::post ( '/pomo/{pomo}', 'PomoController@store' );
 	Route::delete ( '/pomo/{pomo}', 'PomoController@destroy' );
 	

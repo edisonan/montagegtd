@@ -14,7 +14,7 @@ class CategoryRepository {
 	 * @return unknown
 	 */
 	public function getUserList($userId) {
-		return Category::where ( 'user_id', $userId )->paginate ( 50 );
+		return Category::where ( 'user_id', $userId )->get();
 	}
 	
 	/**

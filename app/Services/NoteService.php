@@ -162,9 +162,9 @@ class NoteService {
 					if (! empty ( $shortUrl )) {
 						$addContent = $shortUrl;
 					}
-					$formatContent = '#分享链接# ' . $addContent . ' ' . $title;
+					$formatContent = '#分享链接# ' . $addContent . ' ' . $title."\n";
 				} else if (strpos ( $addContent, '#' ) === false) {
-					$formatContent = "#分享#" . $addContent;
+					$formatContent = "#分享#" . $addContent."\n";
 				}
 			}
 		}
@@ -221,6 +221,35 @@ class NoteService {
 					'note_id' => $note->id 
 			) );
 		}
+	}
+	public function update($note, $name, $status) {
+	    $updateParams = array(); 
+	    $formatName = $this->formatName ( $name );
+	    if($note->name != $formatName) {
+	        $note->audit_status = 0;
+		$note->name = $formatName;
+	    }
+	    $note->status = $status;
+	    $note->update ();
+	    
+	    preg_match_all ( '/#(.*?)#/i', $name, $match );
+	    foreach ( $match [0] as $item ) {
+	        $tagName = trim ( $item, '#' );
+	        if (empty ( $tagName )) {
+	            continue;
+	        }
+	        
+	        $tag = $this->tagService->getByTagName ( $tagName, true );
+	        
+	        $tagNote = NoteTagMap::where('tag_id', $tag->id)->where('note_id', $note->id)->first();
+	        if(empty($tagNote)) {
+    	        $tagNote = new NoteTagMap ();
+    	        $tagNote->create ( array (
+    	            'tag_id' => $tag->id,
+    	            'note_id' => $note->id
+    	        ) );
+	        }
+	    }
 	}
 	
 	/**

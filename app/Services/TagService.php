@@ -20,7 +20,7 @@ class TagService {
 		$tag = Tag::where ( 'name', $name )->first ();
 		if (empty ( $tag ) && $needAutoCreate) {
 			$tag = Tag::create ( array (
-					'name' => $tag_name 
+					'name' => $name 
 			) );
 		}
 		return $tag;

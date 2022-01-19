@@ -65,6 +65,17 @@ $(document).ready(function () {
 	$('#work_mode').click(function(){
 		$('.container').css('max-width', '1980px');
 	});
+	var ua =  navigator.userAgent;
+        isAndroid = /Android/i.test(ua);
+        isBlackBerry = /BlackBerry/i.test(ua);
+        isWindowPhone = /IEMobile/i.test(ua);
+        isIOS = /iPhone|iPad|iPod/i.test(ua);
+        isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
+        if(isMobile){
+                //$("#mindcontentdiv").css("display","none");
+		$("#jsmind_container").css("height","1000px");
+
+        }
 });
 </script>
 
@@ -112,7 +123,7 @@ $(document).ready(function () {
 					<div id="jsmind_container" class=" col-md-8">
 					</div>
 
-					<div id="" class=" col-md-4">
+					<div id="mindcontentdiv" class=" col-md-4">
 						<b id="mind_name"  style="margin-top:15px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
                         
 						<textarea  class="col-md-12" id="mind_content" data-toolbarHeaderL="" onfocus="mind_content_focus()" style="margin: 0px; height: 189px; " id="mind_content">{{$mind->content}}</textarea>

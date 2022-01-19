@@ -21,7 +21,7 @@
 <script>
 function submitProcess($status){
 	document.getElementById('status_id').value = $status;
-	document.getElementById('add_note_form').submit();
+	document.getElementById('update_note_form').submit();
 }
 
 function addContent($content){
@@ -130,28 +130,6 @@ function addContent($content){
 <script type="text/javascript">
 $(document).ready(function () {
 
-	$(".delete_note").click(function(){
-		note_value = $(this).attr("note_value");
-		note_token = $(this).attr("note_token");
-		note_type = $(this).attr("note_type");
-
-		if (note_type == 'delete' && !confirm("确认要删除此笔记咩？")) {
-			return false;
-		}
-		
-		$.ajax({
-		    url: "{{ url('note') }}"+"/"+note_value,
-		    type: 'DELETE',
-		    data: {type:note_type,_token:note_token},
-		    success: function(result_arr) {
-				if(result_arr.code != 9999){
-					alert('处理失败，请稍后再试');
-				} else {
-					$('#'+note_value).remove();
-				}
-		    }
-		});
-	});
 });
 </script>
     <div class="container">
@@ -159,11 +137,11 @@ $(document).ready(function () {
         	@include('common.success')
             <div class="card">
                 <div class="card-header">
-                    	新的笔记
+                    	修改笔记
                     	<div class="form-inline" style="float:right">
                     		<form action="{{url('notes')}}" method="get">
-			                <input type="text" name="keyword" class="" placeholder="搜索笔记" />
-			                <input type="submit" value="搜 索"/>
+    			                <input type="text" name="keyword" class="" placeholder="搜索笔记" />
+    			                <input type="submit" value="搜 索"/>
                     		</form>
 			            </div>
                 </div>
@@ -173,7 +151,7 @@ $(document).ready(function () {
                     @include('common.errors')
 
                     <!-- New note Form -->
-                    <form action="{{ url('note') }}"   method="POST" class="form-horizontal" id="add_note_form">
+                    <form action="{{ url('noteupdate/'.$note->id) }}"   method="POST" class="form-horizontal" id="update_note_form">
                         {{ csrf_field() }}
 
                         <!-- note Name -->
@@ -181,20 +159,7 @@ $(document).ready(function () {
                             <label for="note-name" class="col-md-2 control-label">你在想什么呢</label>
 
                             <div class="col-md-10" >
-                            	<textarea class="form-control" rows="4"  name="name" id="note-name" >{{ $add_content }}</textarea>
-                            	
-                            	<button id="start" class="ui-btn ui-btn-primary" disabled title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">录音</button>
-						        <button id="stop" class="ui-btn ui-btn-primary" disabled title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">停止</button>
-						        <div id="audio-container"></div>
-						        
-						        <input type="hidden" name="task_id" id="task_id" value="{{ $task_id }}"/>
-						        <input type="hidden" name="pomo_id" id="pomo_id" value="{{ $pomo_id }}"/>
-						        <input type="hidden" name="article_id" id="article_id" value="{{ $article_id }}"/>
-						        <input type="hidden" name="fname" id="fname" />
-						        @if(!empty($add_image))
-						        <input type="hidden" name="add_image" id="add_image"  value="{{$add_image}}"/>
-						        <span>预览：</span><img  height="150px" alt="" src="{{$add_image}}">
-						        @endif
+                            	<textarea class="form-control" rows="4"  name="name" id="note-name" >{{ $note->name }}</textarea>
                             	
                             	<br/>
                             	<span>推荐话题:</span>
@@ -210,9 +175,9 @@ $(document).ready(function () {
                         <!-- Add note Button -->
                         <div class="form-group row">
                             <div class="col-md-offset-3 col-md-6">
-                            	<input type="hidden" name="status" value="1" id="status_id">
+                            	<input type="hidden" name="status" value="{{ $note->status }}" id="status_id">
                             	
-                                @if(!empty($task_id) || !empty($article_id) || !empty($pomo_id))
+                                @if($note->status == 1)
                                     <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">
                                         <i class="fa fa-btn fa-plus"></i>公开发布
                                     </button>
@@ -237,56 +202,7 @@ $(document).ready(function () {
                 </div>
             </div>
 
-            <!-- Current notes -->
-            @if (count($notes) > 0)
-                <div class="card">
-                    <div class="card-header">
-                       	 大家在分享什么
-                    </div>
-				</div>
-                    	@foreach ($notes as $note)
-							<div class="card" style="margin-bottom:10px" id="{{$note->id}}">
-								<div class="card-block">
-								  <h4 class="card-title"><img style="width:30px;margin:5px" src="https://gravatar.loli.net/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40" class="img-fluid rounded" alt="Responsive image rounded" style="width:50px;"> {{ $note->user->name }}</h4>
-								  <p class="card-text"><small class="text-muted" style="padding-left: 10px;">{{ date('Y年m月d日 H:i',strtotime($note->created_at)) }} &nbsp;
-@if($note->status != 2)
-<span style="color:#f98282">仅个人可见</span>
-                                                                        @else
-<span style="color:green">公开</span>
-                                                                        @endif
-</small></p>
-								  <div class="card-text post-text">									
-									@if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-									语音记录: <a href="{{ url('note/getRecord') }}/{{ $note->id }}">请点击播放🎵</a><br/>
-									@endif
-									
-									@if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-									<a href="{{ $note->image_path }}" title="点击查看原图" target="_blank">
-										<image height="150px" src="{{ $note->image_path }}"/>
-									</a>
-									@endif
-								  <?php echo App\Http\Utils\CommonUtil::formatContentHtml($note->name); ?>
-								  </div>
-								  <p class="card-text text-right post-text">
-								    @if($note->user_id == Auth::user()->id )
-											<a href="{{ url('noteupdate/'.$note->id)}}" >
- <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
-                                                        </a>
-
-											<a href="javascript:void(0)" class="delete_note" note_type="delete" note_value="{{ $note->id }}"  note_token="{{ csrf_token() }}" style="cursor:pointer;">
-												<i class="bi-trash" style="font-size: 1.5rem;"></i>
-											</a> 
-                                            @else
-                                            <a href="javascript:void(0)" class="like_note" note_type="like" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" style="cursor:pointer;">
-												<i class="bi-hand-thumbs-up" style="font-size: 1.5rem;"></i>
-											</a> 
-                                    @endif
-								  </p>
-								</div>
-							  </div>
-					  @endforeach
-						{!! $notes->links() !!}
-            @endif
         </div>
     </div>
 @endsection
+

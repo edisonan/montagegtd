@@ -141,4 +141,23 @@ class NoteController extends Controller {
 			throw new CustomException ( "无权限" );
 		}
 	}
+	public function update(Request $request, Note $note) {
+	    $this->authorize ( 'destroy', $note );
+	    
+	    if ($request->method () == 'GET') {
+		$note->name = preg_replace('/<br\\s*?\/??>/i',"",$note->name);
+	        return view ( 'notes.update', array (
+	            'note' => $note,
+	        ) );
+	    }
+	    
+	    $this->validate ( $request, [
+	        'name' => 'required',
+	        'status' => 'required'
+	    ] );
+	    
+	    $this->noteService->update ( $note, $request->name, $request->status );
+	    
+	    return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/notes' );
+	}
 }

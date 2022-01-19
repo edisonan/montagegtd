@@ -159,4 +159,14 @@ class PomoController extends Controller {
 		
 		return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $currentPomoInfo ) );
 	}
+	
+	public function update(Request $request, Pomo $pomo) {
+	    $this->validate ( $request, [
+	        'name' => 'required|max:255'
+	    ] );
+	    
+	    $pomo->update(array('name'=>$request->name));
+	    
+	    return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (  ), '/index' );
+	}
 }

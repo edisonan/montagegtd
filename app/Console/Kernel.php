@@ -56,13 +56,13 @@ class Kernel extends ConsoleKernel {
 		// 上午提醒
 		$schedule->command ( 'pomo_daily_reminder', array (
 				1 
-		) )->dailyAt ( '10:10' );
+		) )->dailyAt ( '10:10' )->weekdays();
 		// 下午提醒
 		$schedule->command ( 'pomo_daily_reminder', array (
 				1 
-		) )->dailyAt ( '13:40' );
-		$schedule->command ( 'pomo_record_reminder' )->everyMinute ();
-		$schedule->command ( 'pomo_rested_reminder' )->everyMinute ();
+		) )->dailyAt ( '13:40' )->weekdays();
+		$schedule->command ( 'pomo_record_reminder' )->cron('* 9-19 * * *');
+		$schedule->command ( 'pomo_rested_reminder' )->cron('* 9-19 * * *');;
 		
 		$schedule->command ( 'statistics_daily', array (
 				1 
