@@ -282,7 +282,7 @@ class FeedService {
 		if (count ( $articleSubs ) == 0) {
 			try {
 				$this->checkFeed ( $feed );
-			} catch ( Exception $e ) {
+			} catch ( \Throwable $e ) {
 				Log::error ( 'check feed exception:' . $feed->id . '|' . $feed->feed_name . '|' . $e->getMessage () );
 			}
 		}
@@ -372,7 +372,7 @@ class FeedService {
 			if ($item->getType () == 'category') {
 				
 				if (! isset ( $category_arr [$item->getTitle ()] )) {
-					$category = $this->categoryService->quickCreateCategory ( $categoryName );
+					$category = $this->categoryService->quickCreateCategory ( $item->getTitle () );
 					$category_arr [$item->getTitle ()] = $category->id;
 				}
 				

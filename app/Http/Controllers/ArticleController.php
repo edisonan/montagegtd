@@ -114,7 +114,6 @@ class ArticleController extends Controller
      *
      * @param Request $requests
      * @return
-     *
      */
     public function navcountinfo(Request $request)
     {
@@ -151,11 +150,10 @@ class ArticleController extends Controller
 
     /**
      * 文章详情
-     *
      * @param Request $request
      * @param Article $article
-     * @return
-     *
+     * @return mixed
+     * @throws CustomException
      */
     public function view(Request $request, Article $article)
     {
@@ -179,11 +177,10 @@ class ArticleController extends Controller
 
     /**
      * 设置文章状态
-     *
      * @param Request $request
      * @param ArticleSub $articleSub
-     * @return
-     *
+     * @return mixed
+     * @throws CustomException
      */
     public function status(Request $request, ArticleSub $articleSub)
     {
@@ -214,9 +211,9 @@ class ArticleController extends Controller
 
     /**
      * 删除文章
-     *
      * @param Request $request
      * @param ArticleSub $articleSub
+     * @return mixed
      */
     public function destroy(Request $request, ArticleSub $articleSub)
     {
@@ -250,9 +247,9 @@ class ArticleController extends Controller
 
     /**
      * 获取文章语音
-     *
      * @param Request $request
      * @param ArticleSub $articleSub
+     * @throws CustomException
      */
     public function getArticleRecord(Request $request, ArticleSub $articleSub)
     {

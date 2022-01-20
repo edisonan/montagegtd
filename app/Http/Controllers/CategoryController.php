@@ -135,6 +135,6 @@ class CategoryController extends Controller
 
         $this->categoryService->setCategorySort(explode(',', $request->category_ids));
 
-        return $this->jsonAndRedirectAutoResponse($request, ResponseDataUtil::genSimpleSucc($category), '/categorys');
+        return $this->jsonAndRedirectAutoResponse($request, ResponseDataUtil::genSimpleSucc(), '/categorys');
     }
 }

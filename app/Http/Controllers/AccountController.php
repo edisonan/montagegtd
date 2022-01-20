@@ -39,12 +39,13 @@ class AccountController extends Controller
      * 用户Oauth账户信息列表
      *
      * @param Request $request
+     * @return view
      */
     public function index(Request $request)
     {
-        $oauths = $this->accountService->getOauthInfos();
+        $oauthInfos = $this->accountService->getOauthInfos();
         return view('accounts.index', [
-            'oauths' => $oauths
+            'oauths' => $oauthInfos
         ]);
     }
 }
