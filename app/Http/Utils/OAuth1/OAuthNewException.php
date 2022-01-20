@@ -2,6 +2,9 @@
 
 namespace App\Http\Utils\OAuth1;
 
-class OAuthNewException extends \Exception {
-	// pass
+use Exception;
+
+class OAuthNewException extends Exception
+{
+    // pass
 }

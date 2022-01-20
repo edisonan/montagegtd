@@ -2,11 +2,11 @@
 
 @section('content')
 
-<script type="text/javascript">
-$(document).ready(function () {
-	$("#check_url").unbind("click").click(function(){
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#check_url").unbind("click").click(function () {
 // 		$("#processTips").text("处理中");
-		
+
 // 		url = $("#url").val();
 // 		$.get("{{ url('mind/checkFeedUrl') }}",{url:url},function(result_arr){
 // 			if(result_arr.code != 9999){
@@ -15,133 +15,132 @@ $(document).ready(function () {
 // 			$("#mind_name").val(result_arr.result.title);
 // 			$("#processTips").text("处理完成");
 // 		});
-	});
+            });
 
-	$(".delete_mind").click(function(){
-		mind_value = $(this).attr("mind_value");
-		mind_token = $(this).attr("mind_token");
-		mind_type = $(this).attr("mind_type");
+            $(".delete_mind").click(function () {
+                mind_value = $(this).attr("mind_value");
+                mind_token = $(this).attr("mind_token");
+                mind_type = $(this).attr("mind_type");
 
-		if (mind_type == 'delete' && !confirm("确认要删除此目标咩？")) {
-			return false;
-		}
-		
-		$.ajax({
-		    url: "{{ url('mind') }}"+"/"+mind_value,
-		    type: 'DELETE',
-		    data: {type:mind_type,_token:mind_token},
-		    success: function(result_arr) {
-				if(result_arr.code != 9999){
-					alert('处理失败，请稍后再试');
-				} else {
-					$('#'+mind_value).remove();
-				}
-		    }
-		});
-	});
-});
-</script>
+                if (mind_type == 'delete' && !confirm("确认要删除此目标咩？")) {
+                    return false;
+                }
+
+                $.ajax({
+                    url: "{{ url('mind') }}" + "/" + mind_value,
+                    type: 'DELETE',
+                    data: {type: mind_type, _token: mind_token},
+                    success: function (result_arr) {
+                        if (result_arr.code != 9999) {
+                            alert('处理失败，请稍后再试');
+                        } else {
+                            $('#' + mind_value).remove();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
     <div class="container">
-    
+
         <div class=" col-md-12">
-        	@include('common.success')
+            @include('common.success')
             <div class="card">
                 <div class="card-header">
-                    	思维导图
+                    思维导图
                 </div>
 
                 <div class="card-body">
                     <!-- Display Validation Errors -->
-                    @include('common.errors')
+                @include('common.errors')
 
-                    <!-- New mind Form -->
+                <!-- New mind Form -->
                     <form action="{{ url('mind') }}" method="POST" class="form-horizontal">
-                        {{ csrf_field() }}
+                    {{ csrf_field() }}
 
-                        <!-- mind Name -->
-                        <div class="form-group row" id="mind_form_div1" >
+                    <!-- mind Name -->
+                        <div class="form-group row" id="mind_form_div1">
                             <div class="col-md-9" style="display: -webkit-inline-box;width: 75%;">
-                            	<input type="text" name="name" id="name" class="form-control" value="">
+                                <input type="text" name="name" id="name" class="form-control" value="">
                             </div>
                             <div class="col-md-3" style="display: -webkit-inline-box;width: 25%;">
-                            	<button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fa fa-btn fa-plus"></i>新想法！
                                 </button>
                             </div>
                         </div>
-                        
+
                     </form>
                 </div>
             </div>
-            
+
             <div class="card">
                 <div class="card-header">
-                    	导图列表
+                    导图列表
                 </div>
-                
+
                 <div class="card-body">
-                    	
-			            @if (count($minds) > 0)
+
+                    @if (count($minds) > 0)
                         <table class="table table-hover mind-table">
                             <thead>
-                                <th>思维导图</th>
-                                <th>操作</th>
+                            <th>思维导图</th>
+                            <th>操作</th>
                             </thead>
                             <tbody>
                             <?php $lastDate = '';?>
-                                @foreach ($minds as $mind)
-                                    <tr id="{{ $mind->id }}">
-                                        <td class="table-text"  width="80%">
-                                        	<div class="rowone">
-                                        	 <?php
-$currentDate = date('m-d', strtotime($mind->updated_at));
-if($currentDate != $lastDate)
-{
-$lastDate = $currentDate;
-$style="";
-}
-else 
-{
-$style = "color:rgb(0,0,0,0);";
-}
-?>
-<span style="{{ $style}}">
+                            @foreach ($minds as $mind)
+                                <tr id="{{ $mind->id }}">
+                                    <td class="table-text" width="80%">
+                                        <div class="rowone">
+                                            <?php
+                                            $currentDate = date('m-d', strtotime($mind->updated_at));
+                                            if ($currentDate != $lastDate) {
+                                                $lastDate = $currentDate;
+                                                $style = "";
+                                            } else {
+                                                $style = "color:rgb(0,0,0,0);";
+                                            }
+                                            ?>
+                                            <span style="{{ $style}}">
 {{ $currentDate }}
 </span>
-<small>{{ date('H:i', strtotime($mind->updated_at)) }} </small>
-                                        		
-                                        		<a href="{{url('mindoutlineviewv2/' . $mind->id)}}" title="大纲预览">
-								<i class="bi-file-text" style="font-size: 1.3rem;"></i>
-												</a>
-                                        		<span title="{{ $mind->content }}">
+                                            <small>{{ date('H:i', strtotime($mind->updated_at)) }} </small>
+
+                                            <a href="{{url('mindoutlineviewv2/' . $mind->id)}}" title="大纲预览">
+                                                <i class="bi-file-text" style="font-size: 1.3rem;"></i>
+                                            </a>
+                                            <span title="{{ $mind->content }}">
                                         		<a href="{{url('mind/' . $mind->id)}}" title="">
 														{{ $mind->name }}
 													</a>
 												</span>
-                                        	</div>
-                                        </td>
-                                        
-                                        <td  width="20%" align="right">
-                                        	<a href="{{ url('mind/'.$mind->id)}}" >
- <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
-			                                </a>
-			                                <a href="javascript:void(0)" class="delete_mind" mind_type="delete" mind_value="{{ $mind->id }}" mind_token="{{ csrf_token() }}"  style="cursor:pointer;" class="text-right">
-<i class="bi-trash" style="font-size: 1.5rem;"></i>
-			                                        </a> 
-                                        </td>
+                                        </div>
+                                    </td>
 
-                                    </tr>
-                                @endforeach
+                                    <td width="20%" align="right">
+                                        <a href="{{ url('mind/'.$mind->id)}}">
+                                            <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" class="delete_mind" mind_type="delete"
+                                           mind_value="{{ $mind->id }}" mind_token="{{ csrf_token() }}"
+                                           style="cursor:pointer;" class="text-right">
+                                            <i class="bi-trash" style="font-size: 1.5rem;"></i>
+                                        </a>
+                                    </td>
+
+                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
-                         {!! $minds->links() !!}
-                        @else
+                        {!! $minds->links() !!}
+                    @else
                         <div>
-						<img src="/img/new/love.png" width="200px">
-                    	暂时还没有思维导图哦，快去开始创建第一个导图吧！
-                    	</div>
-			            @endif
-                    </div>
+                            <img src="/img/new/love.png" width="200px">
+                            暂时还没有思维导图哦，快去开始创建第一个导图吧！
+                        </div>
+                    @endif
+                </div>
 
 
             </div>
