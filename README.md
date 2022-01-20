@@ -94,3 +94,6 @@ https://gitee.com/accacc/task
 
 [https://gitee.com/accacc/task/wikis/Home?sort_id=42169](https://gitee.com/accacc/task/wikis/Home?sort_id=42169)
 
+## 鸣谢
+![jetbrains](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)
+感谢[jetbrains](https://jb.gg/OpenSourceSupport)支持
