@@ -74,17 +74,17 @@ class ThirdService {
 			$request->user ()->thirds ()->create ( [ 
 					'third_id' => $resultArr ['id'],
 					'third_name' => $resultArr ['name'],
-					'token' => $last_key ['oauth_token'],
-					'token_value' => $last_key ['oauth_token'],
-					'token_secret' => $last_key ['oauth_token_secret'],
+					'token' => $lastKey ['oauth_token'],
+					'token_value' => $lastKey ['oauth_token'],
+					'token_secret' => $lastKey ['oauth_token_secret'],
 					'source' => 'fanfou' 
 			] );
 		} else {
 			$third->update ( [ 
-					'third_name' => $result_arr ['name'],
-					'token' => $last_key ['oauth_token'],
-					'token_value' => $last_key ['oauth_token'],
-					'token_secret' => $last_key ['oauth_token_secret'] 
+					'third_name' => $resultArr ['name'],
+					'token' => $lastKey ['oauth_token'],
+					'token_value' => $lastKey ['oauth_token'],
+					'token_secret' => $lastKey ['oauth_token_secret']
 			] );
 		}
 	}

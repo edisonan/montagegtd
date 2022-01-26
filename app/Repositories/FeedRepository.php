@@ -2,16 +2,15 @@
 
 namespace App\Repositories;
 
-use App\Models\User;
 use App\Models\Feed;
 use Illuminate\Support\Facades\Log;
 
 class FeedRepository {
-	/**
-	 * 获取推荐订阅源列表（分页）
-	 * 
-	 * @return unknown
-	 */
+
+    /**
+     * 获取推荐订阅源列表（分页）
+     * @return mixed
+     */
 	public function getRecommendedList() {
 		return Feed::where ( 'is_recommend', 1 )->orderBy ( 'recommend_order', 'desc' )->paginate ( 9 );
 	}
@@ -19,8 +18,8 @@ class FeedRepository {
 	/**
 	 * 根据推荐分类id获取订阅源
 	 * 
-	 * @param unknown $recommendCategoryId        	
-	 * @return unknown
+	 * @param int $recommendCategoryId
+	 * @return array
 	 */
 	public function getListByRecommendCategoryId($recommendCategoryId) {
 		return Feed::where ( 'recommend_category_id', $recommendCategoryId )->orderBy ( 'recommend_order', 'desc' )->paginate ( 48 );

@@ -9,7 +9,7 @@
     <meta name="description" content="@yield('description')">
     <meta name="keywords" content="蒙太奇,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
     @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
-    	<meta name="referrer" content="never">
+        <meta name="referrer" content="never">
     @endif
     <!-- Fonts -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel='stylesheet' type='text/css'>
@@ -17,12 +17,13 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 
     <!-- Styles -->
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.0.0-beta/css/bootstrap.min.css"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+
     {{-- <link href="{{ elixir('css/app.css') }}" rel="stylesheet"> --}}
 
     <style>
-		<!-- 
+        <!--
         body {
             font-family: 'Lato';
         }
@@ -30,62 +31,112 @@
         .fa-btn {
             margin-right: 6px;
         }
-		 -->
-        
-        .{margin-left:0}
-		.col-md-offset-1{margin-left:8.333333%}
-		.col-md-offset-2{margin-left:16.666667%}
-		.col-md-offset-3{margin-left:25%}
-		.col-md-offset-4{margin-left:33.333333%}
-		.col-md-offset-5{margin-left:41.666667%}
-		.col-md-offset-6{margin-left:50%}
-		.col-md-offset-7{margin-left:58.333333%}
-		.col-md-offset-8{margin-left:66.666667%}
-		.col-md-offset-9{margin-left:75%}
-		.col-md-offset-10{margin-left:83.333333%}
-		.col-md-offset-11{margin-left:91.666667%}
-		.col-md-offset-12{margin-left:100%}
-		
-		a {
-			color: #333;
-		}
-		body{
-		    color: #525252;
-		    font-family: NotoSansHans-Regular,AvenirNext-Regular,arial,Hiragino Sans GB,"Microsoft Yahei","Hiragino Sans GB","WenQuanYi Micro Hei",sans-serif;
-		}
+
+        -->
+
+        . {
+            margin-left: 0
+        }
+
+        .col-md-offset-1 {
+            margin-left: 8.333333%
+        }
+
+        .col-md-offset-2 {
+            margin-left: 16.666667%
+        }
+
+        .col-md-offset-3 {
+            margin-left: 25%
+        }
+
+        .col-md-offset-4 {
+            margin-left: 33.333333%
+        }
+
+        .col-md-offset-5 {
+            margin-left: 41.666667%
+        }
+
+        .col-md-offset-6 {
+            margin-left: 50%
+        }
+
+        .col-md-offset-7 {
+            margin-left: 58.333333%
+        }
+
+        .col-md-offset-8 {
+            margin-left: 66.666667%
+        }
+
+        .col-md-offset-9 {
+            margin-left: 75%
+        }
+
+        .col-md-offset-10 {
+            margin-left: 83.333333%
+        }
+
+        .col-md-offset-11 {
+            margin-left: 91.666667%
+        }
+
+        .col-md-offset-12 {
+            margin-left: 100%
+        }
+
+        a {
+            color: #333;
+        }
+
+        body {
+            color: #525252;
+            font-family: NotoSansHans-Regular, AvenirNext-Regular, arial, Hiragino Sans GB, "Microsoft Yahei", "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
+        }
     </style>
 </head>
 
 <body id="app-layout">
-	<div class="container" style="    margin-bottom: 5px;">
-		<nav class="navbar navbar-expand-lg navbar-light bg-light">
-			<a class="navbar-brand" href="{{ url('/') }}">
-	        	<img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
-	            <span style="color:#429c4e">蒙太奇</span>
-	         </a>
-	        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-			 	<span class="navbar-toggler-icon"></span>
-			</button>
-			
-	        <div class="collapse navbar-collapse" id="navbarNav">
-	        	
-	          <ul class="navbar-nav  ml-auto" >
-	          		@if (Auth::guest())
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('help/feedback') }}" style="color:#E85205">添加反馈</a></li>
-	                    @else
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}" style="color:#F7AA55">去阅读<sup>推荐</sup></a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a></li>
-	                    <li class="nav-item"><a class="nav-link" href="{{ url('help/feedback') }}" style="color:#E85205">添加反馈</a></li>
-	                    @endif
-	                    @if (Auth::guest())
-	                        <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}" style="color:#9BD6C5">登录/注册</a></li>
-	                        <!-- 
+<div class="container" style="    margin-bottom: 5px;">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url('/') }}">
+            <img src="/favicon.ico" width="30px" style="display: -webkit-inline-box;border-radius:25px;">
+            <span style="color:#429c4e">蒙太奇</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
+            <ul class="navbar-nav  ml-auto">
+                @if (Auth::guest())
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}" style="color:#F7AA55">去阅读</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('help/feedback') }}" style="color:#E85205">添加反馈</a>
+                    </li>
+                @else
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/') }}" style="color:#584029">做番茄</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/notes') }}" style="color:#4CA1D7">记想法</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/articles') }}"
+                                            style="color:#F7AA55">去阅读<sup>推荐</sup></a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/minds') }}" style="color:#0F959D">思维导图</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url('help/feedback') }}" style="color:#E85205">添加反馈</a>
+                    </li>
+                @endif
+                @if (Auth::guest())
+                    <li class="nav-item"><a class="nav-link" href="{{ url('/login') }}" style="color:#9BD6C5">登录/注册</a>
+                    </li>
+                <!--
 	                        <li class="nav-item"><a class="nav-link" href="{{ url('/register') }}" style="color:#9BD6C5">注册</a></li>
 	                         -->
 	                    @else

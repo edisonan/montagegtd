@@ -19,12 +19,24 @@ class Article extends Model {
 	protected $casts = [ 
 			'user_id' => 'int' 
 	];
+
+    /**
+     * @return Feed
+     */
 	public function feed() {
 		return $this->belongsTo ( Feed::class );
 	}
+
+    /**
+     * @return mixed
+     */
 	public function getCategoryIdAttribute() {
 		return DB::table ( 'articles' )->join ( 'feeds', 'articles.feed_id', '=', 'feeds.id' )->where ( 'articles.id', $this->id )->max ( 'feeds.category_id' );
 	}
+
+    /**
+     * @return mixed
+     */
 	public function user() {
 		return $this->belongsTo ( User::class );
 	}
