@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<script src="https://cdn.bootcss.com/showdown/1.3.0/showdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.3.0/showdown.min.js"></script>
 <script src="/js/jquery.cookie.js"></script>
 
 
@@ -53,6 +53,7 @@ if($.cookie("unable_desc") != null && $.cookie("unable_desc")=="true"){
                     	<div style="float:right">
 				<input type="checkbox" value="" id="unable_desc" />禁用详情	
                     		<a href="javascript:void(0)" id="work_mode">[大屏]</a>
+                    		<a href="{{'/mind/'.$mind->id}}">[编辑]</a>
                     		<a href="{{'/minds'}}">[返回]</a>
                     	</div>
                 </div>

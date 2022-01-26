@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<script src="https://cdn.bootcss.com/showdown/1.3.0/showdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.3.0/showdown.min.js"></script>
 
 
 <script type="text/javascript">
