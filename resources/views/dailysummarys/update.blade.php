@@ -6,10 +6,13 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            getInfos('{{ $summary_date }}');
+            getInfos('{{ $dailysummary->summary_date }}');
 
-            $('#dailysummary-summarydate').on/*bind*/("input propertychange", function () {
+            $('#dailysummary-summarydate').bind("input propertychange", function () {
                 getInfos($(this).val());
+            });
+	    $('#gettip').on('click',function () {
+                getInfos($('#dailysummary-summarydate').val());
             });
         });
 
@@ -47,7 +50,7 @@
     <div class="container">
         <div class="card">
             <div class="card-header">
-                修改日报
+                修改日总结
                 <div style="float:right">
                     <a href="{{'/dailysummarys'}}">[返回]</a>
                 </div>
@@ -69,6 +72,7 @@
                             <input type="text" name="summary_date" id="dailysummary-summarydate" class="form-control"
                                    value="{{ $dailysummary->summary_date }}"
                                    onClick="WdatePicker({dateFmt:'yyyy-MM-dd',maxDate:'%y-%M-%d'})">
+			     <small id="gettip" style="float: right;margin-top: -30px;"> 获取提示 </small>
                         </div>
                     </div>
 
@@ -105,7 +109,8 @@
 
         <div class="card">
             <div class="card-header">
-                Tips
+		日总结小提示
+		 <small id="tipdate">  </small>
             </div>
 
             <div class="card-body" id="tipBody">

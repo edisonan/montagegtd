@@ -39,6 +39,30 @@
                     }
                 });
             });
+	
+		$(".add_tag").click(function(){
+		$add_tag = $(this);
+		mind_value = $(this).attr("mind_value");
+		mind_token = $(this).attr("mind_token");
+
+		var name = prompt("添加标签","");
+		if (name == null) {
+			return true;
+		}
+
+		$.ajax({
+			url: "{{ url('mindaddtag') }}"+"/"+mind_value,
+			type: 'POST',
+			data: {tag_name:name,_token:mind_token},
+			success: function(result_arr) {
+				if(result_arr.code != 9999){
+					alert('处理失败，请稍后再试');
+				} else {
+					$add_tag.before('&nbsp;<a href="/minds?tag_id=' + result_arr.result.tag.id + '">#' + name + '#</a>');
+				}
+			}
+		});
+	});
         });
     </script>
     <div class="container">
@@ -115,6 +139,12 @@
 														{{ $mind->name }}
 													</a>
 												</span>
+				            <small>
+					    @foreach($mind->mindTagMaps as $map)
+						<a href="/minds?tag_id={{$map->tag->id}}" style="color: #af3939d4;"> #{{ $map->tag->name }}# </a>&nbsp;
+					    @endforeach
+					    <a href="javascript:void(0);" class="add_tag" style="color: #af3939d4;" mind_value="{{ $mind->id }}" mind_token="{{ csrf_token() }}">&nbsp;+</a>
+					    </small>
                                         </div>
                                     </td>
 

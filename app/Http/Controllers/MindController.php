@@ -47,7 +47,9 @@ class MindController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request, $add_content = '') {
-		$minds = $this->mindService->getIndexList ();
+		$tagId = $request->input('tag_id', '');
+		$name = $request->input('name', '');
+		$minds = $this->mindService->getIndexList ($tagId, $name);
 		
 		return view ( 'minds.index', [ 
 				'minds' => $minds 
@@ -191,4 +193,21 @@ class MindController extends Controller {
 				'datas' => $datas 
 		) ) );
 	}
+	
+	public function addTag(Request $request, Mind $mind) {
+        $this->authorize ( 'destroy', $mind );
+        if($mind->is_root != 1) {
+            throw new CustomException('Root节点错误');
+        }
+
+        $this->validate($request, array(
+            'tag_name' => 'required',
+        ));
+
+        $tag = $this->mindService->addTag ( $mind,  $request->tag_name);
+
+        return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( array (
+            'tag' => $tag
+        ) ) );
+    }
 }

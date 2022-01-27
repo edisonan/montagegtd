@@ -126,7 +126,7 @@
                     </div>
 
                     <div id="mindcontentdiv" class=" col-md-4">
-                        <b id="mind_name" style="margin-top:15px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
+                        <b id="mind_name" style="margin-top:15px;padding:0px;" class="col-md-12 rowone">详细描述:{{$mind->name}}</b>
 
                         <textarea class="col-md-12" id="mind_content" data-toolbarHeaderL=""
                                   onfocus="mind_content_focus()" style="margin: 0px; height: 189px; "

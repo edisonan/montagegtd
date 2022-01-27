@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Mind;
+use App\Models\MindTagMap;
 use App\Exceptions\CustomException;
 use App\Repositories\MindRepository;
 use Auth;
@@ -21,18 +22,27 @@ class MindService {
 	protected $mindRepository;
 	
 	/**
+     *
+     * @var TagService
+     */
+    protected $tagService;
+	
+	/**
 	 *
-	 * @param MindRepository $mindRepository        	
+	 * @param MindRepository $mindRepository
+	 * @param TagService $tagService
 	 */
-	public function __construct(MindRepository $mindRepository) {
+	public function __construct(MindRepository $mindRepository, TagService $tagService) {
 		$this->mindRepository = $mindRepository;
+		$this->tagService = $tagService;
 	}
+	
 	
 	/**
 	 * 获取首页数据
 	 */
-	public function getIndexList() {
-		return $this->mindRepository->getUserRootMindList ( Auth::id () );
+	public function getIndexList($tagId, $name) {
+		return $this->mindRepository->getUserRootMindList ( Auth::id () , $tagId, $name);
 	}
 	
 	/**
@@ -192,4 +202,22 @@ class MindService {
 		
 		return $data;
 	}
+	
+	/**
+     * @param Mind $mind
+     * @param $tagName
+     * @return mixed
+     */
+    public function addTag(Mind $mind, $tagName)
+    {
+        $tag = $this->tagService->getByTagName ( $tagName, true );
+
+        $tagNote = new MindTagMap ();
+        $tagNote->create ( array (
+            'tag_id' => $tag->id,
+            'mind_id' => $mind->id
+        ) );
+
+        return $tag;
+    }
 }

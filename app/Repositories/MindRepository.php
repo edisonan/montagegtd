@@ -22,8 +22,25 @@ class MindRepository {
 	 * 
 	 * @param unknown $userId        	
 	 */
-	public function getUserRootMindList($userId) {
-		return Mind::where ( 'status', 1 )->where ( 'is_root', 1 )->where ( 'user_id', $userId )->orderBy ( 'id', 'desc' )->paginate ( 50 );
+	public function getUserRootMindList($userId, $tagId='', $name='') {
+		$query = Mind::with ( [
+            		'mindTagMaps.tag',
+        	] )->where ( 'status', 1 )->where ( 'is_root', 1 )->where ( 'user_id', $userId );
+		if(!empty($tagId)) {
+			$maps = DB::table ( 'mind_tag_maps' )->select ( array (
+                    		'mind_tag_maps.mind_id'
+                	) )->where ( 'tag_id', $tagId )->get ();
+                	$mindids = array ();
+                	foreach ( $maps as $map ) {
+                    		$mindids [] = $map->mind_id;
+                	}
+                	$query->whereIn ( 'id', $mindids );
+		}
+		if(!empty($name)) {
+			$query->where('name', 'like', '%'.$name.'%');	
+		}
+		
+		return $query->orderBy('id', 'desc')->paginate(50);
 	}
 	
 	/**

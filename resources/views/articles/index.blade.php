@@ -274,6 +274,11 @@
                 var article_sub_id = $(this).attr('article_sub_id');
                 $("#desc" + article_sub_id).toggle();
             });
+		
+            $(".descdivclass").on('dblclick', function () {
+                var article_sub_id = $(this).attr('article_sub_id');
+                $("#desc" + article_sub_id).toggle();
+            });
 
             //play audio
             $(".playaudio").on('click', function () {
@@ -377,7 +382,7 @@
                                 </p>
 
 
-                                <div id="desc{{$articleSub->id}}"
+                                <div id="desc{{$articleSub->id}}" class="descdivclass" article_sub_id="{{$articleSub->id}}"  
                                      @if($unable_desc == "true") style="display:none" @endif>
                                     <div class="card-text post-text">
                                         <?php

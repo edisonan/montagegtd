@@ -45,6 +45,7 @@ Route::group([
     Route::get('/mindoutlineviewv2/{mind}', 'MindController@outlineViewv2');
     Route::get('/mindajaxoutlineget/{mind}', 'MindController@ajaxoutlineget');
     Route::post('/mind/{mind}', 'MindController@update');
+    Route::post('/mindaddtag/{mind}', 'MindController@addTag');
 
     Route::get('/tasks', 'TaskController@index');
     Route::get('/tasksall', 'TaskController@getAllList');

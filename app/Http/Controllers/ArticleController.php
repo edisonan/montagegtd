@@ -77,10 +77,10 @@ class ArticleController extends Controller
         return view('articles.index', [
             'article_subs' => $articleSubs,
             'page_params' => [
-                'page_count',
-                'status',
-                'category_id',
-                'feed_id'
+		'page_count'=>$pageCount,
+				    'status'=>$status,
+				    'category_id'=>$categoryId,
+				    'feed_id'=>$feedId,
             ],
             'status' => $status,
             'feed_id' => $feedId,

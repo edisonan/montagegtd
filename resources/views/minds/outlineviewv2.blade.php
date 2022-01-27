@@ -95,9 +95,9 @@
                 if (null != $mind.content && '' != $mind.content) {
                     $contentTip = '<i class="bi-file-text" style="font-size: 1rem;"></i>';
                     if ($.cookie("unable_desc") == null || $.cookie("unable_desc") == "false") {
-                        $content = '<div class="mindlicontent"><small>' + $mind.content.replace(/\r\n/g, "<br/>") + '</small></div>';
+                        $content = '<code style="color:black;padding: 0px;" class="mindlicontent"><small>' + $mind.content.replace(/\r\n/g, "<br/>") + '</small></code>';
                     } else {
-                        $content = '<div class="mindlicontent" style="display:none"><small>' + $mind.content.replace(/\r\n/g, "<br/>") + '</small></div>';
+                        $content = '<code style="color:black;padding: 0px;display:none;" class="mindlicontent"><small>' + $mind.content.replace(/\r\n/g, "<br/>") + '</small></code>';
                     }
                 }
                 $htmlData = '<li class="mindli"><strong>' + $contentTip + $mind.topic + '</strong>';
