@@ -12,12 +12,8 @@
         <meta name="referrer" content="never">
     @endif
     <!-- Fonts -->
-    <!--//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css-->
     <link href="/fonts/font-awesome-4.7.0/css/font-awesome.css" rel='stylesheet' type='text/css'>
-
 	<link href="/css/woff.css" rel='stylesheet' type='text/css'>
-
-    <!-- https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css -->
 	<link rel="stylesheet" href="/css/bootstrap-icons.css">
 
     <!-- Styles -->
@@ -164,13 +160,13 @@
 		</nav>
 	</div>
 	
-		 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"  crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+		 <script src="/js/jquery.min.js?version=3.2.1"  crossorigin="anonymous"></script>
+		<script src="/js/popper.min.js?version=1.11.0" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
 		
 	    @yield('content')
 	
 	    <!-- JavaScripts -->
-	     <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+	     <script src="/js/bootstrap.min.js?version=4.0.0-beta" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 	    
 	    {{-- <script src="{{ elixir('js/app.js') }}"></script> --}}
 		<script>
