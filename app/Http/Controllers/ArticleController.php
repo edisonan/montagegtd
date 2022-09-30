@@ -264,4 +264,17 @@ class ArticleController extends Controller
             readfile($url);
         }
     }
+
+    /**
+     * 代理访问异常网站
+     * @param Request $request
+     */
+    public function proxyView(Request $request) {
+        $type = $request->get('type', '');
+        $url = $request->get('url', '');
+        if($type == 'v2ex') {
+            echo file_get_contents('https://www.v2ex.com/' + $url);
+            exit;
+        }
+    }
 }

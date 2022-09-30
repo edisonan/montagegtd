@@ -94,6 +94,7 @@ Route::group([
     Route::get('/article/record/{articleSub}', 'ArticleController@getArticleRecord');
     Route::get('/article/navinfo', 'ArticleController@navinfo');
     Route::get('/article/navcountinfo', 'ArticleController@navcountinfo');
+    Route::get('/article/proxyview', 'ArticleController@proxyView');
 
     Route::get('/pomos', 'PomoController@index');
     Route::get('/pomostoday', 'PomoController@todayPomos');

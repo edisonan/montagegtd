@@ -275,10 +275,10 @@
                 $("#desc" + article_sub_id).toggle();
             });
 		
-            $(".descdivclass").on('dblclick', function () {
-                var article_sub_id = $(this).attr('article_sub_id');
-                $("#desc" + article_sub_id).toggle();
-            });
+            // $(".descdivclass").on('dblclick', function () {
+            //     var article_sub_id = $(this).attr('article_sub_id');
+            //     $("#desc" + article_sub_id).toggle();
+            // });
 
             //play audio
             $(".playaudio").on('click', function () {
@@ -360,7 +360,8 @@
                                     <h4 class="card-title">
                                         <img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
                                              src="/img/icon/music.png" width="30px"> <a
-                                                href="{{ str_replace('v2ex.com', 'xa8.net',$article->url) }}">[原文]</a>
+{{--                                                href="{{ str_replace('v2ex.com', 'xa8.net',$article->url) }}">[原文]</a>--}}
+                                                href="{{ str_replace('v2ex.com', 'task.congcong.us/article/proxyview?type=v2ex&url=',$article->url) }}">[原文]</a>
                                         <a
                                                 href="{{ url('article/view/'.$article->id) }}">{{
 							$article->subject }}</a>
