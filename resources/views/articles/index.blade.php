@@ -361,7 +361,7 @@
                                         <img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
                                              src="/img/icon/music.png" width="30px"> <a
 {{--                                                href="{{ str_replace('v2ex.com', 'xa8.net',$article->url) }}">[原文]</a>--}}
-                                                href="{{ str_replace('v2ex.com', 'task.congcong.us/article/proxyview?type=v2ex&url=',$article->url) }}">[原文]</a>
+                                                href="{{ str_replace('www.v2ex.com', 'task.congcong.us/article/proxyview?type=v2ex&url=',$article->url) }}">[原文]</a>
                                         <a
                                                 href="{{ url('article/view/'.$article->id) }}">{{
 							$article->subject }}</a>
