@@ -272,8 +272,12 @@ class ArticleController extends Controller
     public function proxyView(Request $request) {
         $type = $request->get('type', '');
         $url = $request->get('url', '');
+        if(empty($type) || empty($url)) {
+            echo 'params error';
+            exit;
+        }
         if($type == 'v2ex') {
-            echo file_get_contents('https://www.v2ex.com/' + $url);
+            echo file_get_contents('https://www.v2ex.com' . $url);
             exit;
         }
     }
