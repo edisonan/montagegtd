@@ -93,7 +93,6 @@ https://gitee.com/accacc/task
 {"mcGroup":"[]","linBack":"[]","txtSelect":"[\"montage\"]","lb1":"\"2\"","rt2":"\"2\"","shorten":"\"googl\"","txtBack":"[]","zh_TW":"false","menBack":"[]","txtIncognito":"[]","analytics":"true","menSelect":"[\"montage\"]","picIncognito":"[]","picCustom":"[[\"montage\",\"https://task.congcong.us/notes?type=image&add_content=%s\"]]","rb2":"\"2\"","linCustom":"[[\"montage\",\"https://task.congcong.us/notes?add_content=%s\"]]","picBack":"[]","lcGroup":"[]","pcGroup":"[]","qr_size":"250","txtCustom":"[[\"montage\",\"https://task.congcong.us/notes?add_content=%s\"]]","rt1":"\"1\"","isFlag":"true","ru":"false","lt2":"\"1\"","tcGroup":"[]","linSelect":"[\"montage\"]","back":"false","names":"{}","menCustom":"[[\"montage\",\"https://task.congcong.us/notes?add_content=%s\"]]","lt1":"\"1\"","newPage":"true","zh_CN":"false","phrase":"\"montagegtd\"","locale":"\"zh_CN\"","lb2":"\"1\"","picSelect":"[\"montage\"]","rb1":"\"2\"","isEdit":"true","linIncognito":"[]","en":"false","menIncognito":"[]"}
 ```
 
-也可以直接在设置中使用验证短语```montagegtd```直接读取配置
 
 ## 二次开发或部署
 
