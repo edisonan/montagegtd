@@ -1,4 +1,4 @@
-@extends('layouts.app') @section('title', '蒙太奇 - 但行好事，用心生活')
+@extends('layouts.app') @section('title', '蒙太奇 - 有知有行')
 @section('description',
 '利用番茄工作法结合待办列表来高效完成每一件事，实时统计，笔记记录，RSS阅读，思维导图，订阅推送到kindle来帮助你记录更多想法，希望它可以帮你更多')
 
