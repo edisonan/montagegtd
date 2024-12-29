@@ -31,4 +31,6 @@ Route::group ( [
 	$router->resource ( 'settings', SettingController::class );
 	$router->resource ( 'tasks', TaskController::class );
 	$router->resource ( 'things', ThingController::class );
+
+    $router->resource('codes', CodeController::class);
 } );

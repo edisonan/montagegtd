@@ -5,7 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>@yield('title','蒙太奇 - 知而善用，行以致远')</title>
+    <title>@yield('title','蒙太奇 - 知而善用，行稳致远')</title>
     <meta name="description" content="@yield('description')">
     <meta name="keywords" content="蒙太奇,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
     @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)

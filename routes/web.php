@@ -179,5 +179,8 @@ Route::group([
     Route::get('/api/pomo/discard/', 'Api\TestController@discard');
     Route::post('/api/pomos/{pomo}', 'Api\TestController@store');
     Route::delete('/api/pomos/{pomo}', 'PomoController@destroy');
+
+    Route::get('/code/{codeInfo}', 'CodeController@view');
+    Route::post('/code/{codeInfo}', 'CodeController@view');
 });
 		
