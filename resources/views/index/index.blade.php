@@ -34,7 +34,7 @@
     //当前状态
     var status = {{ $current_pomo_status }};
 
-    var title = '蒙太奇 - 有知有行';
+    var title = '蒙太奇 - 知而善用，行以致远';
 
     //日期格式化工具
     Date.prototype.format = function (fmt) {
