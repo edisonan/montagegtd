@@ -16,7 +16,13 @@ class TagService {
 	 *
 	 * @param unknown $name        	
 	 */
-	public function forTagName($name) {
-		return Tag::where ( 'name', $name )->first ();
+	public function getByTagName($name, $needAutoCreate = false) {
+		$tag = Tag::where ( 'name', $name )->first ();
+		if (empty ( $tag ) && $needAutoCreate) {
+			$tag = Tag::create ( array (
+					'name' => $name 
+			) );
+		}
+		return $tag;
 	}
 }

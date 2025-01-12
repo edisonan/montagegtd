@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Utils\ErrorCodeUtil;
 use App\Services\ThirdService;
 use Illuminate\Http\Request;
+use App\Http\Utils\ResponseDataUtil;
 
 /**
  * 第三方服务控制器
@@ -76,7 +76,7 @@ class ThirdController extends Controller {
 			echo $this->thirdService->testFave ( $request->user (), $message = 'test!!!robot dog!!!' );
 			exit ();
 		} catch ( Exception $e ) {
-			if ($e->getCode () == ErrorCodeUtil::THIRD_NOT_EXSIT) {
+			if ($e->getCode () == ResponseDataUtil::THIRD_NOT_EXSIT) {
 				return redirect ( 'third/fanfouIndex' )->with ( 'message', 'IT WORKS!' );
 			} else {
 				echo 'unknown error';

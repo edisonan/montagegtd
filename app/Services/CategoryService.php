@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\CategoryRepository;
+use App\Models\Category;
+use Illuminate\Support\Facades\Auth;
 
 /**
- * 文章分类相关Service
+ * 分类相关Service
  *
  * @author edison.an
  *        
@@ -17,30 +19,28 @@ class CategoryService {
 	 *
 	 * @var CategoryRepository
 	 */
-	protected $categories;
+	protected $categoryRepository;
 	
 	/**
 	 *
 	 * @param CategoryRepository $categories        	
 	 */
-	public function __construct(CategoryRepository $categories) {
-		$this->categories = $categories;
+	public function __construct(CategoryRepository $categoryRepository) {
+		$this->categoryRepository = $categoryRepository;
 	}
 	
 	/**
+	 * 获取分类列表
 	 *
-	 * @param User $user        	
-	 * @param boolean $needPage        	
+	 * @param boolean $needAutoCreate        	
 	 * @return
 	 *
 	 */
-	public function getList(User $user, $needPage = true, $needAutoCreate = false) {
-		$categories = $this->categories->forUser ( $user, $needPage );
+	public function getList($needAutoCreate = false) {
+		$categories = $this->categoryRepository->getUserList ( Auth::id () );
 		if ($needAutoCreate && count ( $categories ) == 0) {
-			$category = $user->categorys ()->create ( [ 
-					'name' => '未分类',
-					'category_order' => 0 
-			] );
+			$category = $this->quickCreateCategory ( '未分类' );
+			
 			$categories = array (
 					$category 
 			);
@@ -49,27 +49,15 @@ class CategoryService {
 	}
 	
 	/**
+	 * 对分类进行排序
 	 *
-	 * @param User $user        	
-	 * @param boolean $needPage        	
-	 * @return
-	 *
-	 */
-	public function getByCategoryId(User $user, $categoryId) {
-		$category = $this->categories->forCategoryId ( $user, $categoryId );
-		return $category;
-	}
-	
-	/**
-	 *
-	 * @param User $user        	
 	 * @param array $categoryIds        	
 	 * @return boolean
 	 */
-	public function setCategorySort($user, $categoryIds) {
+	public function setCategorySort($categoryIds) {
 		$sort = 0;
 		foreach ( $categoryIds as $categoryId ) {
-			$category = $this->categories->forCategoryId ( $user, $categoryId );
+			$category = $this->categoryRepository->getUserCategoryById ( Auth::id (), $categoryId );
 			if (! empty ( $category )) {
 				$category->update ( array (
 						'category_order' => $sort ++ 
@@ -77,5 +65,49 @@ class CategoryService {
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * 根据分类id获取分类信息
+	 *
+	 * @param int $categoryId        	
+	 * @return
+	 *
+	 */
+	public function getByCategoryId($categoryId) {
+		$category = $this->categoryRepository->getUserCategoryById ( Auth::id (), $categoryId );
+		return $category;
+	}
+	
+	/**
+	 * 根据分类id获取分类信息
+	 *
+	 * @param string $categoryName        	
+	 * @param boolean $needAutoCreate        	
+	 * @return
+	 *
+	 */
+	public function getByCategoryName($categoryName, $needAutoCreate = false) {
+		$category = $this->categoryRepository->getUserCategoryByName ( Auth::id (), $categoryName );
+		if (empty ( $category ) && $needAutoCreate) {
+			$category = $this->quickCreateCategory ( $categoryName );
+		}
+		return $category;
+	}
+	
+	/**
+	 * 快速创建分类
+	 *
+	 * @param string $categoryName        	
+	 * @return \App\Models\Category
+	 */
+	public function quickCreateCategory($categoryName) {
+		$category = new Category ();
+		$category->name = $categoryName;
+		$category->category_order = 0;
+		$category->user_id = Auth::id ();
+		$category->save ();
+		
+		return $category;
 	}
 }

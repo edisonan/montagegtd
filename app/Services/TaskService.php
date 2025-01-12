@@ -4,6 +4,13 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Task;
+use App\Models\TaskTagMap;
+use App\Exceptions\CustomException;
+use App\Http\Utils\CommonUtil;
+use Mail;
+use Auth;
+use App\Repositories\GoalRepository;
+use App\Repositories\TaskRepository;
 
 /**
  * 待办事项业务逻辑
@@ -12,34 +19,220 @@ use App\Models\Task;
  *        
  */
 class TaskService {
+	
 	/**
-	 * Get all of the tasks for a given user.
+	 * The task repository instance.
 	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * @var TaskRepository
 	 */
-	public function forUser(User $user, $needPage) {
-		$task = Task::where ( 'user_id', $user->id )->orderBy ( 'updated_at', 'desc' );
-		if ($needPage) {
-			return $task->paginate ( 50 );
-		} else {
-			return $task->get ();
-		}
+	protected $taskRepository;
+	/**
+	 * The goal repository instance.
+	 *
+	 * @var GoalRepository
+	 */
+	protected $goalRepository;
+	
+	/**
+	 * The tag service instance.
+	 *
+	 * @var TagService
+	 */
+	protected $tagService;
+	
+	/**
+	 * The thing service instance.
+	 *
+	 * @var ThingService
+	 */
+	protected $thingService;
+	
+	/**
+	 * Create a new controller instance.
+	 *
+	 * @param TaskRepository $taskRepository        	
+	 * @param GoalRepository $goalRepository        	
+	 * @param TagService $tagService        	
+	 * @param GoalService $goalService        	
+	 * @return void
+	 */
+	public function __construct(TaskRepository $taskRepository, GoalRepository $goalRepository, TagService $tagService, ThingService $thingService) {
+		$this->taskRepository = $taskRepository;
+		$this->goalRepository = $goalRepository;
+		$this->tagService = $tagService;
+		$this->thingService = $thingService;
 	}
 	
 	/**
-	 * Get all of the tasks for a given user.
-	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * 获取首页待办列表
+	 * 
+	 * @param string $status        	
+	 * @return unknown
 	 */
-	public function forUserByStatus(User $user, string $status) {
-		return Task::with ( 'goal' )->where ( 'user_id', $user->id )->where ( 'status', $status )->orderBy ( 'is_top', 'desc' )->orderBy ( 'priority', 'desc' )->orderBy ( 'updated_at', 'desc' )->get ();
+	public function getIndexList($status) {
+		$tasks = $this->taskRepository->getUserList ( Auth::id (), $status );
+		return $tasks;
 	}
-	public function forUserByRemindTime($start_time, $end_time) {
-		return Task::where ( 'remindtime', '>', $start_time )->where ( 'remindtime', '<', $end_time )->where ( 'status', 1 )->orderBy ( 'priority', 'desc' )->orderBy ( 'updated_at', 'desc' )->get ();
+	
+	/**
+	 * 获取所有待办任务
+	 * 
+	 * @param string $status        	
+	 * @param string $mode        	
+	 * @return unknown[]
+	 */
+	public function getAllList($status, $mode) {
+		$tasks = $this->taskRepository->getUserAllListByStatusMode ( Auth::id (), $status, $mode );
+		// 组装子待办
+		$temp = array ();
+		foreach ( $tasks as $task ) {
+			if ($task->parent_task_id != null) {
+				$temp [$task->parent_task_id] [] = $task;
+			}
+		}
+		
+		// 格式化待办顺序
+		$formatTasks = array ();
+		foreach ( $tasks as $task ) {
+			if ($task->parent_task_id == null) {
+				$formatTasks [] = $task;
+				if (isset ( $temp [$task->id] )) {
+					foreach ( $temp [$task->id] as $val ) {
+						$formatTasks [] = $val;
+					}
+				}
+			}
+		}
+		return $formatTasks;
 	}
-	public function forUserByUserIdRemindTime($user_id, $start_time, $end_time) {
-		return Task::where ( 'user_id', $user_id )->where ( 'remindtime', '>', $start_time )->where ( 'remindtime', '<', $end_time )->where ( 'status', 1 )->get ();
+	
+	/**
+	 * 按照优先级获取列表
+	 * 
+	 * @param string $status        	
+	 * @param string $mode        	
+	 * @return array[]|\App\Services\unknown
+	 */
+	public function getPriorityList($status, $mode) {
+		$models = $this->getAllList ( $status, $mode );
+		$tasks = array (
+				1 => array (),
+				2 => array (),
+				3 => array (),
+				4 => array () 
+		);
+		foreach ( $models as $model ) {
+			$tasks [$model->priority] [] = $model;
+		}
+		return $tasks;
+	}
+	
+	/**
+	 * 保存待办
+	 * 
+	 * @param string $name        	
+	 * @param string $mode        	
+	 * @param int $priority        	
+	 * @param string $remindtime        	
+	 * @param string $deadline        	
+	 * @param int $parentTaskId        	
+	 * @param int $goalId        	
+	 * @throws CustomException
+	 * @return \App\Models\Task
+	 */
+	public function store($name, $mode, $priority, $remindtime, $deadline, $parentTaskId, $goalId) {
+		if (! empty ( $parentTaskId )) {
+			$parentTask = $this->taskRepository->getTaskById ( $parentTaskId );
+			if (empty ( $parentTask ) || $parentTask->user_id != Auth::id ()) {
+				throw new CustomException ( "错误的父类任务信息上送" );
+			}
+		}
+		
+		if (! empty ( $goalId )) {
+			$goal = $this->goalRepository->getGoalById ( $goalId );
+			if (empty ( $goal ) || $goal->user_id != Auth::id ()) {
+				throw new CustomException ( "错误的目标信息上送" );
+			}
+		}
+		
+		$task = new Task ();
+		$task->user_id = Auth::id ();
+		$task->name = $name;
+		$task->mode = $mode;
+		$task->priority = $priority;
+		$task->remindtime = $remindtime;
+		$task->deadline = $deadline;
+		$task->parent_task_id = $parentTaskId;
+		$task->goal_id = $goalId;
+		$task->save ();
+		
+		preg_match_all ( '/#(.*?)#/i', $name, $match );
+		foreach ( $match [0] as $item ) {
+			$tagName = trim ( $item, '#' );
+			if (empty ( $tagName )) {
+				continue;
+			}
+			
+			$tag = $this->tagService->forTagName ( $tagName, true );
+			
+			$taskNote = new TaskTagMap ();
+			$taskNote->create ( array (
+					'tag_id' => $tag->id,
+					'task_id' => $task->id 
+			) );
+		}
+		
+		return $task;
+	}
+	/**
+	 * 根据类型更新待办任务
+	 * 
+	 * @param unknown $task        	
+	 * @param unknown $type
+	 *        	（finish 完成 其他 删除）
+	 */
+	public function updateTaskByType($task, $type) {
+		$params = array ();
+		
+		if ($type == 'finish') {
+			$params ['status'] = 2;
+			
+			$this->thingService->storeThing ( 2, $task->name, $task->created_at, date ( 'Y-m-d H:i:s' ) );
+		} else {
+			$params ['status'] = 3;
+		}
+		$flag = $task->update ( $params );
+	}
+	
+	/**
+	 * 待办任务定时提醒
+	 * 
+	 * @param unknown $type        	
+	 * @param unknown $startTime        	
+	 * @param unknown $endTime        	
+	 */
+	public function scheduleTaskReminder($type, $startTime, $endTime) {
+		if ($type == 1) {
+			$tasks = $this->taskRepository->getAllListByRemindTime ( $startTime, $endTime );
+			$title = '待办提醒';
+		} else {
+			$tasks = $this->taskRepository->getAllListByDeadline ( $startTime, $endTime );
+			$title = '待办截止提醒';
+		}
+		foreach ( $tasks as $task ) {
+			$user = $task->user;
+			// 邮件通知
+			Mail::send ( 'emails.reminder', [ 
+					'user' => $user,
+					'task' => $task,
+					'title' => $title 
+			], function ($m) use ($user, $task, $title) {
+				$m->to ( $user->email, $user->name )->subject ( $title . $task->name );
+			} );
+			// ifttt通知
+			if (isset ( $task->user->setting->ifttt_notify )) {
+				CommonUtil::iftttnotify ( $title, $task->name, 'https://task.congcong.us', $task->user->setting->ifttt_notify );
+			}
+		}
 	}
 }

@@ -67,6 +67,7 @@ class KindleLogController extends Controller {
 	 */
 	protected function grid() {
 		return Admin::grid ( KindleLog::class, function (Grid $grid) {
+			$grid->model ()->orderBy ( 'id', 'desc' );
 			
 			$grid->id ( 'ID' )->sortable ();
 			
@@ -79,6 +80,10 @@ class KindleLogController extends Controller {
 			$grid->disableActions ();
 			$grid->disableCreation ();
 			$grid->disableRowSelector ();
+                        $grid->filter ( function ($filter) {
+                                $filter->equal ( 'user_id');
+                        } );
+
 		} );
 	}
 	

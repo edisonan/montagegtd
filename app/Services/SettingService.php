@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Setting;
+use App\Repositories\SettingRepository;
 
 /**
  * 设置业务逻辑
@@ -13,34 +13,54 @@ use App\Models\Setting;
  */
 class SettingService {
 	/**
-	 * Get all of the notes for a given user.
 	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * @var SettingRepository
 	 */
-	public function forUser(User $user) {
-		return Setting::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'desc' )->first ();
+	protected $settingRepository;
+	
+	/**
+	 *
+	 * @param SettingRepository $settingRepository        	
+	 */
+	public function __construct(SettingRepository $settingRepository) {
+		$this->settingRepository = $settingRepository;
 	}
 	
 	/**
-	 * Get Setting By cal_token
-	 *
-	 * @param string $cal_token        	
+	 * 获取用户设置信息
+	 * 
+	 * @param string $needReturnEmpty
+	 *        	如果设置为空是否进行创建
+	 * @return \App\Models\Setting
 	 */
-	public function forCalToken(string $cal_token) {
-		return Setting::where ( 'cal_token', $cal_token )->first ();
+	public function getSettingInfo($needReturnEmpty = false) {
+		$userId = \Auth::id ();
+		$settingInfo = $this->settingRepository->getUserSettingInfo ( $userId );
+		
+		if ($needReturnEmpty && empty ( $settingInfo )) {
+			$settingInfo = $this->createDefaultSetting ( $userId );
+		}
+		return $settingInfo;
 	}
 	
 	/**
-	 * Get all of the notes for a given user.
-	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * 获取开启kindle推送的设置信息列表
 	 */
-	public function forStatus($status) {
-		return Setting::where ( 'status', $status )->orderBy ( 'created_at', 'desc' )->get ();
+	public function getStartKindleAllList() {
+		return $this->settingRepository->getStartKindleAllList ();
 	}
-	public function getStartList() {
-		return Setting::where ( 'is_start_kindle', 1 )->get ();
+	
+	/**
+	 * 创建用户默认设置信息
+	 * 
+	 * @param unknown $userId
+	 *        	用户id
+	 * @return \App\Models\Setting
+	 */
+	public function createDefaultSetting($userId) {
+		$setting = new Setting ();
+		$setting->user_id = $userId;
+		$setting->save ();
+		return $setting;
 	}
 }

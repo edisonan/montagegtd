@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use App\Models\OauthInfo;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use App\Repositories\OauthInfoRepository;
 
 /**
  * 账号管理业务逻辑
@@ -14,26 +15,33 @@ use App\Models\User;
 class AccountService {
 	
 	/**
+	 * AccountService 实例.
+	 *
+	 * @var OauthInfoRepository
+	 */
+	protected $oauthInfoRepository;
+	
+	/**
 	 * 构造方法
 	 *
 	 * @return void
 	 */
-	public function __construct() {
+	public function __construct(OauthInfoRepository $oauthInfoRepository) {
+		$this->oauthInfoRepository = $oauthInfoRepository;
 	}
 	
 	/**
-	 * 获取某用户Oauth账户信息
+	 * 获取某用户Oauth所有账户信息列表
 	 *
-	 * @param User $user        	
 	 * @return NULL[][]
 	 */
-	public function getOauthInfos(User $user) {
+	public function getOauthInfos() {
 		$oauths = array (
 				'github' => array (),
 				'weibo' => array () 
 		);
 		
-		$oauthInfos = OauthInfo::where ( 'user_id', $user->id )->orderBy ( 'updated_at', 'desc' )->get ();
+		$oauthInfos = $this->oauthInfoRepository->getOauthInfoListByUserId ( Auth::id () );
 		foreach ( $oauthInfos as $oauthInfo ) {
 			$oauths [$oauthInfo->driver] = array (
 					'expire' => $oauthInfo->expire 
@@ -46,10 +54,12 @@ class AccountService {
 	/**
 	 * 根据第三方用户信息和类型获取Oatuth账户信息
 	 *
-	 * @param string $thirdUid        	
-	 * @param string $driver        	
+	 * @param string $thirdUid
+	 *        	第三方用户id
+	 * @param string $driver
+	 *        	类型
 	 */
 	public function forByThirdUidAndDriver(string $thirdUid, string $driver) {
-		return OauthInfo::where ( 'third_uid', $thirdUid )->where ( 'driver', $driver )->orderBy ( 'updated_at', 'desc' )->first ();
+		return $this->oauthInfoRepository->getByThirdUidAndDriver ( $thirdUid, $driver );
 	}
 }

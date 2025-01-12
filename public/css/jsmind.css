@@ -157,3 +157,12 @@ jmnodes.theme-asbestos jmnode.selected{background-color:#11f;color:#fff;}
 jmnodes.theme-asbestos jmnode.root{}
 jmnodes.theme-asbestos jmexpander{}
 jmnodes.theme-asbestos jmexpander:hover{}
+
+/* cc theme */
+
+jmnodes.theme-cc jmnode{background-color:#ecf0f1;color:#333;}
+jmnodes.theme-cc jmnode:hover{background-color:#bdc3c7;}
+jmnodes.theme-cc jmnode.selected{background-color:#97d1e7;}
+jmnodes.theme-cc jmnode.root{background-color:#5a719a;color:white}
+jmnodes.theme-cc jmexpander{}
+jmnodes.theme-cc jmexpander:hover{}

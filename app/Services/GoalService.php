@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Goal;
+use App\Repositories\GoalRepository;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * 目标管理业务逻辑
@@ -12,40 +13,42 @@ use App\Models\Goal;
  *        
  */
 class GoalService {
+	
 	/**
-	 * Get all of the tasks for a given user.
+	 * GoalRepository 实例.
 	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * @var GoalRepository
 	 */
-	public function forUser(User $user) {
-		return Goal::where ( 'user_id', $user->id )->orderBy ( 'created_at', 'asc' )->get ();
+	protected $goalRepository;
+	
+	/**
+	 * 构造方法
+	 *
+	 * @return void
+	 */
+	public function __construct(GoalRepository $goalRepository) {
+		$this->goalRepository = $goalRepository;
 	}
 	
 	/**
-	 * Get all of the tasks for a given user.
 	 *
-	 * @param User $user        	
-	 * @return Collection
+	 * @param int $status
+	 *        	(1,2)
+	 * @return array
 	 */
-	public function forUserByStatus(User $user, string $status, $needPage) {
-		$goals = Goal::where ( 'user_id', $user->id )->where ( 'status', $status );
-		
-		if ($needPage) {
-			return $goals->paginate ( 20 );
-		} else {
-			return $goals->get ();
-		}
+	public function getList($status) {
+		$goals = $this->goalRepository->getUserListBystatus ( Auth::id (), $status );
+		return $goals;
 	}
 	
 	/**
-	 * Get goal for goal id.
 	 *
-	 * @param User $user        	
-	 * @param int $goal_id        	
-	 * @return Collection
+	 * @param string $name        	
 	 */
-	public function forGoalId(User $user, $goal_id) {
-		return Goal::where ( 'user_id', $user->id )->where ( 'id', $goal_id )->get ();
+	public function store($name) {
+		$goal = new Goal ();
+		$goal->user_id = \Auth::id ();
+		$goal->name = $name;
+		$goal->save ();
 	}
 }

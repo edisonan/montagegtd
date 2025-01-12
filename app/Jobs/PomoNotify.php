@@ -8,6 +8,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use App\Http\Utils\CommonUtil;
+use Illuminate\Support\Facades\Log;
 
 class PomoNotify implements ShouldQueue {
 	use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -35,7 +36,7 @@ class PomoNotify implements ShouldQueue {
 		if (! empty ( $needPomo )) {
 			if (isset ( $this->user->setting->ifttt_notify )) {
 				$notifyResult = CommonUtil::iftttnotify ( '做番茄', $this->message, 'https://task.congcong.us/', $this->user->setting->ifttt_notify );
-				\Log::info ( 'notify result:' . $notifyResult . '|message:' . $this->message . '|user:' . $this->user->name );
+				Log::info ( 'notify result:' . $notifyResult . '|message:' . $this->message . '|user:' . $this->user->name );
 			}
 		}
 		return true;

@@ -40,7 +40,7 @@ class IndexController extends Controller {
 	 */
 	public function index(Request $request) {
 		// 获取当前活动信息
-		$currentPomoInfo = $this->pomoService->getCurrentPomoInfo ( $request->user () );
+		$currentPomoInfo = $this->pomoService->getRecentFormatPomo ();
 		
 		// 标题栏相关提示
 		$tipInfo = $this->pomoService->getTipInfo ( $currentPomoInfo ['current_pomo_status'] );

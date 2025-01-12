@@ -22,5 +22,4 @@ class Tag extends Model {
 	 */
 	protected $casts = [ ];
 	// 'user_id' => 'int',
-	
 }

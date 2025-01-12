@@ -67,6 +67,7 @@ class CategoryController extends Controller {
 	 */
 	protected function grid() {
 		return Admin::grid ( Category::class, function (Grid $grid) {
+			$grid->model ()->orderBy ( 'id', 'desc' );
 			
 			$grid->id ( 'ID' )->sortable ();
 			
@@ -78,6 +79,9 @@ class CategoryController extends Controller {
 			$grid->disableActions ();
 			$grid->disableCreation ();
 			$grid->disableRowSelector ();
+			$grid->filter ( function ($filter) {
+				$filter->equal ( 'user_id');
+			} );
 		} );
 	}
 	

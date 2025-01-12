@@ -152,7 +152,7 @@ class UserController extends Controller {
 				$pomos = DB::table ( 'pomos' )->select ( 'status', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'status' )->get ();
 				foreach ( $pomos as $pomo ) {
 					$rows1 [] = array (
-							'Pomo ' . $pomo->status,
+							"<a href='/admin/pomos?user_id={$user_id}'>Pomo </span>" . $pomo->status,
 							$pomo->total 
 					);
 				}
@@ -160,7 +160,7 @@ class UserController extends Controller {
 				$tasks = DB::table ( 'tasks' )->select ( 'status', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'status' )->get ();
 				foreach ( $tasks as $task ) {
 					$rows1 [] = array (
-							'Task ' . $task->status,
+							"<a href='/admin/tasks?user_id={$user_id}'>Task </span>" . $task->status,
 							$task->total 
 					);
 				}
@@ -168,7 +168,7 @@ class UserController extends Controller {
 				$things = DB::table ( 'things' )->select ( 'type', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'type' )->get ();
 				foreach ( $things as $thing ) {
 					$rows1 [] = array (
-							'Thing ' . $thing->type,
+							"<a href='/admin/things?user_id={$user_id}'>Thing </span>" . $thing->type,
 							$thing->total 
 					);
 				}
@@ -176,7 +176,7 @@ class UserController extends Controller {
 				$minds = DB::table ( 'minds' )->select ( 'status', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'status' )->get ();
 				foreach ( $minds as $mind ) {
 					$rows1 [] = array (
-							'思维导图:' . $mind->status,
+							"<a href='/admin/minds?user_id={$user_id}'>Mind </span>" . $mind->status,
 							$mind->total 
 					);
 				}
@@ -184,7 +184,7 @@ class UserController extends Controller {
 				$notes = DB::table ( 'notes' )->select ( 'status', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'status' )->get ();
 				foreach ( $notes as $note ) {
 					$rows1 [] = array (
-							'Note ' . $note->status,
+							"<a href='/admin/notes?user_id={$user_id}'>Note </span>" . $note->status,
 							$note->total 
 					);
 				}
@@ -198,7 +198,7 @@ class UserController extends Controller {
 				$feed_subs = DB::table ( 'feed_subs' )->select ( 'status', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'status' )->get ();
 				foreach ( $feed_subs as $feed_sub ) {
 					$rows2 [] = array (
-							'Feed Sub ' . $feed_sub->status,
+							"<a href='/admin/feedsubs?user_id={$user_id}'>Feed Sub </span>" . $feed_sub->status,
 							$feed_sub->total 
 					);
 				}

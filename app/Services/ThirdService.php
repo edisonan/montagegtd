@@ -6,7 +6,11 @@ use App\Http\Utils\OAuth1\OAuth;
 use App\Http\Utils\OAuth1\FFClient;
 use Illuminate\Support\Facades\Session;
 use App\Models\Third;
-use App\Http\Utils\ErrorCodeUtil;
+use Illuminate\Support\Facades\Log;
+use App\Exceptions\CustomException;
+use App\Http\Utils\ResponseDataUtil;
+use App\Http\Requests\Request;
+use App\Repositories\ThirdRepository;
 
 /**
  * 第三方服务业务逻辑
@@ -17,13 +21,23 @@ use App\Http\Utils\ErrorCodeUtil;
 class ThirdService {
 	
 	/**
+	 *
+	 * @var ThirdRepository
 	 */
-	public function __construct() {
-	}
+	protected $thirdRepository;
 	
 	/**
 	 *
-	 * @param unknown $request        	
+	 * @param ThirdRepository $thirdRepository        	
+	 */
+	public function __construct(ThirdRepository $thirdRepository) {
+		$this->thirdRepository = $thirdRepository;
+	}
+	
+	/**
+	 * 饭否oauth登录请求地址
+	 *
+	 * @param Request $request        	
 	 * @return string
 	 */
 	public function fanfouRequest($request) {
@@ -38,56 +52,60 @@ class ThirdService {
 	}
 	
 	/**
+	 * 饭否oauth登录回调地址
 	 *
-	 * @param unknown $request        	
+	 * @param Request $request        	
 	 */
 	public function fanfouCallback($request) {
-		$oauth = new OAuth ( config ( "services.fanfou.client_id" ), config ( "services.fanfou.client_secret" ), $temp ['oauth_token'], $temp ['oauth_token_secret'] );
 		
 		// 获取access_token
 		$tempKeys = $request->session ()->get ( 'thirdFanfouTempKeys' );
+		
+		$oauth = new OAuth ( config ( "services.fanfou.client_id" ), config ( "services.fanfou.client_secret" ), $tempKeys ['oauth_token'], $tempKeys ['oauth_token_secret'] );
 		$lastKey = $oauth->getAccessToken ( $tempKeys ['oauth_token'] );
 		
 		// 创造一个新的请求
 		$ffClient = new FFClient ( config ( "services.fanfou.client_id" ), config ( "services.fanfou.client_secret" ), $lastKey ['oauth_token'], $lastKey ['oauth_token_secret'] );
 		$result = $ffClient->verify_credentials ();
-		$result_arr = json_decode ( $result, true );
+		$resultArr = json_decode ( $result, true );
 		
-		$third = Third::where ( 'user_id', $request->user ()->id )->where ( 'third_id', $result_arr ['id'] )->where ( 'source', Third::SOURCE_FANFOU )->orderBy ( 'created_at', 'asc' )->first ();
+		$third = $this->thirdRepository->getUserThirdByThirdIdAndSource ( $request->user ()->id, $resultArr ['id'], Third::SOURCE_FANFOU );
 		if (empty ( $third )) {
 			$request->user ()->thirds ()->create ( [ 
-					'third_id' => $result_arr ['id'],
-					'third_name' => $result_arr ['name'],
-					'token' => $last_key ['oauth_token'],
-					'token_value' => $last_key ['oauth_token'],
-					'token_secret' => $last_key ['oauth_token_secret'],
+					'third_id' => $resultArr ['id'],
+					'third_name' => $resultArr ['name'],
+					'token' => $lastKey ['oauth_token'],
+					'token_value' => $lastKey ['oauth_token'],
+					'token_secret' => $lastKey ['oauth_token_secret'],
 					'source' => 'fanfou' 
 			] );
 		} else {
 			$third->update ( [ 
-					'third_name' => $result_arr ['name'],
-					'token' => $last_key ['oauth_token'],
-					'token_value' => $last_key ['oauth_token'],
-					'token_secret' => $last_key ['oauth_token_secret'] 
+					'third_name' => $resultArr ['name'],
+					'token' => $lastKey ['oauth_token'],
+					'token_value' => $lastKey ['oauth_token'],
+					'token_secret' => $lastKey ['oauth_token_secret']
 			] );
 		}
 	}
 	
 	/**
-	 *
+	 * 测试发送饭否消息
+	 * 
 	 * @param Request $request        	
 	 * @return \Illuminate\Http\RedirectResponse
 	 */
 	public function testFave($user, $message) {
-		$third = Third::where ( 'user_id', $user->id )->where ( 'source', Third::SOURCE_FANFOU )->orderBy ( 'created_at', 'asc' )->first ();
+		$third = $this->thirdRepository->getUserThirdBySource ( $user->id, Third::SOURCE_FANFOU );
 		if (empty ( $third )) {
-			throw new \Exception ( ErrorCodeUtil::getMessage ( ErrorCodeUtil::MESSAGE_THIRD_NOT_EXSIT ), ErrorCodeUtil::MESSAGE_THIRD_NOT_EXSIT );
+			throw new CustomException ( ResponseDataUtil::getMessage ( ResponseDataUtil::THIRD_NOT_EXSIT ) );
 		}
 		return $this->fanfouFave ( $message, $third ['token_value'], $third ['token_secret'] );
 	}
 	
 	/**
-	 *
+	 * 发消息到饭否
+	 * 
 	 * @param unknown $third        	
 	 * @param unknown $message        	
 	 */
@@ -104,19 +122,20 @@ class ThirdService {
 	}
 	
 	/**
+	 * 定时发饭否
+	 * FANFOU_ID
+	 * FANFOU_MESSAGE
 	 *
 	 * @return NULL
 	 */
 	public function sceduleFanfouFave() {
-		$third = Third::where ( 'third_id', env ( 'FANFOU_ID' ) )->first ();
+		$third = $this->thirdRepository->getThirdByThirdId ( env ( 'FANFOU_ID' ) );
 		if (empty ( $third )) {
-			\Log::info ( "[__CLASS__->__FUNCTION__]:not third info|{env('FANFOU_ID')}" );
-			return null;
+			Log::info ( "not found third info for " . env ( 'FANFOU_ID' ) );
+			return;
 		}
 		
-		$message = env ( 'FANFOU_MESSAGE' );
-		$message_arr = explode ( '|', $message );
-		
-		return $this->fanfouFave ( $message_arr, $third ['token_value'], $third ['token_secret'] );
+		$messageArr = explode ( '|', env ( 'FANFOU_MESSAGE' ) );
+		return $this->fanfouFave ( $messageArr, $third ['token_value'], $third ['token_secret'] );
 	}
 }

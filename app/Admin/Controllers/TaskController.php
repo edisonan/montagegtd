@@ -68,6 +68,7 @@ class TaskController extends Controller {
 	protected function grid() {
 		return Admin::grid ( Task::class, function (Grid $grid) {
 			
+			$grid->model ()->orderBy ( 'id', 'desc' );
 			$grid->id ( 'ID' )->sortable ();
 			
 			$grid->user ()->name ();
@@ -83,6 +84,10 @@ class TaskController extends Controller {
 			$grid->disableActions ();
 			$grid->disableCreation ();
 			$grid->disableRowSelector ();
+			$grid->filter ( function ($filter) {
+                                $filter->equal ( 'user_id');
+                        } );
+
 		} );
 	}
 	

@@ -2,22 +2,24 @@
 
 namespace App\Services;
 
-use App\Http\Utils\OAuth1\FFClient;
 use App\Models\Article;
-use App\Models\Category;
 use App\Models\Feed;
 use App\Models\FeedSub;
 use App\Models\User;
 use App\Models\ArticleSub;
+use App\Repositories\ArticleRepository;
+use App\Repositories\ArticleSubRepository;
 use App\Repositories\FeedRepository;
 use App\Repositories\FeedSubRepository;
-use App\Repositories\ThirdRepository;
 use ArandiLopez\Feed\Factories\FeedFactory;
 use Celd\Opml\Importer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Exception;
-use App\Repositories\CategoryRepository;
+use App\Exceptions\CustomException;
+use App\Http\Utils\CommonUtil;
+use App\Http\Utils\FeedFetch\FeedFetchFactory;
 
 /**
  * FeedService订阅相关Service
@@ -32,21 +34,42 @@ class FeedService {
 	 *
 	 * @var FeedSubRepository
 	 */
-	protected $feedSubs;
+	protected $feedSubRepository;
 	
 	/**
 	 * FeedRepository 实例 .
 	 *
 	 * @var FeedRepository
 	 */
-	protected $feeds;
+	protected $feedRepository;
 	
 	/**
-	 * CategoryRepository 实例 .
+	 * ArticleRepository 实例 .
 	 *
-	 * @var CategoryRepository
+	 * @var ArticleRepository
 	 */
-	protected $categorys;
+	protected $articleRepository;
+	
+	/**
+	 * ArticleSubRepository 实例 .
+	 *
+	 * @var ArticleSubRepository
+	 */
+	protected $articleSubRepository;
+	
+	/**
+	 * CategoryService 实例 .
+	 *
+	 * @var CategoryService
+	 */
+	protected $categoryService;
+	
+	/**
+	 * ArticleService 实例 .
+	 *
+	 * @var ArticleService
+	 */
+	protected $articleService;
 	
 	/**
 	 * 创建Service
@@ -54,43 +77,81 @@ class FeedService {
 	 * @param FeedSubRepository $feedSubs        	
 	 * @param FeedRepository $feeds        	
 	 */
-	public function __construct(FeedSubRepository $feedSubs, FeedRepository $feeds, CategoryRepository $categorys) {
-		$this->feedSubs = $feedSubs;
-		$this->feeds = $feeds;
-		$this->categorys = $categorys;
+	public function __construct(FeedSubRepository $feedSubRepository, FeedRepository $feedRepository, ArticleSubRepository $articleSubRepository, ArticleRepository $articleRepository, CategoryService $categoryService, ArticleService $articleService) {
+		$this->feedSubRepository = $feedSubRepository;
+		$this->feedRepository = $feedRepository;
+		$this->articleRepository = $articleRepository;
+		$this->articleSubRepository = $articleSubRepository;
+		$this->categoryService = $categoryService;
+		$this->articleService = $articleService;
 	}
 	
 	/**
+	 * 首页信息-已订阅源列表+分类列表
 	 *
-	 * @param User $user        	
-	 * @param int $status        	
-	 * @param boolean $needPage        	
-	 * @return \App\Repositories\Collection
+	 * @param string $url        	
+	 * @return string[]|unknown[]|\App\Models\Category[][]
 	 */
-	public function getFeedSubListByStatus(User $user, $status, $needPage = true) {
-		return $this->feedSubs->forUserByStatus ( $user, $status, $needPage );
+	public function getIndexInfo($url = '') {
+		// 如果上送地址参数，将会自动读取地址信息
+		$title = ! empty ( $url ) ? CommonUtil::page_title ( $url ) : '';
+		
+		// 获取已订阅信息
+		$feedSubs = $this->feedSubRepository->getUserFeedSubList ( Auth::id () );
+		
+		// 获取订阅分类信息
+		$categorys = $this->categoryService->getList ( true );
+		
+		return array (
+				'feedSubs' => $feedSubs,
+				'categorys' => $categorys,
+				'url' => $url,
+				'title' => $title 
+		);
 	}
 	
 	/**
+	 * 发现页信息-获取推荐信息和订阅分类信息
 	 *
-	 * @param int $is_recommend        	
-	 * @param boolean $needPage        	
+	 * @return unknown[]|string[][]|\App\Models\Category[][]
+	 */
+	public function getExplorerInfo() {
+		// 获取推荐的订阅
+		$recommendFeeds = $this->feedRepository->getRecommendedList ();
+		
+		// 获取订阅分类信息
+		$categorys = $this->categoryService->getList ( true );
+		
+		return array (
+				'feeds' => $recommendFeeds,
+				'categorys' => $categorys,
+				'recommend_categorys' => Feed::$recommend_categorys 
+		);
+	}
+	
+	/**
+	 * 根据推荐分类id或者名称来搜索订阅源
+	 *
+	 * @param int $recommendCategoryId        	
+	 * @param string $name        	
 	 * @return unknown
 	 */
-	public function getRecommendFeed($is_recommend, $needPage = true) {
-		return $this->feeds->forIsRecommend ( $is_recommend, $needPage );
+	public function getSearchFeeds($recommendCategoryId, $name) {
+		if (! empty ( $recommendCategoryId )) {
+			$feeds = $this->feedRepository->getListByRecommendCategoryId ( $recommendCategoryId );
+		} else {
+			$feeds = $this->feedRepository->getListByFeedName ( $name );
+		}
+		return $feeds;
 	}
 	
 	/**
-	 *
-	 * @param User $user        	
-	 * @return array
+	 * 获取订阅源分类导航信息
 	 */
-	public function getNavInfo(User $user) {
-		$categoryFeedInfos = DB::select ( 'select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name,f.id as feed_sub_id from feed_subs f right join categories c on f.category_id = c.id where c.user_id = :user_id2 and f.user_id = :user_id  and f.status =1 order by c.category_order asc,f.feed_order asc', [ 
-				':user_id' => $user->id,
-				':user_id2' => $user->id 
-		] );
+	public function getNavInfo() {
+		$userId = \Auth::id ();
+		
+		$categoryFeedInfos = $this->feedSubRepository->getUserFeedSubListWithCategory ( $userId );
 		
 		$navInfos = array ();
 		foreach ( $categoryFeedInfos as $item ) {
@@ -102,7 +163,6 @@ class FeedService {
 			$feed = array (
 					'feed_id' => $item->feed_id,
 					'feed_name' => $item->feed_name,
-					'feed_count' => isset ( $countsInfo [$item->feed_id] ) ? $countsInfo [$item->feed_id] : 0,
 					'feed_sub_id' => $item->feed_sub_id 
 			);
 			
@@ -110,10 +170,7 @@ class FeedService {
 		}
 		
 		if (count ( $navInfos ) == 0) {
-			$category = $user->categorys ()->create ( [ 
-					'name' => '未分类',
-					'category_order' => 0 
-			] );
+			$category = $this->categoryService->quickCreateCategory ( '未分类' );
 			$navInfos [] = array (
 					'category_info' => array (
 							'category_name' => $category->name,
@@ -124,195 +181,109 @@ class FeedService {
 		}
 		return $navInfos;
 	}
-	public function findByRecommendCategoryId($recommendCategoryId, $needPage = true) {
-		return $this->feeds->findByRecommendCategoryId ( $recommendCategoryId );
-	}
-	public function findByName($name, $needPage = true) {
-		return $feeds = $this->feeds->findByName ( $name, $needPage = true );
-	}
-	public function store(User $user, $storeParams) {
-		$category = $this->categorys->forCategoryId ( $user, $storeParams ['category_id'] );
-		if (empty ( $category )) {
-			return false;
-		}
-		
-		$feed = Feed::where ( 'url', $storeParams ['url'] )->first ();
-		if (empty ( $feed )) {
-			$feed = new Feed ();
-			$feed->user_id = $user->id;
-			$feed->feed_name = $storeParams ['feed_name'];
-			$feed->url = $storeParams ['url'];
-			$feed->category_id = $storeParams ['category_id'];
-			$feed->sub_count = 1;
-			$feed->save ();
-		} else {
-			$feedSub = $this->feedSubs->forUserByFeedId ( $user, $feed->id, 1 );
-			
-			if (! empty ( $feedSub )) {
-				return false;
-			}
-			
-			// 如果未锁定，那么更改Feed的名称
-			if (empty ( $feed->recommend_name ) && $feed->name != $storeParams ['feed_name']) {
-				$feed->feed_name = $storeParams ['feed_name'];
-			}
-			$feed->sub_count = $feed->sub_count + 1;
-			$feed->save ();
-		}
-		
-		$feedSub = $user->feedSubs ()->create ( [ 
-				'status' => 1,
-				'feed_id' => $feed->id,
-				'feed_name' => $storeParams ['feed_name'],
-				'category_id' => $storeParams ['category_id'] 
-		] );
-		
-		$this->checkNewArticle ( $user, $feed );
-	}
 	
 	/**
+	 * 存取新的订阅
 	 *
-	 * @param User $user        	
-	 * @param array $storeParams        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
-	 */
-	public function quickStore(User $user, $storeParams) {
-		$category = $this->categorys->forCategoryName ( $user, '未分类' );
-		if (empty ( $category )) {
-			$category = $user->categorys ()->create ( [ 
-					'name' => '未分类',
-					'category_order' => 0 
-			] );
-		}
-		
-		$feed = Feed::where ( 'id', $storeParams ['feed_id'] )->first ();
-		if (! empty ( $feed )) {
-			$feedSub = $this->feedSubs->forUserByFeedId ( $user, $feed->id, 1 );
-			
-			if (! empty ( $feedSub )) {
-				$resp = $this->responseJson ( 1000, '', '已经关注' );
-				return response ( $resp );
-			}
-			$feed->sub_count = $feed->sub_count + 1;
-			$feed->save ();
-		}
-		
-		$feedSub = $user->feedSubs ()->create ( [ 
-				'status' => 1,
-				'feed_id' => $feed->id,
-				'feed_name' => $feed->feed_name,
-				'category_id' => $category->id 
-		] );
-		$this->checkNewArticle ( $user, $feed );
-	}
-	
-	/**
-	 *
-	 * @param User $user        	
-	 * @param Feed $feed        	
-	 */
-	public function checkNewArticle(User $user, Feed $feed) {
-		$articles = Article::where ( 'feed_id', $feed->id )->orderBy ( 'published', 'desc' )->take ( 30 )->get ();
-		
-		if (! empty ( $articles )) {
-			foreach ( $articles as $article ) {
-				$articleSub = new ArticleSub ();
-				$articleSub->feed_id = $feed->id;
-				$articleSub->user_id = $user->id;
-				$articleSub->article_id = $article->id;
-				$articleSub->status = 'unread';
-				$articleSub->save ();
-			}
-		} else {
-			$this->feeds->checkFeed ( $feed );
-		}
-	}
-	
-	/**
-	 *
-	 * @param string $feed_name        	
-	 * @param string $feed_url        	
-	 * @param string $category_id        	
-	 * @param string $user        	
+	 * @param string $feedName        	
+	 * @param string $url        	
+	 * @param int $categoryId        	
 	 * @return boolean
 	 */
-	private function storeFeedSub($feed_name, $feed_url, $category_id, $user) {
-		$feed = Feed::where ( 'url', $feed_url )->first ();
+	public function store($feedName, $url, $categoryId) {
+		$userId = \Auth::id ();
+		
+		// 检测分类合规性
+		$category = $this->categoryService->getByCategoryId ( $categoryId );
+		if (empty ( $category )) {
+			throw new CustomException ( "该分类不存在" );
+		}
+		
+		// 依据此订阅是否存在做不同处理
+		$feed = $this->feedRepository->getFeedByUrl ( $url );
 		if (empty ( $feed )) {
 			$feed = new Feed ();
-			$feed->user_id = $user->id;
-			$feed->feed_name = $feed_name;
-			$feed->url = $feed_url;
-			$feed->category_id = $category_id;
+			$feed->user_id = $userId;
+			$feed->feed_name = $feedName;
+			$feed->url = $url;
+			$feed->category_id = $categoryId;
 			$feed->sub_count = 1;
+			$feed->type = 1;
 			$feed->save ();
 		} else {
-			$feedSub = $this->feedSubs->forUserByFeedId ( $user, $feed->id, 1 );
+			$feedSub = $this->feedSubRepository->getUserFeedByFeedId ( $userId, $feed->id );
 			
 			if (! empty ( $feedSub )) {
-				return false;
+				throw new CustomException ( "已经订阅过啦" );
 			}
 			
 			// 如果未锁定，那么更改Feed的名称
-			if (empty ( $feed->recommend_name ) && $feed->name != $feed_name) {
-				$feed->feed_name = $feed_name;
+			if (empty ( $feed->recommend_name ) && $feed->feed_name != $feedName) {
+				$feed->feed_name = $feedName;
 			}
 			$feed->sub_count = $feed->sub_count + 1;
 			$feed->save ();
 		}
 		
-		$feedSub = $user->feedSubs ()->create ( [ 
-				'feed_id' => $feed->id,
-				'feed_name' => $feed_name,
-				'category_id' => $category_id 
-		] );
-		
-		return true;
+		// 进行订阅
+		$this->storeFeedSub ( $feed, $feedName, $categoryId );
 	}
 	
 	/**
+	 * 根据已有订阅源快速订阅
 	 *
-	 * @param User $user        	
-	 * @param string $path        	
+	 * @param int $feedId        	
+	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
 	 */
-	public function importOpml($user, $path) {
-		$importer = new Importer ( file_get_contents ( $path ) );
-		$feedList = $importer->getFeedList ();
-		
-		$categorys = $this->categorys->forUser ( $user );
-		if (count ( $categorys ) == 0) {
-			$category = $user->categorys ()->create ( [ 
-					'name' => '未分类',
-					'category_order' => 0 
-			] );
-			$categorys = array (
-					$category 
-			);
-		}
-		$category_arr = array ();
-		foreach ( $categorys as $category ) {
-			$category_arr [$category->name] = $category->id;
+	public function quickStore($feedId) {
+		// 判断是否已经订阅
+		$feedSub = $this->feedSubRepository->getUserFeedByFeedId ( Auth::id (), $feedId );
+		if (! empty ( $feedSub )) {
+			throw new CustomException ( "已经关注" );
 		}
 		
-		$category_id = $category_arr ['未分类'];
-		foreach ( $feedList->getItems () as $item ) {
-			if ($item->getType () == 'category') {
-				
-				if (! isset ( $category_arr [$item->getTitle ()] )) {
-					$category = $user->categorys ()->create ( [ 
-							'name' => '未分类',
-							'category_order' => 0 
-					] );
-					$category_arr [$item->getTitle ()] = $category->id;
-				}
-				
-				$category_id = $category_arr [$item->getTitle ()];
-				
-				foreach ( $item->getFeeds () as $feed ) {
-					$this->storeFeedSub ( $feed->getTitle (), $feed->getXmlUrl (), $category_id, $user );
-				}
-			} else {
-				$this->storeFeedSub ( $item->getTitle (), $item->getXmlUrl (), $category_id, $user );
+		// 获取订阅源信息
+		$feed = $this->feedRepository->getFeedById ( $feedId );
+		if (empty ( $feed )) {
+			throw new CustomException ( "该订阅源不存在" );
+		}
+		
+		// 更新订阅源
+		$feed->sub_count = $feed->sub_count + 1;
+		$feed->save ();
+		
+		// 默认订阅到未分类下
+		$category = $this->categoryService->getByCategoryName ( '未分类', true );
+		
+		$this->storeFeedSub ( $feed, $feed->feed_name, $category->id );
+	}
+	
+	/**
+	 * 保存订阅信息，并更新订阅最新文章
+	 *
+	 * @param unknown $feedId        	
+	 * @param unknown $feedName        	
+	 * @param unknown $categoryId        	
+	 */
+	private function storeFeedSub($feed, $feedName, $categoryId) {
+		$userId = Auth::id ();
+		
+		// 进行订阅
+		$feedSub = new FeedSub ();
+		$feedSub->user_id = $userId;
+		$feedSub->status = 1;
+		$feedSub->feed_id = $feed->id;
+		$feedSub->feed_name = $feedName;
+		$feedSub->category_id = $categoryId;
+		$feedSub->save ();
+		
+		// 尝试为该订阅用户获取已有文章数据
+		$articleSubs = $this->articleService->processNewFeedArticle ( $feed->id, $userId );
+		if (count ( $articleSubs ) == 0) {
+			try {
+				$this->checkFeed ( $feed );
+			} catch ( \Throwable $e ) {
+				Log::error ( 'check feed exception:' . $feed->id . '|' . $feed->feed_name . '|' . $e->getMessage () );
 			}
 		}
 	}
@@ -325,229 +296,292 @@ class FeedService {
 	 * @param int $changeFeedSubCategoryId        	
 	 * @return boolean
 	 */
-	public function sort($user, $feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId) {
+	public function sort($feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId) {
+		// todo 事务处理
+		
+		// 针对排序过程中，更换了分类的情况处理
+		if (! empty ( $changeFeedSubId ) && ! empty ( $changeFeedSubCategoryId )) {
+			$category = $this->categoryService->getByCategoryId ( $changeFeedSubCategoryId );
+			if (empty ( $category )) {
+				throw new CustomException ( "分类信息上送错误" );
+			}
+			
+			$feedSub = $this->feedSubRepository->getUserFeedById ( Auth::id (), $changeFeedSubId );
+			if (empty ( $feedSub )) {
+				throw new CustomException ( "订阅信息上送错误" );
+			}
+			
+			// 更新该订阅源新分类
+			$feedSub->update ( array (
+					'category_id' => $changeFeedSubCategoryId 
+			) );
+		}
+		
+		// 处理排序
 		$sort = 0;
 		foreach ( $feedSubIdsArr as $feedSubId ) {
-			$feedSub = $this->feedSubs->forUserByFeedSubId ( $user, $feedSubId, 1 );
-			if (! empty ( $feedSub )) {
-				$feedSub->update ( array (
-						'feed_order' => $sort ++ 
-				) );
+			$feedSub = $this->feedSubRepository->getUserFeedById ( Auth::id (), $feedSubId );
+			if (empty ( $feedSub )) {
+				throw new CustomException ( "订阅信息上送错误" );
 			}
+			$feedSub->update ( array (
+					'feed_order' => $sort ++ 
+			) );
 		}
 		
-		if (! empty ( $changeFeedSubId ) && ! empty ( $changeFeedSubCategoryId )) {
-			$category = Category::where ( 'user_id', $user->id )->where ( "id", $changeFeedSubCategoryId )->first ();
-			if (! empty ( $category )) {
-				$feedSub = FeedSub::where ( 'user_id', $user->id )->where ( "id", $changeFeedSubId )->first ();
-				if (! empty ( $feedSub )) {
-					$feedSub->update ( array (
-							'category_id' => $changeFeedSubCategoryId 
-					) );
-				}
-			}
-		}
 		return true;
 	}
-	public function checkFeed(Feed $feed) {
-		Log::info ( "Check Feed:" . $feed->id . '|' . $feed->url );
-		
+	
+	/**
+	 * 核验订阅地址是否正常
+	 *
+	 * @param string $feedUrl        	
+	 * @throws CustomException
+	 */
+	public function validateFeedUrl($feedUrl) {
 		$feedFactory = new FeedFactory ( [ 
 				'cache.enabled' => false 
 		] );
-		$feeder = $feedFactory->make ( $feed->url );
+		
+		$feeder = $feedFactory->make ( $feedUrl );
 		$simplePieInstance = $feeder->getRawFeederObject ();
 		
-		if (! empty ( $simplePieInstance )) {
-			$feedSubs = FeedSub::where ( 'feed_id', $feed->id )->where ( 'status', 1 )->get ();
-			
-			$previousweek = date ( 'Y-m-j H:i:s', strtotime ( '-7 days' ) );
-			
-			$feed_last_published = '';
-			foreach ( $simplePieInstance->get_items () as $item ) {
-				// count the number of items that already exist in the database with the item url and feed_id
-				$results_url = Article::where ( [ 
-						'feed_id' => $feed->id,
-						'url' => $item->get_permalink () 
-				] )->count ();
-				$results_title = Article::where ( [ 
-						'feed_id' => $feed->id,
-						'subject' => $item->get_title () 
-				] )->count ();
-				$date = $item->get_date ( 'Y-m-j H:i:s' );
+		if (empty ( $simplePieInstance )) {
+			throw new CustomException ( "检测订阅源为空" );
+		}
+	}
+	
+	/**
+	 *
+	 * @param User $user        	
+	 * @param string $path        	
+	 */
+	public function importOpml($path) {
+		$importer = new Importer ( file_get_contents ( $path ) );
+		$feedList = $importer->getFeedList ();
+		
+		$categorys = $this->categoryService->getList ( true );
+		
+		$category_arr = array ();
+		foreach ( $categorys as $category ) {
+			$category_arr [$category->name] = $category->id;
+		}
+		
+		$categoryId = $category_arr ['未分类'];
+		foreach ( $feedList->getItems () as $item ) {
+			if ($item->getType () == 'category') {
 				
-				if ($results_url == 0 && $results_title == 0 && ! (strtotime ( $date ) < strtotime ( $previousweek ))) {
-					$article = new Article ();
-					
-					$article->feed_id = $feed->id;
-					$article->status = 'unread';
-					$article->url = $item->get_permalink ();
-					$article->subject = $item->get_title ();
-					$article->content = $item->get_description ();
-					$article->published = $item->get_date ( 'Y-m-j H:i:s' );
-					
-					$article->user_id = $feed->user_id;
-					
-					$description = $item->get_description ();
-					preg_match ( '/<img.+src=[\'"](?P<src>.+?)[\'"].*>/i', $description, $image );
-					if (array_key_exists ( 'src', $image )) {
-						try {
-							$arr = @getimagesize ( $image ['src'] );
-							if (! empty ( $arr ) && $arr [0] > 50 && $arr [1] > 50) {
-								$article->image_url = $image ['src'];
-							}
-						} catch ( Exception $e ) {
-							Log::info ( "getimagesize error:" . $image ['src'] );
-						}
-					}
-					
-					$article->save ();
-					
-					Log::info ( "Save Article:" . $article->url );
-					
-					foreach ( $feedSubs as $feedSub ) {
-						$articleSub = ArticleSub::where ( 'user_id', $feedSub->user_id )->where ( 'article_id', $article->id )->first ();
-						if (empty ( $articleSub )) {
-							$articleSub = new ArticleSub ();
-							$articleSub->feed_id = $feedSub->feed_id;
-							$articleSub->user_id = $feedSub->user_id;
-							$articleSub->article_id = $article->id;
-							$articleSub->status = 'unread';
-							$articleSub->published = $article->published;
-							$articleSub->save ();
-							
-							Log::info ( "Save ArticleSub:" . $articleSub->user_id . '|' . $articleSub->article_id );
-						}
-					}
-					
-					if (empty ( $feed_last_published ) || strtotime ( $feed_last_published ) < strtotime ( $article->published )) {
-						$feed_last_published = $article->published;
-					}
+				if (! isset ( $category_arr [$item->getTitle ()] )) {
+					$category = $this->categoryService->quickCreateCategory ( $item->getTitle () );
+					$category_arr [$item->getTitle ()] = $category->id;
 				}
-			}
-			
-			// update feed updated_at record
-			if (count ( $simplePieInstance->get_items () ) > 0) {
-				if (! empty ( $feed_last_published )) {
-					Feed::where ( 'id', $feed->id )->update ( [ 
-							'updated_at' => date ( 'Y-m-j H:i:s' ),
-							'feed_desc' => $simplePieInstance->get_description (),
-							'favicon' => $simplePieInstance->get_image_url (),
-							'last_published' => $feed_last_published 
-					] );
-				} else {
-					Feed::where ( 'id', $feed->id )->update ( [ 
-							'updated_at' => date ( 'Y-m-j H:i:s' ),
-							'feed_desc' => $simplePieInstance->get_description (),
-							'favicon' => $simplePieInstance->get_image_url () 
-					] );
+				
+				$categoryId = $category_arr [$item->getTitle ()];
+				
+				foreach ( $item->getFeeds () as $feed ) {
+					$this->store ( $feed->getTitle (), $feed->getXmlUrl (), $categoryId );
 				}
+			} else {
+				$this->store ( $item->getTitle (), $item->getXmlUrl (), $categoryId );
 			}
 		}
 	}
-	public function checkFanfouFeed(Feed $feed) {
-		// set previous week
-		$previousweek = date ( 'Y-m-j H:i:s', strtotime ( '-7 days' ) );
+	
+	/**
+	 *
+	 * @param Feed $feed        	
+	 */
+	public function checkFeed(Feed $feed) {
+		$feedId = $feed->id;
+		$feedUrl = $feed->url;
+		Log::info ( "Check Feed:" . $feedId . '|' . $feedUrl );
 		
-		Log::info ( "Check Feed:" . $feed->id . '|' . $feed->url );
-		
-		$feedSubs = FeedSub::where ( 'feed_id', $feed->id )->where ( 'status', 1 )->get ();
-		
-		$config = config ( 'services.fanfou' );
-		
-		$user = new User ();
-		$user->id = $feed->user_id;
-		$thirdRepository = new ThirdRepository ();
-		$third = $thirdRepository->forUserSource ( $user );
-		if (empty ( $third )) {
+		$feedFetchFactory = new FeedFetchFactory ();
+		$feedFetch = $feedFetchFactory->getFeedFetch ( $feed );
+		$infos = $feedFetch->getInfos ();
+		if (empty ( $infos ) || count ( $infos ['list'] ) == 0) {
 			return;
 		}
 		
-		$oauth_token = $third ['token_value'];
-		$oauth_token_secret = $third ['token_secret'];
+		$feedLastPublished = '';
+		$feedSubs = $this->feedSubRepository->getFeedSubAllListByFeedIdAndStatus ( $feedId, 1 );
 		
-		$ff_user = new FFClient ( config ( "services.fanfou.client_id" ), config ( "services.fanfou.client_secret" ), $oauth_token, $oauth_token_secret );
-		
-		$items = $ff_user->friends_timeline ( 1, 50 );
-		$items = json_decode ( $items, true );
-		
-		if (empty ( $items ) || isset ( $items ['error'] )) {
-			return false;
-		}
-		
-		foreach ( $items as $item ) {
-			if (isset ( $item ['repost_status'] )) {
-				$item = $item ['repost_status'];
+		foreach ( $infos ['list'] as $info ) {
+			if ($this->articleRepository->existArticleByFeedIdAndUrl ( $feedId, $info ['url'] )) {
+				continue;
 			}
 			
-			$results_url = Article::where ( [ 
-					'feed_id' => $feed->id,
-					'url' => 'http://fanfou.com/statuses/' . $item ['id'] 
-			] )->count ();
-			$date = date ( 'Y-m-d H:i:s', strtotime ( $item ['created_at'] ) );
+			if (! empty ( $info ['subject'] ) && $this->articleRepository->existArticleByFeedIdAndSubject ( $feedId, $info ['subject'] )) {
+				continue;
+			}
 			
-			$feed_last_published = '';
-			if ($results_url == 0 && ! (strtotime ( $date ) < strtotime ( $previousweek ))) {
-				$article = new Article ();
-				
-				$content = $item ['text'] . "&nbsp;&nbsp; ";
-				
-				if (isset ( $item ['user'] )) {
-					$content = "<a href='http://fanfou.com/{$item['user']['unique_id']}'>@{$item['user']['name']}</a> &nbsp; $content";
+			$article = new Article ();
+			$article->feed_id = $feedId;
+			$article->status = 'unread';
+			$article->url = $info ['url'];
+			$article->subject = $info ['subject'];
+			$article->content = $info ['content'];
+			$article->image_url = $info ['image_url'];
+			$article->published = $info ['published'];
+			
+			$article->user_id = $feed->user_id;
+			$article->save ();
+			
+			Log::info ( "Save Article:" . $article->url );
+			
+			foreach ( $feedSubs as $feedSub ) {
+				$articleSub = ArticleSub::where ( 'user_id', $feedSub->user_id )->where ( 'article_id', $article->id )->first ();
+				if (empty ( $articleSub )) {
+					$articleSub = new ArticleSub ();
+					$articleSub->feed_id = $feedSub->feed_id;
+					$articleSub->user_id = $feedSub->user_id;
+					$articleSub->article_id = $article->id;
+					$articleSub->status = 'unread';
+					$articleSub->published = $article->published;
+					$articleSub->save ();
+					
+					Log::info ( "Save ArticleSub:" . $articleSub->user_id . '|' . $articleSub->article_id );
 				}
-				
-				if (isset ( $item ['photo'] )) {
-					$content = "$content<br><img width='' src='{$item['photo']['largeurl']}'/><a href='{$item['photo']['largeurl']}' target='_blank'>大图</a>";
-				}
-				
-				// get article content
-				$article->feed_id = $feed->id;
-				$article->status = 'unread';
-				$article->url = 'http://fanfou.com/statuses/' . $item ['id'];
-				$article->subject = '';
-				$article->content = $content;
-				$article->published = date ( 'Y-m-d H:i:s', strtotime ( $item ['created_at'] ) );
-				
-				$article->user_id = $feed->user_id;
-				
-				$description = $item ['text'];
-				$article->save ();
-				
-				Log::info ( "Save Article:" . $article->url );
-				
-				foreach ( $feedSubs as $feedSub ) {
-					$articleSub = ArticleSub::where ( 'user_id', $feedSub->user_id )->where ( 'article_id', $article->id )->first ();
-					if (empty ( $articleSub )) {
-						$articleSub = new ArticleSub ();
-						$articleSub->feed_id = $feedSub->feed_id;
-						$articleSub->user_id = $feedSub->user_id;
-						$articleSub->article_id = $article->id;
-						$articleSub->status = 'unread';
-						$articleSub->published = $article->published;
-						$articleSub->save ();
-						
-						Log::info ( "Save ArticleSub:" . $articleSub->user_id . '|' . $articleSub->article_id );
-					}
-				}
-				
-				if (empty ( $feed_last_published ) || strtotime ( $feed_last_published ) < strtotime ( $article->published )) {
-					$feed_last_published = $article->published;
-				}
+			}
+			
+			if (empty ( $feedLastPublished ) || strtotime ( $feedLastPublished ) < strtotime ( $article->published )) {
+				$feedLastPublished = $article->published;
 			}
 		}
 		
 		// update feed updated_at record
-		if (count ( $items ) > 0) {
-			if (! empty ( $feed_last_published )) {
-				Feed::where ( 'id', $feed->id )->update ( [ 
-						'updated_at' => date ( 'Y-m-j H:i:s' ),
-						'last_published' => $feed_last_published 
-				] );
-			} else {
-				Feed::where ( 'id', $feed->id )->update ( [ 
-						'updated_at' => date ( 'Y-m-j H:i:s' ) 
-				] );
+		$updateParams = [ 
+				'updated_at' => date ( 'Y-m-j H:i:s' ),
+				'feed_desc' => $infos ['basic'] ['feed_desc'],
+				'favicon' => $infos ['basic'] ['favicon'] 
+		];
+		
+		if (! empty ( $feedLastPublished )) {
+			$updateParams ['last_published'] = $feedLastPublished;
+		}
+		
+		Feed::where ( 'id', $feedId )->update ( $updateParams );
+	}
+	
+	/**
+	 * 根据活跃等级获取最新文章
+	 * 
+	 * @param int $activeLevel        	
+	 */
+	public function checkFeedByActiveLevel($activeLevel) {
+		$feeds = $this->feedRepository->getAllListByActiveLevel ( $activeLevel );
+		foreach ( $feeds as $feed ) {
+			try {
+				$this->checkFeed ( $feed );
+			} catch ( Exception $e ) {
+				Log::error ( 'check feed exception:' . $feed->id . '|' . $feed->feed_name . '|' . $e->getMessage () );
 			}
 		}
 	}
+	
+	// public function checkFanfouFeed(Feed $feed) {
+	// // set previous week
+	// $previousweek = date ( 'Y-m-j H:i:s', strtotime ( '-7 days' ) );
+	
+	// Log::info ( "Check Feed:" . $feed->id . '|' . $feed->url );
+	
+	// $feedSubs = FeedSub::where ( 'feed_id', $feed->id )->where ( 'status', 1 )->get ();
+	
+	// $config = config ( 'services.fanfou' );
+	
+	// $user = new User ();
+	// $user->id = $feed->user_id;
+	// $thirdRepository = new ThirdRepository ();
+	// $third = $thirdRepository->forUserSource ( $user );
+	// if (empty ( $third )) {
+	// return;
+	// }
+	
+	// $oauth_token = $third ['token_value'];
+	// $oauth_token_secret = $third ['token_secret'];
+	
+	// $ff_user = new FFClient ( config ( "services.fanfou.client_id" ), config ( "services.fanfou.client_secret" ), $oauth_token, $oauth_token_secret );
+	
+	// $items = $ff_user->friends_timeline ( 1, 50 );
+	// $items = json_decode ( $items, true );
+	
+	// if (empty ( $items ) || isset ( $items ['error'] )) {
+	// return false;
+	// }
+	
+	// foreach ( $items as $item ) {
+	// if (isset ( $item ['repost_status'] )) {
+	// $item = $item ['repost_status'];
+	// }
+	
+	// $resultsUrl = Article::where ( [
+	// 'feed_id' => $feed->id,
+	// 'url' => 'http://fanfou.com/statuses/' . $item ['id']
+	// ] )->count ();
+	// $date = date ( 'Y-m-d H:i:s', strtotime ( $item ['created_at'] ) );
+	
+	// $feedLastPublished = '';
+	// if ($resultsUrl == 0 && ! (strtotime ( $date ) < strtotime ( $previousweek ))) {
+	// $article = new Article ();
+	
+	// $content = $item ['text'] . "&nbsp;&nbsp; ";
+	
+	// if (isset ( $item ['user'] )) {
+	// $content = "<a href='http://fanfou.com/{$item['user']['unique_id']}'>@{$item['user']['name']}</a> &nbsp; $content";
+	// }
+	
+	// if (isset ( $item ['photo'] )) {
+	// $content = "$content<br><img width='' src='{$item['photo']['largeurl']}'/><a href='{$item['photo']['largeurl']}' target='_blank'>大图</a>";
+	// }
+	
+	// // get article content
+	// $article->feed_id = $feed->id;
+	// $article->status = 'unread';
+	// $article->url = 'http://fanfou.com/statuses/' . $item ['id'];
+	// $article->subject = '';
+	// $article->content = $content;
+	// $article->published = date ( 'Y-m-d H:i:s', strtotime ( $item ['created_at'] ) );
+	
+	// $article->user_id = $feed->user_id;
+	
+	// $description = $item ['text'];
+	// $article->save ();
+	
+	// Log::info ( "Save Article:" . $article->url );
+	
+	// foreach ( $feedSubs as $feedSub ) {
+	// $articleSub = ArticleSub::where ( 'user_id', $feedSub->user_id )->where ( 'article_id', $article->id )->first ();
+	// if (empty ( $articleSub )) {
+	// $articleSub = new ArticleSub ();
+	// $articleSub->feed_id = $feedSub->feed_id;
+	// $articleSub->user_id = $feedSub->user_id;
+	// $articleSub->article_id = $article->id;
+	// $articleSub->status = 'unread';
+	// $articleSub->published = $article->published;
+	// $articleSub->save ();
+	
+	// Log::info ( "Save ArticleSub:" . $articleSub->user_id . '|' . $articleSub->article_id );
+	// }
+	// }
+	
+	// if (empty ( $feedLastPublished ) || strtotime ( $feedLastPublished ) < strtotime ( $article->published )) {
+	// $feedLastPublished = $article->published;
+	// }
+	// }
+	// }
+	
+	// // update feed updated_at record
+	// if (count ( $items ) > 0) {
+	// if (! empty ( $feedLastPublished )) {
+	// Feed::where ( 'id', $feed->id )->update ( [
+	// 'updated_at' => date ( 'Y-m-j H:i:s' ),
+	// 'last_published' => $feedLastPublished
+	// ] );
+	// } else {
+	// Feed::where ( 'id', $feed->id )->update ( [
+	// 'updated_at' => date ( 'Y-m-j H:i:s' )
+	// ] );
+	// }
+	// }
+	// }
 }

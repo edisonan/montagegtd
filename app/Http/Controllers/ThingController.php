@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Utils\ErrorCodeUtil;
 use App\Models\Thing;
 use App\Services\ThingService;
 use Illuminate\Http\Request;
+use App\Exceptions\CustomException;
+use App\Http\Utils\ResponseDataUtil;
 
 /**
  * 记事控制器
@@ -41,7 +42,7 @@ class ThingController extends Controller {
 	 */
 	public function index(Request $request) {
 		return view ( 'things.index', [ 
-				'things' => $this->thingService->forUser ( $request->user (), $needPage = true ) 
+				'things' => $this->thingService->getList () 
 		] );
 	}
 	
@@ -59,28 +60,18 @@ class ThingController extends Controller {
 		
 		$params = array ();
 		$params ['name'] = $request->name;
-		
-		if ($request->has ( 'start_time' )) {
-			$params ['start_time'] = $request->start_time;
-		} else {
-			$params ['start_time'] = date ( 'Y-m-d H:i:s' );
-		}
+		$params ['start_time'] = $request->input ( 'start_time', date ( 'Y-m-d H:i:s' ) );
 		
 		if ($request->has ( 'end_time' )) {
 			$params ['end_time'] = $request->end_time;
 			if (strtotime ( $params ['start_time'] ) > strtotime ( $params ['end_time'] )) {
-				return redirect ( '/things' )->with ( 'message', 'Error End Time:' . $params ['end_time'] );
+				throw new CustomException ( "错误的结束时间" );
 			}
 		}
 		
 		$thing = $request->user ()->things ()->create ( $params );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/things' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $thing ), '/things' );
 	}
 	
 	/**
@@ -94,12 +85,7 @@ class ThingController extends Controller {
 		
 		$thing->delete ();
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/things' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $thing ), '/things' );
 	}
 	
 	/**
@@ -107,18 +93,19 @@ class ThingController extends Controller {
 	 *
 	 * @param Request $request        	
 	 * @param Thing $thing        	
-	 * @return \Symfony\Component\HttpFoundation\Response|\Illuminate\Contracts\Routing\ResponseFactory
+	 * @return
+	 *
 	 */
 	public function update(Request $request, Thing $thing) {
 		$this->authorize ( 'destroy', $thing );
+		if ($request->method () == 'GET') {
+			return view ( 'things.update', array (
+					'thing' => $thing 
+			) );
+		}
 		
 		$flag = $thing->update ( $request->all () );
 		
-		if ($request->ajax () || $request->wantsJson ()) {
-			$resp = $this->responseJson ( ErrorCodeUtil::OK_CODE );
-			return response ( $resp );
-		} else {
-			return redirect ( '/things' )->with ( 'message', 'IT WORKS!' );
-		}
+		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $thing ), '/things' );
 	}
 }
