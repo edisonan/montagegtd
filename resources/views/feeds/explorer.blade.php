@@ -13,7 +13,7 @@
             padding-top: 10px;
         }
 
-        .rowtwo {
+        .suggest_feed_title {
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
@@ -21,6 +21,23 @@
             -webkit-line-clamp: 1;
             padding-left: 10px;
             padding-top: 10px;
+            max-width: 60%;
+        }
+
+        .suggest_feed_content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            display: box;
+            -webkit-box-orient: vertical;
+            box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            padding-left: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            min-height: calc(2 * 1.5em); /* 根据行高和行数计算最小高度，这里假设行高为 1.5em，显示两行 */
         }
     </style>
 
@@ -42,33 +59,16 @@
     </script>
     <div class="container">
 
-        <div class=" col-md-12">
-            @include('common.success')
             <div class="card" style="margin-bottom: 10px;">
-                <div class="card-header">
-                    发现
-                    <div style="float:right">
-                        [<a href="{{ url('articles') }}">返回阅读</a>]
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>订阅推荐</div>
+                    <div class="d-flex align-items-center">
+                        <form action="/feeds/search" class="d-flex">
+                            <input type="text" value="" name="name" class="form-control me-2" placeholder="请输入想要搜索的关键字"/>
+                            <button type="submit" class="btn btn-primary">即刻搜索</button>
+                        </form>
+{{--                        [<a href="{{ url('articles') }}">返回阅读</a>]--}}
                     </div>
-                </div>
-
-                <div class="card-body">
-                    <form action="/feeds/search">
-                        <div class="form-row">
-                            <div class="col-8">
-                                <input type="text" value="" name="name" class="form-control" placeholder="请输入想要搜索的关键字"/>
-                            </div>
-                            <div class="col">
-                                <button type="submit" class="btn btn-primary">即刻搜索</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="card" style="margin-bottom: 10px;">
-                <div class="card-header">
-                    订阅方式推荐
                 </div>
 
                 <div class="card-body">
@@ -105,25 +105,24 @@
                 </div>
             </div>
 
-            <div class="card" style="margin-bottom: 10px;">
-                <div class="card-header">
-                    分类订阅
-                </div>
-
-                <div class="card-body">
-                    <div class="row">
-                        @foreach ($recommend_categorys as $id=>$name)
-                            <div class="col-md-6" style="padding:10px">
-                                <div class="card card-block" style="text-align:center">
-                                    <b class="card-title rowone">
-                                        <a href="/feeds/search?recommend_category_id={{ $id }}">{{ $name }}</a>
-                                    </b>
-                                </div>
+        <div class="card" style="margin-bottom: 10px;">
+            <div class="card-header">
+                分类订阅
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach ($recommend_categorys as $id => $name)
+                        <div class="col-md-3" style="padding:10px;">
+                            <div class="card card-block" style="text-align:center;">
+                                <b class="card-title rowone">
+                                    <a href="/feeds/search?recommend_category_id={{ $id }}">{{ $name }}</a>
+                                </b>
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
+        </div>
 
             <div class="card" style="margin-bottom: 10px;">
                 <div class="card-header">
@@ -140,12 +139,12 @@
                             @foreach ($feeds as $feed)
                                 <div class="col-md-4" style="padding:10px">
                                     <div class="card card-block">
-                                        <b class="card-title rowone">
+                                        <b class="card-title suggest_feed_title">
                                             <img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
                                             <a href="{{ url('article/list') }}?feed_id={{$feed->id}}">{{ $feed->feed_name }}</a>
                                         </b>
-                                        <p class="card-text rowtwo">{{ $feed->feed_desc }} &nbsp;</p>
-                                        <a class="card-link text-right" style="padding-right:10px"
+                                        <p class="card-text suggest_feed_content"><small>{{ $feed->feed_desc }} &nbsp;</small></p>
+                                        <a class="card-link text-right" style="padding:10px"
                                            href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
                                     </div>
                                 </div>

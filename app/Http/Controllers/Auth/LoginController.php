@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Auth;
 use Overtrue\Socialite\SocialiteManager;
 use function GuzzleHttp\json_encode;
 use function Symfony\Component\Debug\header;
+use Illuminate\Support\Facades\Cache;
+
 
 class LoginController extends Controller
 {
@@ -67,7 +69,11 @@ class LoginController extends Controller
             $request_tokens = $oauth->getRequestToken();
 
             $oaurl = $oauth->getAuthorizeURL($request_tokens ['oauth_token'], false, config('services.' . $driver . '.redirect'));
-            $request->session()->put('request_tokens', $request_tokens);
+//            $request->session()->put('request_tokens', $request_tokens);
+
+            $userId = $request->user()->id;
+            Cache::put('oauth_request_tokens_'.$userId, $request_tokens, now()->addMinutes(30));
+
             return redirect(( string )$oaurl);
         } else {
             $socialite = new SocialiteManager (config('services'));
@@ -81,7 +87,11 @@ class LoginController extends Controller
             'fanfou',
             'twitter'
         ))) {
-            $request_tokens = $request->session()->get('request_tokens');
+            $userId = $request->user()->id;
+            $request_tokens = Cache::get('oauth_request_tokens_'.$userId);
+
+//            $request_tokens = $request->session()->get('request_tokens');
+
             $oauth = new OAuth (config("services.$driver.client_id"), config("services.$driver.client_secret"), $request_tokens ['oauth_token'], $request_tokens ['oauth_token_secret']);
 
             // 获取access_token

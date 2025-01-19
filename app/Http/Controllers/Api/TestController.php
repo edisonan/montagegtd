@@ -9,6 +9,8 @@ use App\Models\Thing;
 use App\Models\User;
 use App\Services\PomoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
 
 class TestController extends Controller
 {
@@ -67,77 +69,81 @@ class TestController extends Controller
      *
      * @param Request $request
      */
-    public function start(Request $request)
-    {
-        $user = new User ();
-        $user->id = 1;
-        $request->session()->forget('rest_start_time');
+//    public function start(Request $request)
+//    {
+//        $user = new User ();
+//        $user->id = 1;
+//        $request->session()->forget('rest_start_time');
+//
+//        $pomoInfo = $this->pomoService->startPomo($user);
+//
+//        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($pomoInfo));
+//    }
 
-        $pomoInfo = $this->pomoService->startPomo($user);
-
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($pomoInfo));
-    }
+//    /**
+//     * Discard a new pomo.
+//     *
+//     * @param Request $request
+//     */
+//    public function discard(Request $request, Pomo $pomo)
+//    {
+//        $user = new User ();
+//        $user->id = 1;
+//        if ($pomo->exists == false) {
+//            $request->session()->forget('rest_start_time');
+//
+//        } else {
+//            // 判断是否有权限，并置失败
+//            $this->authorize('destroy', $pomo);
+//            $pomo->update(array(
+//                'status' => 3
+//            ));
+//        }
+//
+//        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
+//    }
 
     /**
-     * Discard a new pomo.
      *
      * @param Request $request
      */
-    public function discard(Request $request, Pomo $pomo)
-    {
-        $user = new User ();
-        $user->id = 1;
-        if ($pomo->exists == false) {
-            $request->session()->forget('rest_start_time');
-        } else {
-            // 判断是否有权限，并置失败
-            $this->authorize('destroy', $pomo);
-            $pomo->update(array(
-                'status' => 3
-            ));
-        }
-
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
-    }
-
-    /**
-     *
-     * @param Request $request
-     */
-    public function store(Request $request, Pomo $pomo)
-    {
-        $user = User::where('id', 1)->first();
-        $setting = $user->setting;
-        $pomo_time = isset ($setting->pomo_time) && !empty ($setting->pomo_time) ? $setting->pomo_time * 60 : Pomo::DEFAULT_INTERVAL;
-
-        if (time() > strtotime($pomo->created_at) + $pomo_time) {
-            $this->validate($request, [
-                'name' => 'required|max:255'
-            ]);
-
-            // $this->authorize ( 'destroy', $pomo );
-            $pomo->update([
-                'name' => $request->name,
-                'status' => 2
-            ]);
-
-            $thing = new Thing ();
-            $thing->user_id = $user->id;
-            $thing->type = 3;
-            $thing->name = $pomo->name;
-            $thing->end_time = $pomo->created_at;
-            $thing->start_time = date('Y-m-d H:i:s');
-            $thing->save();
-
-            // auto resting
-            $request->session()->put('rest_start_time', time());
-        }
-
-        $currentPomoInfo = $this->pomoService->getCurrentPomoInfo($user);
-        $currentPomoInfo ['active_pomo'] = $pomo;
-
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($currentPomoInfo));
-    }
+//    public function store(Request $request, Pomo $pomo)
+//    {
+//        $user = User::where('id', 1)->first();
+//        $setting = $user->setting;
+//        $pomo_time = isset ($setting->pomo_time) && !empty ($setting->pomo_time) ? $setting->pomo_time * 60 : Pomo::DEFAULT_INTERVAL;
+//
+//        if (time() > strtotime($pomo->created_at) + $pomo_time) {
+//            $this->validate($request, [
+//                'name' => 'required|max:255'
+//            ]);
+//
+//            // $this->authorize ( 'destroy', $pomo );
+//            $pomo->update([
+//                'name' => $request->name,
+//                'status' => 2
+//            ]);
+//
+//            $thing = new Thing ();
+//            $thing->user_id = $user->id;
+//            $thing->type = 3;
+//            $thing->name = $pomo->name;
+//            $thing->end_time = $pomo->created_at;
+//            $thing->start_time = date('Y-m-d H:i:s');
+//            $thing->save();
+//
+//            // auto resting
+////            $request->session()->put('rest_start_time', time());
+//
+//            Cache::put('rest_start_time_'.$user->id, time(), now()->addMinutes(60));
+//
+//        }
+//
+//        $currentPomoInfo = $this->pomoService->getCurrentPomoInfo($user);
+//        $currentPomoInfo ['active_pomo'] = $pomo;
+//
+//        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($currentPomoInfo));
+//    }
 
     /**
      * Destroy the given task.

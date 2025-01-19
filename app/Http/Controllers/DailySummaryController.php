@@ -7,6 +7,8 @@ use App\Models\DailySummary;
 use App\Services\DailySummaryService;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
+
 
 /**
  * 日报控制器
@@ -86,7 +88,7 @@ class DailySummaryController extends Controller
 
         $dailySummary = $this->dailySummaryService->getBySummaryDate($summaryDate);
         if (!empty ($dailySummary)) {
-            return redirect('/dailysummary/' . $dailySummary->id)->with('message', 'IT WORKS!');
+            return redirect('/dailysummary/' . $dailySummary->id)->with("message", "IT WORKS!");
         } else {
             return view('dailysummarys.create', array(
                 'summary_date' => $summaryDate

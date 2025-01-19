@@ -10,6 +10,8 @@ use App\Services\CategoryService;
 use App\Services\FeedService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
+
 
 /**
  * 订阅源控制器
@@ -263,7 +265,8 @@ class FeedController extends Controller
         }
         $path = $request->opml_file->path();
         $this->feedService->importOpml($path);
-        return redirect('/feeds')->with('message', 'IT WORKS!');
+
+        return redirect('/feeds')->with("message", "IT WORKS!");
     }
 
     /**

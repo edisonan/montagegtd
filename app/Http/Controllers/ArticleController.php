@@ -277,7 +277,45 @@ class ArticleController extends Controller
             exit;
         }
         if($type == 'v2ex') {
-            echo file_get_contents('https://www.v2ex.com' . $url);
+            $newurl = 'https://www.v2ex.com' . $url;
+//            echo file_get_contents('https://www.v2ex.com' . $url);
+
+// 初始化 cURL 会话
+            $ch = curl_init();
+
+// 设置请求的 URL
+            curl_setopt($ch, CURLOPT_URL, $newurl);
+
+// 设置请求头
+            $headers = array(
+                'Upgrade-Insecure-Requests: 1',
+                'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+                'sec-ch-ua: "Not A(Brand";v="8", "Chromium";v="132", "Google Chrome";v="132"',
+                'sec-ch-ua-mobile:?0',
+                'sec-ch-ua-platform: "macOS"'
+            );
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+// 设置为不输出响应头
+            curl_setopt($ch, CURLOPT_HEADER, false);
+
+// 只获取页面内容，不直接输出
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+// 执行 cURL 请求
+            $response = curl_exec($ch);
+
+// 检查请求是否成功
+            if ($response === false) {
+                echo 'cURL Error: ' . curl_error($ch).'<a href="'.$newurl.'">'.$newurl.'</a>';
+            } else {
+                // 输出响应内容
+                echo $response;
+            }
+
+// 关闭 cURL 会话
+            curl_close($ch);
+
             exit;
         }
     }
