@@ -1,22 +1,21 @@
-## MontageGTD 简介 
+## MontageGTD
 
 
 不止于GTD的WEB应用，除了支持番茄工作法、任务待办，更是支持笔记、RSS阅读、思维导图于一身的知识管理系统
 
 > 取名 “蒙太奇”，这是个稍显拗口的电影术语，指通过对众多镜头进行不同方式的剪辑，从而展现出各异的立意 。即便在疫情期间，不少人断言电影将会走向消亡，但实际上电影或许是最具生命力、最难消亡的产业之一。人类在现实中往往显得渺小脆弱，而电影为我们提供了一个能够主宰想象空间的契机。
+
 > 那么这个平台呢？它期望记录下我们这些小人物在平凡日常与非凡时刻的点点滴滴，如同经历一场 “浮生一日”。在这里，你既是导演，掌控着情节走向；也是编剧，书写着故事内容；更是演员，演绎着自己的人生。衷心希望大家所记录的每一件事、每一段成长历程，最终能够如同精心剪辑的蒙太奇镜头一般，共同拼凑出一部专属于我们生活的宏大电影。
 
 ![avatar](public/img/index.jpg)
 
 ## 快速体验
-[https://task.congcong.us](https://task.congcong.us)
-
-可以体验项目完整功能
+[https://task.congcong.us](https://task.congcong.us)  可以体验项目完整功能
 
 ## 开源地址
 https://gitee.com/accacc/task
 
-## 技术栈
+## 技术组件
 基于php nginx mysql composer等工具
 - php: >=7.0.0
 - laravel: 5.5.*
@@ -95,11 +94,9 @@ https://gitee.com/accacc/task
 ```
 
 
-## 二次开发或部署
+## 二次开发部署
 
-请移步至wiki区域，wiki区域将不断完善技术相关内容
-
-[https://gitee.com/accacc/task/wikis/Home?sort_id=42169](https://gitee.com/accacc/task/wikis/Home?sort_id=42169)
+请移步至wiki区域，wiki区域将不断完善技术相关内容 [https://gitee.com/accacc/task/wikis/Home?sort_id=42169](https://gitee.com/accacc/task/wikis/Home?sort_id=42169)
 
 ## 鸣谢
 ![jetbrains](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)
