@@ -46,7 +46,7 @@ class Kernel extends ConsoleKernel
     {
         date_default_timezone_set("Asia/Shanghai");
 
-        $schedule->command('fanfou_publish')->daily();
+//        $schedule->command('fanfou_publish')->daily();
         $schedule->command('task_reminder')->everyMinute();
 
         // 上午提醒

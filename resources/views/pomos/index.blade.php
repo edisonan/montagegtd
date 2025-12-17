@@ -83,29 +83,30 @@
                         <?php $lastDate = '';?>
                         @foreach ($pomos as $pomo)
                             <tr id="{{$pomo->id}}">
-                                <td class="table-text" width="80%">
-                                    <div class="rowone">
-                                        <?php
-                                        $currentDate = date('m-d', strtotime($pomo->start_time));
-                                        if ($currentDate != $lastDate) {
-                                            $lastDate = $currentDate;
-                                            $style = "";
-                                        } else {
-                                            $style = "color:rgb(0,0,0,0);";
-                                        }
-                                        ?>
-                                        <span style="{{ $style}}">
-{{ $currentDate }}
-</span>
-                                        <small>{{ date('H:i', strtotime($pomo->start_time)) }}
-                                            - {{ date('H:i', strtotime($pomo->end_time)) }} </small>
-                                        <span id="name{{ $pomo->id }}">
-{{ $pomo->name }} 
-</span>
+                                <td class="table-text">
+                                    <div class="d-flex align-items-center">
+                                        <div class="mr-2">
+
+                                            <?php
+                                            $currentDate = date('m-d', strtotime($pomo->start_time));
+                                            if ($currentDate != $lastDate) {
+                                                $lastDate = $currentDate;
+                                                $style = "";
+                                            } else {
+                                                $style = "color:rgba(0,0,0,0);";
+                                            }
+                                            ?>
+                                            <span style="{{ $style}}">{{ $currentDate }}</span>
+
+                                            <small> {{ date('H:i', strtotime($pomo->start_time)) }}-{{ date('H:i', strtotime($pomo->end_time)) }} </small>
+                                        </div>
+
+                                        <div>
+                                            <span id="name{{ $pomo->id }}" style="font-weight: 500;">{{ $pomo->name }}</span>
+                                        </div>
                                     </div>
                                 </td>
-                                <!-- Task Delete Button -->
-                                <td width="20%" align="right">
+                                <td class="text-right">
                                     <a href="/notes?add_content=%23记录番茄%23{{ urlencode($pomo->name) }}&pomo_id={{$pomo->id}}"
                                        title="记录更多当时的想法吧">
                                         <i class="bi-textarea-t" style="font-size: 1.5rem;"></i>

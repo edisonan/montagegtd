@@ -178,8 +178,8 @@
 		  s.parentNode.insertBefore(hm, s);
 		})();
 		</script>
-		<footer class="footer  text-center">
-		        <p>&copy; 2016 Congcong.us<a href="mailto:accacc@126.com?subject=MontageGTD反馈">遇到问题?联系我~</a>&nbsp;<a href="https://gitee.com/accacc/task#%E9%AB%98%E6%95%88%E4%BD%BF%E7%94%A8montage-gtd">高效使用MontageGTD</a> </p>
+		<footer class="footer  text-center" style="margin-top:10px">
+		        <p>&copy;2016 Congcong.us&nbsp;<a href="mailto:accacc@126.com?subject=MontageGTD反馈">遇到问题?联系我~</a>&nbsp;<a href="https://gitee.com/accacc/task#%E9%AB%98%E6%95%88%E4%BD%BF%E7%94%A8montage-gtd">高效使用技巧</a> </p>
 		</footer>
 </body>
 </html>

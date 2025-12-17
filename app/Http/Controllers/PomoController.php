@@ -9,6 +9,8 @@ use App\Repositories\PomoRepository;
 use App\Services\PomoService;
 use App\Http\Utils\ResponseDataUtil;
 use App\Exceptions\CustomException;
+use Illuminate\Support\Facades\Cache;
+
 
 /**
  * 番茄工作法控制器
@@ -93,7 +95,9 @@ class PomoController extends Controller {
 	 */
 	public function discard(Request $request, Pomo $pomo) {
 		if ($pomo->exists == false) {
-			$request->session ()->forget ( 'rest_start_time' );
+//            $userId = $request->user()->id;
+//            Cache::forget('user_'.$userId.'_rest_start_time');
+//			$request->session ()->forget ( 'rest_start_time' );
 		} else {
 			// 判断是否有权限，并置失败
 			$this->authorize ( 'destroy', $pomo );

@@ -39,7 +39,7 @@
                                         onclick="changeTime('start_time', -5)">&nbsp;-5分钟</a> <input
                                         type="text" name="start_time" id="start_time"
                                         class="form-control" value="{{ $thing->start_time }}"
-                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:m:00',maxDate:'%y-%M-%d'})">
+                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
                             </div>
                             -
                             <div class="col-md-12" style="padding-left: 0px;">
@@ -49,7 +49,7 @@
                                         onclick="changeTime('end_time', -5)">&nbsp;-5分钟</a> <input
                                         type="text" name="end_time" id="end_time" class="form-control"
                                         value="{{ $thing->end_time }}"
-                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:m:00',maxDate:'%y-%M-%d'})">
+                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})">
                             </div>
                         </div>
                     </div>

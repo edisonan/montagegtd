@@ -219,8 +219,8 @@
                     新的笔记
                     <div class="form-inline" style="float:right">
                         <form action="{{url('notes')}}" method="get">
-                            <input type="text" name="keyword" class="" placeholder="搜索笔记"/>
-                            <input type="submit" value="搜 索"/>
+                            <input type="text" name="keyword" class="form-control" placeholder="搜索笔记"/>
+                            <input type="submit" class="btn btn-primary" value="搜 索"/>
                         </form>
                     </div>
                 </div>

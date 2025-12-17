@@ -6,7 +6,7 @@
 @section('content')
     <div class="container">
         <div class="jumbotron text-center"
-             style="color: white;    background-position: -1501px -266px;    background-image: url('/img/index_background2.jpg');">
+             style="color: white;    background-position: -1595px -18px;    background-image: url('/img/index_background2.jpg');">
             <h3 style="padding-bottom: 20px;">蒙太奇 - 知而善用，行稳致远</h3>
             <p class="lead" style="padding-bottom: 100px;">不止于GTD，陪你做好每件事，在这里定格更多精彩瞬间。</p>
             <p>

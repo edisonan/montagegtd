@@ -96,38 +96,45 @@
 
                     <!-- thing Name -->
                         <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">完事内容</label>
+                            <label for="thing-name" class="col-md-2 control-label">完成内容</label>
 
-                            <div class="col-md-8">
+                            <div class="col-md-10">
                                 <input type="text" name="name" id="name" class="form-control"
                                        value="{{ old('thing') }}">
                             </div>
                         </div>
 
-                        <div class="form-group row">
-                            <label for="thing-name" class="col-md-3 control-label">完事时间</label>
+                        <?php $time = time();$time = $time - $time % 600;?>
 
-                            <div class="col-md-8">
-                                <?php $time = time();$time = $time - $time % 600;?>
-                                <div class="col-md-12" style="padding-left:0px;">
-                                    <a href="javascript:void(0);" style="float:right"
-                                       onclick="changeTime('start_time', 5)">&nbsp;+5分钟</a>
-                                    <a href="javascript:void(0);" style="float:right"
-                                       onclick="changeTime('start_time', -5)">&nbsp;-5分钟</a>
-                                    <input type="text" name="start_time" id="start_time" class="form-control"
-                                           value="{{ date('Y-m-d H:i:00', $time - 600)}}"
-                                           onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:m:00',maxDate:'%y-%M-%d'})">
-                                </div>
-                                -
-                                <div class="col-md-12" style="padding-left:0px;">
-                                    <a href="javascript:void(0);" style="float:right"
-                                       onclick="changeTime('end_time', 5)">&nbsp;+5分钟</a>
-                                    <a href="javascript:void(0);" style="float:right"
-                                       onclick="changeTime('end_time', -5)">&nbsp;-5分钟</a>
-                                    <input type="text" name="end_time" id="end_time" class="form-control"
-                                           value="{{ date('Y-m-d H:i:00', $time)}}"
-                                           onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:m:00',maxDate:'%y-%M-%d'})">
-                                </div>
+                        <div class="form-group row">
+                            <label for="thing-name" class="col-md-2 control-label">开始时间</label>
+
+                            <div class="col-md-10" style=" display: flex; align-items: center;">
+
+                                <input type="text" name="start_time" id="start_time" class="form-control"
+                                       value="{{ date('Y-m-d H:i:00', $time - 600)}}"
+                                       onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})" style="width: 60%;">
+
+                                <a href="javascript:void(0);" style="float:right"
+                                   onclick="changeTime('start_time', 5)">&nbsp;+5分钟</a>
+                                <a href="javascript:void(0);" style="float:right"
+                                   onclick="changeTime('start_time', -5)">&nbsp;-5分钟</a>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="thing-name" class="col-md-2 control-label">结束时间</label>
+
+                            <div class="col-md-10" style=" display: flex; align-items: center;">
+
+                                <input type="text" name="end_time" id="end_time" class="form-control"
+                                       value="{{ date('Y-m-d H:i:00', $time)}}"
+                                       onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})" style="width: 60%;">
+                                <a href="javascript:void(0);" style="float:right"
+                                   onclick="changeTime('end_time', 5)">&nbsp;+5分钟</a>
+                                <a href="javascript:void(0);" style="float:right"
+                                   onclick="changeTime('end_time', -5)">&nbsp;-5分钟</a>
                             </div>
                         </div>
 
@@ -143,7 +150,9 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" style="
+                margin-top: 10px;
+            ">
                 <div class="card-header">
                     新完成事情记录
                 </div>
@@ -159,29 +168,31 @@
                             <?php $lastDate = '';?>
                             @foreach ($things as $thing)
                                 <tr id="{{$thing->id}}">
-                                    <td class="table-text" width="80%">
-                                        <div class="rowone">
-                                            <?php
-                                            $currentDate = date('m-d', strtotime($thing->start_time));
-                                            if ($currentDate != $lastDate) {
-                                                $lastDate = $currentDate;
-                                                $style = "";
-                                            } else {
-                                                $style = "color:rgb(0,0,0,0);";
-                                            }
-                                            ?>
-                                            <span style="{{ $style}}">
-{{ $currentDate }}
-</span>
-                                            <small>{{ date('H:i', strtotime($thing->start_time)) }}
-                                                - {{ date('H:i', strtotime($thing->end_time)) }} </small>
-                                            <img alt="" style="width: 15px;"
-                                                 src="/img/icon/thing{{ $thing->type }}.png">
-                                            <span title="{{ $thing->name }}"> {{ $thing->name }}  </span>
+                                    <td class="table-text">
+                                        <div class="d-flex align-items-center">
+                                            <div class="mr-2">
+                                                <?php
+                                                $currentDate = date('m-d', strtotime($thing->start_time));
+                                                if ($currentDate != $lastDate) {
+                                                    $lastDate = $currentDate;
+                                                    $style = "";
+                                                } else {
+                                                    $style = "color:rgba(0,0,0,0);";
+                                                }
+                                                ?>
+                                                <span style="{{ $style}}">{{ $currentDate }}</span>
+                                                <small> {{ date('H:i', strtotime($thing->start_time)) }}-{{ date('H:i', strtotime($thing->end_time)) }} </small>
+                                            </div>
+
+                                            <div>
+                                                <img alt="" style="width: 15px;"
+                                                     src="/img/icon/thing{{ $thing->type }}.png">
+                                                <span title="{{ $thing->name }}" style="font-weight: 500;"> {{ $thing->name }}  </span>
+                                            </div>
                                         </div>
                                     </td>
 
-                                    <td width="20%" align="right">
+                                    <td class="text-right">
                                         <a href="{{ url('thing/'.$thing->id)}}" style="">
                                             <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
                                         </a>

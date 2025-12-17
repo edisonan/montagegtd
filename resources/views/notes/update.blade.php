@@ -72,6 +72,16 @@
     .post-text {
         padding: 10px;
         font-size: 18px;
+        line-height: 1.6;
+    }
+    code {
+        display: inline-block;
+        padding: 2px 4px;
+        font-size: 90%;
+        color: #c7254e;
+        background-color: #f9f2f4;
+        border-radius: 4px;
+        font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     }
 </style>
 
