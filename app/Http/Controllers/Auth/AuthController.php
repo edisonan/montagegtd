@@ -7,6 +7,10 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Validator;
+//use Illuminate\Http\Request;
+//use Tymon\JWTAuth\Facades\JWTAuth;
+//use Illuminate\Support\Facades\Auth;
+//use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
@@ -71,4 +75,58 @@ class AuthController extends Controller
             'password' => bcrypt($data ['password'])
         ]);
     }
+//
+//    // 用户登录并获取 JWT 令牌
+//    public function jwtlogin(Request $request)
+//    {
+//        $credentials = $request->only('email', 'password');
+//        try {
+//            if (!$token = JWTAuth::attempt($credentials)) {
+//                return response()->json(['error' => 'Invalid credentials'], 401);
+//            }
+//        } catch (JWTException $e) {
+//            return response()->json(['error' => 'Could not create token'], 500);
+//        }
+//        return response()->json(['token' => $token], 200);
+//    }
+//
+//    // 刷新 JWT 令牌
+//    public function jwtrefreshToken()
+//    {
+//        try {
+//            $token = JWTAuth::getToken();
+//            if (!$token) {
+//                return response()->json(['error' => 'Token not provided'], 401);
+//            }
+//            $newToken = JWTAuth::refresh($token);
+//            return response()->json(['token' => $newToken], 200);
+//        } catch (JWTException $e) {
+//            return response()->json(['error' => 'Could not refresh token'], 500);
+//        }
+//    }
+//
+//    // 注销用户（使 JWT 令牌失效）
+//    public function jwtlogout()
+//    {
+//        try {
+//            JWTAuth::invalidate(JWTAuth::getToken());
+//            return response()->json(['message' => 'Successfully logged out'], 200);
+//        } catch (JWTException $e) {
+//            return response()->json(['error' => 'Could not invalidate token'], 500);
+//        }
+//    }
+//
+//    // 获取用户信息
+//    public function jwtUserProfile()
+//    {
+//        try {
+//            $user = JWTAuth::parseToken()->authenticate();
+//            if (!$user) {
+//                return response()->json(['error' => 'User not found'], 404);
+//            }
+//            return response()->json(['user' => $user], 200);
+//        } catch (JWTException $e) {
+//            return response()->json(['error' => 'User not authenticated'], 401);
+//        }
+//    }
 }

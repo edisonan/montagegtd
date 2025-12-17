@@ -17,8 +17,6 @@ Route::group ( [
 	$router->resource ( 'feeds', FeedController::class );
 	$router->resource ( 'feedsubs', FeedSubController::class );
 	
-	$router->resource ( 'users', UserController::class );
-	
 	$router->resource ( 'articles', ArticleController::class );
 	$router->resource ( 'articlemarks', ArticleMarkController::class );
 	$router->resource ( 'feedbacks', FeedbackController::class );
@@ -33,4 +31,9 @@ Route::group ( [
 	$router->resource ( 'things', ThingController::class );
 
     $router->resource('codes', CodeController::class);
+    $router->get('getCode/{id}', 'CodeController@getCode');
+    $router->post('updateCode', 'CodeController@updateCode');
+    $router->post('generateCode', 'CodeController@generateCode');
+    $router->get('getCodeHistory/{id}', 'CodeController@getCodeHistory');
+    $router->get('getHistoryCode/{id}', 'CodeController@getHistoryCode');
 } );
