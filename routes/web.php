@@ -152,35 +152,35 @@ Route::group([
 
     Auth::routes();
 
+//    Route::post('/register', 'AuthController@register');
+//    Route::post('/login', 'AuthController@login');
+//    Route::post('/logout', 'AuthController@logout');
+//    Route::post('/refresh', 'AuthController@refresh');
+//    Route::get('/user', 'AuthController@userProfile')->middleware('auth:api');
+
     Route::get('login/third/{driver}', 'Auth\LoginController@thirdRedirect');
     Route::get('login/third/{driver}/callback', 'Auth\LoginController@thirdCallback');
 
     Route::get('/logout', 'Auth\LoginController@logout');
-});
 
-Route::group([
-    'middleware' => [
-        'web'
-    ]
-], function () {
-    Route::get('/api/wechat/login', 'Api\WechatController@wechatlogin');
-    Route::get('/api/wechat/articles', 'Api\WechatController@articles');
-    Route::get('/api/wechat/articleview', 'Api\WechatController@articleview');
-    Route::get('/api/wechat/explorer', 'Api\WechatController@explorer');
-    Route::get('/api/wechat/notes', 'Api\WechatController@notes');
-    Route::get('/api/wechat/addNote', 'Api\WechatController@addNote');
-    Route::get('/api/wechat/articleSubStatus', 'Api\WechatController@articleSubStatus');
-    Route::get('/api/wechat/articleSubStatus/{articleSub}', 'Api\WechatController@articleSubStatus');
 
-    Route::get('/api/pomos', 'Api\TestController@index');
-    Route::get('/api/pomo/info', 'Api\TestController@info');
-    Route::get('/api/pomo/start', 'Api\TestController@start');
-    Route::get('/api/pomo/discard/{pomo}', 'Api\TestController@discard');
-    Route::get('/api/pomo/discard/', 'Api\TestController@discard');
-    Route::post('/api/pomos/{pomo}', 'Api\TestController@store');
+    Route::get('/api/wechat/login', 'Wechat\WechatController@wechatlogin');
+    Route::get('/api/wechat/articles', 'Wechat\WechatController@articles');
+    Route::get('/api/wechat/articleview', 'Wechat\WechatController@articleview');
+    Route::get('/api/wechat/explorer', 'Wechat\WechatController@explorer');
+    Route::get('/api/wechat/notes', 'Wechat\WechatController@notes');
+    Route::get('/api/wechat/addNote', 'Wechat\WechatController@addNote');
+    Route::get('/api/wechat/articleSubStatus', 'Wechat\WechatController@articleSubStatus');
+    Route::get('/api/wechat/articleSubStatus/{articleSub}', 'Wechat\WechatController@articleSubStatus');
+
+    Route::get('/api/pomos', 'Wechat\TestController@index');
+    Route::get('/api/pomo/info', 'Wechat\TestController@info');
+    Route::get('/api/pomo/start', 'Wechat\TestController@start');
+    Route::get('/api/pomo/discard/{pomo}', 'Wechat\TestController@discard');
+    Route::get('/api/pomo/discard/', 'Wechat\TestController@discard');
+    Route::post('/api/pomos/{pomo}', 'Wechat\TestController@store');
     Route::delete('/api/pomos/{pomo}', 'PomoController@destroy');
 
-    Route::get('/code/{codeInfo}', 'CodeController@view');
-    Route::post('/code/{codeInfo}', 'CodeController@view');
+    Route::any('/code/{codeInfo}', 'CodeController@view');
 });
 		

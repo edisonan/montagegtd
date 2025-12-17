@@ -13,8 +13,21 @@ use App\Models\Goal;
 use App\Models\Setting;
 use App\Models\Thing;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+//use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable {
+
+class User extends Authenticatable{
+//class User extends Authenticatable implements JWTSubject{
+//    // 实现 JWTSubject 接口所需的方法
+//    public function getJWTIdentifier()
+//    {
+//        return $this->getKey();
+//    }
+//
+//    public function getJWTCustomClaims()
+//    {
+//        return [];
+//    }
 	/**
 	 * The attributes that are mass assignable.
 	 *
