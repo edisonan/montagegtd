@@ -560,6 +560,81 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 -- Data exporting was unselected.
 
+CREATE TABLE IF NOT EXISTS achievement (
+    id               INT unsigned PRIMARY KEY AUTO_INCREMENT,
+    code             VARCHAR(64) NOT NULL UNIQUE COMMENT '成就唯一标识，如 POMODORO_30_DAYS',
+    name             VARCHAR(64) NOT NULL COMMENT '成就名称（展示用）',
+    description      VARCHAR(255) COMMENT '成就描述（解释达成意义）',
+    category         VARCHAR(32) NOT NULL DEFAULT 'achievement' COMMENT 'achievement / badge / event',
+    point_value      INT NOT NULL DEFAULT 0 COMMENT '奖励的 GP 数量（可为 0）',
+    visible          TINYINT NOT NULL DEFAULT 1 COMMENT '是否对用户展示',
+    grant_start_at   DATETIME NULL COMMENT '成就可被授予的开始时间（限时活动）',
+    grant_end_at     DATETIME NULL COMMENT '成就可被授予的结束时间',
+    expire_at        DATETIME NULL COMMENT '成就展示或权限失效时间（不影响历史）',
+    icon             VARCHAR(128) COMMENT '成就图标（可选，用于 UI）',
+    enabled          TINYINT NOT NULL DEFAULT 1 COMMENT '是否启用（紧急下线用）',
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_achievement (
+    id                INT unsigned PRIMARY KEY AUTO_INCREMENT,
+    user_id           INT unsigned NOT NULL,
+    achievement_code  VARCHAR(64) NOT NULL COMMENT '对应 point_achievement.code',
+    achieved_at       DATETIME NOT NULL COMMENT '首次达成时间',
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL,
+
+    UNIQUE KEY uk_user_achievement (user_id, achievement_code),
+    INDEX idx_user_time (user_id, achieved_at)
+);
+
+CREATE TABLE behavior_event (
+    id            INT unsigned AUTO_INCREMENT PRIMARY KEY,
+    user_id       INT unsigned NOT NULL,
+    event_type    VARCHAR(32) NOT NULL,     -- pomodoro_finish / daily_summary / read_article
+    event_key     VARCHAR(64),              -- 可选，用于幂等
+    event_value   INT DEFAULT 1,
+    occurred_at   DATETIME NOT NULL,
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL,
+
+    INDEX idx_user_type_time (user_id, event_type, occurred_at),
+    UNIQUE KEY uk_event (user_id, event_type, event_key)
+);
+
+CREATE TABLE point_account (
+    id         INT unsigned PRIMARY KEY AUTO_INCREMENT,
+    user_id     INT unsigned,
+    gp_balance  INT NOT NULL DEFAULT 0,   -- 成长积分
+    ap_balance  INT NOT NULL DEFAULT 0,   -- 可用积分
+    ap_frozen   INT NOT NULL DEFAULT 0,   -- 冻结中的 AP（可选）
+
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL
+);
+
+CREATE TABLE point_record (
+    id              INT unsigned AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT unsigned NOT NULL,
+
+    point_type      VARCHAR(8) NOT NULL,     -- GP / AP
+    change_amount   INT NOT NULL,
+    balance_after   INT NOT NULL,
+
+    source_type     VARCHAR(32) NOT NULL,    -- behavior / achievement / manual
+    source_id       INT,
+    description     VARCHAR(255),
+
+    `created_at` timestamp NULL DEFAULT NULL,
+    `updated_at` timestamp NULL DEFAULT NULL,
+
+    INDEX idx_user_time (user_id, created_at),
+    INDEX idx_user_type (user_id, point_type)
+);
+
+
+
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

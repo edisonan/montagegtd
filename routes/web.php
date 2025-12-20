@@ -141,6 +141,11 @@ Route::group([
     Route::post('/setting/{setting}', 'SettingController@update');
     Route::post('/setting', 'SettingController@update');
 
+    Route::get('/points', 'PointController@index');
+    Route::get('/achievements', 'AchievementController@index');
+    Route::post('/achievement/claim', 'AchievementController@claim');
+
+
     Route::get('/kindles', 'KindleController@index');
     Route::get('/kindle/test', 'KindleController@test');
 
