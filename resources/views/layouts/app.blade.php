@@ -148,6 +148,8 @@
 	                            <div class="dropdown-menu">
 	                    			<a class="dropdown-item"  href="{{ url('statistics') }}">统计</a>
 	                    			<a class="dropdown-item"  href="{{ url('settings') }}">设置</a>
+	                    			<a class="dropdown-item"  href="{{ url('points') }}">积分中心</a>
+	                    			<a class="dropdown-item"  href="{{ url('achievements') }}">成就勋章</a>
 	                    			<a class="dropdown-item"  href="{{ url('dailysummarys') }}">我的日报</a>
 	                    			<a class="dropdown-item"  href="{{ url('accounts') }}">账号管理</a>
 	                    			<a class="dropdown-item"  href="{{ url('cals') }}">日历订阅</a>

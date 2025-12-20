@@ -7,29 +7,29 @@
 
             <div class="card">
                 <div class="card-header">
-                    ³É¾ÍÖÐÐÄ
+                    æˆå°±ä¸­å¿ƒ
                 </div>
 
                 <div class="card-body">
                     @include('common.errors')
 
-                    {{-- ×Ô¶¯³É¾Í --}}
-                    <h5>³É¾Í</h5>
+                    {{-- è‡ªåŠ¨æˆå°± --}}
+                    <h5>æˆå°±</h5>
 
                     @php
                         $achievementList = $list->where('category', 'achievement');
                     @endphp
 
                     @if($achievementList->isEmpty())
-                        <p class="text-muted">ÔÝÎÞ³É¾ÍÅäÖÃ</p>
+                        <p class="text-muted">æš‚æ— æˆå°±é…ç½®</p>
                     @else
                         <table class="table table-bordered table-hover">
                             <thead>
                             <tr>
-                                <th>³É¾Í</th>
-                                <th>ÃèÊö</th>
-                                <th style="width: 120px;">½±Àø</th>
-                                <th style="width: 140px;">×´Ì¬</th>
+                                <th>æˆå°±</th>
+                                <th>æè¿°</th>
+                                <th style="width: 120px;">å¥–åŠ±</th>
+                                <th style="width: 140px;">çŠ¶æ€</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -51,11 +51,11 @@
                                     <td>
                                         @if($item->achieved)
                                             <span class="text-success">
-                                            ÒÑ»ñµÃ<br>
+                                            å·²èŽ·å¾—<br>
                                             <small>{{ $item->achieved_at }}</small>
                                         </span>
                                         @else
-                                            <span class="text-muted">Î´Íê³É</span>
+                                            <span class="text-muted">æœªå®Œæˆ</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -66,23 +66,23 @@
 
                     <hr>
 
-                    {{-- Ñ«ÕÂ --}}
-                    <h5>Ñ«ÕÂ</h5>
+                    {{-- å‹‹ç«  --}}
+                    <h5>å‹‹ç« </h5>
 
                     @php
                         $badgeList = $list->where('category', 'badge');
                     @endphp
 
                     @if($badgeList->isEmpty())
-                        <p class="text-muted">ÔÝÎÞÑ«ÕÂÅäÖÃ</p>
+                        <p class="text-muted">æš‚æ— å‹‹ç« é…ç½®</p>
                     @else
                         <table class="table table-bordered table-hover">
                             <thead>
                             <tr>
-                                <th>Ñ«ÕÂ</th>
-                                <th>ÃèÊö</th>
-                                <th style="width: 120px;">½±Àø</th>
-                                <th style="width: 160px;">²Ù×÷</th>
+                                <th>å‹‹ç« </th>
+                                <th>æè¿°</th>
+                                <th style="width: 120px;">å¥–åŠ±</th>
+                                <th style="width: 160px;">æ“ä½œ</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -104,7 +104,7 @@
                                     <td>
                                         @if($item->achieved)
                                             <span class="text-success">
-                                            ÒÑÁìÈ¡<br>
+                                            å·²é¢†å–<br>
                                             <small>{{ $item->achieved_at }}</small>
                                         </span>
                                         @else
@@ -114,7 +114,7 @@
                                                        value="{{ $item->code }}">
                                                 <button type="submit"
                                                         class="btn btn-sm btn-primary">
-                                                    ÁìÈ¡
+                                                    é¢†å–
                                                 </button>
                                             </form>
                                         @endif
