@@ -4,13 +4,13 @@
 
 @section('content')
     <style>
-        /* 四象限卡片样式 */
         .quadrant-card {
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 200px;
         }
         .quadrant-card:hover {
             transform: translateY(-3px);
@@ -20,23 +20,20 @@
             font-weight: 600;
             font-size: 1.2rem;
             margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         .task-item {
             background: #fff;
             border-radius: 6px;
             padding: 10px 15px;
             margin-bottom: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
+            cursor: grab;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.2s;
         }
-        .task-item:hover {
-            background: rgba(66,156,78,0.05);
+        .task-item.dragging {
+            opacity: 0.5;
         }
         .task-item.completed {
             color: #aaa;
@@ -69,9 +66,7 @@
             color: #429c4e;
             transition: color 0.2s;
         }
-        .mode-switch a:hover {
-            color: #2f7d32;
-        }
+        .mode-switch a:hover { color: #2f7d32; }
     </style>
 
     <div class="container">
@@ -86,110 +81,43 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <!-- 重要紧急事项 -->
-                    <div class="col-md-6">
-                        <div class="quadrant-card quadrant-4">
-                            <div class="quadrant-header">重要紧急事项</div>
-                            @if(empty($tasks[4]))
-                                <p>暂无待办</p>
-                            @else
-                                @foreach ($tasks[4] as $task)
-                                    <div class="task-item {{ $task->completed ? 'completed' : '' }}">
-                                    <span>
-                                        @if(!empty($task->parent_task_id))
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                        @endif
-                                        {{$task->name}}
-                                    </span>
-                                        <div class="task-actions">
-                                            <i class="bi bi-check-circle" title="标记完成" onclick="toggleComplete({{$task->id}})"></i>
-                                            <i class="bi bi-pencil-square" title="编辑" onclick="editTask({{$task->id}})"></i>
-                                            <i class="bi bi-trash" title="删除" onclick="deleteTask({{$task->id}})"></i>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
-                    </div>
+                    @php
+                        $quadrants = [
+                            4 => ['title'=>'重要紧急事项','class'=>'quadrant-4'],
+                            3 => ['title'=>'重要不紧急事项','class'=>'quadrant-3'],
+                            2 => ['title'=>'不重要紧急事项','class'=>'quadrant-2'],
+                            1 => ['title'=>'不重要不紧急事项','class'=>'quadrant-1']
+                        ];
+                    @endphp
 
-                    <!-- 重要不紧急事项 -->
-                    <div class="col-md-6">
-                        <div class="quadrant-card quadrant-3">
-                            <div class="quadrant-header">重要不紧急事项</div>
-                            @if(empty($tasks[3]))
-                                <p>暂无待办</p>
-                            @else
-                                @foreach ($tasks[3] as $task)
-                                    <div class="task-item {{ $task->completed ? 'completed' : '' }}">
-                                    <span>
-                                        @if(!empty($task->parent_task_id))
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                        @endif
-                                        {{$task->name}}
-                                    </span>
-                                        <div class="task-actions">
-                                            <i class="bi bi-check-circle" title="标记完成" onclick="toggleComplete({{$task->id}})"></i>
-                                            <i class="bi bi-pencil-square" title="编辑" onclick="editTask({{$task->id}})"></i>
-                                            <i class="bi bi-trash" title="删除" onclick="deleteTask({{$task->id}})"></i>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
+                    @foreach($quadrants as $q => $info)
+                        <div class="col-md-6">
+                            <div class="quadrant-card {{ $info['class'] }}" data-quadrant="{{ $q }}">
+                                <div class="quadrant-header">{{ $info['title'] }}</div>
+                                <div class="task-list" data-quadrant="{{ $q }}">
+                                    @if(empty($tasks[$q]))
+                                        <p>暂无待办</p>
+                                    @else
+                                        @foreach ($tasks[$q] as $task)
+                                            <div class="task-item" draggable="true" data-task-id="{{$task->id}}">
+                                        <span>
+                                            @if(!empty($task->parent_task_id))
+                                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                            @endif
+                                            {{$task->name}}
+                                        </span>
+                                                <div class="task-actions">
+                                                    <i class="bi bi-check-circle" title="标记完成" onclick="toggleComplete({{$task->id}})"></i>
+                                                    <i class="bi bi-pencil-square" title="编辑" onclick="editTask({{$task->id}})"></i>
+                                                    <i class="bi bi-trash" title="删除" onclick="deleteTask({{$task->id}})"></i>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- 不重要紧急事项 -->
-                    <div class="col-md-6">
-                        <div class="quadrant-card quadrant-2">
-                            <div class="quadrant-header">不重要紧急事项</div>
-                            @if(empty($tasks[2]))
-                                <p>暂无待办</p>
-                            @else
-                                @foreach ($tasks[2] as $task)
-                                    <div class="task-item {{ $task->completed ? 'completed' : '' }}">
-                                    <span>
-                                        @if(!empty($task->parent_task_id))
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                        @endif
-                                        {{$task->name}}
-                                    </span>
-                                        <div class="task-actions">
-                                            <i class="bi bi-check-circle" title="标记完成" onclick="toggleComplete({{$task->id}})"></i>
-                                            <i class="bi bi-pencil-square" title="编辑" onclick="editTask({{$task->id}})"></i>
-                                            <i class="bi bi-trash" title="删除" onclick="deleteTask({{$task->id}})"></i>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- 不重要不紧急事项 -->
-                    <div class="col-md-6">
-                        <div class="quadrant-card quadrant-1">
-                            <div class="quadrant-header">不重要不紧急事项</div>
-                            @if(empty($tasks[1]))
-                                <p>暂无待办</p>
-                            @else
-                                @foreach ($tasks[1] as $task)
-                                    <div class="task-item {{ $task->completed ? 'completed' : '' }}">
-                                    <span>
-                                        @if(!empty($task->parent_task_id))
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                        @endif
-                                        {{$task->name}}
-                                    </span>
-                                        <div class="task-actions">
-                                            <i class="bi bi-check-circle" title="标记完成" onclick="toggleComplete({{$task->id}})"></i>
-                                            <i class="bi bi-pencil-square" title="编辑" onclick="editTask({{$task->id}})"></i>
-                                            <i class="bi bi-trash" title="删除" onclick="deleteTask({{$task->id}})"></i>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                        </div>
-                    </div>
-
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -197,17 +125,14 @@
 
     <script>
         function toggleComplete(taskId) {
-            // Ajax 调用，切换完成状态
             $.post('/tasks/' + taskId + '/toggleComplete', {_token:'{{ csrf_token() }}'}, function(res){
                 if(res.code === 9999) location.reload();
                 else alert('操作失败');
             });
         }
-
         function editTask(taskId) {
             window.location.href = '/tasks/' + taskId + '/edit';
         }
-
         function deleteTask(taskId) {
             if(confirm('确认删除该任务吗？')) {
                 $.ajax({
@@ -220,6 +145,55 @@
                     }
                 });
             }
+        }
+
+        // ===================== 拖拽逻辑 =====================
+        let draggedItem = null;
+
+        document.querySelectorAll('.task-item').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                draggedItem = item;
+                setTimeout(() => item.classList.add('dragging'), 0);
+            });
+            item.addEventListener('dragend', e => {
+                item.classList.remove('dragging');
+                draggedItem = null;
+            });
+        });
+
+        document.querySelectorAll('.task-list').forEach(list => {
+            list.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(list, e.clientY);
+                const draggable = document.querySelector('.dragging');
+                if(afterElement == null) list.appendChild(draggable);
+                else list.insertBefore(draggable, afterElement);
+            });
+
+            list.addEventListener('drop', e => {
+                e.preventDefault();
+                if(draggedItem) {
+                    const newQuadrant = list.dataset.quadrant;
+                    const taskId = draggedItem.dataset.taskId;
+
+                    $.post('/tasks/' + taskId + '/updateQuadrant', {
+                        _token:'{{ csrf_token() }}',
+                        quadrant:newQuadrant
+                    }, function(res){
+                        if(res.code !== 9999) alert('更新失败');
+                    });
+                }
+            });
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.task-item:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height/2;
+                if(offset < 0 && offset > closest.offset) return {offset: offset, element: child};
+                else return closest;
+            }, {offset:Number.NEGATIVE_INFINITY}).element;
         }
     </script>
 @endsection
