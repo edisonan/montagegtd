@@ -1,365 +1,389 @@
 @extends('layouts.app')
 
-<style>
-    audio {
-        display: block;
-        margin-bottom: 10px;
-    }
-
-    #audio-container {
-        padding: 20px 0;
-    }
-
-    .ui-btn {
-        display: inline-block;
-        padding: 5px 20px;
-        font-size: 14px;
-        line-height: 1.428571429;
-        box-sizing: content-box;
-        text-align: center;
-        border: 1px solid #e8e8e8;
-        border-radius: 3px;
-        color: #555;
-        background-color: #fff;
-        border-color: #e8e8e8;
-        white-space: nowrap;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
-    .ui-btn:hover, .ui-btn.hover {
-        color: #333;
-        text-decoration: none;
-        background-color: #f8f8f8;
-        border: 1px solid #ddd;
-    }
-
-    .ui-btn:focus, .ui-btn:active {
-        color: #333;
-        outline: 0;
-    }
-
-    .ui-btn.disabled, .ui-btn.disabled:hover, .ui-btn.disabled:active, .ui-btn[disabled], .ui-btn[disabled]:hover, .ui-state-disabled .ui-btn {
-        cursor: not-allowed;
-        background-color: #eee;
-        border-color: #eee;
-        color: #aaa;
-    }
-
-    .ui-btn-primary {
-        color: #fff;
-        background-color: #39b54a;
-        border-color: #39b54a;
-    }
-
-    .ui-btn-primary:hover, .ui-btn-primary.hover {
-        color: #fff;
-        background-color: #16a329;
-        border-color: #16a329;
-    }
-
-    .ui-btn-primary:focus, .ui-btn-primary:active {
-        color: #fff;
-    }
-
-    .ui-btn-primary.disabled:focus {
-        color: #aaa;
-    }
-
-    .post-text {
-        padding: 10px;
-        font-size: 18px;
-    }
-</style>
-
-<script>
-    function submitProcess($status) {
-        document.getElementById('status_id').value = $status;
-        document.getElementById('add_note_form').submit();
-    }
-
-    function addContent($content) {
-        note_name = document.getElementById('note-name');
-        if ($content == 'code') {
-            note_name.value = note_name.value + "\n<code>\n</code>";
-        } else {
-            note_name.value = note_name.value + $content;
+@section('content')
+    <style>
+        /* ================== 基础风格 ================== */
+        body {
+            background: #fdfdfd;
+            font-family: 'Noto Sans', Arial, sans-serif;
+            color: #4a4a4a;
         }
-    }
 
-</script>
+        .container {
+            max-width: 1140px;
+        }
 
-<script src="js/recorder/recorder.js"></script>
+        /* ================== 笔记创建区 ================== */
+        .card.note-card {
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 20px;
+        }
 
-<script>
-    window.onload = function () {
+        .note-card textarea {
+            width: 100%;
+            resize: vertical;
+            min-height: 80px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
 
-        var start = document.querySelector('#start');
-        var stop = document.querySelector('#stop');
-        var container = document.querySelector('#audio-container');
-        var recorder = new Recorder({
-            sampleRate: 44100, //采样频率，默认为44100Hz(标准MP3采样率)
-            bitRate: 128, //比特率，默认为128kbps(标准MP3质量)
-            success: function () { //成功回调函数
-                start.disabled = false;
-            },
-            error: function (msg) { //失败回调函数
-                start.value = '录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
-            },
-            fix: function (msg) { //不支持H5录音回调函数
-                start.value = '录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
+        .note-tags {
+            margin-top: 10px;
+        }
+
+        .note-tags .tag {
+            display: inline-block;
+            background: #e6f5ea;
+            color: #39b54a;
+            padding: 5px 10px;
+            margin: 3px 5px 3px 0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .note-tags .tag:hover {
+            background: #39b54a;
+            color: #fff;
+        }
+
+        .audio-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .audio-controls button {
+            background: #39b54a;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .audio-controls button:hover {
+            transform: scale(1.1);
+        }
+
+        #audio-container audio {
+            display: block;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        /* ================== 发布按钮 ================== */
+        .publish-btns {
+            margin-top: 15px;
+        }
+
+        .publish-btns button {
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .publish-btns button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* ================== 笔记列表 ================== */
+        .card.note-list-card {
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            margin-bottom: 15px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .card.note-list-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+
+        .note-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .note-header .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .note-header img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .note-time {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .note-status {
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+
+        .note-body {
+            font-size: 16px;
+            margin-top: 5px;
+            line-height: 1.6;
+        }
+
+        .note-body img {
+            max-height: 150px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .note-operations {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .note-operations i {
+            font-size: 1.4rem;
+            margin-left: 10px;
+            cursor: pointer;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .note-operations i:hover {
+            color: #39b54a;
+        }
+
+        .note-body.collapsed {
+            max-height: 120px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .note-body.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 40px;
+            width: 100%;
+            background: linear-gradient(transparent, #fdfdfd);
+        }
+
+        /* ================== 图片缩略图 ================== */
+        .note-body img.thumbnail {
+            max-height: 100px;
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="/js/recorder/recorder.js"></script>
+    <script>
+        function submitProcess(status) {
+            document.getElementById('status_id').value = status;
+            document.getElementById('add_note_form').submit();
+        }
+
+        function addContent(content) {
+            let note_name = document.getElementById('note-name');
+            if(content === 'code') {
+                note_name.value += "\n<code>\n</code>";
+            } else {
+                note_name.value += content;
             }
-        });
+        }
 
-        //开始录音
-        //recorder.start();
+        window.onload = function () {
+            let startBtn = document.getElementById('start');
+            let stopBtn = document.getElementById('stop');
+            let container = document.getElementById('audio-container');
 
-        //停止录音
-        //recorder.stop();
+            let recorder = new Recorder({
+                sampleRate: 44100,
+                bitRate: 128,
+                success: function () { startBtn.disabled = false; },
+                error: function () { startBtn.value = '录音不支持'; },
+                fix: function () { startBtn.value = '录音不支持'; }
+            });
 
-        //获取MP3编码的Blob格式音频文件
-        //recorder.getBlob(function(blob){ 获取成功回调函数，blob即为音频文件
-        //    ...
-        //},function(msg){ 获取失败回调函数，msg为错误信息
-        //    ...
-        //});
+            startBtn.addEventListener('click', function () {
+                this.disabled = true;
+                stopBtn.disabled = false;
+                let audios = document.querySelectorAll('audio');
+                audios.forEach(a => { if(!a.paused) a.pause(); });
+                recorder.start();
+            });
 
-        //getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS.
-
-        start.addEventListener('click', function () {
-            this.disabled = true;
-            stop.disabled = false;
-            var audio = document.querySelectorAll('audio');
-            for (var i = 0; i < audio.length; i++) {
-                if (!audio[i].paused) {
-                    audio[i].pause();
-                }
-            }
-            recorder.start();
-        });
-        stop.addEventListener('click', function () {
-            this.disabled = true;
-            start.disabled = false;
-            recorder.stop();
-            recorder.getBlob(function (blob) {
-                if ($("#note-name").val().indexOf("#分享语音#") == -1) {
-                    $("#note-name").val("#分享语音#");
-                }
-
-                var childs = container.childNodes;
-                for (var i = 0; i < childs.length; i++) {
-                    container.removeChild(childs[i]);
-                }
-
-                var audio = document.createElement('audio');
-                audio.src = URL.createObjectURL(blob);
-                audio.controls = true;
-                container.appendChild(audio);
-
-                //upload
-                var fd = new FormData();
-                fname = '{{ md5(date('YmdHis').rand(0,99)) }}';
-                fd.append('fname', fname);
-                fd.append('file', blob);
-                fd.append('_token', "{{ csrf_token() }}");
-
-                $.ajax({
-                    type: 'POST',
-                    url: '{{ url("notes/upload") }}',
-                    data: fd,
-                    processData: false,
-                    contentType: false
-                }).done(function (data) {
-                    data_arr = JSON.parse(data);
-                    if (data_arr.code == 9999) {
-                        $("#fname").val(fname);
+            stopBtn.addEventListener('click', function () {
+                this.disabled = true;
+                startBtn.disabled = false;
+                recorder.stop();
+                recorder.getBlob(function (blob) {
+                    if (!document.getElementById('note-name').value.includes("#分享语音#")) {
+                        document.getElementById('note-name').value = "#分享语音#";
                     }
+
+                    container.innerHTML = '';
+                    let audio = document.createElement('audio');
+                    audio.src = URL.createObjectURL(blob);
+                    audio.controls = true;
+                    container.appendChild(audio);
+
+                    // 上传音频
+                    let fd = new FormData();
+                    let fname = '{{ md5(date('YmdHis').rand(0,99)) }}';
+                    fd.append('fname', fname);
+                    fd.append('file', blob);
+                    fd.append('_token', "{{ csrf_token() }}");
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ url("notes/upload") }}',
+                        data: fd,
+                        processData: false,
+                        contentType: false
+                    }).done(function(data){
+                        let data_arr = JSON.parse(data);
+                        if(data_arr.code == 9999){
+                            document.getElementById('fname').value = fname;
+                        }
+                    });
                 });
             });
-        });
-    };
-</script>
+        };
+    </script>
 
-@section('content')
-    <script type="text/javascript">
-        $(document).ready(function () {
+    <div class="container">
+        <!-- ================== 新建笔记 ================== -->
+        <div class="card note-card">
+            <form id="add_note_form" action="{{ url('note') }}" method="POST">
+                {{ csrf_field() }}
+                <textarea id="note-name" name="name" placeholder="记录下你的想法...">{{ $add_content }}</textarea>
 
-            $(".delete_note").click(function () {
-                note_value = $(this).attr("note_value");
-                note_token = $(this).attr("note_token");
-                note_type = $(this).attr("note_type");
+                <div class="note-tags">
+                    <span class="tag" onclick="addContent('#每日小目标#')">#每日小目标#</span>
+                    <span class="tag" onclick="addContent('#每日总结#')">#每日总结#</span>
+                    <span class="tag" onclick="addContent('#读书笔记#')">#读书笔记#</span>
+                    <span class="tag" onclick="addContent('#分享#')">#分享#</span>
+                    <span class="tag" onclick="addContent('#碎碎念#')">#碎碎念#</span>
+                    <span class="tag" onclick='addContent("code")'>[代码片段]</span>
+                </div>
 
-                if (note_type == 'delete' && !confirm("确认要删除此笔记咩？")) {
-                    return false;
-                }
+                <div class="audio-controls">
+                    <button type="button" id="start" disabled title="开始录音"><i class="fa fa-microphone"></i></button>
+                    <button type="button" id="stop" disabled title="停止录音"><i class="fa fa-stop"></i></button>
+                </div>
+                <div id="audio-container"></div>
 
+                @if(!empty($add_image))
+                    <div style="margin-top:10px">
+                        <span>预览：</span>
+                        <img src="{{ $add_image }}" alt="preview" height="150px">
+                        <input type="hidden" name="add_image" value="{{ $add_image }}">
+                    </div>
+                @endif
+
+                <input type="hidden" name="task_id" value="{{ $task_id }}">
+                <input type="hidden" name="pomo_id" value="{{ $pomo_id }}">
+                <input type="hidden" name="article_id" value="{{ $article_id }}">
+                <input type="hidden" name="fname" id="fname">
+                <input type="hidden" name="status" id="status_id">
+
+                <div class="publish-btns">
+                    <button type="button" class="btn btn-primary" onclick="submitProcess(1)">私密发布</button>
+                    <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">公开发布</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ================== 笔记列表 ================== -->
+        @if(count($notes) > 0)
+            <h5 style="margin:15px 0">大家在分享什么</h5>
+            @foreach ($notes as $note)
+                <div class="card note-list-card" id="{{ $note->id }}">
+                    <div class="note-header">
+                        <div class="user-info">
+                            <img src="https://gravatar.loli.net/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40">
+                            <strong>{{ $note->user->name }}</strong>
+                            <span class="note-status" style="color: {{ $note->status == 2 ? 'green' : '#f98282' }}">
+                            {{ $note->status == 2 ? '公开' : '仅个人可见' }}
+                        </span>
+                        </div>
+                        <div class="note-time">{{ date('Y-m-d H:i', strtotime($note->created_at)) }}</div>
+                        <div class="note-operations">
+                            @if($note->user_id == Auth::user()->id)
+                                <i class="bi-pencil-square" onclick="window.location='{{ url('noteupdate/'.$note->id) }}'"></i>
+                                <i class="bi-trash delete_note" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" note_type="delete"></i>
+                            @else
+                                <i class="bi-hand-thumbs-up like_note" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" note_type="like"></i>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="note-body collapsed">
+                        @if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
+                            <div style="margin-top:5px">语音记录: <a href="{{ url('note/getRecord/'.$note->id) }}">播放🎵</a></div>
+                        @endif
+
+                        @if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
+                            <a href="{{ $note->image_path }}" target="_blank">
+                                <img src="{{ $note->image_path }}" class="thumbnail">
+                            </a>
+                        @endif
+
+                        {!! App\Http\Utils\CommonUtil::formatContentHtml($note->name) !!}
+                    </div>
+                </div>
+            @endforeach
+            {!! $notes->links() !!}
+        @endif
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $(".delete_note").click(function(){
+                if(!confirm('确认要删除此笔记吗？')) return;
+                let note_id = $(this).attr('note_value');
+                let token = $(this).attr('note_token');
                 $.ajax({
-                    url: "{{ url('note') }}" + "/" + note_value,
+                    url: "{{ url('note') }}/" + note_id,
                     type: 'DELETE',
-                    data: {type: note_type, _token: note_token},
-                    success: function (result_arr) {
-                        if (result_arr.code != 9999) {
-                            alert('处理失败，请稍后再试');
+                    data: {_token: token, type:'delete'},
+                    success: function(res){
+                        if(res.code == 9999){
+                            $('#' + note_id).remove();
                         } else {
-                            $('#' + note_value).remove();
+                            alert('删除失败，请稍后重试');
                         }
                     }
                 });
             });
+
+            // 长文本折叠展开
+            $(".note-body").each(function(){
+                if(this.scrollHeight > 120){
+                    $(this).addClass('collapsed').click(function(){
+                        $(this).toggleClass('collapsed');
+                    });
+                }
+            });
         });
     </script>
-    <div class="container">
-        <div class=" col-md-12">
-            @include('common.success')
-            <div class="card">
-                <div class="card-header">
-                    新的笔记
-                    <div class="form-inline" style="float:right">
-                        <form action="{{url('notes')}}" method="get">
-                            <input type="text" name="keyword" class="form-control" placeholder="搜索笔记"/>
-                            <input type="submit" class="btn btn-primary" value="搜 索"/>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <!-- Display Validation Errors -->
-                @include('common.errors')
-
-                <!-- New note Form -->
-                    <form action="{{ url('note') }}" method="POST" class="form-horizontal" id="add_note_form">
-                    {{ csrf_field() }}
-
-                    <!-- note Name -->
-                        <div class="form-group row">
-                            <label for="note-name" class="col-md-2 control-label">你在想什么呢</label>
-
-                            <div class="col-md-10">
-                                <textarea class="form-control" rows="4" name="name"
-                                          id="note-name">{{ $add_content }}</textarea>
-
-                                <button id="start" class="ui-btn ui-btn-primary" disabled
-                                        title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">
-                                    录音
-                                </button>
-                                <button id="stop" class="ui-btn ui-btn-primary" disabled
-                                        title="请尽量使用https请求访问本站，支持360、chrome、safari、firefox等高版本浏览器，支持ios11，请您保证有录音设备，更换浏览器后重试">
-                                    停止
-                                </button>
-                                <div id="audio-container"></div>
-
-                                <input type="hidden" name="task_id" id="task_id" value="{{ $task_id }}"/>
-                                <input type="hidden" name="pomo_id" id="pomo_id" value="{{ $pomo_id }}"/>
-                                <input type="hidden" name="article_id" id="article_id" value="{{ $article_id }}"/>
-                                <input type="hidden" name="fname" id="fname"/>
-                                @if(!empty($add_image))
-                                    <input type="hidden" name="add_image" id="add_image" value="{{$add_image}}"/>
-                                    <span>预览：</span><img height="150px" alt="" src="{{$add_image}}">
-                                @endif
-
-                                <br/>
-                                <span>推荐话题:</span>
-                                <a href="javascript:void(0)" onclick="addContent('#每日小目标#')">#每日小目标#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#每日总结#')">#每日总结#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#读书笔记#')">#读书笔记#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#分享#')">#分享#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#碎碎念#')">#碎碎念#</a>
-                                <a href="javascript:void(0)" onclick='addContent("code")'>[代码片段]</a>
-                            </div>
-                        </div>
-
-                        <!-- Add note Button -->
-                        <div class="form-group row">
-                            <div class="col-md-offset-3 col-md-6">
-                                <input type="hidden" name="status" value="1" id="status_id">
-
-                                @if(!empty($task_id) || !empty($article_id) || !empty($pomo_id))
-                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">
-                                        <i class="fa fa-btn fa-plus"></i>公开发布
-                                    </button>
-
-                                    <button type="button" class="btn btn-primary" onclick="submitProcess(1)">
-                                        <i class="fa fa-btn fa-plus"></i>私密发布
-                                    </button>
-                                @else
-                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
-                                        <i class="fa fa-btn fa-plus"></i>私密发布
-                                    </button>
-
-                                    <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
-                                        <i class="fa fa-btn fa-plus"></i>公开发布
-                                    </button>
-                                @endif
-
-
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Current notes -->
-            @if (count($notes) > 0)
-                <div class="card">
-                    <div class="card-header">
-                        大家在分享什么
-                    </div>
-                </div>
-                @foreach ($notes as $note)
-                    <div class="card" style="margin-bottom:10px" id="{{$note->id}}">
-                        <div class="card-block">
-                            <h4 class="card-title"><img style="width:30px;margin:5px"
-                                                        src="https://gravatar.loli.net/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40"
-                                                        class="img-fluid rounded" alt="Responsive image rounded"
-                                                        style="width:50px;"> {{ $note->user->name }}</h4>
-                            <p class="card-text"><small class="text-muted"
-                                                        style="padding-left: 10px;">{{ date('Y年m月d日 H:i',strtotime($note->created_at)) }}
-                                    &nbsp;
-                                    @if($note->status != 2)
-                                        <span style="color:#f98282">仅个人可见</span>
-                                    @else
-                                        <span style="color:green">公开</span>
-                                    @endif
-                                </small></p>
-                            <div class="card-text post-text">
-                                @if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-                                    语音记录: <a href="{{ url('note/getRecord') }}/{{ $note->id }}">请点击播放🎵</a><br/>
-                                @endif
-
-                                @if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-                                    <a href="{{ $note->image_path }}" title="点击查看原图" target="_blank">
-                                        <image height="150px" src="{{ $note->image_path }}"/>
-                                    </a>
-                                @endif
-                                <?php echo App\Http\Utils\CommonUtil::formatContentHtml($note->name); ?>
-                            </div>
-                            <p class="card-text text-right post-text">
-                                @if($note->user_id == Auth::user()->id )
-                                    <a href="{{ url('noteupdate/'.$note->id)}}">
-                                        <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
-                                    </a>
-
-                                    <a href="javascript:void(0)" class="delete_note" note_type="delete"
-                                       note_value="{{ $note->id }}" note_token="{{ csrf_token() }}"
-                                       style="cursor:pointer;">
-                                        <i class="bi-trash" style="font-size: 1.5rem;"></i>
-                                    </a>
-                                @else
-                                    <a href="javascript:void(0)" class="like_note" note_type="like"
-                                       note_value="{{ $note->id }}" note_token="{{ csrf_token() }}"
-                                       style="cursor:pointer;">
-                                        <i class="bi-hand-thumbs-up" style="font-size: 1.5rem;"></i>
-                                    </a>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                @endforeach
-                {!! $notes->links() !!}
-            @endif
-        </div>
-    </div>
 @endsection
