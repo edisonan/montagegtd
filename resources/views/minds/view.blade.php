@@ -219,9 +219,9 @@
                     </div>
 
                     <div class="ml-auto d-flex gap-2">
-                        <a href="{{'/mindoutlineviewv2/'}}{{$mind->id}}" class="text-decoration-none">大纲预览</a>
-                        <a href="javascript:void(0)" id="work_mode" class="text-decoration-none">大屏模式</a>
-                        <a href="{{'/minds'}}" class="text-decoration-none">返回</a>
+                        <a href="{{'/mindoutlineviewv2/'}}{{$mind->id}}" class="text-decoration-none">[大纲]</a>
+                        <a href="javascript:void(0)" id="work_mode" class="text-decoration-none">[大屏]</a>
+                        <a href="{{'/minds'}}" class="text-decoration-none">[返回]</a>
                     </div>
                 </div>
 

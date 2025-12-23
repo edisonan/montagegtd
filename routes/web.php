@@ -101,6 +101,7 @@ Route::group([
     Route::get('/pomos/start', 'PomoController@start');
     Route::get('/pomos/discard/{pomo}', 'PomoController@discard');
     Route::get('/pomos/discard/', 'PomoController@discard');
+    Route::get('/pomos/pomostatus', 'PomoController@pomostatus');
 
     Route::get('/third/index', 'ThirdController@index');
     Route::get('/third/testFave', 'ThirdController@testFave');
