@@ -284,7 +284,7 @@
         } else {
             $str += '<a href="javascript:void(0)" class="top_task" style="display:none" task_value="' + data.id + '" task_is_top="' + data.is_top + '"><img src="/img/icon/top.png" style="height: 20px;"></a>';
         }
-        $str += '<a href="/task/' + data.id + '" class="update_task" style="display:none" ><img src="/img/icon/editor.png" style="height: 20px;"></a>';
+        $str += '<a href="javascript:void(0)" class="update_task" style="display:none" onclick="loadTaskDataAndOpenModalForIndex(' + data.id + ')" ><img src="/img/icon/editor.png" style="height: 20px;"></a>';
         $str += '<a href="javascript:void(0)" class="finish_task delete_task" style="display:none" task_type="delete" task_value="' + data.id + '"><img src="/img/icon/ashbin.png" style="height: 20px;"></a>';
         $str += '<a href="/notes?task_id=' + data.id + '" class="record_task" style="display:none" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
         $str += data.name;
@@ -597,76 +597,56 @@
             });
 
         });
-
-        /**
-         * 监听键盘回车事件
-         */
-        $(document).keyup(function (event) {
-            if (event.keyCode == 13) {
-                // 新增待办时按回车键
-                if ($("#task_name").is(":focus")) {
-                    task_name = $("#task_name").val();
-                    $.ajax({
-                        url: "{{ url('task') }}",
-                        type: 'POST',
-                        data: {"name": task_name, "mode": mode, "_token": "{{ csrf_token() }}"},
-                        success: function (result_arr) {
-                            if (result_arr.code != 9999) {
-                                alert('处理失败，请稍后再试');
-                            } else {
-                                //temp
-                                $("#task_name").val("");
-                                var data = result_arr.result;
-                                $("#tasks").prepend(create_task_li(data));
-                            }
-                        }
-                    });
-                    // 新增番茄描述时按回车键
-                } else if ($("#pomo_name").is(":focus")) {
-                    pomo_name = $("#pomo_name").val();
-                    pomo_id = $("#pomo_id").val();
-                    $.ajax({
-                        url: "{{ url('pomo') }}/" + pomo_id,
-                        type: 'POST',
-                        data: {"name": pomo_name, "_token": "{{ csrf_token() }}"},
-                        success: function (result_arr) {
-                            if (result_arr.code != 9999) {
-                                alert('处理失败，请稍后再试');
-                            } else {
-                                $("#pomo_name").val("");
-                                $("#pomo_id").val(result_arr.result.active_pomo.id);
-                                remain = result_arr.result.current_pomo_remain;
-                                status = result_arr.result.current_pomo_status;
-
-                                var add_content = (status == 2 ? '准备开始新的番茄吧~' : '准备休息一下吧~');
-                                document.title = add_content + title;
-                                document.getElementById("pomoBtn").innerHTML = add_content;
-
-                                // 清除之前的定时器
-                                if (timer) {
-                                    clearInterval(timer);
-                                }
-                                timer = setInterval(function () {
-                                    ShowCountDown(remain, "pomoBtn");
-                                }, interval);
-
-                                $("#recordPomo").css("display", "none");
-                                $("#pomoBtn").css("display", "block");
-
-                                $("#pomos").prepend(create_pomo_li(result_arr.result.active_pomo));
-                            }
-                        }
-                    });
+        
+        // 为首页加载任务数据并打开编辑弹窗的函数
+        function loadTaskDataAndOpenModalForIndex(taskId) {
+            // 从服务器获取任务数据 - 使用现有的API
+            $.get('/tasks/' + taskId, function(response) {
+                if(response.code == 9999) {
+                    var task = response.result;
+                    // 填充表单数据
+                    $('#task_name_input').val(task.name);
+                    $('input[name="priority"][value="' + (task.priority || 1) + '"]').prop('checked', true);
+                    $('#remindtime_input').val(task.remindtime || '');
+                    $('#deadline_input').val(task.deadline || '');
+                    $('input[name="status"][value="' + (task.status || 1) + '"]').prop('checked', true);
+                    $('input[name="is_top"][value="' + (task.is_top || 0) + '"]').prop('checked', true);
+                    $('input[name="mode"][value="' + (task.mode || 1) + '"]').prop('checked', true);
+                    
+                    // 添加隐藏字段存储任务ID
+                    if ($('#taskUpdateForm input[name=id]').length === 0) {
+                        $('#taskUpdateForm').append('<input type="hidden" name="id" value="">');
+                    }
+                    $('#taskUpdateForm input[name=id]').val(task.id);
+                    
+                    // 设置表单提交URL
+                    $('#taskUpdateForm').attr('action', '/task/' + task.id);
+                    
+                    // 清除错误信息
+                    $('#taskUpdateErrors').hide();
+                    $('#taskUpdateErrorList').empty();
+                    
+                    // 显示模态框
+                    $('#taskUpdateModal').modal('show');
+                } else {
+                    alert('获取任务数据失败：' + (response.msg || '未知错误'));
                 }
-            }
-        });
+            }).fail(function() {
+                alert('获取任务数据失败');
+            });
+        }
     </script>
-    <div class="container">
-        @include('common.success')
+    
+    @include('components.task-update-modal')
+
+    <div class="container bootstro" data-bootstro-step="5"
+         data-bootstro-content="点击这里可以添加待办事项，完成后可以记录到番茄钟中"
+         data-bootstro-placement="top">
         <div class="row">
-            <div class=" col-md-6 bootstro" data-bootstro-step="0"
-                 data-bootstro-placement="bottom" data-bootstro-nextButtonText="下一步"
-                 data-bootstro-content="使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行），每4个番茄时段多休息一会儿。"
+            <div class="col-md-6 bootstro" data-bootstro-step="1"
+                 data-bootstro-placement="bottom" data-bootstro-prevButtonText="上一步"
+                 data-bootstro-content="番茄工作法是一种简单高效的时间管理方法，一个番茄时间包含25分钟工作时间和5分钟休息时间"
+                 data-bootstro-nextButtonText="开始使用蒙太奇~"
                  data-bootstro-finishButton="返回网站，开启高效生活~">
                 <div class="card card-default">
                     <div class="card-header">

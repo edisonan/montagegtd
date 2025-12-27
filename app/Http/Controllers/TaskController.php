@@ -162,4 +162,19 @@ class TaskController extends Controller {
 		
 		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/index' );
 	}
+	
+	/**
+	 * 获取单个任务数据 (用于弹窗编辑)
+	 * 
+	 * @param Task $task
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function show(Task $task) {
+		$this->authorize('destroy', $task);
+		
+		return response()->json([
+			'code' => 9999,
+			'result' => $task
+		]);
+	}
 }

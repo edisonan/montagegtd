@@ -53,6 +53,7 @@ Route::group([
     Route::delete('/task/{task}', 'TaskController@destroy');
     Route::post('/task/{task}', 'TaskController@update');
     Route::get('/task/{task}', 'TaskController@update');
+    Route::get('/tasks/{task}', 'TaskController@show');
     Route::get('/taskpriority', 'TaskController@priority');
 
     Route::get('/cals', 'CalController@index');

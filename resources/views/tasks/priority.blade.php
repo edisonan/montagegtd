@@ -108,7 +108,7 @@
                                         </span>
                                                 <div class="task-actions">
                                                     <i class="bi bi-check-circle" title="标记完成" onclick="toggleComplete({{$task->id}})"></i>
-                                                    <i class="bi bi-pencil-square" title="编辑" onclick="editTask({{$task->id}})"></i>
+                                                    <i class="bi bi-pencil-square" title="编辑" onclick="loadTaskDataAndOpenModalForPriority({{ json_encode($task->toArray()) }})"></i>
                                                     <i class="bi bi-trash" title="删除" onclick="deleteTask({{$task->id}})"></i>
                                                 </div>
                                             </div>
@@ -123,6 +123,8 @@
         </div>
     </div>
 
+    @include('components.task-update-modal')
+    
     <script>
         function toggleComplete(taskId) {
             $.post('/tasks/' + taskId + '/toggleComplete', {_token:'{{ csrf_token() }}'}, function(res){
@@ -130,8 +132,27 @@
                 else alert('操作失败');
             });
         }
-        function editTask(taskId) {
-            window.location.href = '/tasks/' + taskId + '/edit';
+        function loadTaskDataAndOpenModalForPriority(taskData) {
+            // 填充表单数据
+            $('#task_name_input').val(taskData.name);
+            $('input[name="priority"][value="' + (taskData.priority || 1) + '"]').prop('checked', true);
+            $('#remindtime_input').val(taskData.remindtime || '');
+            $('#deadline_input').val(taskData.deadline || '');
+            $('input[name="status"][value="' + (taskData.status || 1) + '"]').prop('checked', true);
+            $('input[name="is_top"][value="' + (taskData.is_top || 0) + '"]').prop('checked', true);
+            $('input[name="mode"][value="' + (taskData.mode || 1) + '"]').prop('checked', true);
+            
+            // 添加隐藏字段存储任务ID
+            if ($('#taskUpdateForm input[name=id]').length === 0) {
+                $('#taskUpdateForm').append('<input type="hidden" name="id" value="">');
+            }
+            $('#taskUpdateForm input[name=id]').val(taskData.id);
+            
+            // 设置表单提交URL
+            $('#taskUpdateForm').attr('action', '/task/' + taskData.id);
+            
+            // 显示模态框
+            $('#taskUpdateModal').modal('show');
         }
         function deleteTask(taskId) {
             if(confirm('确认删除该任务吗？')) {
