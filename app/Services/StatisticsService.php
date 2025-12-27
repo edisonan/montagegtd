@@ -95,10 +95,13 @@ class StatisticsService {
 				$sum = $sum + $statisticData->total;
 			}
 			$detailFormatInfos [$type] = $this->formatDetailInfos ( $currentDetailInfos, $name );
-			$totalInfos [$type] = array (
-					'value' => $sum,
-					'name' => $name 
-			);
+            if ($type != 'article') {
+                $totalInfos [$type] = array (
+                    'value' => $sum,
+                    'name' => $name
+                );
+			}
+
 		}
 		
 		$totalFormatInfos = $this->formatTotalInfos ( $totalInfos );

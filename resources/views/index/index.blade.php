@@ -23,12 +23,16 @@
 
     //定时器
     var timer;
+    //校准定时器
+    var calibrationTimer;
 
     //待办列表模式
     var mode = 1;
 
     //间隔 1S
     var interval = 1000;
+    //校准间隔 60秒
+    var calibrationInterval = 60000;
     //剩余时间
     var remain = {{ $current_pomo_remain }};
     //当前状态
@@ -189,19 +193,54 @@
         });
     }
 
-    function pomostatus() {
+    // 校准番茄状态（新增函数）
+    function calibratePomoStatus() {
+        console.log('正在校准番茄状态...');
         $.ajax({
-            url: "{{ url('pomostatus') }}",
+            url: "https://pretask.congcong.us/pomos/pomostatus",
             type: 'GET',
-            data: {"_token": "{{ csrf_token() }}"},
+            dataType: 'json',
             success: function (result_arr) {
-                if (result_arr.code != 9999) {
-                    alert('处理失败，请稍后再试');
-                } else {
-                    if (result_arr.result.current_pomo_status != status) {
+                if (result_arr.code == 9999) {
+                    console.log('校准成功，当前状态:', result_arr.result.current_pomo_status, '剩余时间:', result_arr.result.current_pomo_remain);
+
+                    // 更新本地状态和剩余时间
+                    var newStatus = result_arr.result.current_pomo_status;
+                    var newRemain = result_arr.result.current_pomo_remain;
+
+                    // 如果状态发生变化，刷新页面
+                    if (newStatus != status) {
+                        console.log('状态变化，刷新页面');
                         location.href = "";
+                        return;
                     }
+
+                    // 更新剩余时间（如果差异较大）
+                    if (Math.abs(newRemain - remain) > 5) {
+                        console.log('时间差异较大，更新剩余时间:', remain, '->', newRemain);
+                        remain = newRemain;
+
+                        // 如果番茄进行中或休息中，更新倒计时显示
+                        if (status == 2 || status == 4) {
+                            var minute = Math.floor(remain / 60);
+                            if (minute < 0) minute = 0;
+                            var second = Math.floor(remain - minute * 60);
+                            if (second < 0) second = 0;
+
+                            var add_content = (status == 2 ? '#此番茄还剩#' : '#休息还剩#') +
+                                ((minute >= 10) ? minute : "0" + minute) + ":" +
+                                ((second >= 10) ? second : "0" + second);
+
+                            document.title = add_content + title;
+                            document.getElementById("pomoBtn").innerHTML = add_content;
+                        }
+                    }
+                } else {
+                    console.log('校准失败:', result_arr.msg);
                 }
+            },
+            error: function(xhr, status, error) {
+                console.log('校准请求失败:', error);
             }
         });
     }
@@ -260,6 +299,11 @@
             ShowCountDown(remain, "pomoBtn");
         }, interval);
     }
+
+    // 启动60秒定时校准（无论什么状态都启动）
+    calibrationTimer = setInterval(function() {
+        calibratePomoStatus();
+    }, calibrationInterval);
 </script>
 
 @section('content')
@@ -376,6 +420,11 @@
                                 status = result_arr.result.current_pomo_status;
                                 showPomoTime('pomo_start_time_show', result_arr.result.active_pomo.start_time);
                                 showPomoTime('pomo_end_time_show', result_arr.result.active_pomo.end_time);
+
+                                // 清除之前的定时器
+                                if (timer) {
+                                    clearInterval(timer);
+                                }
                                 timer = setInterval(function () {
                                     ShowCountDown(remain, "pomoBtn");
                                 }, interval);
@@ -593,9 +642,14 @@
                                 document.title = add_content + title;
                                 document.getElementById("pomoBtn").innerHTML = add_content;
 
+                                // 清除之前的定时器
+                                if (timer) {
+                                    clearInterval(timer);
+                                }
                                 timer = setInterval(function () {
                                     ShowCountDown(remain, "pomoBtn");
                                 }, interval);
+
                                 $("#recordPomo").css("display", "none");
                                 $("#pomoBtn").css("display", "block");
 
