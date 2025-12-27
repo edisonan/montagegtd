@@ -235,4 +235,15 @@ class TaskService {
 			}
 		}
 	}
+	
+	/**
+	 * 获取用户的所有父级任务列表
+	 * 
+	 * @param int $userId
+	 * @param int|null $excludeTaskId 要排除的任务ID（避免任务成为自己的父任务）
+	 * @return Collection
+	 */
+	public function getUserParentTasks($userId, $excludeTaskId = null) {
+		return $this->taskRepository->getUserParentTasks($userId, $excludeTaskId);
+	}
 }

@@ -87,7 +87,7 @@
                                     <a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">
                                         <i class="bi-textarea-t" style="font-size: 1.5rem;"></i>
                                     </a>
-                                    <a href="javascript:void(0)" onclick="loadTaskDataAndOpenModal({{ json_encode($task->toArray()) }})">
+                                    <a href="javascript:void(0)" onclick="callOpenTaskUpdateModal('{{ addslashes(json_encode($task->toArray())) }}')">
                                         <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
                                     </a>
                                 </td>
@@ -111,28 +111,20 @@
     @include('components.task-update-modal')
     
     <script>
-        // 加载任务数据并打开模态框的函数
-        function loadTaskDataAndOpenModal(taskData) {
-            // 填充表单数据
-            $('#task_name_input').val(taskData.name);
-            $('input[name="priority"][value="' + (taskData.priority || 1) + '"]').prop('checked', true);
-            $('#remindtime_input').val(taskData.remindtime || '');
-            $('#deadline_input').val(taskData.deadline || '');
-            $('input[name="status"][value="' + (taskData.status || 1) + '"]').prop('checked', true);
-            $('input[name="is_top"][value="' + (taskData.is_top || 0) + '"]').prop('checked', true);
-            $('input[name="mode"][value="' + (taskData.mode || 1) + '"]').prop('checked', true);
-            
-            // 添加隐藏字段存储任务ID
-            if ($('#taskUpdateForm input[name=id]').length === 0) {
-                $('#taskUpdateForm').append('<input type="hidden" name="id" value="">');
+        $(document).ready(function() {
+            // 确保在 DOM 加载后可以使用 jQuery
+            console.log('Task index 页面已加载');
+        });
+        
+        // 用于安全地调用 openTaskUpdateModal 函数
+        function callOpenTaskUpdateModal(taskDataStr) {
+            try {
+                var taskData = JSON.parse(taskDataStr);
+                openTaskUpdateModal(taskData);
+            } catch(e) {
+                console.error('解析任务数据时出错:', e);
+                console.log('原始数据:', taskDataStr);
             }
-            $('#taskUpdateForm input[name=id]').val(taskData.id);
-            
-            // 设置表单提交URL
-            $('#taskUpdateForm').attr('action', '/task/' + taskData.id);
-            
-            // 显示模态框
-            $('#taskUpdateModal').modal('show');
         }
     </script>
 @endsection

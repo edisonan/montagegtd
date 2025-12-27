@@ -53,6 +53,30 @@ class TaskRepository {
 	}
 	
 	/**
+	 * 获取用户的所有非子任务（用于父任务选择）
+	 * 
+	 * @param int $userId
+	 * @param int|null $excludeTaskId 要排除的任务ID（避免任务成为自己的父任务）
+	 * @return Collection
+	 */
+	public function getUserParentTasks($userId, $excludeTaskId = null) {
+		$query = Task::where('user_id', $userId)
+			->where('status', 1)  // 只获取状态为1（进行中）的任务
+			->where(function($query) {
+				$query->whereNull('parent_task_id')
+					  ->orWhere('parent_task_id', 0);
+			});
+			
+		// 排除当前任务本身，防止任务成为自己的父任务
+		if ($excludeTaskId) {
+			$query->where('id', '!=', $excludeTaskId);
+		}
+		
+		return $query->orderBy('updated_at', 'desc')
+			->get();
+	}
+	
+	/**
 	 * 通过提醒时间获取所有待办任务列表
 	 * 
 	 * @param string $startTime        	

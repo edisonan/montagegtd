@@ -177,4 +177,31 @@ class TaskController extends Controller {
 			'result' => $task
 		]);
 	}
+	
+	/**
+	 * 获取用户父级任务列表（用于下拉框选择）
+	 * 
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function getParentTasks(Request $request) {
+		$userId = auth()->id();
+		
+		// 检查用户是否已认证
+		if (!$userId) {
+			return response()->json([
+				'code' => 9998,
+				'msg' => '用户未认证',
+				'result' => []
+			]);
+		}
+		
+		$excludeTaskId = $request->input('exclude_task_id');
+		$parentTasks = $this->taskService->getUserParentTasks($userId, $excludeTaskId);
+		
+		return response()->json([
+			'code' => 9999,
+			'result' => $parentTasks
+		]);
+	}
 }

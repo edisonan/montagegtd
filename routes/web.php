@@ -52,9 +52,9 @@ Route::group([
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');
     Route::post('/task/{task}', 'TaskController@update');
-    Route::get('/task/{task}', 'TaskController@update');
     Route::get('/tasks/{task}', 'TaskController@show');
     Route::get('/taskpriority', 'TaskController@priority');
+    Route::get('/taskparenttasks', 'TaskController@getParentTasks');
 
     Route::get('/cals', 'CalController@index');
     Route::get('/calics/{theme}', 'CalController@ics');

@@ -626,6 +626,9 @@
                     $('#taskUpdateErrors').hide();
                     $('#taskUpdateErrorList').empty();
                     
+                    // 加载父级任务选项（排除当前任务本身，并设置当前父任务ID），然后显示模态框
+                    loadParentTasks(task.id, task.parent_task_id);
+                    
                     // 显示模态框
                     $('#taskUpdateModal').modal('show');
                 } else {

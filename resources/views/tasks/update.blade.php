@@ -26,6 +26,26 @@
                                 <input type="text" name="name" id="name" class="form-control" value="{{ $task->name }}">
                             </div>
                         </div>
+                        
+                        <!-- Parent Task -->
+                        <div class="form-group row">
+                            <label for="parent-task" class="col-md-3 control-label">父级任务</label>
+
+                            <div class="col-md-8">
+                                <select name="parent_task_id" id="parent_task_id" class="form-control">
+                                    <option value="">-- 无父级任务 --</option>
+                                    @foreach($task->user->tasks()->where(function($query) use($task) {
+                                        $query->whereNull('parent_task_id')
+                                              ->orWhere('parent_task_id', 0);
+                                     })->where('id', '!=', $task->id)->get() as $parentTask)
+                                        <option value="{{ $parentTask->id }}" {{ $task->parent_task_id == $parentTask->id ? 'selected' : '' }}>
+                                            {{ $parentTask->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div class="form-group row">
                             <label for="task-name" class="col-md-3 control-label">待办等级</label>
 
