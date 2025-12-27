@@ -24,7 +24,7 @@
         .note-card textarea {
             width: 100%;
             resize: vertical;
-            min-height: 80px;
+            min-height: 120px;
             font-size: 16px;
             border-radius: 8px;
             border: 1px solid #ddd;
@@ -68,6 +68,18 @@
             font-size: 18px;
             cursor: pointer;
             transition: all 0.2s;
+        }
+        
+        .audio-controls button#stop {
+            background: #e74c3c;
+        }
+        
+        .audio-timer {
+            margin-left: 10px;
+            font-size: 14px;
+            color: #666;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .audio-controls button:hover {
@@ -172,20 +184,74 @@
             color: #39b54a;
         }
 
-        .note-body.collapsed {
-            max-height: 120px;
+        .note-body {
+            font-size: 16px;
+            margin-top: 5px;
+            line-height: 1.6;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .note-body.has-collapse {
+            max-height: 200px;
             overflow: hidden;
             position: relative;
+            cursor: pointer;
+            transition: max-height 0.3s ease-in-out;
         }
 
-        .note-body.collapsed::after {
-            content: '';
+        .note-body.has-collapse::after {
+            content: '﹀';
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 40px;
             width: 100%;
+            height: 60px;
             background: linear-gradient(transparent, #fdfdfd);
+            text-align: center;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            color: #88c888;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+
+        .note-body.has-collapse:hover::after {
+            background: linear-gradient(transparent, #f0f0f0);
+            color: #66b266;
+        }
+
+        .note-body.expanded {
+            max-height: none;
+            overflow: visible;
+        }
+        
+        .note-body.expanded::after {
+            content: '︿';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 0;
+            color: #88c888;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f8f8f8;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+        
+        .note-body.expanded:hover::after {
+            background: #e8e8e8;
+            color: #66b266;
         }
 
         /* ================== 图片缩略图 ================== */
@@ -215,6 +281,10 @@
             let startBtn = document.getElementById('start');
             let stopBtn = document.getElementById('stop');
             let container = document.getElementById('audio-container');
+            let timerDisplay = document.getElementById('audio-timer');
+            
+            let startTime;
+            let timerInterval;
 
             let recorder = new Recorder({
                 sampleRate: 44100,
@@ -227,6 +297,22 @@
             startBtn.addEventListener('click', function () {
                 this.disabled = true;
                 stopBtn.disabled = false;
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+                
+                // 开始计时
+                startTime = new Date();
+                timerDisplay.textContent = '00:00';
+                timerInterval = setInterval(function() {
+                    let currentTime = new Date();
+                    let elapsedTime = Math.floor((currentTime - startTime) / 1000);
+                    let minutes = Math.floor(elapsedTime / 60);
+                    let seconds = elapsedTime % 60;
+                    
+                    let formattedTime = ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
+                    timerDisplay.textContent = formattedTime;
+                }, 1000);
+                
                 let audios = document.querySelectorAll('audio');
                 audios.forEach(a => { if(!a.paused) a.pause(); });
                 recorder.start();
@@ -235,6 +321,15 @@
             stopBtn.addEventListener('click', function () {
                 this.disabled = true;
                 startBtn.disabled = false;
+                stopBtn.style.display = 'none';
+                startBtn.style.display = 'inline-block';
+                
+                // 停止计时
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                
                 recorder.stop();
                 recorder.getBlob(function (blob) {
                     if (!document.getElementById('note-name').value.includes("#分享语音#")) {
@@ -289,7 +384,8 @@
 
                 <div class="audio-controls">
                     <button type="button" id="start" disabled title="开始录音"><i class="fa fa-microphone"></i></button>
-                    <button type="button" id="stop" disabled title="停止录音"><i class="fa fa-stop"></i></button>
+                    <button type="button" id="stop" disabled title="停止录音" style="display:none;"><i class="fa fa-stop"></i></button>
+                    <span class="audio-timer" id="audio-timer">00:00</span>
                 </div>
                 <div id="audio-container"></div>
 
@@ -337,7 +433,7 @@
                             @endif
                         </div>
                     </div>
-                    <div class="note-body collapsed">
+                    <div class="note-body">
                         @if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
                             <div style="margin-top:5px">语音记录: <a href="{{ url('note/getRecord/'.$note->id) }}">播放🎵</a></div>
                         @endif
@@ -378,9 +474,31 @@
 
             // 长文本折叠展开
             $(".note-body").each(function(){
-                if(this.scrollHeight > 120){
-                    $(this).addClass('collapsed').click(function(){
-                        $(this).toggleClass('collapsed');
+                var $this = $(this);
+                
+                // 创建临时元素进行准确测量，确保移除所有可能影响高度的样式
+                var $tempDiv = $this.clone()
+                    .css({
+                        position: 'absolute',
+                        visibility: 'hidden',
+                        'max-height': 'none',
+                        height: 'auto',
+                        overflow: 'visible',
+                        'z-index': '-9999',
+                        top: 0,
+                        left: 0
+                    })
+                    .removeClass('has-collapse')
+                    .removeClass('expanded')
+                    .appendTo('body');
+                
+                var contentHeight = $tempDiv.height();
+                $tempDiv.remove();
+                
+                // 只有当内容高度超过200px时才添加折叠功能
+                if(contentHeight > 200){
+                    $this.addClass('has-collapse').click(function(){
+                        $(this).toggleClass('has-collapse expanded');
                     });
                 }
             });
