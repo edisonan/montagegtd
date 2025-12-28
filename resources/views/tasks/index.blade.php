@@ -8,6 +8,29 @@
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 1;
     }
+    
+    .task-date {
+        display: inline-block;
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.8em;
+        margin-right: 0.3rem;
+        font-weight: 500;
+    }
+    
+    .task-time {
+        color: #6c757d;
+        font-size: 0.9em;
+        margin-right: 0.5rem;
+    }
+    
+    .task-date-same {
+        display: inline-block;
+        width: 30px; /* 为日期留出空间，保持对齐 */
+        margin-right: 0.3rem;
+    }
 </style>
 
 @section('content')
@@ -51,17 +74,17 @@
                                     <div class="rowone">
                                         <?php
                                         $currentDate = date('m-d', strtotime($task->updated_at));
-                                        if ($currentDate != $lastDate) {
+                                        $shouldShowDate = ($currentDate != $lastDate);
+                                        if ($shouldShowDate) {
                                             $lastDate = $currentDate;
-                                            $style = "";
-                                        } else {
-                                            $style = "color:rgb(0,0,0,0);";
                                         }
                                         ?>
-                                        <span style="{{ $style}}">
+                                        @if($shouldShowDate)
+                                        <span class="task-date" title="{{ date('Y-m-d', strtotime($task->updated_at)) }}">
 {{ $currentDate }}
 </span>
-                                        <small>{{ date('H:i', strtotime($task->updated_at)) }} </small>
+                                        @endif
+                                        <small class="task-time">{{ date('H:i', strtotime($task->updated_at)) }} </small>
 
                                         @if($task->status == 1)
                                             [进行中]
@@ -85,10 +108,10 @@
 
                                 <td width="20%" align="right">
                                     <a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">
-                                        <i class="bi-textarea-t" style="font-size: 1.5rem;"></i>
+                                        <i class="fa fa-sticky-note-o" style="font-size: 1.5rem;"></i>
                                     </a>
                                     <a href="javascript:void(0)" onclick="callOpenTaskUpdateModal('{{ addslashes(json_encode($task->toArray())) }}')">
-                                        <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
+                                        <i class="fa fa-edit" style="font-size: 1.5rem;"></i>
                                     </a>
                                 </td>
 

@@ -357,7 +357,7 @@
                             <div class="card-block" style="padding: 10px;">
 
                                 @if(!empty($article->subject))
-                                    <h4 class="card-title">
+                                    <h6 class="card-title">
                                         <img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
                                              src="/img/icon/music.png" width="30px"> <a
 {{--                                                href="{{ str_replace('v2ex.com', 'xa8.net',$article->url) }}">[原文]</a>--}}
@@ -365,7 +365,7 @@
                                         <a
                                                 href="{{ url('article/view/'.$article->id) }}">{{
 							$article->subject }}</a>
-                                    </h4>
+                                    </h6>
                                 @endif
 
                                 <p class="card-text">

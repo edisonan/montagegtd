@@ -192,29 +192,29 @@
                         想法 - {{$mind->name}}
 
                         <button class="action-btn btn-add" onclick="add_node();" title="新增子节点 [Tab]">
-                            <i class="fas fa-plus"></i> 新增
+                            <i class="fa fa-plus"></i> 新增
                         </button>
                         <button class="action-btn btn-edit" onclick="modify_node();" title="编辑节点 [F2]">
-                            <i class="fas fa-edit"></i> 编辑
+                            <i class="fa fa-edit"></i> 编辑
                         </button>
                         <button class="action-btn btn-delete" onclick="remove_node();" title="删除节点 [Delete]">
-                            <i class="fas fa-trash"></i> 删除
+                            <i class="fa fa-trash"></i> 删除
                         </button>
                         <button class="action-btn btn-toggle" onclick="toggle();" title="展开/收缩 [Space]">
-                            <i class="fas fa-expand"></i> 展开/收缩
+                            <i class="fa fa-expand"></i> 展开/收缩
                         </button>
                         <button class="action-btn btn-screenshot" onclick="screen_shot();" title="截屏">
-                            <i class="fas fa-camera"></i> 截屏
+                            <i class="fa fa-camera"></i> 截屏
                         </button>
                         <button class="action-btn btn-detail" onclick="show_selected();" title="查看节点详情 [x]">
-                            <i class="fas fa-search"></i> 详情
+                            <i class="fa fa-search"></i> 详情
                         </button>
                         <!-- 添加拖拽和缩放控制按钮 -->
                         <button class="action-btn btn-drag" onclick="toggle_drag_mode();" title="切换拖拽模式">
-                            <i class="fas fa-arrows-alt"></i> 拖拽
+                            <i class="fa fa-arrows-alt"></i> 拖拽
                         </button>
                         <button class="action-btn btn-zoom" onclick="reset_view();" title="重置视图">
-                            <i class="fas fa-sync-alt"></i> 重置
+                            <i class="fa fa-sync-alt"></i> 重置
                         </button>
                     </div>
 
@@ -231,13 +231,13 @@
                         <!-- 缩放控制按钮 -->
                         <div class="zoom-controls">
                             <button class="zoom-btn" onclick="zoom_in()" title="放大">
-                                <i class="fas fa-search-plus"></i>
+                                <i class="fa fa-search-plus"></i>
                             </button>
                             <button class="zoom-btn reset" onclick="reset_zoom()" title="重置缩放">
-                                <i class="fas fa-sync-alt"></i>
+                                <i class="fa fa-sync-alt"></i>
                             </button>
                             <button class="zoom-btn" onclick="zoom_out()" title="缩小">
-                                <i class="fas fa-search-minus"></i>
+                                <i class="fa fa-search-minus"></i>
                             </button>
                         </div>
                     </div>
@@ -535,10 +535,10 @@
 
             var btn = document.querySelector('.btn-drag i');
             if (newMode === 'full') {
-                btn.className = 'fas fa-hand-paper';
+                btn.className = 'fa fa-hand-paper';
                 btn.parentElement.title = '退出拖拽模式';
             } else {
-                btn.className = 'fas fa-arrows-alt';
+                btn.className = 'fa fa-arrows-alt';
                 btn.parentElement.title = '进入拖拽模式';
             }
         }

@@ -70,12 +70,12 @@
                                 </td>
 
                                 <td width="10%" align='right'>
-                                    <a href="{{ url('dailysummary/'.$dailysummary->id)}}"> <i class="bi-pencil-square"
+                                    <a href="{{ url('dailysummary/'.$dailysummary->id)}}"> <i class="fa fa-edit"
                                                                                               style="font-size: 1.5rem;"></i></a>
                                     <a href="javascript:void(0)" class="delete_dailysummary" dailysummary_type="delete"
                                        dailysummary_value="{{ $dailysummary->id }}"
                                        dailysummary_token="{{ csrf_token() }}" style="cursor:pointer;">
-                                        <i class="bi-trash" style="font-size: 1.5rem;"></i>
+                                        <i class="fa fa-trash-o" style="font-size: 1.5rem;"></i>
                                     </a>
                                 </td>
                             </tr>

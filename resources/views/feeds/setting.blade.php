@@ -36,12 +36,12 @@
 			                                				</span>
                                                 <span class="col-md-5 text-right">
 				                                				<a href="{{ url('feed/'.$feed['feed_sub_id'])}}"
-                                                                   style=""> <i class="bi-pencil-square"
+                                                                   style=""> <i class="fa fa-edit"
                                                                                 style="font-size: 1.5rem;"></i></span>
                                                 <a href="javascript:void(0)" class="delete_feed" task_type="delete"
                                                    feed_value="{{ $feed['feed_sub_id'] }}"
                                                    feed_token="{{ csrf_token() }}" style="cursor:pointer;">
-                                                    <i class="bi-trash" style="font-size: 1.5rem;"></i>
+                                                    <i class="fa fa-trash-o" style="font-size: 1.5rem;"></i>
                                                 </a>
                                                 </span>
                                             </div>

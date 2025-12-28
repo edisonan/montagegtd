@@ -59,6 +59,21 @@ class CodeController extends Controller
                 $result['error'] = $e->getMessage();
                 return response()->json($result, 500);
             }
+        } elseif($codeInfo->type == 2) { // HTML 类型
+            $htmlContent = $codeInfo->content;
+            return $htmlContent;
+        } elseif($codeInfo->type == 3) { // JavaScript 类型
+            $jsContent = $codeInfo->content;
+            return response($jsContent)
+                ->header('Content-Type', 'application/javascript');
+        } elseif($codeInfo->type == 4) { // CSS 类型
+            $cssContent = $codeInfo->content;
+            return response($cssContent)
+                ->header('Content-Type', 'text/css');
+        } elseif($codeInfo->type == 5) { // JSON 类型 (包括 manifest.json)
+            $jsonContent = $codeInfo->content;
+            return response($jsonContent)
+                ->header('Content-Type', 'application/json');
         } else {
             $htmlContent = $codeInfo->content;
             return $htmlContent;

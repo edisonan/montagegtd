@@ -426,8 +426,8 @@
                         <div class="note-time">{{ date('Y-m-d H:i', strtotime($note->created_at)) }}</div>
                         <div class="note-operations">
                             @if($note->user_id == Auth::user()->id)
-                                <i class="bi-pencil-square" onclick="window.location='{{ url('noteupdate/'.$note->id) }}'"></i>
-                                <i class="bi-trash delete_note" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" note_type="delete"></i>
+                                <i class="fa fa-edit" onclick="window.location='{{ url('noteupdate/'.$note->id) }}'"></i>
+                                <i class="fa fa-trash-o delete_note" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" note_type="delete"></i>
                             @else
                                 <i class="bi-hand-thumbs-up like_note" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" note_type="like"></i>
                             @endif

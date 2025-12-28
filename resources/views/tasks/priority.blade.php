@@ -108,8 +108,8 @@
                                         </span>
                                                 <div class="task-actions">
                                                     <i class="bi bi-check-circle" title="标记完成" onclick="toggleComplete({{$task->id}})"></i>
-                                                    <i class="bi bi-pencil-square" title="编辑" onclick="loadTaskDataAndOpenModalForPriority({{ json_encode($task->toArray()) }})"></i>
-                                                    <i class="bi bi-trash" title="删除" onclick="deleteTask({{$task->id}})"></i>
+                                                    <i class="bi fa fa-edit" title="编辑" onclick="loadTaskDataAndOpenModalForPriority({{ json_encode($task->toArray()) }})"></i>
+                                                    <i class="bi fa fa-trash-o" title="删除" onclick="deleteTask({{$task->id}})"></i>
                                                 </div>
                                             </div>
                                         @endforeach

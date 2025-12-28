@@ -15,7 +15,7 @@
     <!-- Fonts -->
     <link href="/fonts/font-awesome-4.7.0/css/font-awesome.css" rel="stylesheet" type="text/css">
     <link href="/css/woff.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="/css/bootstrap-icons.css">
+    {{--<link rel="stylesheet" href="/css/bootstrap-icons.css">--}}
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="/css/bootstrap.min.css" crossorigin="anonymous">

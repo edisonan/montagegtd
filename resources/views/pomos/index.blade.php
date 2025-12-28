@@ -109,19 +109,19 @@
                                 <td class="text-right">
                                     <a href="/notes?add_content=%23记录番茄%23{{ urlencode($pomo->name) }}&pomo_id={{$pomo->id}}"
                                        title="记录更多当时的想法吧">
-                                        <i class="bi-textarea-t" style="font-size: 1.5rem;"></i>
+                                        <i class="fa fa-sticky-note-o" style="font-size: 1.5rem;"></i>
                                     </a>
 
                                     <a href="javascript:void(0)" class="update_pomo" style=""
                                        pomo_name="{{ $pomo->name }}" pomo_id="{{ $pomo->id }}"
                                        pomo_token="{{ csrf_token() }}">
-                                        <i class="bi-pencil-square" style="font-size: 1.5rem;"></i>
+                                        <i class="fa fa-edit" style="font-size: 1.5rem;"></i>
                                     </a>
 
                                     <a href="javascript:void(0)" class="delete_pomo" task_type="delete"
                                        task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}"
                                        style="cursor:pointer;">
-                                        <i class="bi-trash" style="font-size: 1.5rem;"></i>
+                                        <i class="fa fa-trash-o" style="font-size: 1.5rem;"></i>
                                     </a>
                                 <!--
                                             <form action="{{url('pomo/' . $pomo->id)}}" method="POST">

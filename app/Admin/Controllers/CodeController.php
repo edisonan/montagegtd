@@ -104,7 +104,7 @@ class CodeController extends Controller
             $grid->column('名称和类型')->display(function () {
                 $typeText = '';
                 $type = $this->type;
-                $typeMap = array(1=>'php',2=>'html');
+                $typeMap = array(1=>'php',2=>'html', 3=>'js', 4=>'css', 5=>'json');
                 if (isset($typeMap[$type])) {
                     $typeText = $typeMap[$type];
                 }
@@ -154,7 +154,7 @@ class CodeController extends Controller
     {
         return Admin::form ( Code::class, function (Form $form) {
             $form->text('name', '名称');
-            $form->radio('type', '类型')->options(array(1=>'php',2=>'html'))->default(1);
+            $form->radio('type', '类型')->options(array(1=>'php',2=>'html', 3=>'js', 4=>'css', 5=>'json'))->default(1);
             $form->textarea('content', '代码内容');
             $form->radio('status', '状态')->options(array(1=>'开启',2=>'关闭'))->default(1);
         });
