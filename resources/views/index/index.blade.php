@@ -597,6 +597,51 @@
             });
 
         });
+
+        $(document).keyup(function (event) {
+            if (event.keyCode == 13) {
+                // 新增待办时按回车键
+                if ($("#task_name").is(":focus")) {
+                    task_name = $("#task_name").val();
+                    if (task_name.trim() !== "") {
+                        $.ajax({
+                            url: "https://pretask.congcong.us/task",
+                            type: 'POST',
+                            data: {"name": task_name, "mode": mode, "_token": "kW933hLntp72TYwQ8IbTwtpNb1LoiA08nirTVqOB"},
+                            success: function (result_arr) {
+                                if (result_arr.code != 9999) {
+                                    alert('处理失败，请稍后再试');
+                                } else {
+                                    $("#task_name").val("");
+                                    var data = result_arr.result;
+                                    $("#tasks").prepend(create_task_li(data));
+                                }
+                            }
+                        });
+                    }
+                }
+                // 新增番茄描述时按回车键
+                else if ($("#pomo_name").is(":focus")) {
+                    pomo_name = $("#pomo_name").val();
+                    pomo_id = $("#pomo_id").val();
+                    if (pomo_name.trim() !== "") {
+                        $.ajax({
+                            url: "https://pretask.congcong.us/pomo/" + pomo_id,
+                            type: 'POST',
+                            data: {"name": pomo_name, "_token": "kW933hLntp72TYwQ8IbTwtpNb1LoiA08nirTVqOB"},
+                            success: function (result_arr) {
+                                if (result_arr.code != 9999) {
+                                    alert('处理失败，请稍后再试');
+                                } else {
+                                    $("#pomo_name").val("");
+                                    // 后续处理逻辑...
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
         
         // 为首页加载任务数据并打开编辑弹窗的函数
         function loadTaskDataAndOpenModalForIndex(taskId) {

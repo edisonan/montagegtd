@@ -23,7 +23,12 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $userId = auth()->id();
-        $courses = $this->courseService->getAllCourses($userId, true);
+        
+        // 获取用户创建的课程
+        $userCreatedCourses = $userId ? $this->courseService->getUserCreatedCourses($userId) : collect();
+        
+        // 获取公开课程（审核通过的）
+        $publicCourses = $this->courseService->getPublicCourses(false, false);
         
         // 获取用户已加入的课程ID列表
         $userCourseIds = [];
@@ -33,7 +38,8 @@ class CourseController extends Controller
         }
         
         return $this->jsonAndViewAutoResponse($request, ResponseDataUtil::genSimpleSucc([
-            'courses' => $courses,
+            'user_created_courses' => $userCreatedCourses,
+            'public_courses' => $publicCourses,
             'user_course_ids' => $userCourseIds
         ]), 'courses.index');
     }
@@ -48,11 +54,16 @@ class CourseController extends Controller
             throw new CustomException('课程不存在');
         }
         
+        // 检查课程是否公开审核通过，或者用户是否是创建者
+        $userId = auth()->id();
+        if ($course->public_status != 3 && (!$userId || $course->created_by != $userId)) {
+            throw new CustomException('课程不存在或未审核通过');
+        }
+        
         // 获取课程结构
         $courseStructure = $this->courseService->getCourseStructure($id);
         
         // 检查用户是否已加入课程
-        $userId = auth()->id();
         $isJoined = false;
         if ($userId) {
             $userCourse = $this->courseService->getUserCourseByUserIdAndCourseId($userId, $id);
@@ -80,7 +91,7 @@ class CourseController extends Controller
             'cover_image_url' => 'nullable|url',
             'difficulty' => 'nullable|in:beginner,intermediate,advanced',
             'estimated_hours' => 'nullable|integer|min:0',
-            'is_public' => 'boolean'
+            'public_status' => 'nullable|integer|in:1,2'
         ]);
 
         $data = [
@@ -90,7 +101,7 @@ class CourseController extends Controller
             'public_url' => $request->input('public_url'),
             'description' => $request->input('description'),
             'cover_image_url' => $request->input('cover_image_url'),
-            'is_public' => $request->input('is_public', true),
+            'public_status' => $request->input('public_status', 2), // 默认为待审核状态
             'created_by' => auth()->id(),
             'difficulty' => $request->input('difficulty', 'beginner'),
             'estimated_hours' => $request->input('estimated_hours'),
@@ -118,7 +129,7 @@ class CourseController extends Controller
             'cover_image_url' => 'nullable|url',
             'difficulty' => 'nullable|in:beginner,intermediate,advanced',
             'estimated_hours' => 'nullable|integer|min:0',
-            'is_public' => 'boolean'
+            'public_status' => 'nullable|integer|in:1,2,3'
         ]);
 
         $data = [
@@ -128,7 +139,7 @@ class CourseController extends Controller
             'public_url' => $request->input('public_url'),
             'description' => $request->input('description'),
             'cover_image_url' => $request->input('cover_image_url'),
-            'is_public' => $request->input('is_public', true),
+            'public_status' => $request->input('public_status', 2), // 默认为待审核状态
             'difficulty' => $request->input('difficulty', 'beginner'),
             'estimated_hours' => $request->input('estimated_hours'),
             'tags' => $request->input('tags', [])

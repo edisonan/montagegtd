@@ -1,5 +1,71 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\CourseService;
+use Illuminate\Http\Request;
+use App\Exceptions\CustomException;
+use App\Http\Utils\ResponseDataUtil;
+
+class CourseItemController extends Controller
+{
+    protected $courseService;
+
+    public function __construct(CourseService $courseService)
+    {
+        $this->middleware('auth');
+        $this->courseService = $courseService;
+    }
+
+    /**
+     * 显示课程项目列表
+     */
+    public function index(Request $request, $courseId)
+    {
+        $course = $this->courseService->getCourseById($courseId);
+        if (!$course) {
+            throw new CustomException('课程不存在');
         }
-        
+
+        // 检查用户是否有权限访问此课程
+        if (auth()->id() != $course->created_by) {
+            $userCourse = $this->courseService->getUserCourseByUserIdAndCourseId(auth()->id(), $courseId);
+            if (!$userCourse) {
+                throw new CustomException('您没有权限访问此课程内容');
+            }
+        }
+
+        $courseStructure = $this->courseService->getCourseStructure($courseId);
+
+        return view('course-items.index', [
+            'course' => $course,
+            'structure' => $courseStructure
+        ]);
+    }
+
+    /**
+     * 显示单个课程项目
+     */
+    public function show(Request $request, $id)
+    {
+        $courseItem = $this->courseService->getCourseItemById($id);
+        if (!$courseItem) {
+            throw new CustomException('课程项目不存在');
+        }
+
+        // 检查用户是否有权限访问此课程
+        $course = $this->courseService->getCourseById($courseItem->course_id);
+        if (!$course) {
+            throw new CustomException('课程不存在');
+        }
+
+        if (auth()->id() != $course->created_by) {
+            $userCourse = $this->courseService->getUserCourseByUserIdAndCourseId(auth()->id(), $courseItem->course_id);
+            if (!$userCourse) {
+                throw new CustomException('您没有权限访问此课程内容');
+            }
+        }
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
             'course_item' => $courseItem
         ]));
@@ -14,14 +80,14 @@
         if (!$course) {
             throw new CustomException('课程不存在');
         }
-        
+
         // 检查用户是否有权限管理此课程
         if (auth()->id() != $course->created_by) {
             throw new CustomException('您没有权限管理此课程');
         }
-        
+
         $courseStructure = $this->courseService->getCourseStructure($courseId);
-        
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
             'result' => $courseStructure
         ]));
@@ -33,13 +99,13 @@
     public function storeFromModal(Request $request)
     {
         $courseId = $request->input('course_id');
-        
+
         // 检查用户是否有权限管理此课程
         $course = $this->courseService->getCourseById($courseId);
         if (!$course) {
             throw new CustomException('课程不存在');
         }
-        
+
         if (auth()->id() != $course->created_by) {
             throw new CustomException('您没有权限管理此课程');
         }
@@ -65,7 +131,7 @@
         ];
 
         $courseItem = $this->courseService->createCourseItem($data);
-        
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
             'course_item' => $courseItem,
             'msg' => '课程项目创建成功'
@@ -81,13 +147,13 @@
         if (!$courseItem) {
             throw new CustomException('课程项目不存在');
         }
-        
+
         // 检查用户是否有权限管理此课程
         $course = $this->courseService->getCourseById($courseItem->course_id);
         if (!$course) {
             throw new CustomException('课程不存在');
         }
-        
+
         if (auth()->id() != $course->created_by) {
             throw new CustomException('您没有权限管理此课程');
         }
@@ -112,7 +178,7 @@
         ];
 
         $updatedCourseItem = $this->courseService->updateCourseItem($id, $data);
-        
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
             'course_item' => $updatedCourseItem,
             'msg' => '课程项目更新成功'
@@ -128,22 +194,49 @@
         if (!$courseItem) {
             throw new CustomException('课程项目不存在');
         }
-        
+
         // 检查用户是否有权限访问此课程
         $course = $this->courseService->getCourseById($courseItem->course_id);
         if (!$course) {
             throw new CustomException('课程不存在');
         }
-        
+
         if (auth()->id() != $course->created_by) {
             $userCourse = $this->courseService->getUserCourseByUserIdAndCourseId(auth()->id(), $courseItem->course_id);
             if (!$userCourse) {
                 throw new CustomException('您没有权限访问此课程内容');
             }
         }
-        
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
             'course_item' => $courseItem
+        ]));
+    }
+
+    /**
+     * 删除课程项目
+     */
+    public function destroy(Request $request, $id)
+    {
+        $courseItem = $this->courseService->getCourseItemById($id);
+        if (!$courseItem) {
+            throw new CustomException('课程项目不存在');
+        }
+
+        // 检查用户是否有权限管理此课程
+        $course = $this->courseService->getCourseById($courseItem->course_id);
+        if (!$course) {
+            throw new CustomException('课程不存在');
+        }
+
+        if (auth()->id() != $course->created_by) {
+            throw new CustomException('您没有权限管理此课程');
+        }
+
+        $this->courseService->deleteCourseItem($id);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
+            'msg' => '课程项目删除成功'
         ]));
     }
 }

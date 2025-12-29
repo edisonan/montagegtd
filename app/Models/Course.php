@@ -14,7 +14,7 @@ class Course extends Model
         'public_url',
         'description',
         'cover_image_url',
-        'is_public',
+        'public_status',
         'created_by',
         'difficulty',
         'estimated_hours',
@@ -23,10 +23,17 @@ class Course extends Model
 
     protected $casts = [
         'tags' => 'array',
-        'is_public' => 'boolean',
         'estimated_hours' => 'integer',
         'created_by' => 'integer',
-        'user_id' => 'integer'
+        'user_id' => 'integer',
+        'public_status' => 'integer'
+    ];
+    
+    /**
+     * The attributes that should have default values.
+     */
+    protected $attributes = [
+        'public_status' => 2, // 默认为待审核状态
     ];
 
     public function user()

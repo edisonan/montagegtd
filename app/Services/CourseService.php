@@ -53,6 +53,11 @@ class CourseService
             $data['user_id'] = $data['created_by'];
         }
 
+        // 设置默认的public_status为2（公开待审核）
+        if (!isset($data['public_status'])) {
+            $data['public_status'] = 2;
+        }
+
         return $this->courseRepository->createCourse($data);
     }
 
@@ -99,6 +104,11 @@ class CourseService
         $course = $this->courseRepository->getCourseById($courseId);
         if (!$course) {
             throw new \Exception('课程不存在');
+        }
+
+        // 检查课程是否已审核通过（public_status = 3）
+        if ($course->public_status != 3) {
+            throw new \Exception('无法加入未审核通过的课程');
         }
 
         // 检查用户是否已经加入了课程
@@ -203,5 +213,53 @@ class CourseService
     public function getUserCourseByUserIdAndCourseId($userId, $courseId)
     {
         return $this->userCourseRepository->getUserCourseByUserIdAndCourseId($userId, $courseId);
+    }
+    
+    /**
+     * 获取用户创建的课程
+     */
+    public function getUserCreatedCourses($userId, $withTrashed = false)
+    {
+        return $this->courseRepository->getUserCreatedCourses($userId, $withTrashed);
+    }
+    
+    /**
+     * 获取公开课程（包括待审核的）
+     */
+    public function getPublicCourses($withTrashed = false, $includePending = false)
+    {
+        return $this->courseRepository->getPublicCourses($withTrashed, $includePending);
+    }
+    
+    /**
+     * 审核课程（将public_status从2改为3）
+     */
+    public function approveCourse($id)
+    {
+        $course = $this->courseRepository->getCourseById($id);
+        if (!$course) {
+            throw new \Exception('课程不存在');
+        }
+        
+        $course->public_status = 3;
+        $course->save();
+        
+        return $course;
+    }
+    
+    /**
+     * 将课程设为待审核状态（将public_status从3改为2）
+     */
+    public function unapproveCourse($id)
+    {
+        $course = $this->courseRepository->getCourseById($id);
+        if (!$course) {
+            throw new \Exception('课程不存在');
+        }
+        
+        $course->public_status = 2;
+        $course->save();
+        
+        return $course;
     }
 }

@@ -11,6 +11,26 @@
                         <a href="{{ url('/courses') }}" class="btn btn-secondary">返回课程列表</a>
                         @if(auth()->id() == $course->created_by)
                             <a href="{{ url('/admin/courses/' . $course->id . '/edit') }}" class="btn btn-primary ml-2">编辑课程</a>
+                            <span class="badge ml-2" style="line-height: 1.5;
+                                @if($course->public_status == 1)
+                                    background-color: #6c757d; /* 私有 */
+                                @elseif($course->public_status == 2)
+                                    background-color: #ffc107; /* 待审核 */
+                                @elseif($course->public_status == 3)
+                                    background-color: #28a745; /* 已审核 */
+                                @else
+                                    background-color: #6c757d;
+                                @endif">
+                                @if($course->public_status == 1)
+                                    私有
+                                @elseif($course->public_status == 2)
+                                    待审核
+                                @elseif($course->public_status == 3)
+                                    已审核
+                                @else
+                                    未知状态
+                                @endif
+                            </span>
                             <a href="{{ url('/courses/' . $course->id . '/items') }}" class="btn btn-info ml-2">管理章节</a>
                         @elseif(!auth()->guest() && !$is_joined)
                             <form action="{{ url('/courses/' . $course->id . '/join') }}" method="POST" class="d-inline">
@@ -128,7 +148,7 @@
                                             </div>
                                             @if($item->description)
                                             <p class="mb-0 mt-2 text-muted">{{ str_limit($item->description, 100) }}</p>
-                                            @endif
+                                            @endif>
                                             
                                             @if($item->children && count($item->children) > 0)
                                             <div class="ml-4 mt-2">

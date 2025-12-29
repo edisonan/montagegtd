@@ -84,8 +84,17 @@ class CourseController extends Controller
             $grid->platform('平台');
             $grid->difficulty('难度');
             $grid->estimated_hours('预计时长(小时)');
-            $grid->is_public('是否公开')->display(function ($value) {
-                return $value ? '是' : '否';
+            $grid->column('public_status', '审核状态')->display(function ($value) {
+                switch ($value) {
+                    case 1:
+                        return '<span class="label label-default">私有</span>';
+                    case 2:
+                        return '<span class="label label-warning">待审核</span>';
+                    case 3:
+                        return '<span class="label label-success">已审核</span>';
+                    default:
+                        return '<span class="label label-default">未知</span>';
+                }
             });
             $grid->created_at('创建时间');
 
@@ -104,10 +113,10 @@ class CourseController extends Controller
                     'intermediate' => '中级',
                     'advanced' => '高级'
                 ]);
-                $filter->equal('is_public', '是否公开')->radio([
-                    '' => '全部',
-                    1 => '是',
-                    0 => '否',
+                $filter->equal('public_status', '审核状态')->select([
+                    1 => '私有',
+                    2 => '待审核',
+                    3 => '已审核'
                 ]);
             });
         });
@@ -141,7 +150,11 @@ class CourseController extends Controller
             ])->default('beginner');
             $form->number('estimated_hours', '预计学习时长(小时)');
             $form->tags('tags', '标签');
-            $form->switch('is_public', '是否公开')->default(1);
+            $form->select('public_status', '审核状态')->options([
+                1 => '私有',
+                2 => '待审核',
+                3 => '已审核'
+            ])->default(2);
             
             $form->display('created_by', '创建者ID');
             $form->display('created_at', '创建时间');

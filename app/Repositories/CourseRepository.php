@@ -14,13 +14,13 @@ class CourseRepository
         $query = Course::query();
         
         if ($isPublicOnly) {
-            $query->where('is_public', true);
+            $query->where('public_status', 3); // 只获取审核通过的公开课程
         }
         
         if ($userId) {
             $query->where(function($q) use ($userId) {
                 $q->where('created_by', $userId)
-                  ->orWhere('is_public', true);
+                  ->orWhere('public_status', 3); // 用户可以看到自己创建的课程和审核通过的公开课程
             });
         }
         
@@ -50,6 +50,11 @@ class CourseRepository
      */
     public function createCourse(array $data)
     {
+        // 设置默认的public_status为2（公开待审核）
+        if (!isset($data['public_status'])) {
+            $data['public_status'] = 2;
+        }
+        
         return Course::create($data);
     }
 
@@ -87,5 +92,39 @@ class CourseRepository
     public function restoreCourse($id)
     {
         return Course::withTrashed()->where('id', $id)->restore();
+    }
+    
+    /**
+     * 获取用户创建的课程列表
+     */
+    public function getUserCreatedCourses($userId, $withTrashed = false)
+    {
+        $query = Course::where('created_by', $userId);
+        
+        if ($withTrashed) {
+            $query->withTrashed();
+        }
+        
+        return $query->orderBy('created_at', 'desc')->get();
+    }
+    
+    /**
+     * 获取所有公开课程（包括待审核的）
+     */
+    public function getPublicCourses($withTrashed = false, $includePending = false)
+    {
+        $query = Course::query();
+        
+        if ($includePending) {
+            $query->whereIn('public_status', [2, 3]); // 包括待审核和已审核的
+        } else {
+            $query->where('public_status', 3); // 只获取审核通过的
+        }
+        
+        if ($withTrashed) {
+            $query->withTrashed();
+        }
+        
+        return $query->orderBy('created_at', 'desc')->get();
     }
 }

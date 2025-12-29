@@ -73,10 +73,15 @@
                         </div>
                         
                         <div class="form-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="is_public" name="is_public" value="1" checked>
-                                <label class="form-check-label" for="is_public">公开可见</label>
-                            </div>
+                            <label for="public_status">公开状态</label>
+                            <select class="form-control" id="public_status" name="public_status">
+                                <option value="1" {{ old('public_status') == 1 ? 'selected' : '' }}>私有（仅自己可见）</option>
+                                <option value="2" {{ old('public_status', 2) == 2 ? 'selected' : '' }}>公开待审核（默认）</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                私有：仅自己可见<br>
+                                公开待审核：提交后等待管理员审核，审核通过后对所有人可见
+                            </small>
                         </div>
                         
                         <button type="submit" class="btn btn-primary">创建课程</button>

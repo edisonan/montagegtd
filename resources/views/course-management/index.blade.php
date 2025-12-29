@@ -10,7 +10,6 @@
                     <div>
                         <a href="{{ url('/user-courses') }}" class="btn btn-primary">我的学习</a>
                         <a href="{{ url('/courses') }}" class="btn btn-primary">浏览课程</a>
-                        <a href="{{ url('/courses/create') }}" class="btn btn-success">创建课程</a>
                     </div>
                 </div>
                 
