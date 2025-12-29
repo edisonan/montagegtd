@@ -20,14 +20,11 @@ class AppServiceProvider extends ServiceProvider {
 		} );
 		
 		//
-		// LengthAwarePaginator::presenter(function (Paginator $paginator) {
-		// return new BootstrapFourPresenter($paginator);
-		// });
 		
-		// // Change the ->simplePaginate() presenter
-		// Paginator::presenter(function (PaginatorContract $paginator) {
-		// return new BootstrapFourPresenter($paginator);
-		// });
+		// 注册LLM服务提供者
+		$this->app->register(\App\Providers\LlmServiceProvider::class);
+		// 注册课程服务提供者
+		$this->app->register(\App\Providers\CourseServiceProvider::class);
 	}
 	
 	/**

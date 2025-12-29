@@ -118,6 +118,8 @@
                             <a class="dropdown-item" href="{{ url('dailysummarys') }}">我的日报</a>
                             <a class="dropdown-item" href="{{ url('accounts') }}">账号管理</a>
                             <a class="dropdown-item" href="{{ url('cals') }}">日历订阅</a>
+                            <a class="dropdown-item" href="{{ url('/llm-management') }}">LLM管理</a>
+                            <a class="dropdown-item" href="{{ url('/course-management') }}">课程管理</a>
                             <a class="dropdown-item" href="{{ url('/logout') }}"><i class="fa fa-sign-out"></i> 登出</a>
                         </div>
                     </li>

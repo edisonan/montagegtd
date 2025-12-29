@@ -162,7 +162,7 @@
     <body>
         <div class="header">
             <a href="/admin/codes">← 返回列表</a>
-            <span style="float: right;">当前：<a href="/code/{{ $id }}"> {{$name}}</a> </span>
+            <span style="float: right;">当前：<a href="../code/{{ $id }}"> {{$name}}</a> </span>
         </div>
         
         <div class="controls">

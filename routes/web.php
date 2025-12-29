@@ -189,5 +189,61 @@ Route::group([
     Route::delete('/api/pomos/{pomo}', 'PomoController@destroy');
 
     Route::any('/code/{codeInfo}', 'CodeController@view');
+    
+    // LLM管理相关路由
+    Route::prefix('llm')->group(function () {
+        Route::get('/providers', 'LlmController@getProviders');
+        Route::get('/providers/{id}', 'LlmController@getProvider');
+        Route::post('/providers', 'LlmController@saveProvider');
+        Route::put('/providers/{id}', 'LlmController@saveProvider');
+        Route::delete('/providers/{id}', 'LlmController@deleteProvider');
+        
+        Route::get('/models', 'LlmController@getModels');
+        Route::get('/models/{id}', 'LlmController@getModel');
+        Route::post('/models', 'LlmController@saveModel');
+        Route::put('/models/{id}', 'LlmController@saveModel');
+        Route::delete('/models/{id}', 'LlmController@deleteModel');
+        
+        Route::get('/credentials', 'LlmController@getCredentials');
+        Route::get('/credentials/{id}', 'LlmController@getCredential');
+        Route::post('/credentials', 'LlmController@saveCredential');
+        Route::put('/credentials/{id}', 'LlmController@saveCredential');
+        Route::delete('/credentials/{id}', 'LlmController@deleteCredential');
+        
+        Route::get('/usage-stats', 'LlmController@getUsageStats');
+    });
+    
+    // 用户端LLM管理页面
+    Route::get('/llm-management', function () {
+        return view('llm.index');
+    });
+    
+    // 课程管理相关路由
+    Route::resource('courses', 'CourseController')->except(['edit', 'update', 'destroy']);
+    Route::post('/courses/{id}/join', 'CourseController@joinCourse');
+    Route::get('/user-courses', 'CourseController@getUserCourses');
+    
+    // 课程项目管理相关路由
+    Route::post('/courses/{courseId}/items', 'CourseItemController@store');
+    Route::put('/courses/{courseId}/items/{id}', 'CourseItemController@update');
+    Route::delete('/courses/{courseId}/items/{id}', 'CourseItemController@destroy');
+    
+    // 课程讨论相关路由
+    Route::get('/courses/{courseId}/discussions', 'DiscussionController@index');
+    Route::post('/courses/{courseId}/discussions', 'DiscussionController@store');
+    Route::get('/courses/{courseId}/discussions/{id}', 'DiscussionController@show');
+    Route::post('/courses/{courseId}/discussions/{id}/reply', 'DiscussionController@reply');
+    
+    // 课程管理首页
+    Route::get('/course-management', 'CourseController@managementIndex');
+    
+    // 课程项目管理相关路由
+    Route::get('/courses/{courseId}/items', 'CourseItemController@index');
+    Route::get('/courses/{courseId}/items/{id}', 'CourseItemController@show');
+    Route::get('/course-items/structure/{courseId}', 'CourseItemController@getStructure');
+    Route::get('/course-items/{id}', 'CourseItemController@showForModal');
+    Route::post('/course-items', 'CourseItemController@storeFromModal');
+    Route::post('/course-items/{id}', 'CourseItemController@updateFromModal');
+    Route::delete('/course-items/{id}', 'CourseItemController@destroy');
 });
 		

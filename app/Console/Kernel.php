@@ -27,13 +27,14 @@ class Kernel extends ConsoleKernel
         // Commands\Inspire::class,
         Commands\FanfouPublish::class,
         Commands\FeedCommon::class,
-        Commands\KindlePush::class,
+//        Commands\KindlePush::class,
         Commands\StatisticsDaily::class,
         Commands\TaskReminder::class,
         Commands\PomoDailyReminder::class,
         Commands\PomoRecordReminder::class,
         Commands\PomoRestedReminder::class,
-        Commands\DailySummaryReminder::class
+        Commands\DailySummaryReminder::class,
+//        Commands\AddLlmMenuItems::class
     ];
 
     /**
@@ -76,7 +77,7 @@ class Kernel extends ConsoleKernel
             4
         ))->daily();
 
-        $schedule->command('kindle_push')->dailyAt('18:00');
+//        $schedule->command('kindle_push')->dailyAt('18:00');
         $schedule->command('daily_summary_reminder')->dailyAt('18:10');
 
         // $schedule->command ( 'backup2qiniu', array (

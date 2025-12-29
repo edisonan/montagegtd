@@ -36,4 +36,11 @@ Route::group ( [
     $router->post('generateCode', 'CodeController@generateCode');
     $router->get('getCodeHistory/{id}', 'CodeController@getCodeHistory');
     $router->get('getHistoryCode/{id}', 'CodeController@getHistoryCode');
+    
+    $router->resource('llm-providers', LlmProviderController::class);
+    $router->resource('llm-models', LlmModelController::class);
+    $router->resource('llm-provider-credentials', LlmProviderCredentialController::class);
+    $router->resource('llm-usage-logs', LlmUsageLogController::class);
+    
+    $router->resource('courses', CourseController::class);
 } );
