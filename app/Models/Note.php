@@ -16,8 +16,8 @@ class Note extends Model {
 			'record_path',
 			'image_path',
 			'article_id',
-			'task_id',
-			'pomo_id' 
+			'source_type',
+			'source_id'
 	];
 	
 	/**

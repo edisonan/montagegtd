@@ -27,7 +27,7 @@
 								</span>
                             <span class="col-md-9">
 									
-									 <a href="http://task.congcong.us/login/third/{{$key}}">
+									 <a href="/login/third/{{$key}}">
 									@if(empty($oauth))
                                              去授权
                                          @else

@@ -197,7 +197,7 @@
     function calibratePomoStatus() {
         console.log('正在校准番茄状态...');
         $.ajax({
-            url: "https://pretask.congcong.us/pomos/pomostatus",
+            url: "/pomos/pomostatus",
             type: 'GET',
             dataType: 'json',
             success: function (result_arr) {
@@ -260,7 +260,7 @@
         $str += (new Date(pomo_data.start_time)).format("hh:mm") + ' - ' + (new Date(pomo_data.end_time)).format("hh:mm");
         $str += '</span>';
         $str += '<p>';
-        $str += '<a href="/notes?pomo_id=' + pomo_data.id + '" class="record_pomo" style="display:none" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
+        $str += '<a href="/notes?source_type=1&source_id=' + pomo_data.id + '" class="record_pomo" style="display:none" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
         $str += pomo_data.name;
         $str += '</p>';
         $str += '</li>';
@@ -286,7 +286,7 @@
         }
         $str += '<a href="javascript:void(0)" class="update_task" style="display:none" onclick="loadTaskDataAndOpenModalForIndex(' + data.id + ')" ><img src="/img/icon/editor.png" style="height: 20px;"></a>';
         $str += '<a href="javascript:void(0)" class="finish_task delete_task" style="display:none" task_type="delete" task_value="' + data.id + '"><img src="/img/icon/ashbin.png" style="height: 20px;"></a>';
-        $str += '<a href="/notes?task_id=' + data.id + '" class="record_task" style="display:none" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
+        $str += '<a href="/notes?source_type=3&source_id=' + data.id + '" class="record_task" style="display:none" target="_blank"><img src="/img/icon/text.png" style="height: 20px;"></a>';
         $str += data.name;
         $str += '</p>';
         $str += '</li>';
@@ -605,9 +605,9 @@
                     task_name = $("#task_name").val();
                     if (task_name.trim() !== "") {
                         $.ajax({
-                            url: "https://pretask.congcong.us/task",
+                            url: "/task",
                             type: 'POST',
-                            data: {"name": task_name, "mode": mode, "_token": "kW933hLntp72TYwQ8IbTwtpNb1LoiA08nirTVqOB"},
+                            data: {"name": task_name, "mode": mode, "_token": "{{ csrf_token() }}"},
                             success: function (result_arr) {
                                 if (result_arr.code != 9999) {
                                     alert('处理失败，请稍后再试');
@@ -626,15 +626,15 @@
                     pomo_id = $("#pomo_id").val();
                     if (pomo_name.trim() !== "") {
                         $.ajax({
-                            url: "https://pretask.congcong.us/pomo/" + pomo_id,
+                            url: "/pomo/" + pomo_id,
                             type: 'POST',
-                            data: {"name": pomo_name, "_token": "kW933hLntp72TYwQ8IbTwtpNb1LoiA08nirTVqOB"},
+                            data: {"name": pomo_name, "_token": "{{ csrf_token() }}"},
                             success: function (result_arr) {
                                 if (result_arr.code != 9999) {
                                     alert('处理失败，请稍后再试');
                                 } else {
                                     $("#pomo_name").val("");
-                                    // 后续处理逻辑...
+                                    location.href = '{{url('/index')}}';
                                 }
                             }
                         });

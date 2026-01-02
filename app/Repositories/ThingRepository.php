@@ -24,4 +24,14 @@ class ThingRepository {
 	public function getListForSummary($userId, $startTime, $endTime) {
 		return Thing::where ( 'user_id', $userId )->where ( 'updated_at', '>', $startTime )->where ( 'updated_at', '<=', $endTime )->orderBy ( 'id', 'desc' )->get ();
 	}
+
+    /**
+     * 通过id获取事情信息
+     *
+     * @param int $id
+     * @return unknown
+     */
+    public function getThingById($id) {
+        return Thing::where ( 'id', $id )->first ();
+    }
 }

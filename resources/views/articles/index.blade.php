@@ -288,8 +288,9 @@
 
             $(".icon-heart").on('click', function () {
                 var title = $(this).attr('data-title');
+                var id = $(this).attr('data-id');
                 var url = $(this).attr('data-url');
-                window.open('/notes?add_content=' + url);
+                window.open('/notes?&source_type=2&source_id=' + id);
             });
         });
     </script>
@@ -360,7 +361,6 @@
                                     <h5 class="card-title">
                                         <img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
                                              src="/img/icon/music.png" width="30px"> <a
-{{--                                                href="{{ str_replace('v2ex.com', 'xa8.net',$article->url) }}">[原文]</a>--}}
                                                 href="{{ str_replace('www.v2ex.com', 'pretask.congcong.us/article/proxyview?type=v2ex&url=',$article->url) }}">[原文]</a>
                                         <a
                                                 href="{{ url('article/view/'.$article->id) }}">{{
@@ -401,15 +401,16 @@
                                            data-weibo-title="{{ $article->subject }}"
                                            data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227"
                                            data-title="{{ $article->subject }}"
-                                           data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"
+                                           data-id="{{$article->id}}"
+                                           data-url="{{ url('article/view/') }}{{$article->id}}"
                                            data-image="{{ $article->image_url }}"
                                            data-sites="facebook,twitter,google,weibo"
                                            data-mobile-sites="facebook,twitter,google,weibo"
                                            data-wechat-qrcode-title="请打开微信扫一扫">
                                             <a href="javascript:void(0);"
                                                class="social-share-icon icon-heart" class=""
-                                               data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}"
-                                               data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
+                                               data-title="{{ $article->subject }} From:{{url('/article/view/')}}{{$article->id}}"
+                                               data-url="{{ url('article/view/') }}{{$article->id}}" data-id="{{ $article->id }}"></a>
                                         </p>
                                         <!-- share end -->
                                         <a href="javascript:void(0);"

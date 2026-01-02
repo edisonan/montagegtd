@@ -18,7 +18,7 @@ class NoteRepository {
 	 * @param unknown $taskId        	
 	 * @return unknown
 	 */
-	public function getUserList($userId, $tagId, $keyword, $pomoId, $articleId, $taskId) {
+	public function getUserList($userId, $tagId, $keyword, $sourceType, $sourceId) {
 		$query = Note::with ( [ 
 				'noteTagMaps.tag',
 				'user' 
@@ -36,14 +36,11 @@ class NoteRepository {
 		if (! empty ( $keyword )) {
 			$query->where ( 'name', 'like', "%" . $keyword . "%" );
 		}
-		if (! empty ( $articleId )) {
-			$query->where ( 'article_id', $articleId );
+		if (! empty ( $sourceType )) {
+			$query->where ( 'source_type', $sourceType );
 		}
-		if (! empty ( $pomoId )) {
-			$query->where ( 'pomo_id', $pomoId );
-		}
-		if (! empty ( $taskId )) {
-			$query->where ( 'task_id', $taskId );
+		if (! empty ( $sourceId )) {
+			$query->where ( 'source_id', $sourceId );
 		}
 		if (! empty ( $tagId )) {
 			$notes = DB::table ( 'note_tag_maps' )->select ( array (

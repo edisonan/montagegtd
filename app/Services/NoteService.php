@@ -12,6 +12,7 @@ use App\Repositories\ArticleRepository;
 use App\Repositories\PomoRepository;
 use Auth;
 use App\Repositories\TaskRepository;
+use App\Repositories\ThingRepository;
 use App\Repositories\NoteRepository;
 
 /**
@@ -35,6 +36,13 @@ class NoteService {
 	 * @var TaskRepository
 	 */
 	protected $taskRepository;
+
+    /**
+     * The thing repository instance.
+     *
+     * @var ThingRepository
+     */
+    protected $thingRepository;
 	
 	/**
 	 * The article Repository instance.
@@ -56,18 +64,25 @@ class NoteService {
 	 * @var TagService
 	 */
 	protected $tagService;
-	
+
+    const NOTE_SOURCE_TYPE_POMO = 1;
+    const NOTE_SOURCE_TYPE_ARTICLE = 2;
+    const NOTE_SOURCE_TYPE_TASK = 3;
+    const NOTE_SOURCE_TYPE_THING = 4;
+
 	/**
 	 *
 	 * @param NoteRepository $noteRepository        	
 	 * @param TaskRepository $taskRepository        	
-	 * @param ArticleService $articleRepository        	
+	 * @param ThingRepository $thingRepository
+	 * @param ArticleService $articleRepository
 	 * @param PomoRepository $pomoRepository        	
 	 * @param TagService $tagService        	
 	 */
-	public function __construct(NoteRepository $noteRepository, TaskRepository $taskRepository, ArticleService $articleRepository, PomoRepository $pomoRepository, TagService $tagService) {
+	public function __construct(NoteRepository $noteRepository, TaskRepository $taskRepository, ThingRepository $thingRepository, ArticleRepository $articleRepository, PomoRepository $pomoRepository, TagService $tagService) {
 		$this->noteRepository = $noteRepository;
 		$this->taskRepository = $taskRepository;
+		$this->thingRepository = $thingRepository;
 		$this->articleRepository = $articleRepository;
 		$this->pomoRepository = $pomoRepository;
 		$this->tagService = $tagService;
@@ -85,10 +100,10 @@ class NoteService {
 	 * @param number $taskId        	
 	 * @return string[]|unknown[]|number[]
 	 */
-	public function getIndexInfo($addContent, $type = '', $tagId = 0, $keyword = '', $pomoId = 0, $articleId = 0, $taskId = 0) {
-		$formatAddContent = $this->getFormatContent ( $addContent, $type, $pomoId, $articleId, $taskId );
+	public function getIndexInfo($addContent, $type = '', $tagId = 0, $keyword = '', $sourceType = 0, $sourceId =0) {
+		$formatAddContent = $this->getFormatContent ( $addContent, $type , $sourceType, $sourceId );
 		
-		$notes = $this->noteRepository->getUserList ( Auth::id (), $tagId, $keyword, $pomoId, $articleId, $taskId );
+		$notes = $this->noteRepository->getUserList ( Auth::id (), $tagId, $keyword, $sourceType, $sourceId);
 		foreach ( $notes as $key => $note ) {
 			foreach ( $note->noteTagMaps as $noteTagMap ) {
 				$url = "/notes?tag_id=" . $noteTagMap->tag->id;
@@ -103,9 +118,8 @@ class NoteService {
 				'add_content' => $formatAddContent,
 				'add_image' => $type == 'image' ? $addContent : '',
 				'notes' => $notes,
-				'pomo_id' => ! empty ( $pomoId ) ? $pomoId : '',
-				'task_id' => ! empty ( $taskId ) ? $taskId : '',
-				'article_id' => ! empty ( $articleId ) ? $articleId : '' 
+				'source_type' => $sourceType,
+				'source_id' => $sourceId,
 		];
 	}
 	
@@ -120,36 +134,51 @@ class NoteService {
 	 * @throws CustomException
 	 * @return string|string|unknown
 	 */
-	public function getFormatContent($addContent, $type, $pomoId, $articleId, $taskId) {
+	public function getFormatContent($addContent, $type, $sourceType = 0, $sourceId =0) {
 		$formatContent = $addContent;
-		if (! empty ( $pomoId )) {
-			$pomo = $this->pomoRepository->getPomoById ( $pomoId );
+		if ($sourceType == self::NOTE_SOURCE_TYPE_POMO && ! empty ( $sourceId )) {
+			$pomo = $this->pomoRepository->getPomoById ( $sourceId );
 			if (empty ( $pomo ) || $pomo->user_id != Auth::id ()) {
 				throw new CustomException ( "系统异常，无此番茄!" );
 			}
-			$formatContent = "#记录番茄#" . $pomo->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $pomo->created_at ) ) . "\n持续时长:20分钟\n";
+			$formatContent = "#记录番茄# " . $pomo->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $pomo->created_at ) ) . "\n持续时长:20分钟\n";
 			return $formatContent;
 		}
 		
-		if (! empty ( $articleId )) {
-			$article = $this->articleRepository->getArticleById ( $articleId );
+		if ($sourceType == self::NOTE_SOURCE_TYPE_ARTICLE && ! empty ( $sourceId )) {
+			$article = $this->articleRepository->getArticleById ( $sourceId );
 			if (empty ( $article )) {
 				throw new CustomException ( "系统异常，无此文章!" );
 			}
-			$formatContent = "#记录文章#" . $article->subject . "\n时间：" . date ( 'm月d日 H时i分' ) . "\n";
+			$formatContent = "#记录文章# " . $article->subject . "\n时间：" . date ( 'm月d日 H时i分' ) . "\n地址: " . config('app.url').'/article/'. $article->id . "\n原文地址：". $article->url . "\n";
 			return $formatContent;
 		}
 		
-		if (! empty ( $taskId )) {
-			$task = $this->taskRepository->getTaskById ( $taskId );
+		if ($sourceType == self::NOTE_SOURCE_TYPE_TASK && ! empty ( $sourceId )) {
+			$task = $this->taskRepository->getTaskById ( $sourceId );
 			if (empty ( $task ) || $task->user_id != Auth::id ()) {
-				throw new CustomException ( "系统异常，无此文章!" );
+				throw new CustomException ( "系统异常，无此待办!" );
 			}
 			$parentTaskName = isset ( $task->parentTask->name ) ? "#" . $task->parentTask->name . "#" : "";
 			$modeName = $task->mode == 2 ? "#life#" : "#work#";
-			$formatContent = "#记录待办#" . $modeName . $parentTaskName . $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
+			$formatContent = "#记录待办# " . $modeName . $parentTaskName . $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
 			return $formatContent;
 		}
+
+        if ($sourceType == self::NOTE_SOURCE_TYPE_THING && ! empty ( $sourceId )) {
+            $thing = $this->thingRepository->getThingById ( $sourceId );
+            if (empty ( $thing ) || $thing->user_id != Auth::id ()) {
+                throw new CustomException ( "系统异常，无此事情!" );
+            }
+
+            $formatContent = "#记录事情# "  . $thing->name ;
+            if(!empty($thing->start_time) && !empty($thing->end_time)) {
+                $duration = round((strtotime($thing->end_time) - strtotime($thing->start_time))/60);
+                $formatContent = $formatContent . "\n时间：" . date ( 'm月d日 H时i分', strtotime($thing->start_time) ) . '-' . date ( 'm月d日 H时i分', strtotime($thing->end_time) ). "\n持续时长:". $duration . "分钟\n";
+            }
+
+            return $formatContent;
+        }
 		
 		if (! empty ( $addContent )) {
 			if ($type == 'image') {
@@ -183,7 +212,7 @@ class NoteService {
 	 * @param unknown $articleId        	
 	 * @param unknown $pomoId        	
 	 */
-	public function store($name, $status, $addImage, $fname, $taskId, $articleId, $pomoId) {
+	public function store($name, $status, $addImage, $fname, $sourceType, $sourceId) {
 		$note = new Note ();
 		if (! empty ( $fname )) {
 			$note->record_path = $this->storeRecord ( $fname );
@@ -200,9 +229,8 @@ class NoteService {
 		
 		$note->name = $this->formatName ( $name );
 		$note->status = $status;
-		$note->article_id = $articleId;
-		$note->task_id = $taskId;
-		$note->pomo_id = $pomoId;
+		$note->source_type = $sourceType;
+		$note->source_id = $sourceId;
 		$note->user_id = \Auth::id ();
 		$note->save ();
 		

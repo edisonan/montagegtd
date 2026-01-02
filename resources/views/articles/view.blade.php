@@ -43,10 +43,10 @@
             });
 
             $(".icon-heart").click(function () {
-                console.log(123);
                 var title = $(this).attr('data-title');
                 var url = $(this).attr('data-url');
-                location.href = '/notes?add_content=' + url;
+                var id = $(this).attr('data-id');
+                location.href = '/notes?source_type=3&source_id=&add_content=' + url;
             });
 
             var img = document.getElementById("mark")
@@ -187,13 +187,13 @@
                         <div class="social-share" style="float:right" data-mode="prepend"
                              data-weibo-title="{{ $article->subject }}" data-weibo-appKey="567683707"
                              data-weibo-ralateUid="1671353227" data-title="{{ $article->subject }}"
-                             data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"
+                             data-url="{{ url('/article/view/'.$article->id) }}" data-id="{{ $article->id }}"
                              data-image="{{ $article->image_url }}" data-sites="facebook,twitter,google,wechat,weibo"
                              data-mobile-sites="facebook,twitter,google,wechat,weibo"
                              data-wechat-qrcode-title="请打开微信扫一扫">
                             <a href="javascript:void(0);" class="social-share-icon icon-heart" class=""
-                               data-title="{{ $article->subject }} From:http://task.congcong.us/article/view/{{$article->id}}"
-                               data-url="http://{{$_SERVER['SERVER_NAME']}}/article/view/{{$article->id}}"></a>
+                               data-title="{{ $article->subject }} From:https://task.congcong.us/article/view/{{$article->id}}"
+                               data-url="{{ url('/article/view/'.$article->id) }}" data-id="{{ $article->id }}"></a>
                         </div>
                         </p>
                     </div>

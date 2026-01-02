@@ -7,11 +7,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4>{{ $course->title }}</h4>
-                    <div>
-                        <a href="{{ url('/courses') }}" class="btn btn-secondary">返回课程列表</a>
-                        @if(auth()->id() == $course->created_by)
-                            <a href="{{ url('/admin/courses/' . $course->id . '/edit') }}" class="btn btn-primary ml-2">编辑课程</a>
-                            <span class="badge ml-2" style="line-height: 1.5;
+                    <span class="badge ml-2" style="line-height: 1.5;
                                 @if($course->public_status == 1)
                                     background-color: #6c757d; /* 私有 */
                                 @elseif($course->public_status == 2)
@@ -22,16 +18,23 @@
                                     background-color: #6c757d;
                                 @endif">
                                 @if($course->public_status == 1)
-                                    私有
-                                @elseif($course->public_status == 2)
-                                    待审核
-                                @elseif($course->public_status == 3)
-                                    已审核
-                                @else
-                                    未知状态
-                                @endif
+                            私有
+                        @elseif($course->public_status == 2)
+                            待审核
+                        @elseif($course->public_status == 3)
+                            已审核
+                        @else
+                            未知状态
+                        @endif
                             </span>
+                    <div>
+
+                        @if(auth()->id() == $course->created_by)
+
+                            <a href="{{ url('/admin/courses/' . $course->id . '/edit') }}" class="btn btn-primary ml-2">编辑课程</a>
+
                             <a href="{{ url('/courses/' . $course->id . '/items') }}" class="btn btn-info ml-2">管理章节</a>
+                            <a href="{{ url('/courses') }}" class="btn btn-secondary">返回课程列表</a>
                         @elseif(!auth()->guest() && !$is_joined)
                             <form action="{{ url('/courses/' . $course->id . '/join') }}" method="POST" class="d-inline">
                                 {{ csrf_field() }}

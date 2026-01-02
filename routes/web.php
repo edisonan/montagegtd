@@ -245,5 +245,13 @@ Route::group([
     Route::post('/course-items', 'CourseItemController@storeFromModal');
     Route::post('/course-items/{id}', 'CourseItemController@updateFromModal');
     Route::delete('/course-items/{id}', 'CourseItemController@destroy');
+    
+    // Personal Access Token 相关路由
+    Route::prefix('personal-access-tokens')->group(function () {
+        Route::get('/', 'PersonalAccessTokenController@index')->name('personal-access-tokens.index');
+        Route::get('/create', 'PersonalAccessTokenController@create')->name('personal-access-tokens.create');
+        Route::post('/', 'PersonalAccessTokenController@store')->name('personal-access-tokens.store');
+        Route::delete('/{id}', 'PersonalAccessTokenController@destroy')->name('personal-access-tokens.destroy');
+    });
 });
 		

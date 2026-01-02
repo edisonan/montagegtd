@@ -397,9 +397,8 @@
                     </div>
                 @endif
 
-                <input type="hidden" name="task_id" value="{{ $task_id }}">
-                <input type="hidden" name="pomo_id" value="{{ $pomo_id }}">
-                <input type="hidden" name="article_id" value="{{ $article_id }}">
+                <input type="hidden" name="source_type" value="{{ $source_type }}">
+                <input type="hidden" name="source_id" value="{{ $source_id }}">
                 <input type="hidden" name="fname" id="fname">
                 <input type="hidden" name="status" id="status_id">
 

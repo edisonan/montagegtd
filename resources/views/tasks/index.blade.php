@@ -107,7 +107,7 @@
                                 </td>
 
                                 <td width="20%" align="right">
-                                    <a href="/notes?add_content=%23记录待办%23{{ urlencode($task->name)}}&task_id={{$task->id}}">
+                                    <a href="/notes?source_type=3&source_id={{$task->id}}">
                                         <i class="fa fa-sticky-note-o" style="font-size: 1.5rem;"></i>
                                     </a>
                                     <a href="javascript:void(0)" onclick="callOpenTaskUpdateModal('{{ addslashes(json_encode($task->toArray())) }}')">

@@ -35,7 +35,7 @@ class PomoNotify implements ShouldQueue {
 		
 		if (! empty ( $needPomo )) {
 			if (isset ( $this->user->setting->ifttt_notify )) {
-				$notifyResult = CommonUtil::iftttnotify ( '做番茄', $this->message, 'https://task.congcong.us/', $this->user->setting->ifttt_notify );
+				$notifyResult = CommonUtil::iftttnotify ( '做番茄', $this->message,  config('app.url'), $this->user->setting->ifttt_notify );
 				Log::info ( 'notify result:' . $notifyResult . '|message:' . $this->message . '|user:' . $this->user->name );
 			}
 		}

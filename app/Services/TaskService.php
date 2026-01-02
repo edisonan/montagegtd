@@ -231,7 +231,7 @@ class TaskService {
 			} );
 			// ifttt通知
 			if (isset ( $task->user->setting->ifttt_notify )) {
-				CommonUtil::iftttnotify ( $title, $task->name, 'https://task.congcong.us', $task->user->setting->ifttt_notify );
+				CommonUtil::iftttnotify ( $title, $task->name,  config('app.url'), $task->user->setting->ifttt_notify );
 			}
 		}
 	}

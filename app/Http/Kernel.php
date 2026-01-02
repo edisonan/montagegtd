@@ -10,6 +10,7 @@ use App\Http\Middleware\TokenAuthMiddleware;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Middleware\PersonalAccessTokenMiddleware;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -71,6 +72,7 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'tokenauth' => TokenAuthMiddleware::class,
+        'personal.token' => PersonalAccessTokenMiddleware::class,
         'auth' => Authenticate::class,
         'auth.basic' => AuthenticateWithBasicAuth::class,
         'bindings' => SubstituteBindings::class,

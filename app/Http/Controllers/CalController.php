@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Utils\CommonUtil;
 use App\Services\CalService;
 use Illuminate\Http\Request;
 
@@ -50,11 +51,12 @@ class CalController extends Controller
         // 处理个人日历提醒相关内容
         $personCalUrl = $this->calService->getPersonCalUrl();
 
+        $host = CommonUtil::getUrlHost ( config ( 'app.url' ) );
         // 处理公共日历相关内容
         $cals = array(
             array(
                 'theme' => '2018 世界杯',
-                'url' => 'webcal://task.congcong.us/calics/worldcup'
+                'url' => 'webcal://'.$host.'/calics/worldcup'
             )
         );
 

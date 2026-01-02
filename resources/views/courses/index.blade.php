@@ -14,18 +14,18 @@
                 <ul class="nav nav-tabs" id="courseTabs" role="tablist">
                     @auth
                         <li class="nav-item">
-                            <a class="nav-link" id="my-courses-tab" data-toggle="tab" href="#my-courses" role="tab" aria-controls="my-courses" aria-selected="false">我创建的课程</a>
+                            <a class="nav-link active" id="my-courses-tab" data-toggle="tab" href="#my-courses" role="tab" aria-controls="my-courses" aria-selected="true">我创建的课程</a>
                         </li>
                     @endauth
                     <li class="nav-item">
-                        <a class="nav-link active" id="public-courses-tab" data-toggle="tab" href="#public-courses" role="tab" aria-controls="public-courses" aria-selected="true">公开课程</a>
+                        <a class="nav-link " id="public-courses-tab" data-toggle="tab" href="#public-courses" role="tab" aria-controls="public-courses" aria-selected="false">公开课程</a>
                     </li>
 
                 </ul>
                 
                 <div class="tab-content" id="courseTabContent">
                     <!-- 公开课程标签页 -->
-                    <div class="tab-pane fade show active" id="public-courses" role="tabpanel" aria-labelledby="public-courses-tab">
+                    <div class="tab-pane fade " id="public-courses" role="tabpanel" aria-labelledby="public-courses-tab">
                         <div class="card-body">
                             <div class="row">
                                 @forelse($public_courses as $course)
@@ -33,6 +33,8 @@
                                     <div class="card h-100">
                                         @if($course->cover_image_url)
                                         <img src="{{ $course->cover_image_url }}" class="card-img-top" alt="{{ $course->title }}" style="height: 150px; object-fit: cover;">
+                                        @else
+                                        <img src="{{ url('/favicon.ico') }}" class="card-img-top" alt="{{ $course->title }}" style="height: 150px; object-fit: cover;">
                                         @endif
                                         <div class="card-body d-flex flex-column">
                                             <h5 class="card-title">{{ $course->title }}</h5>
@@ -88,7 +90,7 @@
                     
                     <!-- 我创建的课程标签页 -->
                     @auth
-                    <div class="tab-pane fade" id="my-courses" role="tabpanel" aria-labelledby="my-courses-tab">
+                    <div class="tab-pane fade show active" id="my-courses" role="tabpanel" aria-labelledby="my-courses-tab">
                         <div class="card-body">
                             <div class="row">
                                 @forelse($user_created_courses as $course)
@@ -96,6 +98,8 @@
                                     <div class="card h-100">
                                         @if($course->cover_image_url)
                                         <img src="{{ $course->cover_image_url }}" class="card-img-top" alt="{{ $course->title }}" style="height: 150px; object-fit: cover;">
+                                        @else
+                                            <img src="{{ url('/favicon.ico') }}" class="card-img-top" alt="{{ $course->title }}" style="height: 150px; object-fit: cover;">
                                         @endif
                                         <div class="card-body d-flex flex-column">
                                             <h5 class="card-title">{{ $course->title }}</h5>

@@ -224,6 +224,10 @@
                                         </div>
                                     </td>
                                     <td class="text-right">
+                                        <a href="/notes?source_type=4&source_id={{$thing->id}}"
+                                           title="记录更多当时的想法吧">
+                                            <i class="fa fa-sticky-note-o" style="font-size: 1.5rem;"></i>
+                                        </a>
                                         <a href="{{ url('thing/'.$thing->id)}}" style="">
                                             <i class="fa fa-edit" style="font-size: 1.5rem;"></i>
                                         </a>

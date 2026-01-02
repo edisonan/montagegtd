@@ -88,7 +88,8 @@
                         ['url'=>'/', 'label'=>'做番茄', 'color'=>'#584029'],
                         ['url'=>'/notes', 'label'=>'记想法', 'color'=>'#4CA1D7'],
                         ['url'=>'/articles', 'label'=>'去阅读', 'color'=>'#F7AA55'],
-                        ['url'=>'/minds', 'label'=>'思维导图', 'color'=>'#0F959D'],
+                        ['url'=>'/minds', 'label'=>'绘导图', 'color'=>'#0F959D'],
+                        ['url'=>'/course-management', 'label'=>'学课程', 'color'=>'#7B68EE'],
                         ['url'=>'help/feedback', 'label'=>'添加反馈', 'color'=>'#E85205']
                     ];
                 @endphp
@@ -111,15 +112,18 @@
                             <span style="color:#9BD6C5">{{ Auth::user()->name }}</span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="{{ url('statistics') }}">统计</a>
-                            <a class="dropdown-item" href="{{ url('settings') }}">设置</a>
                             <a class="dropdown-item" href="{{ url('points') }}">积分中心</a>
                             <a class="dropdown-item" href="{{ url('achievements') }}">成就勋章</a>
                             <a class="dropdown-item" href="{{ url('dailysummarys') }}">我的日报</a>
+
+                            <a class="dropdown-item" href="{{ url('statistics') }}">统计</a>
+                            <a class="dropdown-item" href="{{ url('settings') }}">设置</a>
                             <a class="dropdown-item" href="{{ url('accounts') }}">账号管理</a>
+                            <a class="dropdown-item" href="{{ url('/personal-access-tokens') }}">访问令牌</a>
+
                             <a class="dropdown-item" href="{{ url('cals') }}">日历订阅</a>
                             <a class="dropdown-item" href="{{ url('/llm-management') }}">LLM管理</a>
-                            <a class="dropdown-item" href="{{ url('/course-management') }}">课程管理</a>
+
                             <a class="dropdown-item" href="{{ url('/logout') }}"><i class="fa fa-sign-out"></i> 登出</a>
                         </div>
                     </li>

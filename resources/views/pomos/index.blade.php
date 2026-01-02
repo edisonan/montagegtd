@@ -107,7 +107,7 @@
                                     </div>
                                 </td>
                                 <td class="text-right">
-                                    <a href="/notes?add_content=%23记录番茄%23{{ urlencode($pomo->name) }}&pomo_id={{$pomo->id}}"
+                                    <a href="/notes?add_content=source_type=1&source_id={{$pomo->id}}"
                                        title="记录更多当时的想法吧">
                                         <i class="fa fa-sticky-note-o" style="font-size: 1.5rem;"></i>
                                     </a>
@@ -119,7 +119,7 @@
                                     </a>
 
                                     <a href="javascript:void(0)" class="delete_pomo" task_type="delete"
-                                       task_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}"
+                                       pomo_value="{{ $pomo->id }}" pomo_token="{{ csrf_token() }}"
                                        style="cursor:pointer;">
                                         <i class="fa fa-trash-o" style="font-size: 1.5rem;"></i>
                                     </a>

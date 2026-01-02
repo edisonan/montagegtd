@@ -56,18 +56,17 @@ class NoteController extends Controller {
 	 *
 	 * @param Request $request        	
 	 */
-	public function index(Request $request, $add_content = '') {
+	public function index(Request $request) {
 		$type = $request->input ( 'type', '' );
 		$addContent = $request->input ( 'add_content', '' );
-		
-		$pomoId = $request->input ( 'pomo_id', 0 );
-		$articleId = $request->input ( 'article_id', 0 );
-		$taskId = $request->input ( 'task_id', 0 );
+
+        $sourceType = $request->input ( 'source_type', 0 );
+        $sourceId = $request->input ( 'source_id', 0 );
 		
 		$tagId = $request->input ( 'tag_id', 0 );
 		$keyword = $request->input ( 'keyword', '' );
 		
-		$datas = $this->noteService->getIndexInfo ( $addContent, $type, $tagId, $keyword, $pomoId, $articleId, $taskId );
+		$datas = $this->noteService->getIndexInfo ( $addContent, $type, $tagId, $keyword, $sourceType, $sourceId );
 		
 		return view ( 'notes.index', $datas );
 	}
@@ -88,11 +87,10 @@ class NoteController extends Controller {
 		$name = $request->get ( 'name' );
 		$status = $request->get ( 'status' );
 		
-		$pomoId = $request->input ( 'pomo_id', 0 );
-		$articleId = $request->input ( 'article_id', 0 );
-		$taskId = $request->input ( 'task_id', 0 );
-		
-		$this->noteService->store ( $name, $status, $addImage, $fname, $taskId, $articleId, $pomoId );
+		$sourceType = $request->input ( 'source_type', 0 );
+		$sourceId = $request->input ( 'source_id', 0 );
+
+		$this->noteService->store ( $name, $status, $addImage, $fname, $sourceType, $sourceId );
 		
 		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/notes' );
 	}
