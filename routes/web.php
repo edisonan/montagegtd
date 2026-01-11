@@ -1,5 +1,21 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\NotesController;
+use App\Http\Controllers\LlmController;  // 引入LlmController
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+// 笔记相关路由
+Route::resource('notes', NotesController::class);
+
+// LLM相关路由 - 需要认证
+Route::middleware('auth')->group(function () {
+    Route::post('/llm/ask-ai', [LlmController::class, 'askAi']); // 问问AI功能
+});
+
 /*
  * |--------------------------------------------------------------------------
  * | Web Routes
@@ -190,6 +206,9 @@ Route::group([
 
     Route::any('/code/{codeInfo}', 'CodeController@view');
     
+    // 应用代码访问路由
+    Route::get('/app/{appSlug}/{codePath}', 'AppController@show')->where('codePath', '.*');
+    
     // LLM管理相关路由
     Route::prefix('llm')->group(function () {
         Route::get('/providers', 'LlmController@getProviders');
@@ -211,6 +230,9 @@ Route::group([
         Route::delete('/credentials/{id}', 'LlmController@deleteCredential');
         
         Route::get('/usage-stats', 'LlmController@getUsageStats');
+        
+        // AI问答路由
+        Route::post('/ask-ai', 'LlmController@askAi');
     });
     
     // 用户端LLM管理页面

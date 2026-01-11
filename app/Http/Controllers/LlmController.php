@@ -2,352 +2,179 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LlmProvider;
 use App\Models\LlmModel;
 use App\Models\LlmProviderCredential;
-use App\Services\LlmProviderService;
-use App\Services\LlmModelService;
-use App\Services\LlmProviderCredentialService;
-use App\Services\LlmUsageLogService;
+use App\Models\LlmProvider;
+use App\Models\LlmConversation;
+use App\Services\LlmPolishService;
+use App\Services\LlmConversationService;
 use Illuminate\Http\Request;
-use App\Exceptions\CustomException;
-use App\Http\Utils\ResponseDataUtil;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
-/**
- * LLM管理控制器
- *
- * @author edison.an
- */
 class LlmController extends Controller
 {
-    protected $providerService;
-    protected $modelService;
-    protected $credentialService;
-    protected $usageLogService;
 
-    public function __construct(
-        LlmProviderService $providerService,
-        LlmModelService $modelService,
-        LlmProviderCredentialService $credentialService,
-        LlmUsageLogService $usageLogService
-    ) {
+    
+    /**
+     * LlmConversationService 实例.
+     *
+     * @var LlmConversationService
+     */
+    protected $conversationService;
+
+    public function __construct(LlmConversationService $conversationService)
+    {
         $this->middleware('auth');
         
-        $this->providerService = $providerService;
-        $this->modelService = $modelService;
-        $this->credentialService = $credentialService;
-        $this->usageLogService = $usageLogService;
+        $this->conversationService = $conversationService;
     }
 
-    /**
-     * 获取所有LLM供应商
-     */
-    public function getProviders(Request $request)
+    public function askAi(Request $request)
     {
-        $userId = auth()->id();
-        $providers = $this->providerService->getUserAvailableProviders($userId);
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'providers' => $providers
-        ]));
-    }
-
-    /**
-     * 获取所有LLM模型
-     */
-    public function getModels(Request $request)
-    {
-        $providerId = $request->input('provider_id');
-        $userId = auth()->id();
-        
-        if ($providerId) {
-            $models = $this->modelService->getModelsByProviderId($providerId);
-        } else {
-            $models = $this->modelService->getUserAvailableModels($userId);
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'models' => $models
-        ]));
-    }
-
-    /**
-     * 获取所有凭据
-     */
-    public function getCredentials(Request $request)
-    {
-        $providerId = $request->input('provider_id');
-        $userId = auth()->id();
-        
-        if ($providerId) {
-            // 如果指定了供应商ID，获取该供应商下用户可用的凭据
-            $credentials = $this->credentialService->getCredentialsByProviderId($providerId)
-                ->where(function($q) use ($userId) {
-                    $q->where('user_id', $userId)
-                       ->orWhereNull('user_id');
-                });
-        } else {
-            $credentials = $this->credentialService->getUserAvailableCredentials($userId);
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'credentials' => $credentials
-        ]));
-    }
-
-    /**
-     * 获取使用记录统计
-     */
-    public function getUsageStats(Request $request)
-    {
-        $filters = [
-            'provider_id' => $request->input('provider_id'),
-            'model_id' => $request->input('model_id'),
-            'start_date' => $request->input('start_date'),
-            'end_date' => $request->input('end_date')
-        ];
-
-        $stats = $this->usageLogService->getUsageStatistics($filters);
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'stats' => $stats
-        ]));
-    }
-
-    /**
-     * 获取单个LLM供应商
-     */
-    public function getProvider(Request $request, $id)
-    {
-        $userId = auth()->id();
-        $provider = $this->providerService->getProviderByIdForUser($id, $userId);
-        
-        if (!$provider) {
-            return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('供应商不存在'));
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'provider' => $provider
-        ]));
-    }
-
-    /**
-     * 创建或更新LLM供应商
-     */
-    public function saveProvider(Request $request, $id = null)
-    {
-        $this->validate($request, [
-            'name' => 'required|max:100',
-            'slug' => $id ? 'required|max:50' : 'required|max:50|unique:llm_providers,slug',
-            'api_type' => 'required',
+        $validator = Validator::make($request->all(), [
+            'referText' => 'string|max:1000',
+            'query' => 'required|string|max:1000',
         ]);
-        
-        $data = $request->only([
-            'name', 'slug', 'description', 'base_url', 'api_type',
-            'is_active', 'priority', 'config_schema', 'rate_limit_per_minute', 'concurrent_limit'
-        ]);
-        
-        // 确保user_id是当前用户
-        $data['user_id'] = auth()->id();
-        
-        if ($id) {
-            // 更新现有供应商
-            $provider = $this->providerService->updateProvider($id, $data);
-            if (!$provider) {
-                return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('供应商不存在'));
-            }
-        } else {
-            // 创建新供应商
-            $provider = $this->providerService->createProvider($data);
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'provider' => $provider
-        ]));
-    }
 
-    /**
-     * 删除LLM供应商
-     */
-    public function deleteProvider(Request $request, $id)
-    {
-        $userId = auth()->id();
-        $provider = LlmProvider::where('id', $id)->where('user_id', $userId)->first();
-        
-        if (!$provider) {
-            return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('供应商不存在'));
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
         }
-        
-        $this->providerService->deleteProvider($id);
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
-    }
 
-    /**
-     * 获取单个LLM模型
-     */
-    public function getModel(Request $request, $id)
-    {
-        $userId = auth()->id();
-        $model = $this->modelService->getModelByIdForUser($id, $userId);
-        
-        if (!$model) {
-            return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('模型不存在'));
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'model' => $model
-        ]));
-    }
+        // 直接使用 $request->input() 获取数据
+        $query = $request->input('query');
+        $referText = $request->input('referText', '');
 
-    /**
-     * 创建或更新LLM模型
-     */
-    public function saveModel(Request $request, $id = null)
-    {
-        $this->validate($request, [
-            'provider_id' => 'required|exists:llm_providers,id',
-            'name' => 'required|max:100',
-            'model_type' => 'required',
-        ]);
-        
-        $data = $request->only([
-            'provider_id', 'name', 'display_name', 'model_type',
-            'context_length', 'max_tokens', 'input_price_per_1k', 'output_price_per_1k',
-            'is_active', 'capabilities', 'sort_order'
-        ]);
-        
-        // 确保user_id是当前用户
-        $data['user_id'] = auth()->id();
-        
-        if ($id) {
-            // 更新现有模型
-            $model = $this->modelService->updateModel($id, $data);
-            if (!$model) {
-                return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('模型不存在'));
-            }
-        } else {
-            // 创建新模型
-            $model = $this->modelService->createModel($data);
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'model' => $model
-        ]));
-    }
+        try {
+            $user = Auth::user();
+            $credential = LlmProviderCredential::where('user_id', $user->id)
+                ->where('is_active', 1)
+                ->first();
 
-    /**
-     * 删除LLM模型
-     */
-    public function deleteModel(Request $request, $id)
-    {
-        $userId = auth()->id();
-        $model = LlmModel::where('id', $id)->where('user_id', $userId)->first();
-        
-        if (!$model) {
-            return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('模型不存在'));
-        }
-        
-        $this->modelService->deleteModel($id);
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
-    }
-
-    /**
-     * 获取单个凭据
-     */
-    public function getCredential(Request $request, $id)
-    {
-        $userId = auth()->id();
-        $credential = $this->credentialService->getCredentialByIdForUser($id, $userId);
-        
-        if (!$credential) {
-            return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('凭据不存在'));
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'credential' => $credential
-        ]));
-    }
-
-    /**
-     * 创建或更新凭据
-     */
-    public function saveCredential(Request $request, $id = null)
-    {
-        if ($id) {
-            // 更新凭据时，API Key是可选的（如果为空则保持原值）
-            $this->validate($request, [
-                'provider_id' => 'required|exists:llm_providers,id',
-                'name' => 'required|max:100',
-            ]);
-            
-            $data = $request->only([
-                'provider_id', 'name', 'config',
-                'is_default', 'quota_limit', 'is_active'
-            ]);
-            
-            // 如果提供了API Key，则更新它
-            if ($request->filled('api_key')) {
-                $data['api_key'] = $request->input('api_key');
-            }
-        } else {
-            // 创建凭据时，API Key是必需的
-            $this->validate($request, [
-                'provider_id' => 'required|exists:llm_providers,id',
-                'name' => 'required|max:100',
-                'api_key' => 'required',
-            ]);
-            
-            $data = $request->only([
-                'provider_id', 'name', 'api_key', 'config',
-                'is_default', 'quota_limit', 'is_active'
-            ]);
-        }
-        
-        // 确保user_id是当前用户
-        $data['user_id'] = auth()->id();
-        
-        // 如果设置为默认凭据，取消同供应商下其他默认凭据
-        if (!empty($data['is_default'])) {
-            $this->credentialService->getCredentialsByProviderId($data['provider_id'], false)
-                ->where('is_default', true)
-                ->where('user_id', auth()->id())
-                ->each(function ($cred) {
-                    $cred->update(['is_default' => false]);
-                });
-        }
-        
-        if ($id) {
-            // 更新现有凭据
-            $credential = $this->credentialService->updateCredential($id, $data);
             if (!$credential) {
-                return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('凭据不存在'));
+                return response()->json(['error' => '未找到有效的API凭据'], 400);
             }
-        } else {
-            // 创建新凭据
-            $credential = $this->credentialService->createCredential($data);
-        }
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-            'credential' => $credential
-        ]));
-    }
 
-    /**
-     * 删除凭据
-     */
-    public function deleteCredential(Request $request, $id)
-    {
-        $userId = auth()->id();
-        $credential = LlmProviderCredential::where('id', $id)->where('user_id', $userId)->first();
-        
-        if (!$credential) {
-            return $this->jsonResponse($request, ResponseDataUtil::genErrSucc('凭据不存在'));
+            $provider = LLMProvider::where('id', $credential->provider_id)->first();
+
+            $model = LlmModel::where('provider_id', $credential->provider_id)
+//                ->where('status', 1)
+                ->first();
+
+            if (!$model) {
+                return response()->json(['error' => '未找到有效的模型'], 400);
+            }
+
+            // 记录请求数据
+            $requestData = [
+                'model' => $model->name,
+                'messages' => [
+                    [
+                        'role' => 'user',
+                        'content' => $query."\n引用文本：\n".$referText,
+                    ]
+                ],
+                'stream' => true
+            ];
+
+            // 先创建对话记录
+            $conversation = $this->conversationService->createConversation([
+                'user_id' => $user->id,
+                'model_id' => $model->id,
+                'credential_id' => $credential->id,
+                'question' => $query,
+                'request_data' => $requestData,
+                'answer' => '' // 初始化为空，后续填充
+            ]);
+
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $provider->base_url."/chat/completions",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => json_encode($requestData),
+                CURLOPT_HTTPHEADER => [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $credential->api_key,
+                    'Accept: text/event-stream',
+                    'Cache-Control: no-cache',
+                    'Connection: keep-alive'
+                ],
+                CURLOPT_WRITEFUNCTION => function($ch, $data) use (&$completeAnswer) {
+                    // 直接输出原始数据，让前端处理
+                    echo $data;
+                    ob_flush();
+                    flush();
+                    return strlen($data);
+                },
+                CURLOPT_HEADERFUNCTION => function($ch, $header) {
+                    // 转发响应头
+                    if (strpos($header, 'HTTP/') !== 0 &&
+                        strpos($header, 'Content-Type:') !== 0 &&
+                        strpos($header, 'Transfer-Encoding:') !== 0 &&
+                        trim($header) !== '') {
+                        header($header);
+                    }
+                    return strlen($header);
+                },
+                CURLOPT_TIMEOUT => 300
+            ]);
+
+            curl_exec($curl);
+
+            $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $error = curl_error($curl);
+
+            Log::info("askAi cURL Response:", [
+                'http_code' => $httpCode,
+                'error' => $error,
+                'request_data' => $requestData
+            ]);
+
+            if ($error) {
+                Log::error("askAi cURL Error:", [$error]);
+
+                // 更新对话记录，保存错误信息
+                $this->conversationService->updateConversation($conversation->id, [
+                    'answer' => '发生错误: ' . $error,
+                    'response_data' => ['error' => $error],
+                    'answered_at' => now()
+                ]);
+
+                echo "data: 发生错误: " . $error . "\n\n";
+                ob_flush();
+                flush();
+            }
+
+            curl_close($curl);
+
+            // 发送结束信号
+            echo "\ndata: [DONE]\n\n";
+            ob_flush();
+            flush();
+
+            exit();
+        } catch (\Exception $e) {
+            Log::error("askAi Error:", [$e->getMessage()]);
+
+            // 尝试更新对话记录，保存错误信息
+            if (isset($conversation)) {
+                $this->conversationService->updateConversation($conversation->id, [
+                    'answer' => '发生异常: ' . $e->getMessage(),
+                    'response_data' => ['exception' => $e->getMessage()],
+                    'answered_at' => now()
+                ]);
+            }
+
+            echo "data: 发生异常: " . $e->getMessage() . "\n\n";
+            echo "data: [DONE]\n\n";
+            ob_flush();
+            flush();
+
+            exit();
         }
-        
-        $this->credentialService->deleteCredential($id);
-        
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
     }
 }

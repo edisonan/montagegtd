@@ -144,4 +144,12 @@ class LlmProviderCredentialService
     {
         return $this->repository->restoreCredential($id);
     }
+
+    /**
+     * 获取用户默认凭据
+     */
+    public function getUserDefaultCredentialByModel($model)
+    {
+        return $this->repository->getUserDefaultCredentialByModel($model);
+    }
 }

@@ -119,4 +119,21 @@ class LlmModelRepository
     {
         return LlmModel::withTrashed()->where('id', $id)->restore();
     }
+
+    /**
+     * 获取用户第一个可用的模型
+     */
+    public function getUserFirstAvailableModel($userId)
+    {
+        return LlmModel::with('provider')
+            ->where(function($q) use ($userId) {
+                $q->where('user_id', $userId)
+                   ->orWhereNull('user_id');
+            })
+            ->where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('provider_id')
+            ->orderBy('name')
+            ->first();
+    }
 }

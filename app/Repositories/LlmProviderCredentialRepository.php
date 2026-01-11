@@ -124,4 +124,25 @@ class LlmProviderCredentialRepository
     {
         return LlmProviderCredential::withTrashed()->where('id', $id)->restore();
     }
+
+    /**
+     * 获取用户默认凭据
+     */
+    public function getUserDefaultCredentialByModel($model)
+    {
+        // 首先尝试获取与模型相同供应商的默认凭据
+        $credential = LlmProviderCredential::where('provider_id', $model->provider_id)
+                                          ->where('is_default', true)
+                                          ->where('is_active', true)
+                                          ->first();
+        
+        if ($credential) {
+            return $credential;
+        }
+        
+        // 如果没有默认凭据，获取第一个可用的凭据
+        return LlmProviderCredential::where('provider_id', $model->provider_id)
+                                   ->where('is_active', true)
+                                   ->first();
+    }
 }

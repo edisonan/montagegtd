@@ -69,11 +69,11 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .audio-controls button#stop {
             background: #e74c3c;
         }
-        
+
         .audio-timer {
             margin-left: 10px;
             font-size: 14px;
@@ -190,7 +190,7 @@
             line-height: 1.6;
             transition: max-height 0.3s ease-in-out;
         }
-        
+
         .note-body.has-collapse {
             max-height: 200px;
             overflow: hidden;
@@ -228,7 +228,7 @@
             max-height: none;
             overflow: visible;
         }
-        
+
         .note-body.expanded::after {
             content: '︿';
             position: absolute;
@@ -248,7 +248,7 @@
             transition: all 0.3s ease;
             font-size: 1.2em;
         }
-        
+
         .note-body.expanded:hover::after {
             background: #e8e8e8;
             color: #66b266;
@@ -277,12 +277,164 @@
             }
         }
 
+        // AI问答功能
+        function openAskAIModal() {
+            const noteText = document.getElementById('note-name').value;
+            if (!noteText.trim()) {
+                alert('请输入要润色的文本');
+                return;
+            }
+
+            // 设置默认润色要求
+            document.getElementById('askAIInstruction').value = '请帮我润色这段文字';
+            document.getElementById('askAIResult').value = '';
+            $('#askAIModal').modal('show');
+        }
+
+        // 处理AI问答
+        function startAskAIProcess(referText, query) {
+            if (!referText.trim()) {
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('askAILoading').style.display = 'block';
+            document.getElementById('askAIResult').value = '';
+
+            // 获取CSRF令牌 - 修复可能找不到meta标签的问题
+            let csrfToken = '';
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            const inputToken = document.querySelector('input[name="_token"]');
+
+            if (metaToken) {
+                csrfToken = metaToken.getAttribute('content');
+            } else if (inputToken) {
+                csrfToken = inputToken.value;
+            } else {
+                // 如果都没找到，尝试从页面其他地方获取
+                csrfToken = '{{ csrf_token() }}';
+            }
+
+            // 发送请求到后端进行AI问答
+            fetch('/llm/ask-ai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    referText: referText,
+                    query: query
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                            throw new Error(errData.error || `HTTP error! status: ${response.status}`);
+                        });
+                    }
+                    
+                    // 检查是否为流式响应
+                    if (response.headers.get('content-type')?.includes('text/event-stream')) {
+                        // 处理流式响应
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let buffer = '';
+                        let completeResult = '';
+                        
+                        return new Promise((resolve, reject) => {
+                            function readStream() {
+                                reader.read().then(({done, value}) => {
+                                    if (done) {
+                                        resolve(completeResult);
+                                        return;
+                                    }
+                                    
+                                    buffer += decoder.decode(value, {stream: true});
+                                    
+                                    // 按行分割处理SSE响应
+                                    const lines = buffer.split('\n');
+                                    buffer = lines.pop(); // 保留不完整的行
+                                    
+                                    for(const line of lines) {
+                                        if(line.startsWith('data: ') && line !== 'data: [DONE]') {
+                                            const dataStr = line.slice(6); // 移除 'data: ' 前缀
+                                            try {
+                                                const parsed = JSON.parse(dataStr);
+                                                // 检查是否为OpenAI格式的流式响应
+                                                if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta) {
+                                                    const content = parsed.choices[0].delta.content;
+                                                    if (content) {
+                                                        completeResult += content;
+                                                        // 实时更新结果显示
+                                                        document.getElementById('askAIResult').value = completeResult;
+                                                    }
+                                                } else {
+                                                    // 处理简单文本响应
+                                                    if(dataStr.trim()) {
+                                                        completeResult += dataStr;
+                                                        document.getElementById('askAIResult').value = completeResult;
+                                                    }
+                                                }
+                                            } catch (e) {
+                                                // 如果解析JSON失败，直接当作文本处理
+                                                if(dataStr.trim()) {
+                                                    completeResult += dataStr;
+                                                    document.getElementById('askAIResult').value = completeResult;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    readStream();
+                                }).catch(reject);
+                            }
+                            readStream();
+                        });
+                    } else {
+                        return response.text();
+                    }
+                })
+                .then(data => {
+                    document.getElementById('askAIResult').value = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('askAIResult').value = '润色失败: ' + error.message +
+                        '\n\n请检查：\n1. 是否已配置LLM提供商\n2. 是否有可用的模型\n3. 凭据是否有效';
+                })
+                .finally(() => {
+                    document.getElementById('askAILoading').style.display = 'none';
+                });
+        }
+
+        // 触发润色按钮的函数
+        function triggerAskAI() {
+            const noteText = document.getElementById('note-name').value;
+            const instruction = document.getElementById('askAIInstruction').value;
+            startAskAIProcess(noteText, instruction);
+        }
+
+        function useAskAIText() {
+            const askAIText = document.getElementById('askAIResult').value;
+            if (askAIText.trim()) {
+                document.getElementById('note-name').value = askAIText;
+                $('#askAIModal').modal('hide');
+            } else {
+                alert('没有润色结果可以使用');
+            }
+        }
+
+        function clearAskAIResult() {
+            document.getElementById('askAIResult').value = '';
+        }
+
         window.onload = function () {
             let startBtn = document.getElementById('start');
             let stopBtn = document.getElementById('stop');
             let container = document.getElementById('audio-container');
             let timerDisplay = document.getElementById('audio-timer');
-            
+
             let startTime;
             let timerInterval;
 
@@ -299,7 +451,7 @@
                 stopBtn.disabled = false;
                 startBtn.style.display = 'none';
                 stopBtn.style.display = 'inline-block';
-                
+
                 // 开始计时
                 startTime = new Date();
                 timerDisplay.textContent = '00:00';
@@ -308,11 +460,11 @@
                     let elapsedTime = Math.floor((currentTime - startTime) / 1000);
                     let minutes = Math.floor(elapsedTime / 60);
                     let seconds = elapsedTime % 60;
-                    
+
                     let formattedTime = ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
                     timerDisplay.textContent = formattedTime;
                 }, 1000);
-                
+
                 let audios = document.querySelectorAll('audio');
                 audios.forEach(a => { if(!a.paused) a.pause(); });
                 recorder.start();
@@ -323,13 +475,13 @@
                 startBtn.disabled = false;
                 stopBtn.style.display = 'none';
                 startBtn.style.display = 'inline-block';
-                
+
                 // 停止计时
                 if (timerInterval) {
                     clearInterval(timerInterval);
                     timerInterval = null;
                 }
-                
+
                 recorder.stop();
                 recorder.getBlob(function (blob) {
                     if (!document.getElementById('note-name').value.includes("#分享语音#")) {
@@ -405,8 +557,43 @@
                 <div class="publish-btns">
                     <button type="button" class="btn btn-primary" onclick="submitProcess(1)">私密发布</button>
                     <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">公开发布</button>
+                    <button type="button" class="btn btn-success" onclick="openAskAIModal()">AI问答</button>
                 </div>
             </form>
+        </div>
+
+        <!-- AI问答模态框 -->
+        <div class="modal fade" id="askAIModal" tabindex="-1" role="dialog" aria-labelledby="askAIModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="askAIModalLabel">AI问答</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="askAIInstruction">问答要求</label>
+                            <input type="text" class="form-control" id="askAIInstruction" value="请帮我润色这段文字">
+                            <button type="button" class="btn btn-info" onclick="triggerAskAI()">开始</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="askAIResult">问答结果</label>
+                            <textarea class="form-control" id="askAIResult" rows="10" readonly></textarea>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="useAskAIText()">使用问答结果</button>
+                                <button type="button" class="btn btn-secondary btn-sm ml-2" onclick="clearAskAIResult()">清空</button>
+                            </div>
+                        </div>
+                        <div id="askAILoading" class="text-center" style="display: none;">
+                            <div class="spinner-border" role="status">
+                                <span class="sr-only">加载中...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ================== 笔记列表 ================== -->
@@ -474,7 +661,7 @@
             // 长文本折叠展开
             $(".note-body").each(function(){
                 var $this = $(this);
-                
+
                 // 创建临时元素进行准确测量，确保移除所有可能影响高度的样式
                 var $tempDiv = $this.clone()
                     .css({
@@ -490,10 +677,10 @@
                     .removeClass('has-collapse')
                     .removeClass('expanded')
                     .appendTo('body');
-                
+
                 var contentHeight = $tempDiv.height();
                 $tempDiv.remove();
-                
+
                 // 只有当内容高度超过200px时才添加折叠功能
                 if(contentHeight > 200){
                     $this.addClass('has-collapse').click(function(){

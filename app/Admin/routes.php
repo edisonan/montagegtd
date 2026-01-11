@@ -43,4 +43,6 @@ Route::group ( [
     $router->resource('llm-usage-logs', LlmUsageLogController::class);
     
     $router->resource('courses', CourseController::class);
+    
+    $router->resource('applications', ApplicationController::class);
 } );

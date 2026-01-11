@@ -125,4 +125,12 @@ class LlmModelService
     {
         return $this->repository->restoreModel($id);
     }
+
+    /**
+     * 获取用户第一个可用的模型
+     */
+    public function getUserFirstAvailableModel($userId)
+    {
+        return $this->repository->getUserFirstAvailableModel($userId);
+    }
 }

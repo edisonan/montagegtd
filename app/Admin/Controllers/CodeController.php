@@ -108,7 +108,26 @@ class CodeController extends Controller
                 if (isset($typeMap[$type])) {
                     $typeText = $typeMap[$type];
                 }
-                return '【' . $typeText . '】- <a href="/admin/codes/'.$this->id.'">'.$this->name.'</a> - <a target="_blank" href="/code/'.$this->id.'">查看</a>';
+                return '【' . $typeText . '】- <a href="/codes/'.$this->id.'">'.$this->name.'</a> - <a target="_blank" href="/code/'.$this->id.'">查看</a>';
+            });
+            $grid->path('路径')->display(function ($value) {
+                if ($this->app_id) {
+                    $app = \App\Models\Application::find($this->app_id);
+                    if($app){
+                        return '<a href="/app/'.$app->slug.'/'.$this->path.'">'.$this->path.'</a>';
+                    } else {
+                        return '未关联应用';
+                    }
+                    return $app ? $app->app->slug : '未关联应用';
+                }
+                return '未关联应用';
+            });
+            $grid->application('所属应用')->display(function ($value) {
+                if ($this->app_id) {
+                    $app = \App\Models\Application::find($this->app_id);
+                    return $app ? $app->name : '未关联应用';
+                }
+                return '未关联应用';
             });
 //            $grid->content('代码内容')->limit(100);
             $grid->status('状态')->display(function ($value) {
@@ -120,7 +139,18 @@ class CodeController extends Controller
             $grid->actions(function ($actions) {
                 $actions->disableDelete();
             });
-
+            
+            $grid->filter(function ($filter) {
+                $filter->like('name', '名称');
+                $filter->like('path', '路径');
+                $filter->equal('app_id', '所属应用')->select(function () {
+                    return \App\Models\Application::where('status', '<', 4)->pluck('name', 'id');
+                });
+                $filter->equal('status', '状态')->select([
+                    1 => '启用',
+                    2 => '禁用'
+                ]);
+            });
         });
     }
 
@@ -155,6 +185,10 @@ class CodeController extends Controller
         return Admin::form ( Code::class, function (Form $form) {
             $form->text('name', '名称');
             $form->radio('type', '类型')->options(array(1=>'php',2=>'html', 3=>'js', 4=>'css', 5=>'json'))->default(1);
+            $form->text('path', '文件路径')->placeholder('例如: index.php, assets/style.css')->rules('max:500');
+            $form->select('app_id', '所属应用')->options(function () {
+                return \App\Models\Application::where('status', '<', 4)->pluck('name', 'id');
+            })->placeholder('选择所属应用（可选）');
             $form->textarea('content', '代码内容');
             $form->radio('status', '状态')->options(array(1=>'开启',2=>'关闭'))->default(1);
         });
