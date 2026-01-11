@@ -278,24 +278,17 @@
         }
 
         // AI问答功能
-        function openAskAIModal() {
-            const noteText = document.getElementById('note-name').value;
-            if (!noteText.trim()) {
-                alert('请输入要润色的文本');
-                return;
-            }
+        function openAskAIModal($referTextId='') {
+            document.getElementById('refer_text_id').value = $referTextId;
 
             // 设置默认润色要求
-            document.getElementById('askAIInstruction').value = '请帮我润色这段文字';
+            document.getElementById('query').value = '请帮我润色这段文字';
             document.getElementById('askAIResult').value = '';
             $('#askAIModal').modal('show');
         }
 
         // 处理AI问答
         function startAskAIProcess(referText, query) {
-            if (!referText.trim()) {
-                return;
-            }
 
             // 显示加载状态
             document.getElementById('askAILoading').style.display = 'block';
@@ -333,7 +326,7 @@
                             throw new Error(errData.error || `HTTP error! status: ${response.status}`);
                         });
                     }
-                    
+
                     // 检查是否为流式响应
                     if (response.headers.get('content-type')?.includes('text/event-stream')) {
                         // 处理流式响应
@@ -341,7 +334,7 @@
                         const decoder = new TextDecoder();
                         let buffer = '';
                         let completeResult = '';
-                        
+
                         return new Promise((resolve, reject) => {
                             function readStream() {
                                 reader.read().then(({done, value}) => {
@@ -349,13 +342,13 @@
                                         resolve(completeResult);
                                         return;
                                     }
-                                    
+
                                     buffer += decoder.decode(value, {stream: true});
-                                    
+
                                     // 按行分割处理SSE响应
                                     const lines = buffer.split('\n');
                                     buffer = lines.pop(); // 保留不完整的行
-                                    
+
                                     for(const line of lines) {
                                         if(line.startsWith('data: ') && line !== 'data: [DONE]') {
                                             const dataStr = line.slice(6); // 移除 'data: ' 前缀
@@ -385,7 +378,7 @@
                                             }
                                         }
                                     }
-                                    
+
                                     readStream();
                                 }).catch(reject);
                             }
@@ -410,15 +403,19 @@
 
         // 触发润色按钮的函数
         function triggerAskAI() {
-            const noteText = document.getElementById('note-name').value;
-            const instruction = document.getElementById('askAIInstruction').value;
-            startAskAIProcess(noteText, instruction);
+            const referTextId = document.getElementById('refer_text_id').value;
+            const referText = referTextId != '' ? document.getElementById(referTextId).value : "";
+            const query = document.getElementById('query').value;
+            startAskAIProcess(referText, query);
         }
 
         function useAskAIText() {
             const askAIText = document.getElementById('askAIResult').value;
             if (askAIText.trim()) {
-                document.getElementById('note-name').value = askAIText;
+                const referTextId = document.getElementById('refer_text_id').value;
+                if (referTextId != '') {
+                    document.getElementById(referTextId).value = askAIText;
+                }
                 $('#askAIModal').modal('hide');
             } else {
                 alert('没有润色结果可以使用');
@@ -557,7 +554,7 @@
                 <div class="publish-btns">
                     <button type="button" class="btn btn-primary" onclick="submitProcess(1)">私密发布</button>
                     <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">公开发布</button>
-                    <button type="button" class="btn btn-success" onclick="openAskAIModal()">AI问答</button>
+                    <button type="button" class="btn btn-success" onclick="openAskAIModal('note-name')"><small>AI助手</small></button>
                 </div>
             </form>
         </div>
@@ -572,10 +569,11 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
+                    <input type="hidden" id="refer_text_id" value="">
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="askAIInstruction">问答要求</label>
-                            <input type="text" class="form-control" id="askAIInstruction" value="请帮我润色这段文字">
+                            <label for="query">问答要求</label>
+                            <input type="text" class="form-control" id="query" value="请帮我润色这段文字">
                             <button type="button" class="btn btn-info" onclick="triggerAskAI()">开始</button>
                         </div>
                         <div class="form-group">
