@@ -1,4 +1,6 @@
-@extends('layouts.app') @section('content')
+@extends('layouts.app')
+@section('content')
+    @include('components.ai-ask-modal')
     <style>
         .lazy {
             width: 100%;
@@ -385,7 +387,7 @@
 
                                 <div id="desc{{$articleSub->id}}" class="descdivclass" article_sub_id="{{$articleSub->id}}"  
                                      @if($unable_desc == "true") style="display:none" @endif>
-                                    <div class="card-text post-text">
+                                    <div class="card-text post-text" id="content{{$articleSub->id}}">
                                         <?php
                                         $content = $article->content;
                                         if ($unable_img == "true") {
@@ -413,6 +415,9 @@
                                                data-url="{{ url('article/view/') }}{{$article->id}}" data-id="{{ $article->id }}"></a>
                                         </p>
                                         <!-- share end -->
+                                        <a href="javascript:void(0);" onclick="openAskAIModal('content{{$articleSub->id}}')" article_sub_id="{{$articleSub->id}}"
+                                           class="btn btn-outline-secondary btn-sm set_read_later"
+                                           title="AI助手">AI助手</a>
                                         <a href="javascript:void(0);"
                                            class="btn btn-outline-secondary btn-sm share_btn" title="分享"><img
                                                     src="/img/icon/share.png" width="20px"/>Share</a> <a

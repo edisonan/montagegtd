@@ -36,7 +36,7 @@ class LlmController extends Controller
     public function askAi(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'referText' => 'string|max:1000',
+            'referText' => 'string|max:5000',
             'query' => 'required|string|max:1000',
         ]);
 
