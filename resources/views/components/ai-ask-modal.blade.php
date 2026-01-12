@@ -1,230 +1,207 @@
-<div class="modal fade" id="askAIModal" tabindex="-1" role="dialog" aria-labelledby="askAIModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="askAIModalLabel">AI问答</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <input type="hidden" id="refer_text_id" value="">
-            <div class="modal-body">
-                <div class="form-group">
-                    <div class="d-flex align-items-start">
-                        <!-- 输入框区域 -->
-                        <div class="flex-grow-1 mr-3">
-                            <label for="query" class="d-block mb-1">问答要求</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="query" value="请帮我润色这段文字">
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-info" onclick="triggerAskAI()">开始</button>
-                                </div>
-                            </div>
-                        </div>
+<div class="modal-body d-flex flex-column" style="height: 60vh;">
+    <!-- 聊天消息区域 -->
+    <div id="chatMessages" class="flex-grow-1 overflow-auto mb-3" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- 示例消息（可选） -->
+        <!-- <div class="d-flex justify-content-start"><div class="bg-light p-2 rounded">你好！我是你的 AI 助手。</div></div> -->
+    </div>
 
-                        <!-- 模板按钮区域 -->
-                        <div>
-                            <label class="d-block mb-1">快速模板</label>
-                            <div class="d-flex flex-wrap" style="gap: 4px;">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('翻译', '请帮我翻译成英文')">翻译</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('扩写', '请帮我扩写这段内容')">扩写</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('简化', '请简化这段文字')">简化</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('改写', '请改写这段文字')">改写</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('检查', '请检查这段文字的语法错误')">检查</button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('建议', '请给这段文字提供改进建议')">建议</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- 快速模板（可折叠） -->
+    <div class="mb-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleTemplates">
+            <i class="fas fa-caret-down"></i> 快速模板
+        </button>
+        <div id="templateButtons" class="mt-1 d-none" style="display: none; gap: 4px;">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('翻译', '请帮我翻译成英文')">翻译</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('扩写', '请帮我扩写这段内容')">扩写</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('简化', '请简化这段文字')">简化</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('改写', '请改写这段文字')">改写</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('检查', '请检查这段文字的语法错误')">检查</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('建议', '请给这段文字提供改进建议')">建议</button>
+        </div>
+    </div>
 
-                <div class="form-group">
-                    <label for="askAIResult">问答结果</label>
-                    <textarea class="form-control" id="askAIResult" rows="10" readonly></textarea>
-                    <div class="mt-2">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="useAskAIText()">使用问答结果</button>
-                        <button type="button" class="btn btn-secondary btn-sm ml-2" onclick="clearAskAIResult()">清空</button>
-                    </div>
-                </div>
-
-                <div id="askAILoading" class="text-center" style="display: none;">
-                    <div class="spinner-border" role="status">
-                        <span class="sr-only">加载中...</span>
-                    </div>
-                </div>
-            </div>
+    <!-- 输入区域 -->
+    <div class="input-group">
+        <input type="text" class="form-control" id="query" placeholder="请输入你的问题..." onkeydown="if(event.key==='Enter') triggerAskAI()">
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="button" onclick="triggerAskAI()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
     </div>
 </div>
 
+<style>
+    .chat-user {
+        background-color: #d1e7ff;
+        align-self: flex-end;
+        border-radius: 12px 0 12px 12px;
+        padding: 8px 12px;
+        max-width: 80%;
+    }
+    .chat-ai {
+        background-color: #f1f1f1;
+        align-self: flex-start;
+        border-radius: 0 12px 12px 12px;
+        padding: 8px 12px;
+        max-width: 80%;
+    }
+    #chatMessages {
+        scroll-behavior: smooth;
+    }
+</style>
+
 <script>
+    // 切换模板显示/隐藏
+    document.getElementById('toggleTemplates').addEventListener('click', function() {
+        const tpl = document.getElementById('templateButtons');
+        if (tpl.classList.contains('d-none')) {
+            tpl.classList.remove('d-none');
+            this.innerHTML = '<i class="fas fa-caret-up"></i> 快速模板';
+        } else {
+            tpl.classList.add('d-none');
+            this.innerHTML = '<i class="fas fa-caret-down"></i> 快速模板';
+        }
+    });
+
     function setTemplate(name, text) {
         document.getElementById('query').value = text;
-        // 给用户反馈
+        // 视觉反馈
         const btn = event.target;
         const originalClass = btn.className;
         btn.className = 'btn btn-info btn-sm';
-        setTimeout(() => {
-            btn.className = originalClass;
-        }, 300);
+        setTimeout(() => btn.className = originalClass, 300);
     }
 
-    // AI问答功能
-    function openAskAIModal($referTextId='') {
-        document.getElementById('refer_text_id').value = $referTextId;
-
-        // 设置默认润色要求
-        document.getElementById('query').value = '请帮我润色这段文字';
-        document.getElementById('askAIResult').value = '';
-        $('#askAIModal').modal('show');
+    // 添加消息到聊天区
+    function addMessage(text, isUser = false) {
+        const messagesDiv = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `d-flex ${isUser ? 'justify-content-end' : 'justify-content-start'}`;
+        const bubble = document.createElement('div');
+        bubble.className = isUser ? 'chat-user' : 'chat-ai';
+        bubble.textContent = text;
+        msgDiv.appendChild(bubble);
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight; // 自动滚动到底部
     }
 
-    // 处理AI问答
-    function startAskAIProcess(referText, query) {
+    // 清空聊天（可选）
+    function clearChat() {
+        document.getElementById('chatMessages').innerHTML = '';
+    }
 
-        // 显示加载状态
-        document.getElementById('askAILoading').style.display = 'block';
-        document.getElementById('askAIResult').value = '';
+    // 发送请求并处理流式响应（兼容 SSE / 普通文本）
+    async function triggerAskAI() {
+        const input = document.getElementById('query');
+        const query = input.value.trim();
+        if (!query) return;
 
-        // 获取CSRF令牌 - 修复可能找不到meta标签的问题
-        let csrfToken = '';
-        const metaToken = document.querySelector('meta[name="csrf-token"]');
-        const inputToken = document.querySelector('input[name="_token"]');
+        // 添加用户消息
+        addMessage(query, true);
+        input.value = '';
 
-        if (metaToken) {
-            csrfToken = metaToken.getAttribute('content');
-        } else if (inputToken) {
-            csrfToken = inputToken.value;
-        } else {
-            // 如果都没找到，尝试从页面其他地方获取
-            csrfToken = '{{ csrf_token() }}';
+        // 获取 referText（如有）
+        const referTextId = document.getElementById('refer_text_id')?.value || '';
+        let referText = '';
+        if (referTextId) {
+            const el = document.getElementById(referTextId);
+            referText = el?.value ?? (el?.textContent || '');
         }
 
-        // 发送请求到后端进行AI问答
-        fetch('/llm/ask-ai', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify({
-                referText: referText,
-                query: query
-            })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errData => {
-                        throw new Error(errData.error || `HTTP error! status: ${response.status}`);
-                    });
-                }
+        // 显示加载中的 AI 消息（临时占位）
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'd-flex justify-content-start';
+        loadingMsg.innerHTML = '<div class="chat-ai"><i class="fas fa-spinner fa-spin"></i> 思考中...</div>';
+        document.getElementById('chatMessages').appendChild(loadingMsg);
+        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
-                // 检查是否为流式响应
-                if (response.headers.get('content-type')?.includes('text/event-stream')) {
-                    // 处理流式响应
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
-                    let buffer = '';
-                    let completeResult = '';
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ||
+                document.querySelector('input[name="_token"]')?.value ||
+                '{{ csrf_token() }}';
 
-                    return new Promise((resolve, reject) => {
-                        function readStream() {
-                            reader.read().then(({done, value}) => {
-                                if (done) {
-                                    resolve(completeResult);
-                                    return;
-                                }
-
-                                buffer += decoder.decode(value, {stream: true});
-
-                                // 按行分割处理SSE响应
-                                const lines = buffer.split('\n');
-                                buffer = lines.pop(); // 保留不完整的行
-
-                                for(const line of lines) {
-                                    if(line.startsWith('data: ') && line !== 'data: [DONE]') {
-                                        const dataStr = line.slice(6); // 移除 'data: ' 前缀
-                                        try {
-                                            const parsed = JSON.parse(dataStr);
-                                            // 检查是否为OpenAI格式的流式响应
-                                            if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta) {
-                                                const content = parsed.choices[0].delta.content;
-                                                if (content) {
-                                                    completeResult += content;
-                                                    // 实时更新结果显示
-                                                    document.getElementById('askAIResult').value = completeResult;
-                                                }
-                                            } else {
-                                                // 处理简单文本响应
-                                                if(dataStr.trim()) {
-                                                    completeResult += dataStr;
-                                                    document.getElementById('askAIResult').value = completeResult;
-                                                }
-                                            }
-                                        } catch (e) {
-                                            // 如果解析JSON失败，直接当作文本处理
-                                            if(dataStr.trim()) {
-                                                completeResult += dataStr;
-                                                document.getElementById('askAIResult').value = completeResult;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                readStream();
-                            }).catch(reject);
-                        }
-                        readStream();
-                    });
-                } else {
-                    return response.text();
-                }
-            })
-            .then(data => {
-                document.getElementById('askAIResult').value = data;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('askAIResult').value = '润色失败: ' + error.message +
-                    '\n\n请检查：\n1. 是否已配置LLM提供商\n2. 是否有可用的模型\n3. 凭据是否有效';
-            })
-            .finally(() => {
-                document.getElementById('askAILoading').style.display = 'none';
+            const response = await fetch('/llm/ask-ai', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ referText, query })
             });
-    }
 
-    // 触发润色按钮的函数
-    function triggerAskAI() {
-        const referTextId = document.getElementById('refer_text_id').value;
-        let referText = "";
-
-        if (referTextId != '') {
-            const element = document.getElementById(referTextId);
-            if (element) {
-                // 尝试获取value属性，如果没有则获取textContent
-                referText = element.value !== undefined ? element.value :
-                    (element.textContent || element.innerText || "");
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || `HTTP ${response.status}`);
             }
-        }
-        const query = document.getElementById('query').value;
-        startAskAIProcess(referText, query);
-    }
 
-    function useAskAIText() {
-        const askAIText = document.getElementById('askAIResult').value;
-        if (askAIText.trim()) {
-            const referTextId = document.getElementById('refer_text_id').value;
-            if (referTextId != '') {
-                document.getElementById(referTextId).value = askAIText;
+            // 移除 loading 占位
+            loadingMsg.remove();
+
+            if (response.headers.get('content-type')?.includes('text/event-stream')) {
+                // 流式处理
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let aiMessageDiv = document.createElement('div');
+                aiMessageDiv.className = 'd-flex justify-content-start';
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-ai';
+                bubble.textContent = ''; // 初始为空
+                aiMessageDiv.appendChild(bubble);
+                document.getElementById('chatMessages').appendChild(aiMessageDiv);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                            const dataStr = line.slice(6).trim();
+                            if (!dataStr) continue;
+
+                            let content = '';
+                            try {
+                                const parsed = JSON.parse(dataStr);
+                                // OpenAI 格式
+                                if (parsed.choices?.[0]?.delta?.content) {
+                                    content = parsed.choices[0].delta.content;
+                                } else {
+                                    content = dataStr; // fallback
+                                }
+                            } catch (e) {
+                                content = dataStr; // 直接当文本
+                            }
+
+                            if (content) {
+                                bubble.textContent += content;
+                                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+                            }
+                        }
+                    }
+                }
+            } else {
+                // 非流式：一次性返回
+                const result = await response.text();
+                addMessage(result, false);
             }
-            $('#askAIModal').modal('hide');
-        } else {
-            alert('没有润色结果可以使用');
+        } catch (error) {
+            console.error('AI 请求失败:', error);
+            addMessage(`❌ 错误：${error.message}`, false);
         }
     }
 
-    function clearAskAIResult() {
-        document.getElementById('askAIResult').value = '';
+    // 保留原 openAskAIModal，但清空聊天
+    function openAskAIModal(referTextId = '') {
+        document.getElementById('refer_text_id').value = referTextId;
+        document.getElementById('query').value = '请帮我润色这段文字';
+        clearChat(); // 每次打开新对话
+        $('#askAIModal').modal('show');
     }
 </script>
