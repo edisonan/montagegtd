@@ -1,4 +1,3 @@
-<!-- AI问答模态框 -->
 <div class="modal fade" id="askAIModal" tabindex="-1" role="dialog" aria-labelledby="askAIModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -11,10 +10,35 @@
             <input type="hidden" id="refer_text_id" value="">
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="query">问答要求</label>
-                    <input type="text" class="form-control" id="query" value="请帮我润色这段文字">
-                    <button type="button" class="btn btn-info" onclick="triggerAskAI()">开始</button>
+                    <div class="d-flex align-items-start">
+                        <!-- 输入框区域 -->
+                        <div class="flex-grow-1 mr-3">
+                            <label for="query" class="d-block mb-1">问答要求</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="query" value="请帮我润色这段文字">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-info" onclick="triggerAskAI()">开始</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 模板按钮区域 -->
+                        <div>
+                            <label class="d-block mb-1">快速模板</label>
+                            <div class="d-flex flex-wrap" style="gap: 4px;">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('翻译', '请帮我翻译成英文')">翻译</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('扩写', '请帮我扩写这段内容')">扩写</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('简化', '请简化这段文字')">简化</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('改写', '请改写这段文字')">改写</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('检查', '请检查这段文字的语法错误')">检查</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setTemplate('建议', '请给这段文字提供改进建议')">建议</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <div class="form-group">
                     <label for="askAIResult">问答结果</label>
                     <textarea class="form-control" id="askAIResult" rows="10" readonly></textarea>
@@ -23,6 +47,7 @@
                         <button type="button" class="btn btn-secondary btn-sm ml-2" onclick="clearAskAIResult()">清空</button>
                     </div>
                 </div>
+
                 <div id="askAILoading" class="text-center" style="display: none;">
                     <div class="spinner-border" role="status">
                         <span class="sr-only">加载中...</span>
@@ -34,6 +59,17 @@
 </div>
 
 <script>
+    function setTemplate(name, text) {
+        document.getElementById('query').value = text;
+        // 给用户反馈
+        const btn = event.target;
+        const originalClass = btn.className;
+        btn.className = 'btn btn-info btn-sm';
+        setTimeout(() => {
+            btn.className = originalClass;
+        }, 300);
+    }
+
     // AI问答功能
     function openAskAIModal($referTextId='') {
         document.getElementById('refer_text_id').value = $referTextId;
