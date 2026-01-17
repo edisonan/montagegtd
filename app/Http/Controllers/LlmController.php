@@ -36,7 +36,7 @@ class LlmController extends Controller
     public function askAi(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'referText' => 'string|max:5000',
+            'referText' => 'string',
             'query' => 'required|string|max:1000',
         ]);
 
@@ -61,7 +61,6 @@ class LlmController extends Controller
             $provider = LLMProvider::where('id', $credential->provider_id)->first();
 
             $model = LlmModel::where('provider_id', $credential->provider_id)
-//                ->where('status', 1)
                 ->first();
 
             if (!$model) {

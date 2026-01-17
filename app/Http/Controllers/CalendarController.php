@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Utils\CommonUtil;
-use App\Services\CalService;
+use App\Services\CalendarService;
 use Illuminate\Http\Request;
 
 /**
@@ -12,22 +12,22 @@ use Illuminate\Http\Request;
  * @author edison.an
  *
  */
-class CalController extends Controller
+class CalendarController extends Controller
 {
     /**
-     * CalService 实例.
+     * CalendarService 实例.
      *
-     * @var CalService
+     * @var CalendarService
      */
-    protected $calService;
+    protected $calendarService;
 
     /**
      * 构造方法
      *
-     * @param CalService $cals
+     * @param CalendarService $cals
      * @return void
      */
-    public function __construct(CalService $calService)
+    public function __construct(CalendarService $calService)
     {
         $this->middleware('auth', [
             'except' => [
@@ -36,7 +36,7 @@ class CalController extends Controller
             ]
         ]);
 
-        $this->calService = $calService;
+        $this->calendarService = $calService;
     }
 
     /**
@@ -49,7 +49,7 @@ class CalController extends Controller
     public function index(Request $request)
     {
         // 处理个人日历提醒相关内容
-        $personCalUrl = $this->calService->getPersonCalUrl();
+        $personCalUrl = $this->calendarService->getPersonCalUrl();
 
         $host = CommonUtil::getUrlHost ( config ( 'app.url' ) );
         // 处理公共日历相关内容
@@ -74,7 +74,7 @@ class CalController extends Controller
      */
     public function ics(Request $request, string $theme)
     {
-        $icsInfo = $this->calService->getIcsByTheme($theme);
+        $icsInfo = $this->calendarService->getIcsByTheme($theme);
 
         header("Content-type:application/octet-stream");
         header("Content-Disposition:attachment;filename = " . $icsInfo ['file_name'] . '.ics');
@@ -92,7 +92,7 @@ class CalController extends Controller
      */
     public function taskics(Request $request, string $cal_token)
     {
-        $icsInfo = $this->calService->getIcsByCalToken($cal_token);
+        $icsInfo = $this->calendarService->getIcsByCalToken($cal_token);
 
         header("Content-type:application/octet-stream");
         header("Content-Disposition:attachment;filename = " . $icsInfo ['file_name'] . '.ics');

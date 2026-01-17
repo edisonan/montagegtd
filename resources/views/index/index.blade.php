@@ -700,7 +700,7 @@
                     <div class="card-header">
                         开蕃走起
                         <div style="float: right">
-                            <a href="{{'pomos'}}">[历史]</a> <a href="javascript:void(0)" data-toggle="modal" data-target="#thingCreateModal">[记事]</a> <a
+                            <a href="{{'pomos'}}">[番茄历史]</a> <a href="javascript:void(0)" data-toggle="modal" data-target="#thingCreateModal">[记录事情]</a> <a
                                     href="javascript:void(0)" class="new_user_guide">[?]</a>
                         </div>
                     </div>

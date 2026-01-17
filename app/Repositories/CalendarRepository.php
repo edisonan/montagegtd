@@ -2,9 +2,9 @@
 
 namespace App\Repositories;
 
-use App\Models\Cal;
+use App\Models\Calendar;
 
-class CalRepository {
+class CalendarRepository {
 	
 	/**
 	 * 根据主题和状态获取日历列表
@@ -14,6 +14,6 @@ class CalRepository {
 	 * @return unknown
 	 */
 	public function getListByThemeAndStatus(string $theme, string $status) {
-		return Cal::where ( 'status', $status )->where ( 'theme', $theme )->orderBy ( 'id', 'asc' )->get ();
+		return Calendar::where ( 'status', $status )->where ( 'theme', $theme )->orderBy ( 'id', 'asc' )->get ();
 	}
 }

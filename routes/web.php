@@ -41,6 +41,7 @@ Route::group([
     Route::get('/index/test', 'IndexController@test');
 
     Route::get('/help/feedback', 'HelpController@feedback');
+    Route::get('/about', 'HelpController@about');
     Route::post('/help/feedbackStore', 'HelpController@feedbackStore');
 
     Route::get('/notes', 'NoteController@index');
@@ -72,9 +73,9 @@ Route::group([
     Route::get('/taskpriority', 'TaskController@priority');
     Route::get('/taskparenttasks', 'TaskController@getParentTasks');
 
-    Route::get('/cals', 'CalController@index');
-    Route::get('/calics/{theme}', 'CalController@ics');
-    Route::get('/taskics/{cal_token}', 'CalController@taskics');
+    Route::get('/cals', 'CalendarController@index');
+    Route::get('/calics/{theme}', 'CalendarController@ics');
+    Route::get('/taskics/{cal_token}', 'CalendarController@taskics');
 
     Route::get('/categorys', 'CategoryController@index');
     Route::post('/category', 'CategoryController@store');
@@ -207,7 +208,7 @@ Route::group([
     Route::any('/code/{codeInfo}', 'CodeController@view');
     
     // 应用代码访问路由
-    Route::get('/app/{appSlug}/{codePath}', 'AppController@show')->where('codePath', '.*');
+    Route::get('/app/{appSlug}/{codePath}', 'ApplicationController@show')->where('codePath', '.*');
     
     // LLM管理相关路由
     Route::prefix('llm')->group(function () {

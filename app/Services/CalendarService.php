@@ -6,7 +6,7 @@ use App\Http\Utils\ICSUtil;
 use App\Http\Utils\ICSUtil2;
 use App\Models\Setting;
 use App\Models\User;
-use App\Repositories\CalRepository;
+use App\Repositories\CalendarRepository;
 use App\Repositories\SettingRepository;
 use App\Repositories\TaskRepository;
 use App\Exceptions\CustomException;
@@ -19,12 +19,12 @@ use Illuminate\Support\Facades\Auth;
  * @author edison.an
  *        
  */
-class CalService {
+class CalendarService {
 	/**
 	 *
-	 * @var CalRepository
+	 * @var CalendarRepository
 	 */
-	protected $calRepository;
+	protected $calendarRepository;
 	
 	/**
 	 *
@@ -40,12 +40,12 @@ class CalService {
 	
 	/**
 	 *
-	 * @param CalRepository $calRepository        	
+	 * @param CalendarRepository $calRepository
 	 * @param SettingRepository $settingRepository        	
 	 * @param TaskRepository $taskRepository        	
 	 */
-	public function __construct(CalRepository $calRepository, SettingRepository $settingRepository, TaskRepository $taskRepository) {
-		$this->calRepository = $calRepository;
+	public function __construct(CalendarRepository $calRepository, SettingRepository $settingRepository, TaskRepository $taskRepository) {
+		$this->calendarRepository = $calRepository;
 		$this->settingRepository = $settingRepository;
 		$this->taskRepository = $taskRepository;
 	}
@@ -82,7 +82,7 @@ class CalService {
 	public function getIcsByTheme($theme) {
 		date_default_timezone_set ( "Asia/Shanghai" );
 		
-		$cals = $this->calRepository->getListByThemeAndStatus ( $theme, 1 );
+		$cals = $this->calendarRepository->getListByThemeAndStatus ( $theme, 1 );
 		
 		$taskProps = array ();
 		foreach ( $cals as $cal ) {

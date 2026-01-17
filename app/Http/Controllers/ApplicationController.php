@@ -6,7 +6,7 @@ use App\Models\Application;
 use App\Models\Code;
 use Illuminate\Http\Request;
 
-class AppController extends Controller
+class ApplicationController extends Controller
 {
     /**
      * 根据应用标识和代码路径显示代码内容

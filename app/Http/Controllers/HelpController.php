@@ -46,6 +46,16 @@ class HelpController extends Controller {
 	}
 	
 	/**
+	 * 关于我们页面
+	 *
+	 * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     *
+	 */
+	public function about() {
+		return view('help.about');
+	}
+	
+	/**
 	 * 提交反馈
 	 *
 	 * @param Request $request        	
@@ -64,4 +74,5 @@ class HelpController extends Controller {
 		
 		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/index' );
 	}
+
 }
