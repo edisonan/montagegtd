@@ -8,14 +8,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// 笔记相关路由
-Route::resource('notes', NotesController::class);
-
-// LLM相关路由 - 需要认证
-Route::middleware('auth')->group(function () {
-    Route::post('/llm/ask-ai', [LlmController::class, 'askAi']); // 问问AI功能
-});
-
 /*
  * |--------------------------------------------------------------------------
  * | Web Routes
@@ -256,7 +248,7 @@ Route::group([
     
     // 用户端LLM管理页面
     Route::get('/llm/management', function () {
-        return view('llm.index');
+        return view('llm.management');
     });
     
     // 课程管理相关路由
@@ -276,7 +268,7 @@ Route::group([
     Route::post('/courses/{courseId}/discussions/{id}/reply', 'DiscussionController@reply');
     
     // 课程管理首页
-    Route::get('/course-management', 'CourseController@managementIndex');
+    Route::get('/mycourse', 'CourseController@myCourse');
     
     // 课程项目管理相关路由
     Route::get('/courses/{courseId}/items', 'CourseItemController@index');
@@ -297,5 +289,26 @@ Route::group([
     
     // 通用API路由
     Route::get('/api/users', 'ApiController@getUsers');
+
+    Route::post('/llm/chat', 'LlmController@chat'); // 问问AI功能
+
+    // LLM会话相关路由
+    Route::prefix('api/llm')->group(function () {
+        Route::get('/sessions', 'LlmSessionController@getSessions');
+        Route::post('/sessions', 'LlmSessionController@createSession');
+        Route::get('/sessions/{id}', 'LlmSessionController@getSession');
+        Route::put('/sessions/{id}/title', 'LlmSessionController@updateSessionTitle');
+        Route::delete('/sessions/{id}', 'LlmSessionController@deleteSession');
+        Route::post('/sessions/{id}/toggle-pin', 'LlmSessionController@togglePinSession');
+        Route::get('/agents', 'LlmSessionController@getAgents');
+        Route::post('/chat', 'LlmSessionController@chat');
+    });
+
+    // AI助手页面路由
+    Route::get('/llm/index', 'LlmSessionController@index')->name('llm.index');
+
+    Route::resource('notes', NotesController::class);
+
 });
+
 		

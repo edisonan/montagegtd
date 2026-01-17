@@ -37,11 +37,16 @@ class IntrospectionProcessor
         $i = 0;
 
         while (isset ($trace [$i] ['class'])) {
+            $found = false;
             foreach ($this->skipClassesPartials as $part) {
                 if (strpos($trace [$i] ['class'], $part) !== false) {
                     $i++;
-                    continue 2;
+                    $found = true;
+                    break;
                 }
+            }
+            if ($found) {
+                continue;
             }
             break;
         }

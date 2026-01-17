@@ -300,14 +300,14 @@
         }
 
         // 发送请求到后端进行AI问答
-        fetch('/llm/ask-ai', {
+        fetch('/llm/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({
-                referText: referText,
+                refer_text: referText,
                 query: query
             })
         })

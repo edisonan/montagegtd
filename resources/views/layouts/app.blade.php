@@ -8,6 +8,7 @@
     <title>@yield('title','蒙太奇 - 知而善用，行稳致远')</title>
     <meta name="description" content="@yield('description')">
     <meta name="keywords" content="蒙太奇,番茄工作法,待办事项,推送到kindle,RSS阅读,知乎日报订阅">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
         <meta name="referrer" content="never">
     @endif
@@ -188,19 +189,20 @@
                             ]
                         ],
                         [
-                            'url'=>'/course-management', 
+                            'url'=>'/mycourse',
                             'label'=>'学课程', 
                             'color'=>'#7B68EE',
                             'submenu' => [
-                                ['url'=>'/course-management', 'label'=>'我的课程'],
+                                ['url'=>'/mycourse', 'label'=>'我的课程'],
                                 ['url'=>'/courses', 'label'=>'课程管理']
                             ]
                         ],
                         [
-                            'url'=>'/llm/management',
+                            'url'=>'/llm/index',
                             'label'=>'AI助手',
                             'color'=>'#E85205',
                             'submenu' => [
+                                ['url'=>'/llm/index', 'label'=>'AI助手'],
                                 ['url'=>'/llm/management', 'label'=>'LLM管理'],
                                 ['url'=>'/llm/agents', 'label'=>'智能体管理'],
                             ]

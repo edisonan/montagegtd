@@ -289,7 +289,7 @@
                     throw new Error('无法获取CSRF令牌');
                 }
                 
-                const response = await fetch('/llm/ask-ai', {
+                const response = await fetch('/llm/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

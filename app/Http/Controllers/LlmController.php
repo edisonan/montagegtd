@@ -88,7 +88,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $validated = $request->validate([
+            $this->validate($request, [
                 'name' => 'required|string|max:100',
                 'slug' => 'required|string|max:50|unique:llm_providers,slug,' . $id,
                 'description' => 'nullable|string',
@@ -207,7 +207,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $validated = $request->validate([
+            $this->validate($request, [
                 'provider_id' => 'required|exists:llm_providers,id',
                 'name' => 'required|string|max:100',
                 'display_name' => 'nullable|string|max:100',
@@ -327,7 +327,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $validated = $request->validate([
+            $this->validate($request, [
                 'provider_id' => 'required|exists:llm_providers,id',
                 'name' => 'required|string|max:100',
                 'api_key' => 'nullable|string', // 不在创建时强制要求，因为更新时不总是提供
@@ -404,10 +404,13 @@ class LlmController extends Controller
             return response()->json(['message' => '删除凭据失败'], 500);
         }
     }
-    public function askAi(Request $request)
+    public function chat(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'referText' => 'string',
+            'agent_id' => 'string',
+            'agent_builtin_slug' => 'string',
+            'session_id' => 'string',
+            'refer_text' => 'string',
             'query' => 'required|string|max:1000',
         ]);
 
@@ -417,7 +420,10 @@ class LlmController extends Controller
 
         // 直接使用 $request->input() 获取数据
         $query = $request->input('query');
-        $referText = $request->input('referText', '');
+        $referText = $request->input('refer_text', '');
+        $sessionId = $request->input('session_id', '');
+        $agentId = $request->input('agent_id', '');
+        $agentBuiltinSlug = $request->input('builtin_slug', '');
 
         try {
             $user = Auth::user();
@@ -594,7 +600,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $validated = $request->validate([
+            $this->validate($request, [
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'avatar' => 'nullable|url',

@@ -355,7 +355,7 @@
                 @if (count($article_subs) > 0)
                     <?php $article_sub_ids = array();?>
                     @foreach ($article_subs as $articleSub)
-                        <?php $article = $articleSub->article;if (empty($article)) continue;$article_sub_ids[] = $articleSub->id;?>
+                        <?php $article = $articleSub->article;if (empty($article)) {continue;}$article_sub_ids[] = $articleSub->id;?>
                         <div class="card" style="margin-bottom: 10px">
                             <div class="card-block" style="padding: 10px;">
 

@@ -6,9 +6,8 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>课程管理</h4>
+                    <h4>我的课程</h4>
                     <div>
-                        <a href="{{ url('/user-courses') }}" class="btn btn-primary">我的学习</a>
                         <a href="{{ url('/courses') }}" class="btn btn-primary">浏览课程</a>
                     </div>
                 </div>
@@ -16,7 +15,6 @@
                 <div class="card-body">
                     <!-- 我的课程 -->
                     <div class="mb-5">
-                        <h5>我的课程</h5>
                         <div class="row">
                             @forelse($user_courses ?? [] as $userCourse)
                             <div class="col-md-4 mb-3">

@@ -88,7 +88,7 @@ class LlmAgentController extends Controller
     public function store(Request $request)
     {
         try {
-            $validatedData = $request->validate([
+            $this->validate($request, [
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'avatar' => 'nullable|string',
@@ -129,7 +129,7 @@ class LlmAgentController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $validatedData = $request->validate([
+            $this->validate($request, [
                 'name' => 'sometimes|required|string|max:100',
                 'description' => 'nullable|string',
                 'avatar' => 'nullable|string',

@@ -201,9 +201,9 @@ class CourseController extends Controller
     }
 
     /**
-     * 课程管理首页
+     * 我的课程
      */
-    public function managementIndex(Request $request)
+    public function myCourse(Request $request)
     {
         $userId = auth()->id();
         
@@ -212,6 +212,6 @@ class CourseController extends Controller
         
         return $this->jsonAndViewAutoResponse($request, ResponseDataUtil::genSimpleSucc([
             'user_courses' => $userCourses
-        ]), 'course-management.index');
+        ]), 'courses.mycourse');
     }
 }
