@@ -8,6 +8,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::resource('notes', NotesController::class);
 /*
  * |--------------------------------------------------------------------------
  * | Web Routes
@@ -307,7 +308,7 @@ Route::group([
     // AI助手页面路由
     Route::get('/llm/index', 'LlmSessionController@index')->name('llm.index');
 
-    Route::resource('notes', NotesController::class);
+
 
 });
 

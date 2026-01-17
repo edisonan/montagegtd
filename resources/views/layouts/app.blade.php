@@ -122,6 +122,31 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6ba07d, #528c65);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #7bb08d, #639c76);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 160, 125, 0.3);
+            color: #fff;
+            text-decoration: none;
+        }
+        .btn-primary:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(107, 160, 125, 0.4);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(107, 160, 125, 0.3);
+        }
 
         .container { max-width: 1140px; }
     </style>

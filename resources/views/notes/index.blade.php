@@ -406,7 +406,7 @@
                 <div class="publish-btns">
                     <button type="button" class="btn btn-primary" onclick="submitProcess(1)">私密发布</button>
                     <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">公开发布</button>
-                    <button type="button" class="btn btn-success" onclick="openAskAIModal('note-name', 'note-name')"><small>AI助手</small></button>
+                    <button type="button" class="btn btn-success" onclick="openAskAIModal('note-name', 'note-name')"><small>AI</small></button>
                 </div>
             </form>
         </div>
