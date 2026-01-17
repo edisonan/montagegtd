@@ -41,6 +41,7 @@ Route::group ( [
     $router->resource('llm-models', LlmModelController::class);
     $router->resource('llm-provider-credentials', LlmProviderCredentialController::class);
     $router->resource('llm-usage-logs', LlmUsageLogController::class);
+    $router->resource('llm-agents', LlmAgentController::class);
     
     $router->resource('courses', CourseController::class);
     

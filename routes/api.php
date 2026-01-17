@@ -24,4 +24,6 @@ Route::group(['middleware' => ['personal.token']], function () {
     
     // 可以添加其他需要令牌验证的API端点
     // 例如：Route::get('/api/data', 'DataController@index');
+    
+
 });

@@ -33,6 +33,377 @@ class LlmController extends Controller
         $this->conversationService = $conversationService;
     }
 
+    public function getProviders()
+    {
+        try {
+            $user = Auth::user();
+            
+            // 查询所有可用的供应商
+            $providers = LlmProvider::when(!$user->is_admin, function ($query) use ($user) {
+                // 如果用户不是管理员，则查询公共供应商或属于自己的供应商
+                return $query->where(function ($q) use ($user) {
+                    $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                });
+            })
+            ->orderBy('priority', 'desc')
+            ->orderBy('name')
+            ->get();
+            
+            return response()->json([
+                'result' => [
+                    'providers' => $providers
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('获取供应商失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取供应商失败'], 500);
+        }
+    }
+
+    public function getProvider($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $provider = LlmProvider::when(!$user->is_admin, function ($query) use ($user) {
+                return $query->where(function ($q) use ($user) {
+                    $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                });
+            })
+            ->find($id);
+            
+            if (!$provider) {
+                return response()->json(['message' => '供应商不存在'], 404);
+            }
+            
+            return response()->json(['result' => $provider]);
+        } catch (\Exception $e) {
+            Log::error('获取供应商详情失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取供应商详情失败'], 500);
+        }
+    }
+
+    public function saveProvider(Request $request, $id = null)
+    {
+        try {
+            $user = Auth::user();
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:100',
+                'slug' => 'required|string|max:50|unique:llm_providers,slug,' . $id,
+                'description' => 'nullable|string',
+                'base_url' => 'nullable|url',
+                'api_type' => 'required|in:openai,anthropic,custom',
+                'is_active' => 'boolean',
+                'priority' => 'integer|min:0',
+                'rate_limit_per_minute' => 'nullable|integer|min:0',
+                'concurrent_limit' => 'nullable|integer|min:0',
+                'config_schema' => 'nullable|array'
+            ]);
+            
+            if ($id) {
+                $provider = LlmProvider::when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->find($id);
+                
+                if (!$provider) {
+                    return response()->json(['message' => '供应商不存在'], 404);
+                }
+                
+                $provider->update($validated);
+            } else {
+                $validated['user_id'] = $user->id;
+                $provider = LlmProvider::create($validated);
+            }
+            
+            return response()->json(['result' => $provider]);
+        } catch (\Exception $e) {
+            Log::error('保存供应商失败: ' . $e->getMessage());
+            return response()->json(['message' => '保存供应商失败'], 500);
+        }
+    }
+
+    public function deleteProvider($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $provider = LlmProvider::when(!$user->is_admin, function ($query) use ($user) {
+                return $query->where(function ($q) use ($user) {
+                    $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                });
+            })
+            ->find($id);
+            
+            if (!$provider) {
+                return response()->json(['message' => '供应商不存在'], 404);
+            }
+            
+            $provider->delete();
+            
+            return response()->json(['message' => '删除成功']);
+        } catch (\Exception $e) {
+            Log::error('删除供应商失败: ' . $e->getMessage());
+            return response()->json(['message' => '删除供应商失败'], 500);
+        }
+    }
+
+    public function getModels()
+    {
+        try {
+            $user = Auth::user();
+            
+            $models = LlmModel::with('provider')
+                ->when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->orderBy('provider_id')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+            
+            return response()->json([
+                'result' => [
+                    'models' => $models
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('获取模型失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取模型失败'], 500);
+        }
+    }
+
+    public function getModel($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $model = LlmModel::with('provider')
+                ->when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->find($id);
+            
+            if (!$model) {
+                return response()->json(['message' => '模型不存在'], 404);
+            }
+            
+            return response()->json(['result' => $model]);
+        } catch (\Exception $e) {
+            Log::error('获取模型详情失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取模型详情失败'], 500);
+        }
+    }
+
+    public function saveModel(Request $request, $id = null)
+    {
+        try {
+            $user = Auth::user();
+            
+            $validated = $request->validate([
+                'provider_id' => 'required|exists:llm_providers,id',
+                'name' => 'required|string|max:100',
+                'display_name' => 'nullable|string|max:100',
+                'model_type' => 'required|in:chat,completion,embedding,image',
+                'context_length' => 'nullable|integer|min:0',
+                'max_tokens' => 'nullable|integer|min:0',
+                'input_price_per_1k' => 'nullable|numeric|min:0',
+                'output_price_per_1k' => 'nullable|numeric|min:0',
+                'capabilities' => 'nullable|array',
+                'sort_order' => 'integer|min:0',
+                'is_active' => 'boolean'
+            ]);
+            
+            if ($id) {
+                $model = LlmModel::when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->find($id);
+                
+                if (!$model) {
+                    return response()->json(['message' => '模型不存在'], 404);
+                }
+                
+                $model->update($validated);
+            } else {
+                $validated['user_id'] = $user->id;
+                $model = LlmModel::create($validated);
+            }
+            
+            return response()->json(['result' => $model]);
+        } catch (\Exception $e) {
+            Log::error('保存模型失败: ' . $e->getMessage());
+            return response()->json(['message' => '保存模型失败'], 500);
+        }
+    }
+
+    public function deleteModel($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $model = LlmModel::when(!$user->is_admin, function ($query) use ($user) {
+                return $query->where(function ($q) use ($user) {
+                    $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                });
+            })
+            ->find($id);
+            
+            if (!$model) {
+                return response()->json(['message' => '模型不存在'], 404);
+            }
+            
+            $model->delete();
+            
+            return response()->json(['message' => '删除成功']);
+        } catch (\Exception $e) {
+            Log::error('删除模型失败: ' . $e->getMessage());
+            return response()->json(['message' => '删除模型失败'], 500);
+        }
+    }
+
+    public function getCredentials()
+    {
+        try {
+            $user = Auth::user();
+            
+            $credentials = LlmProviderCredential::with('provider')
+                ->when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->orderBy('provider_id')
+                ->orderBy('is_default', 'desc')
+                ->orderBy('name')
+                ->get();
+            
+            return response()->json([
+                'result' => [
+                    'credentials' => $credentials
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('获取凭据失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取凭据失败'], 500);
+        }
+    }
+
+    public function getCredential($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $credential = LlmProviderCredential::with('provider')
+                ->when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->find($id);
+            
+            if (!$credential) {
+                return response()->json(['message' => '凭据不存在'], 404);
+            }
+            
+            return response()->json(['result' => $credential]);
+        } catch (\Exception $e) {
+            Log::error('获取凭据详情失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取凭据详情失败'], 500);
+        }
+    }
+
+    public function saveCredential(Request $request, $id = null)
+    {
+        try {
+            $user = Auth::user();
+            
+            $validated = $request->validate([
+                'provider_id' => 'required|exists:llm_providers,id',
+                'name' => 'required|string|max:100',
+                'api_key' => 'nullable|string', // 不在创建时强制要求，因为更新时不总是提供
+                'config' => 'nullable|array',
+                'is_default' => 'boolean',
+                'is_active' => 'boolean',
+                'quota_limit' => 'nullable|integer|min:0'
+            ]);
+            
+            if ($id) {
+                $credential = LlmProviderCredential::when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->find($id);
+                
+                if (!$credential) {
+                    return response()->json(['message' => '凭据不存在'], 404);
+                }
+                
+                // 处理API密钥更新（如果提供了新密钥）
+                if (isset($validated['api_key']) && !empty($validated['api_key'])) {
+                    $credential->api_key = bcrypt($validated['api_key']);
+                }
+                unset($validated['api_key']);
+                
+                $credential->update($validated);
+            } else {
+                // 创建新的凭据
+                $validated['user_id'] = $user->id;
+                if (isset($validated['api_key'])) {
+                    $validated['api_key'] = bcrypt($validated['api_key']);
+                }
+                $credential = LlmProviderCredential::create($validated);
+            }
+            
+            // 如果设置了为默认凭据，需要更新其他凭据的状态
+            if ($credential->is_default) {
+                LlmProviderCredential::where('user_id', $user->id)
+                    ->where('provider_id', $credential->provider_id)
+                    ->where('id', '!=', $credential->id)
+                    ->update(['is_default' => false]);
+            }
+            
+            return response()->json(['result' => $credential]);
+        } catch (\Exception $e) {
+            Log::error('保存凭据失败: ' . $e->getMessage());
+            return response()->json(['message' => '保存凭据失败'], 500);
+        }
+    }
+
+    public function deleteCredential($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $credential = LlmProviderCredential::when(!$user->is_admin, function ($query) use ($user) {
+                return $query->where(function ($q) use ($user) {
+                    $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                });
+            })
+            ->find($id);
+            
+            if (!$credential) {
+                return response()->json(['message' => '凭据不存在'], 404);
+            }
+            
+            $credential->delete();
+            
+            return response()->json(['message' => '删除成功']);
+        } catch (\Exception $e) {
+            Log::error('删除凭据失败: ' . $e->getMessage());
+            return response()->json(['message' => '删除凭据失败'], 500);
+        }
+    }
     public function askAi(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -174,6 +545,106 @@ class LlmController extends Controller
             flush();
 
             exit();
+        }
+    }
+
+    public function getAgents()
+    {
+        try {
+            $user = Auth::user();
+            
+            $agents = LlmAgent::with('model')
+                ->where('user_id', $user->id) // 只获取当前用户的智能体
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            return response()->json([
+                'result' => [
+                    'agents' => $agents
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('获取智能体失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取智能体失败'], 500);
+        }
+    }
+
+    public function getAgent($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $agent = LlmAgent::with('model')
+                ->where('user_id', $user->id) // 确保只能访问自己的智能体
+                ->find($id);
+            
+            if (!$agent) {
+                return response()->json(['message' => '智能体不存在'], 404);
+            }
+            
+            return response()->json(['result' => $agent]);
+        } catch (\Exception $e) {
+            Log::error('获取智能体详情失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取智能体详情失败'], 500);
+        }
+    }
+
+    public function saveAgent(Request $request, $id = null)
+    {
+        try {
+            $user = Auth::user();
+            
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'avatar' => 'nullable|url',
+                'model_id' => 'required|exists:llm_models,id',
+                'system_prompt' => 'required|string',
+                'temperature' => 'nullable|numeric|min:0|max:2',
+                'top_p' => 'nullable|numeric|min:0|max:1',
+                'max_tokens' => 'nullable|integer|min:1',
+                'context_length' => 'nullable|integer|min:1',
+                'tools_config' => 'nullable|array',
+                'is_active' => 'boolean'
+            ]);
+            
+            if ($id) {
+                $agent = LlmAgent::where('user_id', $user->id)->find($id);
+                
+                if (!$agent) {
+                    return response()->json(['message' => '智能体不存在'], 404);
+                }
+                
+                $agent->update($validated);
+            } else {
+                $validated['user_id'] = $user->id;
+                $agent = LlmAgent::create($validated);
+            }
+            
+            return response()->json(['result' => $agent]);
+        } catch (\Exception $e) {
+            Log::error('保存智能体失败: ' . $e->getMessage());
+            return response()->json(['message' => '保存智能体失败'], 500);
+        }
+    }
+
+    public function deleteAgent($id)
+    {
+        try {
+            $user = Auth::user();
+            
+            $agent = LlmAgent::where('user_id', $user->id)->find($id);
+            
+            if (!$agent) {
+                return response()->json(['message' => '智能体不存在'], 404);
+            }
+            
+            $agent->delete();
+            
+            return response()->json(['message' => '删除成功']);
+        } catch (\Exception $e) {
+            Log::error('删除智能体失败: ' . $e->getMessage());
+            return response()->json(['message' => '删除智能体失败'], 500);
         }
     }
 }

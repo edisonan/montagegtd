@@ -234,10 +234,28 @@ Route::group([
         
         // AI问答路由
         Route::post('/ask-ai', 'LlmController@askAi');
+        
+        // 智能体管理API路由
+        Route::get('/api/agents', 'LlmAgentController@index');
+        Route::get('/api/agents/{id}', 'LlmAgentController@show');
+        Route::post('/api/agents', 'LlmAgentController@store');
+        Route::put('/api/agents/{id}', 'LlmAgentController@update');
+        Route::delete('/api/agents/{id}', 'LlmAgentController@destroy');
+        
+        // 模型相关API路由
+        Route::get('/api/models', 'LlmController@getModels');
     });
     
+    // 智能体管理页面 - 必须在API路由之后定义，以避免冲突
+    Route::get('/llm/agents', function () {
+        return view('llm.agents');
+    });
+    
+    // 获取当前用户信息
+    Route::get('/api/user', 'LlmAgentController@getCurrentUser');
+    
     // 用户端LLM管理页面
-    Route::get('/llm-management', function () {
+    Route::get('/llm/management', function () {
         return view('llm.index');
     });
     
@@ -276,5 +294,8 @@ Route::group([
         Route::post('/', 'PersonalAccessTokenController@store')->name('personal-access-tokens.store');
         Route::delete('/{id}', 'PersonalAccessTokenController@destroy')->name('personal-access-tokens.destroy');
     });
+    
+    // 通用API路由
+    Route::get('/api/users', 'ApiController@getUsers');
 });
 		

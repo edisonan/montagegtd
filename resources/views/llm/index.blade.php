@@ -6,42 +6,31 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>LLM 资源管理</h4>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4>供应商管理</h4>
+                        <button class="btn btn-primary" onclick="openProviderModal()">添加供应商</button>
+                    </div>
                 </div>
                 
                 <div class="card-body">
-                    <!-- 供应商管理 -->
+                    <!-- 供应商管理主视图 -->
                     <div class="mb-5">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5>供应商管理</h5>
-                            <button class="btn btn-primary" onclick="openProviderModal()">添加供应商</button>
+                        
+                        <div class="row row-cols-1 row-cols-md-2 g-4" id="provider-container">
+                            <!-- 供应商卡片将通过AJAX加载 -->
                         </div>
                         
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>名称</th>
-                                        <th>标识符</th>
-                                        <th>API类型</th>
-                                        <th>状态</th>
-                                        <th>优先级</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="provider-tbody">
-                                    <!-- 供应商数据将通过AJAX加载 -->
-                                </tbody>
-                            </table>
-                        </div>
+                        
                     </div>
                     
-                    <!-- 模型管理 -->
-                    <div class="mb-5">
+                    <!-- 模型管理视图 (初始隐藏) -->
+                    <div class="mb-5 d-none" id="models-view">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>模型管理</h5>
-                            <button class="btn btn-primary" onclick="openModelModal()">添加模型</button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-secondary" onclick="showProvidersView()">返回供应商</button>
+                                <button class="btn btn-primary" onclick="openModelModal()">添加模型</button>
+                            </div>
                         </div>
                         
                         <div class="table-responsive">
@@ -64,11 +53,14 @@
                         </div>
                     </div>
                     
-                    <!-- 凭据管理 -->
-                    <div class="mb-5">
+                    <!-- 凭据管理视图 (初始隐藏) -->
+                    <div class="mb-5 d-none" id="credentials-view">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>凭据管理</h5>
-                            <button class="btn btn-primary" onclick="openCredentialModal()">添加凭据</button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-secondary" onclick="showProvidersView()">返回供应商</button>
+                                <button class="btn btn-primary" onclick="openCredentialModal()">添加凭据</button>
+                            </div>
                         </div>
                         
                         <div class="table-responsive">
@@ -306,33 +298,50 @@
 // 页面加载完成后初始化数据
 $(document).ready(function() {
     loadProviders();
-    loadModels();
-    loadCredentials();
     loadProviderOptions();
 });
 
-// 加载供应商数据
+// 加载供应商数据并以卡片形式展示
 function loadProviders() {
     $.get('/llm/providers', function(data) {
-        const tbody = $('#provider-tbody');
-        tbody.empty();
+        const container = $('#provider-container');
+        container.empty();
         
         data.result.providers.forEach(function(provider) {
-            const row = `
-                <tr>
-                    <td>${provider.id}</td>
-                    <td>${provider.name}</td>
-                    <td>${provider.slug}</td>
-                    <td>${provider.api_type}</td>
-                    <td>${provider.is_active ? '启用' : '禁用'}</td>
-                    <td>${provider.priority}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="editProvider(${provider.id})">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProvider(${provider.id})">删除</button>
-                    </td>
-                </tr>
+            const cardHtml = `
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center py-2">
+                            <h5 class="mb-0"><strong>${provider.name}</strong></h5>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-info" onclick="manageModelsForProvider(${provider.id})">模型管理</button>
+                                <button class="btn btn-sm btn-warning" onclick="manageCredentialsForProvider(${provider.id})">凭据管理</button>
+                                <button class="btn btn-sm btn-primary" onclick="editProvider(${provider.id})">编辑</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteProvider(${provider.id})">删除</button>
+                            </div>
+                        </div>
+                        <div class="card-body py-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="card-text mb-1"><strong>标识符:</strong> <span class="text-muted">${provider.slug}</span></p>
+                                    <p class="card-text mb-1"><strong>API类型:</strong> <span class="text-muted">${provider.api_type}</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="card-text mb-1"><strong>状态:</strong> <span class="badge ${provider.is_active ? 'bg-success' : 'bg-secondary'}">${provider.is_active ? '启用' : '禁用'}</span></p>
+                                    <p class="card-text mb-1"><strong>优先级:</strong> <span class="text-muted">${provider.priority}</span></p>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <p class="card-text mb-0 small"><strong>描述:</strong></p>
+                                    <p class="card-text text-muted small">${provider.description || '无'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             `;
-            tbody.append(row);
+            container.append(cardHtml);
         });
     });
 }
@@ -399,6 +408,118 @@ function loadProviderOptions() {
         
         data.result.providers.forEach(function(provider) {
             providerSelect.append(`<option value="${provider.id}">${provider.name}</option>`);
+        });
+    });
+}
+
+// 视图切换函数
+function showProvidersView() {
+    $('#provider-container').closest('.mb-5').removeClass('d-none');
+    $('#models-view').addClass('d-none');
+    $('#credentials-view').addClass('d-none');
+    // 重新加载供应商数据
+    loadProviders();
+    // 重置下拉框选择
+    $('#model_provider_id').val('');
+    $('#credential_provider_id').val('');
+}
+
+function showModelsView() {
+    $('#provider-container').closest('.mb-5').addClass('d-none');
+    $('#models-view').removeClass('d-none');
+    $('#credentials-view').addClass('d-none');
+    // 加载模型数据
+    loadModels();
+}
+
+function showCredentialsView() {
+    $('#provider-container').closest('.mb-5').addClass('d-none');
+    $('#models-view').addClass('d-none');
+    $('#credentials-view').removeClass('d-none');
+    // 加载凭据数据
+    loadCredentials();
+}
+
+// 管理特定供应商的模型
+function manageModelsForProvider(providerId) {
+    // 设置模型表单中的供应商ID
+    $('#model_provider_id').val(providerId);
+    // 切换到模型视图
+    $('#provider-container').closest('.mb-5').addClass('d-none');
+    $('#models-view').removeClass('d-none');
+    $('#credentials-view').addClass('d-none');
+    // 加载该供应商的模型数据
+    loadModelsByProvider(providerId);
+}
+
+// 管理特定供应商的凭据
+function manageCredentialsForProvider(providerId) {
+    // 设置凭据表单中的供应商ID
+    $('#credential_provider_id').val(providerId);
+    // 切换到凭据视图
+    $('#provider-container').closest('.mb-5').addClass('d-none');
+    $('#models-view').addClass('d-none');
+    $('#credentials-view').removeClass('d-none');
+    // 加载该供应商的凭据数据
+    loadCredentialsByProvider(providerId);
+}
+
+// 根据供应商ID加载模型数据
+function loadModelsByProvider(providerId) {
+    $.get('/llm/models', function(data) {
+        const tbody = $('#model-tbody');
+        tbody.empty();
+        
+        data.result.models.forEach(function(model) {
+            // 只显示指定供应商的模型
+            if (model.provider_id == providerId) {
+                const providerName = model.provider ? model.provider.name : '未知';
+                const row = `
+                    <tr>
+                        <td>${model.id}</td>
+                        <td>${providerName}</td>
+                        <td>${model.name}</td>
+                        <td>${model.display_name || ''}</td>
+                        <td>${model.model_type}</td>
+                        <td>${model.is_active ? '启用' : '禁用'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editModel(${model.id})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteModel(${model.id})">删除</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            }
+        });
+    });
+}
+
+// 根据供应商ID加载凭据数据
+function loadCredentialsByProvider(providerId) {
+    $.get('/llm/credentials', function(data) {
+        const tbody = $('#credential-tbody');
+        tbody.empty();
+        
+        data.result.credentials.forEach(function(credential) {
+            // 只显示指定供应商的凭据
+            if (credential.provider_id == providerId) {
+                const providerName = credential.provider ? credential.provider.name : '未知';
+                const row = `
+                    <tr>
+                        <td>${credential.id}</td>
+                        <td>${providerName}</td>
+                        <td>${credential.name}</td>
+                        <td>${credential.is_default ? '是' : '否'}</td>
+                        <td>${credential.is_active ? '启用' : '禁用'}</td>
+                        <td>${credential.usage_count}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editCredential(${credential.id})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCredential(${credential.id})">删除</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            }
         });
     });
 }
@@ -515,6 +636,11 @@ function editModel(id) {
         $('#model_is_active').prop('checked', model.is_active);
         $('#modelModalTitle').text('编辑模型');
         $('#modelModal').modal('show');
+        
+        // 如果当前在特定供应商的模型管理页面，保持下拉框选择不变
+        if ($('#model_provider_id').val() != model.provider_id) {
+            $('#model_provider_id').val(model.provider_id);
+        }
     });
 }
 
@@ -599,6 +725,11 @@ function editCredential(id) {
         $('#credential_is_active').prop('checked', credential.is_active);
         $('#credentialModalTitle').text('编辑凭据');
         $('#credentialModal').modal('show');
+        
+        // 如果当前在特定供应商的凭据管理页面，保持下拉框选择不变
+        if ($('#credential_provider_id').val() != credential.provider_id) {
+            $('#credential_provider_id').val(credential.provider_id);
+        }
     });
 }
 

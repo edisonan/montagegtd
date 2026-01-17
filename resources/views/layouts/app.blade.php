@@ -197,11 +197,12 @@
                             ]
                         ],
                         [
-                            'url'=>'/llm-management',
+                            'url'=>'/llm/management',
                             'label'=>'AI助手',
                             'color'=>'#E85205',
                             'submenu' => [
-                                ['url'=>'/llm-management', 'label'=>'LLM管理'],
+                                ['url'=>'/llm/management', 'label'=>'LLM管理'],
+                                ['url'=>'/llm/agents', 'label'=>'智能体管理'],
                             ]
                         ],
 //                        [
