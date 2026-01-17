@@ -3,6 +3,7 @@
 <script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 
 @section('content')
+    @include('components.ai-ask-modal')
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -56,6 +57,7 @@
             <div class="card-header">
                 新建日报
                 <div style="float:right">
+
                     <a href="{{'/dailysummarys'}}">[返回]</a>
                 </div>
             </div>
@@ -101,6 +103,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fa fa-btn fa-plus"></i>添加！
                             </button>
+                            <button type="button" class="btn btn-success" onclick="openAskAIModal('tipBody', 'dailysummary-workcontent')"><small>AI助手</small></button>
                         </div>
                     </div>
                 </form>

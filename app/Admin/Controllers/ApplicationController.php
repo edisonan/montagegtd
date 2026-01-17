@@ -73,8 +73,12 @@ class ApplicationController extends Controller
             $grid->model()->orderBy('id', 'desc');
 
             $grid->id('ID')->sortable();
-            $grid->name('应用名称');
-            $grid->slug('应用标识');
+            $grid->column('应用名称')->display(function () {
+                return $this->name.'<a href="/app/'.$this->slug.'"/index.html>访问</a>';;
+            });
+            $grid->column('应用标识')->display(function () {
+                return $this->slug.' <a target="_blank" href="/admin/codes?app_id='.$this->id.'">管理</a>';
+            });
             $grid->description('描述')->limit(50);
             $grid->status('状态')->display(function ($value) {
                 $statusMap = [

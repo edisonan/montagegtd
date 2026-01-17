@@ -108,7 +108,7 @@ class CodeController extends Controller
                 if (isset($typeMap[$type])) {
                     $typeText = $typeMap[$type];
                 }
-                return '【' . $typeText . '】- <a href="/codes/'.$this->id.'">'.$this->name.'</a> - <a target="_blank" href="/code/'.$this->id.'">查看</a>';
+                return '【' . $typeText . '】- <a href="/admin/codes/'.$this->id.'">'.$this->name.'</a> - <a target="_blank" href="/code/'.$this->id.'">访问</a>';
             });
             $grid->path('路径')->display(function ($value) {
                 if ($this->app_id) {
