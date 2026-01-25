@@ -273,7 +273,7 @@ class LlmAgentController extends Controller
                 $draftVersion = $agent->currentVersion;
             }
 
-            return view('llm.agent-draft-editor', compact('agent', 'draftVersion'));
+            return view('llm.agent-editor', compact('agent', 'draftVersion'));
         } catch (\Exception $e) {
             \Log::error('Error showing draft editor: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to load draft editor'], 500);

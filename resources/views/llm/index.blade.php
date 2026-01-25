@@ -28,7 +28,9 @@
             <!-- 右侧顶部：智能体选择和会话操作 -->
             <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <label for="agent-select" class="mr-2 mb-0">智能体:</label>
+                    <h5 id="session-title-display" class="mb-0 mr-3"></h5>
+                    <span id="agent-name-display"></span>
+                    <label for="agent-select" class="mr-2 mb-0 ml-2">智能体:</label>
                     <select class="form-control" id="agent-select" style="width: auto; min-width: 200px;">
                         <option value="builtin_common">通用</option>
                         <!-- 智能体选项将通过JavaScript加载 -->
@@ -105,6 +107,542 @@
         </div>
     </div>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded triggered'); // 调试日志
+        let currentSessionId = null;
+        let currentAgent = null;
+
+        // 初始化页面
+        console.log('About to call loadSessions and loadAgents'); // 调试日志
+        loadSessions();
+        loadAgents();
+
+        // 加载会话列表
+        async function loadSessions() {
+            try {
+                const response = await fetch('/api/llm/sessions', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    displaySessions(result.data);
+                } else {
+                    console.error('加载会话失败:', result.message);
+                    document.getElementById('sessions-list').innerHTML = '<div class="text-center text-danger py-5">加载失败</div>';
+                }
+            } catch (error) {
+                console.error('请求错误:', error);
+                document.getElementById('sessions-list').innerHTML = '<div class="text-center text-danger py-5">网络错误</div>';
+            }
+        }
+
+        // 显示会话列表
+        function displaySessions(sessions) {
+            const container = document.getElementById('sessions-list');
+
+            // 清空之前的内容
+            container.innerHTML = '';
+
+            if (sessions.length === 0) {
+                container.appendChild(document.createElement('div').classList.add('text-center', 'text-muted', 'py-5') ||
+                    (function() {
+                        const div = document.createElement('div');
+                        div.className = 'text-center text-muted py-5';
+                        div.textContent = '暂无会话';
+                        return div;
+                    })()
+                );
+                return;
+            }
+
+            // 分组：固定的会话和普通会话
+            const pinnedSessions = sessions.filter(session => session.is_pinned);
+            const regularSessions = sessions.filter(session => !session.is_pinned);
+
+            // 显示固定的会话
+            if (pinnedSessions.length > 0) {
+                const pinnedHeader = document.createElement('div');
+                pinnedHeader.className = 'p-2 small text-muted border-bottom';
+                pinnedHeader.textContent = '固定会话';
+                pinnedHeader.style.backgroundColor = '#f1f3f5';
+                container.appendChild(pinnedHeader);
+
+                pinnedSessions.forEach(session => {
+                    const sessionElement = createSessionElement(session);
+                    container.appendChild(sessionElement);
+                });
+            }
+
+            // 显示普通会话
+            if (regularSessions.length > 0) {
+                if (pinnedSessions.length > 0) {
+                    const regularHeader = document.createElement('div');
+                    regularHeader.className = 'p-2 small text-muted border-bottom';
+                    regularHeader.textContent = '其他会话';
+                    regularHeader.style.backgroundColor = '#f1f3f5';
+                    container.appendChild(regularHeader);
+                }
+
+                regularSessions.forEach(session => {
+                    const sessionElement = createSessionElement(session);
+                    container.appendChild(sessionElement);
+                });
+            }
+        }
+
+        // 创建会话元素
+        function createSessionElement(session) {
+            const div = document.createElement('div');
+            div.className = 'session-item p-3 cursor-pointer d-flex justify-content-between align-items-center mb-2';
+            div.setAttribute('data-session-id', session.id);
+            div.style.borderRadius = '5px';
+            div.style.cursor = 'pointer';
+            div.style.marginBottom = '5px';
+
+            div.innerHTML = `
+            <div class="session-info flex-grow-1">
+                <div class="session-title" title="${session.title || '未命名会话'}" style="font-size: 14px; font-weight: 500;">${session.title || '未命名会话'}</div>
+                <small class="text-muted" style="font-size: 12px;">${session.last_message_at || session.updated_at}</small>
+            </div>
+            <div class="session-actions">
+                <button class="btn btn-sm btn-link pin-btn" onclick="togglePinSession(${session.id})" title="${session.is_pinned ? '取消固定' : '固定会话'}">
+                    <i class="${session.is_pinned ? 'fas fa-thumbtack text-warning' : 'fas fa-thumbtack'}"></i>
+                </button>
+            </div>
+        `;
+
+            // 点击会话切换到聊天模式
+            div.addEventListener('click', function() {
+                switchToSession(session.id);
+            });
+
+            return div;
+        }
+
+        // 切换到指定会话
+        async function switchToSession(sessionId) {
+            try {
+                const response = await fetch(`/api/llm/sessions/${sessionId}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    currentSessionId = sessionId;
+                    currentAgent = result.data.agent;
+
+                    // 更新UI
+                    document.getElementById('session-title-display').textContent = result.data.title;
+                    document.getElementById('initial-mode').classList.add('initial-mode-hidden');
+                    document.getElementById('chat-mode').classList.remove('chat-mode-hidden');
+                    document.getElementById('pin-session-btn').style.display = 'inline-block';
+                    document.getElementById('delete-session-btn').style.display = 'inline-block';
+
+                    // 显示智能体名称（如果存在）
+                    if (currentAgent) {
+                        document.getElementById('agent-name-display').innerHTML =
+                            `<span class="badge badge-primary mr-2">${currentAgent.name}</span>`;
+                        // 同时更新顶部的智能体选择框
+                        document.getElementById('agent-select').value = currentAgent.id;
+                    } else {
+                        document.getElementById('agent-name-display').innerHTML = '';
+                    }
+
+                    // 设置固定按钮状态
+                    const pinBtn = document.getElementById('pin-session-btn');
+                    pinBtn.innerHTML = result.data.is_pinned ?
+                        '<i class="fas fa-thumbtack text-warning"></i>' :
+                        '<i class="fas fa-thumbtack"></i>';
+
+                    // 清空当前消息列表
+                    document.getElementById('messages-list').innerHTML = '';
+
+                    // TODO: 在实际应用中，这里可以加载历史消息
+                } else {
+                    console.error('获取会话详情失败:', result.message);
+                    alert('获取会话详情失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('请求错误:', error);
+                alert('网络请求失败');
+            }
+        }
+
+        // 加载智能体列表
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/llm/agents', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error('HTTP错误:', response.status, response.statusText);
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const select = document.getElementById('agent-select');
+                    // 保留内置选项
+                    select.innerHTML = '<option value="builtin_common">通用</option>';
+
+                    result.data.forEach(agent => {
+                        const option = document.createElement('option');
+                        option.value = agent.id;
+                        option.textContent = agent.name;
+                        option.title = agent.description;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.error('加载智能体失败:', result.message);
+                }
+            } catch (error) {
+                console.error('请求智能体列表失败:', error);
+                // 即使出错也要显示错误信息
+                const select = document.getElementById('agent-select');
+                select.innerHTML = '<option value="">加载失败: ' + error.message + '</option>';
+            }
+        }
+
+        // 创建新会话
+        document.getElementById('new-session-btn').addEventListener('click', function() {
+            document.getElementById('initial-mode').classList.remove('initial-mode-hidden');
+            document.getElementById('chat-mode').classList.add('chat-mode-hidden');
+            document.getElementById('session-title-display').textContent = '新建会话';
+            document.getElementById('agent-name-display').innerHTML = '';
+            document.getElementById('pin-session-btn').style.display = 'none';
+            document.getElementById('delete-session-btn').style.display = 'none';
+            document.getElementById('initial-question').value = '';
+            currentSessionId = null;
+            currentAgent = null;
+        });
+
+        // 开始聊天
+        document.getElementById('send-initial-btn').addEventListener('click', async function() {
+            const agentId = document.getElementById('agent-select').value;
+            const question = document.getElementById('initial-question').value.trim();
+
+            if (!question) {
+                alert('请输入您的问题');
+                return;
+            }
+
+            // 创建新会话
+            try {
+                const response = await fetch('/api/llm/sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        agent_id: agentId,
+                        title: question.substring(0, 50) // 使用问题的前50个字符作为标题
+                    })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    currentSessionId = result.data.id;
+
+                    // 切换到聊天模式
+                    document.getElementById('initial-mode').classList.add('initial-mode-hidden');
+                    document.getElementById('chat-mode').classList.remove('chat-mode-hidden');
+                    document.getElementById('session-title-display').textContent = result.data.title;
+                    document.getElementById('pin-session-btn').style.display = 'inline-block';
+                    document.getElementById('delete-session-btn').style.display = 'inline-block';
+
+                    // 显示智能体名称（如果存在）
+                    if (agentId) {
+                        const selectedAgent = Array.from(document.getElementById('agent-select').options)
+                            .find(opt => opt.value == agentId);
+                        if (selectedAgent) {
+                            document.getElementById('agent-name-display').innerHTML =
+                                `<span class="badge badge-primary mr-2">${selectedAgent.text}</span>`;
+                        }
+                    }
+
+                    // 显示用户问题
+                    addMessageToChat('user', question);
+
+                    // 发送消息到AI
+                    await sendMessageToAI(question, agentId);
+
+                    // 重新加载会话列表
+                    loadSessions();
+                } else {
+                    alert('创建会话失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('请求错误:', error);
+                alert('创建会话时发生错误');
+            }
+        });
+
+        // 发送消息到AI
+        async function sendMessageToAI(message, agentId = null) {
+            try {
+                // 显示AI正在思考的指示器
+                const thinkingIndicator = showThinkingIndicator();
+
+                const response = await fetch('/api/llm/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        session_id: currentSessionId,
+                        agent_id: agentId
+                    })
+                });
+
+                const result = await response.json();
+
+                // 移除思考指示器
+                removeThinkingIndicator(thinkingIndicator);
+
+                if (result.success) {
+                    // 添加AI响应到聊天
+                    addMessageToChat('ai', result.data.ai_response);
+                } else {
+                    addMessageToChat('ai', '抱歉，AI处理您的请求时出现错误: ' + result.message);
+                }
+            } catch (error) {
+                console.error('发送消息到AI失败:', error);
+
+                // 移除思考指示器
+                removeThinkingIndicator();
+
+                addMessageToChat('ai', '抱歉，网络请求失败，请稍后重试。');
+            }
+        }
+
+        // 显示AI思考指示器
+        function showThinkingIndicator() {
+            const messagesList = document.getElementById('messages-list');
+            const indicatorDiv = document.createElement('div');
+            indicatorDiv.className = 'ai-message ai-thinking-indicator mb-3';
+            indicatorDiv.id = 'thinking-indicator';
+
+            indicatorDiv.innerHTML = `
+            <div class="d-flex">
+                <div class="message-bubble">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            messagesList.appendChild(indicatorDiv);
+            messagesList.scrollTop = messagesList.scrollHeight;
+
+            return indicatorDiv;
+        }
+
+        // 移除思考指示器
+        function removeThinkingIndicator(indicator) {
+            if (indicator && indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            } else {
+                // 如果没有传入特定指示器，则移除所有思考指示器
+                const indicators = document.querySelectorAll('.ai-thinking-indicator');
+                indicators.forEach(ind => ind.remove());
+            }
+        }
+
+        // 添加消息到聊天区域
+        function addMessageToChat(sender, content) {
+            const messagesList = document.getElementById('messages-list');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                <div class="d-flex justify-content-end">
+                    <div class="message-bubble">
+                        <div>${content}</div>
+                    </div>
+                </div>
+            `;
+            } else {
+                messageDiv.innerHTML = `
+                <div class="d-flex">
+                    <div class="message-bubble">
+                        <div>${content}</div>
+                    </div>
+                </div>
+            `;
+            }
+
+            messagesList.appendChild(messageDiv);
+            messagesList.scrollTop = messagesList.scrollHeight;
+        }
+
+        // 发送消息事件
+        document.getElementById('send-message-btn').addEventListener('click', async function() {
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+
+            if (!message) return;
+
+            if (!currentSessionId) {
+                alert('请先选择一个会话');
+                return;
+            }
+
+            // 清空输入框
+            messageInput.value = '';
+
+            // 显示用户消息
+            addMessageToChat('user', message);
+
+            // 发送消息到AI
+            await sendMessageToAI(message);
+        });
+
+        // 支持Shift+Enter换行，Enter发送
+        document.getElementById('message-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('send-message-btn').click();
+            }
+        });
+
+        // 删除会话
+        document.getElementById('delete-session-btn').addEventListener('click', function() {
+            if (!currentSessionId) return;
+
+            document.getElementById('confirm-message').textContent = '确定要删除这个会话吗？此操作不可撤销。';
+            $('#confirmModal').modal('show');
+
+            document.getElementById('confirm-delete-btn').onclick = async function() {
+                try {
+                    const response = await fetch(`/api/llm/sessions/${currentSessionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        $('#confirmModal').modal('hide');
+
+                        // 重置到初始状态
+                        document.getElementById('initial-mode').classList.remove('initial-mode-hidden');
+                        document.getElementById('chat-mode').classList.add('chat-mode-hidden');
+                        document.getElementById('session-title-display').textContent = '请选择一个会话开始聊天';
+                        document.getElementById('agent-name-display').innerHTML = '';
+                        document.getElementById('pin-session-btn').style.display = 'none';
+                        document.getElementById('delete-session-btn').style.display = 'none';
+                        document.getElementById('messages-list').innerHTML = '';
+                        currentSessionId = null;
+                        currentAgent = null;
+
+                        // 重新加载会话列表
+                        loadSessions();
+                    } else {
+                        alert('删除会话失败: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('请求错误:', error);
+                    alert('删除会话时发生错误');
+                }
+            };
+        });
+
+        // 固定/取消固定会话
+        document.getElementById('pin-session-btn').addEventListener('click', async function() {
+            if (!currentSessionId) return;
+
+            try {
+                const response = await fetch(`/api/llm/sessions/${currentSessionId}/toggle-pin`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    // 更新按钮状态
+                    const pinBtn = document.getElementById('pin-session-btn');
+                    pinBtn.innerHTML = result.data.is_pinned ?
+                        '<i class="fas fa-thumbtack text-warning"></i>' :
+                        '<i class="fas fa-thumbtack"></i>';
+
+                    // 重新加载会话列表
+                    loadSessions();
+                } else {
+                    alert('操作失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('请求错误:', error);
+                alert('操作时发生错误');
+            }
+        });
+
+        // 当智能体选择改变时，如果当前没有会话，更新显示
+        document.getElementById('agent-select').addEventListener('change', function() {
+            if (!currentSessionId) {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    document.getElementById('agent-name-display').innerHTML =
+                        `<span class="badge badge-primary mr-2">${selectedOption.text}</span>`;
+                } else {
+                    document.getElementById('agent-name-display').innerHTML = '';
+                }
+            }
+        });
+    });
+
+    // 全局函数供HTML调用
+    async function togglePinSession(sessionId) {
+        try {
+            const response = await fetch(`/api/llm/sessions/${sessionId}/toggle-pin`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                // 重新加载会话列表
+                loadSessions();
+            } else {
+                alert('操作失败: ' + result.message);
+            }
+        } catch (error) {
+            console.error('请求错误:', error);
+            alert('操作时发生错误');
+        }
+    }
+</script>
 
 <style>
 .cursor-pointer {
@@ -226,529 +764,4 @@
     background: #a8a8a8;
 }
 </style>
-@endsection
-
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentSessionId = null;
-    let currentAgent = null;
-    
-    // 初始化页面
-    loadSessions();
-    loadAgents();
-    
-    // 加载会话列表
-    async function loadSessions() {
-        try {
-            const response = await fetch('/api/llm/sessions', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                displaySessions(result.data);
-            } else {
-                console.error('加载会话失败:', result.message);
-                document.getElementById('sessions-list').innerHTML = '<div class="text-center text-danger py-5">加载失败</div>';
-            }
-        } catch (error) {
-            console.error('请求错误:', error);
-            document.getElementById('sessions-list').innerHTML = '<div class="text-center text-danger py-5">网络错误</div>';
-        }
-    }
-    
-    // 显示会话列表
-    function displaySessions(sessions) {
-        const container = document.getElementById('sessions-list');
-        
-        // 清空之前的内容
-        container.innerHTML = '';
-        
-        if (sessions.length === 0) {
-            container.appendChild(document.createElement('div').classList.add('text-center', 'text-muted', 'py-5') || 
-                (function() {
-                    const div = document.createElement('div');
-                    div.className = 'text-center text-muted py-5';
-                    div.textContent = '暂无会话';
-                    return div;
-                })()
-            );
-            return;
-        }
-        
-        // 分组：固定的会话和普通会话
-        const pinnedSessions = sessions.filter(session => session.is_pinned);
-        const regularSessions = sessions.filter(session => !session.is_pinned);
-        
-        // 显示固定的会话
-        if (pinnedSessions.length > 0) {
-            const pinnedHeader = document.createElement('div');
-            pinnedHeader.className = 'p-2 small text-muted border-bottom';
-            pinnedHeader.textContent = '固定会话';
-            pinnedHeader.style.backgroundColor = '#f1f3f5';
-            container.appendChild(pinnedHeader);
-            
-            pinnedSessions.forEach(session => {
-                const sessionElement = createSessionElement(session);
-                container.appendChild(sessionElement);
-            });
-        }
-        
-        // 显示普通会话
-        if (regularSessions.length > 0) {
-            if (pinnedSessions.length > 0) {
-                const regularHeader = document.createElement('div');
-                regularHeader.className = 'p-2 small text-muted border-bottom';
-                regularHeader.textContent = '其他会话';
-                regularHeader.style.backgroundColor = '#f1f3f5';
-                container.appendChild(regularHeader);
-            }
-            
-            regularSessions.forEach(session => {
-                const sessionElement = createSessionElement(session);
-                container.appendChild(sessionElement);
-            });
-        }
-    }
-    
-    // 创建会话元素
-    function createSessionElement(session) {
-        const div = document.createElement('div');
-        div.className = 'session-item p-3 cursor-pointer d-flex justify-content-between align-items-center mb-2';
-        div.setAttribute('data-session-id', session.id);
-        div.style.borderRadius = '5px';
-        div.style.cursor = 'pointer';
-        div.style.marginBottom = '5px';
-        
-        div.innerHTML = `
-            <div class="session-info flex-grow-1">
-                <div class="session-title" title="${session.title || '未命名会话'}" style="font-size: 14px; font-weight: 500;">${session.title || '未命名会话'}</div>
-                <small class="text-muted" style="font-size: 12px;">${session.last_message_at || session.updated_at}</small>
-            </div>
-            <div class="session-actions">
-                <button class="btn btn-sm btn-link pin-btn" onclick="togglePinSession(${session.id})" title="${session.is_pinned ? '取消固定' : '固定会话'}">
-                    <i class="${session.is_pinned ? 'fas fa-thumbtack text-warning' : 'fas fa-thumbtack'}"></i>
-                </button>
-            </div>
-        `;
-        
-        // 点击会话切换到聊天模式
-        div.addEventListener('click', function() {
-            switchToSession(session.id);
-        });
-        
-        return div;
-    }
-    
-    // 切换到指定会话
-    async function switchToSession(sessionId) {
-        try {
-            const response = await fetch(`/api/llm/sessions/${sessionId}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                currentSessionId = sessionId;
-                currentAgent = result.data.agent;
-                
-                // 更新UI
-                document.getElementById('session-title-display').textContent = result.data.title;
-                document.getElementById('initial-mode').classList.add('initial-mode-hidden');
-                document.getElementById('chat-mode').classList.remove('chat-mode-hidden');
-                document.getElementById('pin-session-btn').style.display = 'inline-block';
-                document.getElementById('delete-session-btn').style.display = 'inline-block';
-                
-                // 显示智能体名称（如果存在）
-                if (currentAgent) {
-                    document.getElementById('agent-name-display').innerHTML = 
-                        `<span class="badge badge-primary mr-2">${currentAgent.name}</span>`;
-                    // 同时更新顶部的智能体选择框
-                    document.getElementById('agent-select').value = currentAgent.id;
-                } else {
-                    document.getElementById('agent-name-display').innerHTML = '';
-                }
-                
-                // 设置固定按钮状态
-                const pinBtn = document.getElementById('pin-session-btn');
-                pinBtn.innerHTML = result.data.is_pinned ? 
-                    '<i class="fas fa-thumbtack text-warning"></i>' : 
-                    '<i class="fas fa-thumbtack"></i>';
-                
-                // 清空当前消息列表
-                document.getElementById('messages-list').innerHTML = '';
-                
-                // TODO: 在实际应用中，这里可以加载历史消息
-            } else {
-                console.error('获取会话详情失败:', result.message);
-                alert('获取会话详情失败: ' + result.message);
-            }
-        } catch (error) {
-            console.error('请求错误:', error);
-            alert('网络请求失败');
-        }
-    }
-    
-    // 加载智能体列表
-    async function loadAgents() {
-        try {
-            const response = await fetch('/api/llm/agents', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                const select = document.getElementById('agent-select');
-                select.innerHTML = '<option value="">请选择智能体</option>';
-                
-                result.data.forEach(agent => {
-                    const option = document.createElement('option');
-                    option.value = agent.id;
-                    option.textContent = agent.name;
-                    option.title = agent.description;
-                    select.appendChild(option);
-                });
-            } else {
-                console.error('加载智能体失败:', result.message);
-            }
-        } catch (error) {
-            console.error('请求错误:', error);
-        }
-    }
-    
-    // 创建新会话
-    document.getElementById('new-session-btn').addEventListener('click', function() {
-        document.getElementById('initial-mode').classList.remove('initial-mode-hidden');
-        document.getElementById('chat-mode').classList.add('chat-mode-hidden');
-        document.getElementById('session-title-display').textContent = '新建会话';
-        document.getElementById('agent-name-display').innerHTML = '';
-        document.getElementById('pin-session-btn').style.display = 'none';
-        document.getElementById('delete-session-btn').style.display = 'none';
-        document.getElementById('initial-question').value = '';
-        currentSessionId = null;
-        currentAgent = null;
-    });
-    
-    // 开始聊天
-    document.getElementById('send-initial-btn').addEventListener('click', async function() {
-        const agentId = document.getElementById('agent-select').value;
-        const question = document.getElementById('initial-question').value.trim();
-        
-        if (!question) {
-            alert('请输入您的问题');
-            return;
-        }
-        
-        // 创建新会话
-        try {
-            const response = await fetch('/api/llm/sessions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    agent_id: agentId,
-                    title: question.substring(0, 50) // 使用问题的前50个字符作为标题
-                })
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                currentSessionId = result.data.id;
-                
-                // 切换到聊天模式
-                document.getElementById('initial-mode').classList.add('initial-mode-hidden');
-                document.getElementById('chat-mode').classList.remove('chat-mode-hidden');
-                document.getElementById('session-title-display').textContent = result.data.title;
-                document.getElementById('pin-session-btn').style.display = 'inline-block';
-                document.getElementById('delete-session-btn').style.display = 'inline-block';
-                
-                // 显示智能体名称（如果存在）
-                if (agentId) {
-                    const selectedAgent = Array.from(document.getElementById('agent-select').options)
-                        .find(opt => opt.value == agentId);
-                    if (selectedAgent) {
-                        document.getElementById('agent-name-display').innerHTML = 
-                            `<span class="badge badge-primary mr-2">${selectedAgent.text}</span>`;
-                    }
-                }
-                
-                // 显示用户问题
-                addMessageToChat('user', question);
-                
-                // 发送消息到AI
-                await sendMessageToAI(question, agentId);
-                
-                // 重新加载会话列表
-                loadSessions();
-            } else {
-                alert('创建会话失败: ' + result.message);
-            }
-        } catch (error) {
-            console.error('请求错误:', error);
-            alert('创建会话时发生错误');
-        }
-    });
-    
-    // 发送消息到AI
-    async function sendMessageToAI(message, agentId = null) {
-        try {
-            // 显示AI正在思考的指示器
-            const thinkingIndicator = showThinkingIndicator();
-            
-            const response = await fetch('/api/llm/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    message: message,
-                    session_id: currentSessionId,
-                    agent_id: agentId
-                })
-            });
-            
-            const result = await response.json();
-            
-            // 移除思考指示器
-            removeThinkingIndicator(thinkingIndicator);
-            
-            if (result.success) {
-                // 添加AI响应到聊天
-                addMessageToChat('ai', result.data.ai_response);
-            } else {
-                addMessageToChat('ai', '抱歉，AI处理您的请求时出现错误: ' + result.message);
-            }
-        } catch (error) {
-            console.error('发送消息到AI失败:', error);
-            
-            // 移除思考指示器
-            removeThinkingIndicator();
-            
-            addMessageToChat('ai', '抱歉，网络请求失败，请稍后重试。');
-        }
-    }
-    
-    // 显示AI思考指示器
-    function showThinkingIndicator() {
-        const messagesList = document.getElementById('messages-list');
-        const indicatorDiv = document.createElement('div');
-        indicatorDiv.className = 'ai-message ai-thinking-indicator mb-3';
-        indicatorDiv.id = 'thinking-indicator';
-        
-        indicatorDiv.innerHTML = `
-            <div class="d-flex">
-                <div class="message-bubble">
-                    <div class="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        messagesList.appendChild(indicatorDiv);
-        messagesList.scrollTop = messagesList.scrollHeight;
-        
-        return indicatorDiv;
-    }
-    
-    // 移除思考指示器
-    function removeThinkingIndicator(indicator) {
-        if (indicator && indicator.parentNode) {
-            indicator.parentNode.removeChild(indicator);
-        } else {
-            // 如果没有传入特定指示器，则移除所有思考指示器
-            const indicators = document.querySelectorAll('.ai-thinking-indicator');
-            indicators.forEach(ind => ind.remove());
-        }
-    }
-    
-    // 添加消息到聊天区域
-    function addMessageToChat(sender, content) {
-        const messagesList = document.getElementById('messages-list');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}-message`;
-        
-        if (sender === 'user') {
-            messageDiv.innerHTML = `
-                <div class="d-flex justify-content-end">
-                    <div class="message-bubble">
-                        <div>${content}</div>
-                    </div>
-                </div>
-            `;
-        } else {
-            messageDiv.innerHTML = `
-                <div class="d-flex">
-                    <div class="message-bubble">
-                        <div>${content}</div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        messagesList.appendChild(messageDiv);
-        messagesList.scrollTop = messagesList.scrollHeight;
-    }
-    
-    // 发送消息事件
-    document.getElementById('send-message-btn').addEventListener('click', async function() {
-        const messageInput = document.getElementById('message-input');
-        const message = messageInput.value.trim();
-        
-        if (!message) return;
-        
-        if (!currentSessionId) {
-            alert('请先选择一个会话');
-            return;
-        }
-        
-        // 清空输入框
-        messageInput.value = '';
-        
-        // 显示用户消息
-        addMessageToChat('user', message);
-        
-        // 发送消息到AI
-        await sendMessageToAI(message);
-    });
-    
-    // 支持Shift+Enter换行，Enter发送
-    document.getElementById('message-input').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            document.getElementById('send-message-btn').click();
-        }
-    });
-    
-    // 删除会话
-    document.getElementById('delete-session-btn').addEventListener('click', function() {
-        if (!currentSessionId) return;
-        
-        document.getElementById('confirm-message').textContent = '确定要删除这个会话吗？此操作不可撤销。';
-        $('#confirmModal').modal('show');
-        
-        document.getElementById('confirm-delete-btn').onclick = async function() {
-            try {
-                const response = await fetch(`/api/llm/sessions/${currentSessionId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
-                const result = await response.json();
-                
-                if (result.success) {
-                    $('#confirmModal').modal('hide');
-                    
-                    // 重置到初始状态
-                    document.getElementById('initial-mode').classList.remove('initial-mode-hidden');
-                    document.getElementById('chat-mode').classList.add('chat-mode-hidden');
-                    document.getElementById('session-title-display').textContent = '请选择一个会话开始聊天';
-                    document.getElementById('agent-name-display').innerHTML = '';
-                    document.getElementById('pin-session-btn').style.display = 'none';
-                    document.getElementById('delete-session-btn').style.display = 'none';
-                    document.getElementById('messages-list').innerHTML = '';
-                    currentSessionId = null;
-                    currentAgent = null;
-                    
-                    // 重新加载会话列表
-                    loadSessions();
-                } else {
-                    alert('删除会话失败: ' + result.message);
-                }
-            } catch (error) {
-                console.error('请求错误:', error);
-                alert('删除会话时发生错误');
-            }
-        };
-    });
-    
-    // 固定/取消固定会话
-    document.getElementById('pin-session-btn').addEventListener('click', async function() {
-        if (!currentSessionId) return;
-        
-        try {
-            const response = await fetch(`/api/llm/sessions/${currentSessionId}/toggle-pin`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                // 更新按钮状态
-                const pinBtn = document.getElementById('pin-session-btn');
-                pinBtn.innerHTML = result.data.is_pinned ? 
-                    '<i class="fas fa-thumbtack text-warning"></i>' : 
-                    '<i class="fas fa-thumbtack"></i>';
-                
-                // 重新加载会话列表
-                loadSessions();
-            } else {
-                alert('操作失败: ' + result.message);
-            }
-        } catch (error) {
-            console.error('请求错误:', error);
-            alert('操作时发生错误');
-        }
-    });
-    
-    // 当智能体选择改变时，如果当前没有会话，更新显示
-    document.getElementById('agent-select').addEventListener('change', function() {
-        if (!currentSessionId) {
-            const selectedOption = this.options[this.selectedIndex];
-            if (selectedOption.value) {
-                document.getElementById('agent-name-display').innerHTML = 
-                    `<span class="badge badge-primary mr-2">${selectedOption.text}</span>`;
-            } else {
-                document.getElementById('agent-name-display').innerHTML = '';
-            }
-        }
-    });
-});
-
-// 全局函数供HTML调用
-async function togglePinSession(sessionId) {
-    try {
-        const response = await fetch(`/api/llm/sessions/${sessionId}/toggle-pin`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-            // 重新加载会话列表
-            loadSessions();
-        } else {
-            alert('操作失败: ' + result.message);
-        }
-    } catch (error) {
-        console.error('请求错误:', error);
-        alert('操作时发生错误');
-    }
-}
-</script>
 @endsection

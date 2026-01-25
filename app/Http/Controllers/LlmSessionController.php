@@ -190,14 +190,29 @@ class LlmSessionController extends Controller
      */
     public function getAgents()
     {
-        $agents = LlmAgent::where('is_active', true)
-            ->select('id', 'name', 'description', 'avatar')
-            ->get();
+        try {
+            $userId = Auth::id();
+            
+            // 获取所有公开激活的智能体以及当前用户的智能体
+            $agents = LlmAgent::where('is_active', true)
+                ->where(function ($query) use ($userId) {
+                    $query->where('is_public', true)
+                          ->orWhere('user_id', $userId);
+                })
+                ->select('id', 'name', 'description', 'avatar')
+                ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $agents
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $agents
+            ]);
+        } catch (\Exception $e) {
+            
+            return response()->json([
+                'success' => false,
+                'message' => '获取智能体列表失败: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
