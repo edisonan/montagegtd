@@ -126,7 +126,7 @@ class CourseService
         ];
 
         return $this->courseEnrollmentRepository->createCourseEnrollment($courseEnrollmentData);
-    
+    }
 
     /**
      * 获取用户的所有课程

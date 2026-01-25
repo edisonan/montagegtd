@@ -254,12 +254,13 @@ class LlmSessionController extends Controller
         $this->validate($request, [
             'message' => 'required|string',
             'session_id' => 'required|integer|exists:llm_sessions,id',
-            'agent_id' => 'nullable|integer|exists:llm_agents,id'
+            'agent_id' => 'nullable'
         ]);
+
+
         
         $message = $request->input('message');
         $sessionId = $request->input('session_id');
-        $agentId = $request->input('agent_id');
         
         // 获取会话和智能体信息
         $session = $this->sessionRepository->findById($sessionId);
@@ -269,15 +270,35 @@ class LlmSessionController extends Controller
                 'message' => '会话不存在或无权限访问'
             ], 404);
         }
-        
-        // 获取智能体信息
+
+
+        $temp_agent_id = $request->input('agent_id');
         $agent = null;
-        if ($agentId) {
-            $agent = \App\Models\LlmAgent::find($agentId);
-        } elseif ($session->agent_id) {
-            $agent = $session->agent;
+
+        if ($temp_agent_id) {
+            // 检查是否包含 builtin
+            if (strpos($temp_agent_id, 'builtin') !== false) {
+                // 如果是 builtin，使用 builtin_slug 查询
+                $agent = LlmAgent::where('builtin_slug', $temp_agent_id)->first();
+            } else {
+                // 否则使用 id 查询
+                $agent = LlmAgent::find($temp_agent_id);
+            }
         }
-        
+
+        if (!$agent) {
+            if ($session->agent_id) {
+                $agent = $session->agent;
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => '指定智能体不存在'
+                ], 404);
+            }
+        }
+
+        $agentId = $agent->id;
+
         try {
             // 为了兼容Laravel 5.5，我们暂时返回一个模拟响应
             // 在实际实现中，这里应该调用实际的AI服务

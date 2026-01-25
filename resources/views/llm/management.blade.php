@@ -8,7 +8,7 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4>供应商管理</h4>
-                        <button class="btn btn-primary" onclick="openProviderModal()">添加供应商</button>
+                        <button class="btn btn-outline-info btn-modern" onclick="openProviderModal()">添加供应商</button>
                     </div>
                 </div>
                 
@@ -28,8 +28,8 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>模型管理</h5>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-secondary" onclick="showProvidersView()">返回供应商</button>
-                                <button class="btn btn-primary" onclick="openModelModal()">添加模型</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="showProvidersView()">返回供应商</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="openModelModal()">添加模型</button>
                             </div>
                         </div>
                         
@@ -58,8 +58,8 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>凭据管理</h5>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-secondary" onclick="showProvidersView()">返回供应商</button>
-                                <button class="btn btn-primary" onclick="openCredentialModal()">添加凭据</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="showProvidersView()">返回供应商</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="openCredentialModal()">添加凭据</button>
                             </div>
                         </div>
                         
@@ -150,8 +150,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-outline-info btn-modern" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-outline-info btn-modern">保存</button>
                 </div>
             </form>
         </div>
@@ -227,8 +227,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-outline-info btn-modern" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-outline-info btn-modern">保存</button>
                 </div>
             </form>
         </div>
@@ -286,8 +286,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                    <button type="submit" class="btn btn-primary">保存</button>
+                    <button type="button" class="btn btn-outline-info btn-modern" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-outline-info btn-modern">保存</button>
                 </div>
             </form>
         </div>
@@ -314,10 +314,10 @@ function loadProviders() {
                         <div class="card-header d-flex justify-content-between align-items-center py-2">
                             <h5 class="mb-0"><strong>${provider.name}</strong></h5>
                             <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-info" onclick="manageModelsForProvider(${provider.id})">模型管理</button>
-                                <button class="btn btn-sm btn-warning" onclick="manageCredentialsForProvider(${provider.id})">凭据管理</button>
-                                <button class="btn btn-sm btn-primary" onclick="editProvider(${provider.id})">编辑</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteProvider(${provider.id})">删除</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="manageModelsForProvider(${provider.id})">模型管理</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="manageCredentialsForProvider(${provider.id})">凭据管理</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="editProvider(${provider.id})">编辑</button>
+                                <button class="btn btn-outline-info btn-modern" onclick="deleteProvider(${provider.id})">删除</button>
                             </div>
                         </div>
                         <div class="card-body py-3">
@@ -363,8 +363,8 @@ function loadModels() {
                     <td>${model.model_type}</td>
                     <td>${model.is_active ? '启用' : '禁用'}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="editModel(${model.id})">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteModel(${model.id})">删除</button>
+                        <button class="btn btn-outline-info btn-modern" onclick="editModel(${model.id})">编辑</button>
+                        <button class="btn btn-outline-info btn-modern" onclick="deleteModel(${model.id})">删除</button>
                     </td>
                 </tr>
             `;
@@ -390,8 +390,8 @@ function loadCredentials() {
                     <td>${credential.is_active ? '启用' : '禁用'}</td>
                     <td>${credential.usage_count}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="editCredential(${credential.id})">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteCredential(${credential.id})">删除</button>
+                        <button class="btn btn-outline-info btn-modern" onclick="editCredential(${credential.id})">编辑</button>
+                        <button class="btn btn-outline-info btn-modern" onclick="deleteCredential(${credential.id})">删除</button>
                     </td>
                 </tr>
             `;
@@ -483,8 +483,8 @@ function loadModelsByProvider(providerId) {
                         <td>${model.model_type}</td>
                         <td>${model.is_active ? '启用' : '禁用'}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary" onclick="editModel(${model.id})">编辑</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteModel(${model.id})">删除</button>
+                            <button class="btn btn-outline-info btn-modern" onclick="editModel(${model.id})">编辑</button>
+                            <button class="btn btn-outline-info btn-modern" onclick="deleteModel(${model.id})">删除</button>
                         </td>
                     </tr>
                 `;
@@ -513,8 +513,8 @@ function loadCredentialsByProvider(providerId) {
                         <td>${credential.is_active ? '启用' : '禁用'}</td>
                         <td>${credential.usage_count}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary" onclick="editCredential(${credential.id})">编辑</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteCredential(${credential.id})">删除</button>
+                            <button class="btn btn-outline-info btn-modern" onclick="editCredential(${credential.id})">编辑</button>
+                            <button class="btn btn-outline-info btn-modern" onclick="deleteCredential(${credential.id})">删除</button>
                         </td>
                     </tr>
                 `;
