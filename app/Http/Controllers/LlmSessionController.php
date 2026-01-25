@@ -59,13 +59,44 @@ class LlmSessionController extends Controller
     public function createSession(Request $request)
     {
         $this->validate($request, [
-            'agent_id' => 'nullable|exists:llm_agents,id',
+            'agent_id' => 'nullable',
             'title' => 'nullable|string|max:255'
         ]);
 
+        $temp_agent_id = $request->input('agent_id');
+        $agent = null;
+
+        if ($temp_agent_id) {
+            // 检查是否包含 builtin
+            if (strpos($temp_agent_id, 'builtin') !== false) {
+                // 如果是 builtin，使用 builtin_slug 查询
+                $agent = LlmAgent::where('builtin_slug', $temp_agent_id)->first();
+            } else {
+                // 否则使用 id 查询
+                $agent = LlmAgent::find($temp_agent_id);
+            }
+        }
+
+        if (!$agent) {
+            return response()->json([
+                'success' => false,
+                'message' => '指定智能体不存在'
+            ], 404);
+        }
+
+        $agent_id = $agent->id;
+
+        $title = $request->input('title') ?? '未命名对话';
+
+        // 检查长度并截取
+        if (mb_strlen($title) > 50) {
+            $title = mb_substr($title, 0, 50);
+        }
+
+
         $session = $this->sessionService->createSession([
-            'agent_id' => $request->input('agent_id'),
-            'title' => $request->input('title')
+            'agent_id' => $agent_id,
+            'title' => $title
         ]);
 
         return response()->json([

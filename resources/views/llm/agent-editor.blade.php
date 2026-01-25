@@ -3,15 +3,20 @@
 
 <script>
     // 等待 jQuery 加载完成后再执行
+    // 定义全局变量
+    let currentAgentId = {{ $agent->id }};
+    let draftVersionModelId = {{ $draftVersion && isset($draftVersion->model_id) ? $draftVersion->model_id : 0 }};
+    let agentName = '{{ addslashes($agent->name ?? "") }}';
+    let agentDescription = '{{ addslashes($agent->description ?? "") }}';
+    let agentAvatar = '{{ addslashes($agent->avatar ?? "") }}';
+    let chatHistory;
+    
     function initializePageScripts() {
-        let currentAgentId = {{ $agent->id }};
-        let draftVersionModelId = {{ isset($draftVersion->model_id) ? $draftVersion->model_id : 0 }};
-        let agentName = '{{ addslashes($agent->name) }}';
-        let agentDescription = '{{ addslashes($agent->description ?? "") }}';
-        let agentAvatar = '{{ addslashes($agent->avatar ?? "") }}';
+        // 变量已在全局作用域定义
+        
             
-        let chatHistory = localStorage.getItem(`agent_chat_${currentAgentId}`) ?
-            JSON.parse(localStorage.getItem(`agent_chat_${currentAgentId}`)) : [];
+        chatHistory = localStorage.getItem('agent_chat_' + currentAgentId) ?
+            JSON.parse(localStorage.getItem('agent_chat_' + currentAgentId)) : [];
 
         // 设置全局 AJAX 默认值，包括 CSRF 令牌
         $.ajaxSetup({
@@ -46,12 +51,34 @@
             $('#top-p').on('input', function() {
                 $('#top-p-range').val($(this).val());
             });
+            
+            // 初始化折叠状态
+            setTimeout(function() {
+                if ($('#advancedParamsBody').length) {
+                    // 检查内容高度，如果超过一定高度则保留折叠功能
+                    const bodyHeight = $('#advancedParamsBody')[0].scrollHeight;
+                    if (bodyHeight > 0) {
+                        // 默认折叠内容
+                        $('#advancedParamsBody').removeClass('show');
+                        $('.collapse-card').addClass('collapsed');
+                    }
+                }
+            }, 100); // 延迟执行确保DOM加载完成
         });
     }
         
     // 确保 jQuery 加载后再执行
     if (typeof $ !== 'undefined' && typeof jQuery !== 'undefined') {
-        initializePageScripts();
+        // 检查 DOM 是否已加载
+        if (document.readyState === 'loading') {
+            // DOM 仍在加载中，等待 DOMContentLoaded 事件
+            document.addEventListener('DOMContentLoaded', function() {
+                initializePageScripts();
+            });
+        } else {
+            // DOM 已加载完成，直接执行
+            initializePageScripts();
+        }
     } else {
         document.addEventListener('DOMContentLoaded', function() {
             // 再次检查 jQuery 是否可用
@@ -66,13 +93,28 @@
     // 加载模型列表
     function loadModels() {
         console.log('正在请求模型列表...');
+        console.log('draftVersionModelId:', draftVersionModelId);
+        console.log('jQuery available:', typeof $ !== 'undefined');
+        console.log('Document ready state:', document.readyState);
+        
         $.get('/llm/api/models', function(response) {
             console.log('模型列表请求成功:', response);
+            
             let modelSelect = $('#model-select');
+            console.log('jQuery对象modelSelect:', modelSelect.length);
+            console.log('DOM元素是否存在:', modelSelect.length > 0);
+            
+            if (modelSelect.length === 0) {
+                console.error('错误：找不到ID为model-select的元素');
+                return;
+            }
+            
             modelSelect.empty();
+            console.log('下拉框已清空');
 
             // 检查响应结构并提取模型数据
             let data = response.result ? response.result.models : response;
+            console.log('提取的模型数据:', data);
 
             if (!data || data.length === 0) {
                 console.log('没有获取到模型数据');
@@ -80,20 +122,40 @@
                 return;
             }
 
+            console.log('开始遍历模型数据，总数:', data.length);
             data.forEach(function(model) {
+                console.log('处理模型:', model);
                 let selected = draftVersionModelId == model.id ? 'selected' : '';
                 const providerName = model.provider ? model.provider.name : '未知供应商';
-                modelSelect.append(`<option value="${model.id}" ${selected}>${model.name} (${providerName})</option>`);
+                const optionHtml = '<option value="' + model.id + '" ' + selected + '>' + model.name + ' (' + providerName + ')</option>';
+                console.log('添加选项:', optionHtml);
+                modelSelect.append(optionHtml);
+            });
+            console.log('模型选项添加完成');
+
+            // 验证选项是否真的被添加了
+            console.log('添加后的选项数量:', modelSelect.find('option').length);
+            modelSelect.find('option').each(function(index, option) {
+                console.log(`选项 ${index}:`, option.value, option.text, option.selected);
             });
 
             // 更新当前模型显示
             let selectedOption = modelSelect.find('option:selected');
+            console.log('选中的选项数量:', selectedOption.length);
             if (selectedOption.length) {
                 $('#current-model').text(selectedOption.text());
             }
+            console.log('模型列表加载完成，总选项数:', modelSelect.find('option').length);
         }).fail(function(xhr, status, error) {
             console.error('模型列表请求失败:', error, xhr.responseText);
-            $('#model-select').html('<option value="">加载失败，请刷新页面</option>');
+            console.error('XHR对象详情:', xhr.status, xhr.statusText);
+            
+            let modelSelect = $('#model-select');
+            if (modelSelect.length > 0) {
+                modelSelect.html('<option value="">加载失败，请刷新页面</option>');
+            } else {
+                console.error('无法找到model-select元素来显示错误信息');
+            }
         });
     }
 
@@ -114,7 +176,7 @@
             return;
         }
 
-        const agentName = '{{ addslashes($agent->name) }}';
+        const agentName = '{{ addslashes($agent->name ?? "") }}';
         const agentDescription = '{{ addslashes($agent->description ?? "") }}';
         const agentAvatar = '{{ addslashes($agent->avatar ?? "") }}';
                     
@@ -151,7 +213,7 @@
         $saveBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>保存中...');
 
         $.ajax({
-            url: `/llm/api/llm-agents/${currentAgentId}/draft`,
+            url: '/llm/api/llm-agents/' + currentAgentId + '/draft',
             method: 'PUT',
             data: formData,
             success: function(response) {
@@ -159,7 +221,7 @@
                 if (response.success) {
                     showToast('草稿已保存', 'success');
                     if (response.version) {
-                        $('.alert-info strong').text(`草稿 v${response.version}`);
+                        $('.alert-info strong').text('草稿 v' + response.version);
                     }
                 } else {
                     showToast('保存失败: ' + response.message, 'danger');
@@ -186,10 +248,10 @@
         const originalText = $publishBtn.html();
         $publishBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mr-1"></i>发布中...');
 
-        console.log('发送发布请求到:', `/llm/api/llm-agents/${currentAgentId}/publish`);
+        console.log('发送发布请求到:', '/llm/api/llm-agents/' + currentAgentId + '/publish');
 
         $.ajax({
-            url: `/llm/api/llm-agents/${currentAgentId}/publish`,
+            url: '/llm/api/llm-agents/' + currentAgentId + '/publish',
             method: 'POST',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -198,7 +260,7 @@
                 console.log('发布请求成功:', response);
                 if (response.success) {
                     showToast('已成功发布', 'success');
-                    setTimeout(() => {
+                    setTimeout(function() {
                         window.location.href = '{{ route("llm.agents.index") }}';
                     }, 1500);
                 } else {
@@ -237,11 +299,11 @@
         // 保存到本地历史
         saveChatToHistory(message, 'user');
 
-        console.log('发送消息请求到:', `/llm/api/llm-agents/${currentAgentId}/test-chat`, '消息内容:', message);
+        console.log('发送消息请求到:', '/llm/api/llm-agents/' + currentAgentId + '/test-chat', '消息内容:', message);
 
         // 发送请求到服务器
         $.ajax({
-            url: `/llm/api/llm-agents/${currentAgentId}/test-chat`,
+            url: '/llm/api/llm-agents/' + currentAgentId + '/test-chat',
             method: 'POST',
             data: {
                 message: message,
@@ -290,29 +352,27 @@
             now.getMinutes().toString().padStart(2, '0');
 
         const senderClass = sender === 'user' ? 'user-message' : 'bot-message';
-        const agentRealName = '{{ addslashes($agent->name) }}';
+        const agentRealName = '{{ addslashes($agent->name ?? "") }}';
         const senderName = sender === 'user' ? '您' : agentRealName;
         const avatarBg = sender === 'user' ? 'bg-success' : 'bg-primary';
 
-        const messageElement = `
-        <div class="chat-message ${senderClass} mb-3">
-            <div class="d-flex ${sender === 'user' ? 'flex-row-reverse' : ''}">
-                <div class="flex-shrink-0">
-                    <div class="rounded-circle ${avatarBg} text-white d-flex align-items-center justify-content-center"
-                         style="width: 32px; height: 32px; font-size: 0.8rem;">
-                        ${sender === 'user' ? '我' : 'AI'}
-                    </div>
-                </div>
-                <div class="flex-grow-1 ${sender === 'user' ? 'me-3 text-end' : 'ms-3'}">
-                    <div class="fw-bold mb-1">${senderName}</div>
-                    <div class="p-3 ${sender === 'user' ? 'bg-primary text-white' : 'bg-white'} rounded shadow-sm">
-                        ${sender === 'user' ? message : formatBotResponse(message)}
-                    </div>
-                    <small class="text-muted mt-1 d-block">${timeString}</small>
-                </div>
-            </div>
-        </div>
-    `;
+        const messageElement = '<div class="chat-message ' + senderClass + ' mb-3">' +
+            '<div class="d-flex ' + (sender === 'user' ? 'flex-row-reverse' : '') + '">' +
+                '<div class="flex-shrink-0">' +
+                    '<div class="rounded-circle ' + avatarBg + ' text-white d-flex align-items-center justify-content-center"' +
+                         'style="width: 32px; height: 32px; font-size: 0.8rem;">' +
+                        (sender === 'user' ? '我' : 'AI') +
+                    '</div>' +
+                '</div>' +
+                '<div class="flex-grow-1 ' + (sender === 'user' ? 'me-3 text-end' : 'ms-3') + '">' +
+                    '<div class="fw-bold mb-1">' + senderName + '</div>' +
+                    '<div class="p-3 ' + (sender === 'user' ? 'bg-primary text-white' : 'bg-white') + ' rounded shadow-sm">' +
+                        (sender === 'user' ? message : formatBotResponse(message)) +
+                    '</div>' +
+                    '<small class="text-muted mt-1 d-block">' + timeString + '</small>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
 
         $('#chat-container').append(messageElement);
 
@@ -325,9 +385,9 @@
     function formatBotResponse(text) {
         // 简单的 Markdown 转换
         return text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/`(.*?)`/g, '<code class="bg-light px-1 rounded">$1</code>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>\$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>\$1</em>')
+            .replace(/`(.*?)`/g, '<code class="bg-light px-1 rounded">\$1</code>')
             .replace(/\n/g, '<br>');
     }
 
@@ -344,13 +404,13 @@
             chatHistory = chatHistory.slice(-50);
         }
 
-        localStorage.setItem(`agent_chat_${currentAgentId}`, JSON.stringify(chatHistory));
+        localStorage.setItem('agent_chat_' + currentAgentId, JSON.stringify(chatHistory));
     }
 
     // 加载聊天历史
     function loadChatHistory() {
         if (chatHistory.length > 0) {
-            chatHistory.forEach(item => {
+            chatHistory.forEach(function(item) {
                 addToChat(item.message, item.sender);
             });
         }
@@ -361,10 +421,10 @@
         if (confirm('确定要清空对话记录吗？')) {
             $('#chat-container').empty();
             chatHistory = [];
-            localStorage.removeItem(`agent_chat_${currentAgentId}`);
+            localStorage.removeItem('agent_chat_' + currentAgentId);
 
             // 添加初始欢迎消息
-            const welcomeMsg = `您好！我是 {{ addslashes($agent->name) }}，我已经准备好为您服务。`;
+            const welcomeMsg = '您好！我是 {{ addslashes($agent->name ?? "") }}，我已经准备好为您服务。';
             addToChat(welcomeMsg, 'bot');
         }
     }
@@ -436,24 +496,22 @@
     function showToast(message, type = 'info') {
         // 简单的 toast 实现
         const toastId = 'toast-' + Date.now();
-        const toastHtml = `
-        <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0 position-fixed"
-             style="bottom: 20px; right: 20px; z-index: 9999;">
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    `;
+        const toastHtml = '<div id="' + toastId + '" class="toast align-items-center text-white bg-' + type + ' border-0 position-fixed" ' +
+             'style="bottom: 20px; right: 20px; z-index: 9999;">' +
+            '<div class="d-flex">' +
+                '<div class="toast-body">' +
+                    message +
+                '</div>' +
+                '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>' +
+            '</div>' +
+        '</div>';
 
         $('body').append(toastHtml);
-        $(`#${toastId}`).toast({ delay: 3000 });
-        $(`#${toastId}`).toast('show');
+        $('#' + toastId).toast({ delay: 3000 });
+        $('#' + toastId).toast('show');
 
-        setTimeout(() => {
-            $(`#${toastId}`).remove();
+        setTimeout(function() {
+            $('#' + toastId).remove();
         }, 3000);
     }
 
@@ -472,6 +530,21 @@
 
         return isValid;
     }
+    
+    // 折叠/展开功能
+    function toggleCollapse(header) {
+        const card = header.closest('.collapse-card');
+        const body = card.querySelector('.card-body');
+        const icon = header.querySelector('.collapse-icon');
+        
+        // 切换折叠状态
+        $(body).collapse('toggle');
+        
+        // 添加/移除已折叠类以旋转图标
+        card.classList.toggle('collapsed');
+    }
+    
+    
 </script>
 
 <style>
@@ -612,11 +685,14 @@
                             </div>
 
                             <!-- 参数配置 -->
-                            <div class="card mb-4 border">
-                                <div class="card-header py-2 bg-light">
-                                    <h6 class="mb-0"><i class="fa fa-sliders-h mr-2"></i>高级参数配置</h6>
+                            <div class="card mb-4 border collapse-card">
+                                <div class="card-header py-2 bg-light cursor-pointer" onclick="toggleCollapse(this)">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0"><i class="fa fa-sliders-h mr-2"></i>高级参数配置</h6>
+                                        <i class="fa fa-chevron-down collapse-icon"></i>
+                                    </div>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body collapse" id="advancedParamsBody">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
@@ -842,4 +918,3 @@
         </div>
     </div>
 @endsection
-

@@ -43,7 +43,7 @@ class UserProgress extends Model
 
     public function userCourse()
     {
-        return $this->belongsTo(UserCourse::class, 'user_course_id');
+        return $this->belongsTo(CourseEnrollment::class, 'user_course_id');
     }
 
     public function courseItem()

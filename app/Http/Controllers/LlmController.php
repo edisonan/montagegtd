@@ -113,10 +113,11 @@ class LlmController extends Controller
                     return response()->json(['message' => '供应商不存在'], 404);
                 }
                 
-                $provider->update($validated);
+                $provider->update($request->all());
             } else {
-                $validated['user_id'] = $user->id;
-                $provider = LlmProvider::create($validated);
+                $validatedData = $request->all();
+                $validatedData['user_id'] = $user->id;
+                $provider = LlmProvider::create($validatedData);
             }
             
             return response()->json(['result' => $provider]);
@@ -233,10 +234,11 @@ class LlmController extends Controller
                     return response()->json(['message' => '模型不存在'], 404);
                 }
                 
-                $model->update($validated);
+                $model->update($request->all());
             } else {
-                $validated['user_id'] = $user->id;
-                $model = LlmModel::create($validated);
+                $validatedData = $request->all();
+                $validatedData['user_id'] = $user->id;
+                $model = LlmModel::create($validatedData);
             }
             
             return response()->json(['result' => $model]);
@@ -349,20 +351,23 @@ class LlmController extends Controller
                     return response()->json(['message' => '凭据不存在'], 404);
                 }
                 
-                // 处理API密钥更新（如果提供了新密钥）
-                if (isset($validated['api_key']) && !empty($validated['api_key'])) {
-                    $credential->api_key = bcrypt($validated['api_key']);
-                }
-                unset($validated['api_key']);
+                $requestData = $request->all();
                 
-                $credential->update($validated);
+                // 处理API密钥更新（如果提供了新密钥）
+                if (isset($requestData['api_key']) && !empty($requestData['api_key'])) {
+                    $credential->api_key = bcrypt($requestData['api_key']);
+                }
+                unset($requestData['api_key']);
+                
+                $credential->update($requestData);
             } else {
                 // 创建新的凭据
-                $validated['user_id'] = $user->id;
-                if (isset($validated['api_key'])) {
-                    $validated['api_key'] = bcrypt($validated['api_key']);
+                $requestData = $request->all();
+                $requestData['user_id'] = $user->id;
+                if (isset($requestData['api_key'])) {
+                    $requestData['api_key'] = bcrypt($requestData['api_key']);
                 }
-                $credential = LlmProviderCredential::create($validated);
+                $credential = LlmProviderCredential::create($requestData);
             }
             
             // 如果设置了为默认凭据，需要更新其他凭据的状态
@@ -559,7 +564,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $agents = LlmAgent::with('model')
+            $agents = \App\Models\LlmAgent::with('model')
                 ->where('user_id', $user->id) // 只获取当前用户的智能体
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -580,7 +585,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $agent = LlmAgent::with('model')
+            $agent = \App\Models\LlmAgent::with('model')
                 ->where('user_id', $user->id) // 确保只能访问自己的智能体
                 ->find($id);
             
@@ -621,10 +626,11 @@ class LlmController extends Controller
                     return response()->json(['message' => '智能体不存在'], 404);
                 }
                 
-                $agent->update($validated);
+                $agent->update($request->all());
             } else {
-                $validated['user_id'] = $user->id;
-                $agent = LlmAgent::create($validated);
+                $validatedData = $request->all();
+                $validatedData['user_id'] = $user->id;
+                $agent = LlmAgent::create($validatedData);
             }
             
             return response()->json(['result' => $agent]);
@@ -639,7 +645,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $agent = LlmAgent::where('user_id', $user->id)->find($id);
+            $agent = \App\Models\LlmAgent::where('user_id', $user->id)->find($id);
             
             if (!$agent) {
                 return response()->json(['message' => '智能体不存在'], 404);

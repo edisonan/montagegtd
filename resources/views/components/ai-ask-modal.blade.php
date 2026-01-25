@@ -3,9 +3,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="askAIModalLabel">AI对话助手</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <div class="header-controls">
+                    <button type="button" class="minimize-btn" id="minimizeBtn" title="最小化">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
             </div>
             <input type="hidden" id="refer_text_id" value="">
             <input type="hidden" id="replace_text_id" value="">
@@ -60,6 +65,18 @@
     </div>
 </div>
 
+<!-- 最小化后的悬浮窗 -->
+<div id="floatingWindow" class="floating-window" style="display: none;">
+    <div class="floating-window-header">
+        <span class="floating-title">AI助手</span>
+        <div class="floating-controls">
+            <button type="button" class="restore-btn" id="restoreBtn" title="恢复">
+                <i class="fa fa-window-restore"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
 .chat-container {
     display: flex;
@@ -87,7 +104,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #17a2b8, #138a9e);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -98,7 +115,7 @@
 }
 
 .message.user .avatar {
-    background: linear-gradient(135deg, #ff9a9e, #fecfef);
+    background: linear-gradient(135deg, #a0d8d6, #c0e9e5);
     margin-right: 0;
     margin-left: 12px;
 }
@@ -112,7 +129,7 @@
 }
 
 .message-user .content {
-    background: linear-gradient(to right, #667eea, #764ba2);
+    background: linear-gradient(to right, #17a2b8, #138a9e);
     color: white;
     border-bottom-right-radius: 4px;
 }
@@ -199,11 +216,146 @@
 .chat-container::-webkit-scrollbar-thumb:hover {
     background: #a0a0a0;
 }
+
+/* 最小化悬浮窗样式 */
+.floating-window {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    z-index: 9999;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.floating-window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: linear-gradient(135deg, #17a2b8, #138a9e);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    cursor: move;
+}
+
+.floating-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.floating-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.restore-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 2px;
+    font-size: 12px;
+}
+
+.restore-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.header-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.minimize-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 2px;
+    font-size: 16px;
+    line-height: 1;
+    margin-right: 10px;
+}
+
+.minimize-btn:hover {
+    background: #f8f9fa;
+    border-radius: 3px;
+}
+
+/* Markdown 样式 */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+    border-left: 4px solid #7aa2f7;
+    padding-left: 10px;
+    margin-top: 24px;
+    font-weight: 600;
+}
+
+.markdown-body blockquote {
+    margin: 20px 0;
+    padding: 12px 18px;
+    background: #eef4ff;
+    border-left: 4px solid #6b8df7;
+    border-radius: 6px;
+}
+
+/* 增强代码块可读性 */
+.markdown-body pre code {
+    display: block;
+    padding: 14px;
+    background: #f3f3f3;
+    color: #333;
+    border-radius: 6px;
+    overflow-x: auto;
+    line-height: 1.5;
+}
+
+.markdown-body code {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.markdown-body th,
+.markdown-body td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.markdown-body th {
+    background: #fafafa;
+}
 </style>
 
 <script>
     // 存储聊天记录
     let chatMessages = [];
+
+    // 初始化 Markdown 渲染器
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && window.hljs) {
+                    return hljs.highlightAuto(code).value;
+                } else {
+                    return code;
+                }
+            },
+            langPrefix: 'hljs language-',
+        });
+    }
 
     function setTemplate(name, text) {
         document.getElementById('query').value = text;
@@ -260,12 +412,20 @@
                 $buttonHtml = '<button class="copy-btn" type="button" onclick="replaceMessage(this)">替换</button>';
             }
 
+            // 渲染 Markdown 内容
+            let renderedContent = msg.content;
+            if (typeof marked !== 'undefined') {
+                renderedContent = marked.parse(msg.content);
+            } else {
+                renderedContent = msg.content.replace(/\n/g, '<br>');
+            }
+
             messageDiv.innerHTML = [
                 '<div class="avatar">',
                 '<i class="fa ' + (msg.role === 'user' ? 'fa-user' : 'fa-robot') + '"></i>',
                 '</div>',
-                '<div class="content">',
-                '<div class="message-content">' + msg.content.replace(/\n/g, '<br>') + '</div>',
+                '<div class="content markdown-body">',
+                '<div class="message-content">' + renderedContent + '</div>',
                 $buttonHtml,
                 '</div>'
             ].join('');
@@ -593,5 +753,136 @@
 
         // 移除临时textarea
         document.body.removeChild(textarea);
+    }
+
+    // 最小化和恢复功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const minimizeBtn = document.getElementById('minimizeBtn');
+        const restoreBtn = document.getElementById('restoreBtn');
+        const modalDialog = document.querySelector('#askAIModal .modal-dialog');
+        const floatingWindow = document.getElementById('floatingWindow');
+        const modal = document.getElementById('askAIModal');
+        
+        let isMinimized = false;
+        
+        // 最小化功能
+        minimizeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // 隐藏模态框
+            $(modal).modal('hide');
+            
+            // 显示悬浮窗
+            floatingWindow.style.display = 'block';
+            
+            isMinimized = true;
+        });
+        
+        // 恢复功能
+        restoreBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // 隐藏悬浮窗
+            floatingWindow.style.display = 'none';
+            
+            // 显示模态框
+            $(modal).modal('show');
+            
+            isMinimized = false;
+        });
+        
+        // 监听模态框隐藏事件，如果是因为最小化则不执行隐藏
+        $('#askAIModal').on('hide.bs.modal', function (e) {
+            if (isMinimized) {
+                e.preventDefault();
+                $(this).data('bs.modal')._isTransitioning = false;
+            }
+        });
+        
+        // 当模态框完全隐藏时，重置状态
+        $('#askAIModal').on('hidden.bs.modal', function () {
+            if (!isMinimized) {
+                // 只有在非最小化状态下才真正关闭
+                floatingWindow.style.display = 'none';
+                isMinimized = false;
+            }
+        });
+        
+        // 当模态框显示时，确保悬浮窗隐藏
+        $('#askAIModal').on('shown.bs.modal', function () {
+            if (isMinimized) {
+                isMinimized = false;
+            }
+            floatingWindow.style.display = 'none';
+        });
+        
+        // 悬浮窗拖拽功能
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+        
+        const floatingHeader = floatingWindow.querySelector('.floating-window-header');
+        
+        floatingHeader.addEventListener('mousedown', dragStart);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('mousemove', drag);
+        
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            
+            if (e.target === floatingHeader || e.target === document.querySelector('.floating-title') || e.target.classList.contains('restore-btn')) {
+                isDragging = true;
+            }
+        }
+        
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            
+            isDragging = false;
+        }
+        
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                
+                xOffset = currentX;
+                yOffset = currentY;
+                
+                setTranslate(currentX, currentY, floatingWindow);
+            }
+        }
+        
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+        }
+    });
+</script>
+
+<!-- 引入 Markdown 解析库 -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+    // 初始化 Markdown 渲染器的高亮功能
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && window.hljs) {
+                    return hljs.highlightAuto(code, [lang]).value;
+                } else {
+                    return hljs.highlightAuto(code).value;
+                }
+            },
+            langPrefix: 'hljs language-',
+        });
     }
 </script>

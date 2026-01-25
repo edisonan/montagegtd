@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Services\CourseService;
 use App\Repositories\CourseRepository;
-use App\Repositories\UserCourseRepository;
+use App\Repositories\CourseEnrollmentRepository;
 use App\Repositories\CourseItemRepository;
 
 class CourseServiceProvider extends ServiceProvider
@@ -22,8 +22,8 @@ class CourseServiceProvider extends ServiceProvider
             return new CourseRepository();
         });
         
-        $this->app->bind(UserCourseRepository::class, function ($app) {
-            return new UserCourseRepository();
+        $this->app->bind(CourseEnrollmentRepository::class, function ($app) {
+            return new CourseEnrollmentRepository();
         });
         
         $this->app->bind(CourseItemRepository::class, function ($app) {
@@ -34,7 +34,7 @@ class CourseServiceProvider extends ServiceProvider
         $this->app->bind(CourseService::class, function ($app) {
             return new CourseService(
                 $app->make(CourseRepository::class),
-                $app->make(UserCourseRepository::class),
+                $app->make(CourseEnrollmentRepository::class),
                 $app->make(CourseItemRepository::class)
             );
         });

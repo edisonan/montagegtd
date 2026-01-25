@@ -3,22 +3,22 @@
 namespace App\Services;
 
 use App\Repositories\CourseRepository;
-use App\Repositories\UserCourseRepository;
+use App\Repositories\CourseEnrollmentRepository;
 use App\Repositories\CourseItemRepository;
 
 class CourseService
 {
     protected $courseRepository;
-    protected $userCourseRepository;
+    protected $courseEnrollmentRepository;
     protected $courseItemRepository;
 
     public function __construct(
         CourseRepository $courseRepository,
-        UserCourseRepository $userCourseRepository,
+        CourseEnrollmentRepository $courseEnrollmentRepository,
         CourseItemRepository $courseItemRepository
     ) {
         $this->courseRepository = $courseRepository;
-        $this->userCourseRepository = $userCourseRepository;
+        $this->courseEnrollmentRepository = $courseEnrollmentRepository;
         $this->courseItemRepository = $courseItemRepository;
     }
 
@@ -87,8 +87,8 @@ class CourseService
         }
 
         // 检查是否有用户课程关联
-        $userCourses = $this->userCourseRepository->getUserCoursesByCourseId($id);
-        if ($userCourses && count($userCourses) > 0) {
+        $courseEnrollments = $this->courseEnrollmentRepository->getCourseEnrollmentsByCourseId($id);
+        if ($courseEnrollments && count($courseEnrollments) > 0) {
             throw new \Exception('无法删除有关联用户学习记录的课程');
         }
 
@@ -112,28 +112,28 @@ class CourseService
         }
 
         // 检查用户是否已经加入了课程
-        $existingUserCourse = $this->userCourseRepository->getUserCourseByUserIdAndCourseId($userId, $courseId);
-        if ($existingUserCourse) {
+        $existingCourseEnrollment = $this->courseEnrollmentRepository->getCourseEnrollmentByUserIdAndCourseId($userId, $courseId);
+        if ($existingCourseEnrollment) {
             throw new \Exception('您已经加入了该课程');
         }
 
         // 创建用户课程记录
-        $userCourseData = [
+        $courseEnrollmentData = [
             'user_id' => $userId,
             'course_id' => $courseId,
             'title' => $customTitle ?: $course->title,
             'status' => 'planned'
         ];
 
-        return $this->userCourseRepository->createUserCourse($userCourseData);
-    }
+        return $this->courseEnrollmentRepository->createCourseEnrollment($courseEnrollmentData);
+    
 
     /**
      * 获取用户的所有课程
      */
     public function getUserCourses($userId, $status = null)
     {
-        return $this->userCourseRepository->getUserCourses($userId, $status);
+        return $this->courseEnrollmentRepository->getCourseEnrollments($userId, $status);
     }
 
     /**
@@ -212,7 +212,7 @@ class CourseService
      */
     public function getUserCourseByUserIdAndCourseId($userId, $courseId)
     {
-        return $this->userCourseRepository->getUserCourseByUserIdAndCourseId($userId, $courseId);
+        return $this->courseEnrollmentRepository->getCourseEnrollmentByUserIdAndCourseId($userId, $courseId);
     }
     
     /**

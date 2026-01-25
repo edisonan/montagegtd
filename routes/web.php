@@ -264,7 +264,7 @@ Route::group([
     // 课程管理相关路由
     Route::resource('courses', 'CourseController')->except(['edit', 'update', 'destroy']);
     Route::post('/courses/{id}/join', 'CourseController@joinCourse');
-    Route::get('/user-courses', 'CourseController@getUserCourses');
+    Route::get('/course-enrollments', 'CourseController@getUserCourses');
     
     // 课程项目管理相关路由
     Route::post('/courses/{courseId}/items', 'CourseItemController@store');
