@@ -174,7 +174,7 @@
                             'label'=>'做番茄', 
                             'color'=>'#584029',
                             'submenu' => [
-                                ['url'=>'/', 'label'=>'番茄/待办'],
+                                ['url'=>'/', 'label'=>'开始专注'],
                                 ['url'=>'/pomos', 'label'=>'番茄列表'],
                                 ['url'=>'/tasks', 'label'=>'待办列表'],
                                 ['url'=>'/things', 'label'=>'事情列表'],
@@ -188,8 +188,8 @@
                             'label'=>'记想法', 
                             'color'=>'#4CA1D7',
                             'submenu' => [
-                                ['url'=>'/notes', 'label'=>'新建想法'],
-                                ['url'=>'/notes', 'label'=>'查看想法'],
+                                ['url'=>'/notes', 'label'=>'新想法'],
+                                ['url'=>'/notes', 'label'=>'想法列表'],
 //                                ['url'=>'/tags', 'label'=>'标签管理']
                             ]
                         ],
@@ -359,6 +359,8 @@ $(document).ready(function(){
 <footer class="footer text-center">
     <p>&copy;2016 Congcong.us&nbsp;
         <a href="mailto:accacc@126.com?subject=MontageGTD反馈">遇到问题?联系我~</a>&nbsp;
+        <a href="/help/feedback">提交反馈</a>
+        <a href="/about">关于我们</a>
         <a href="https://gitee.com/accacc/task#%E9%AB%98%E6%95%88%E4%BD%BF%E7%94%A8montage-gtd">高效使用技巧</a>
     </p>
 </footer>

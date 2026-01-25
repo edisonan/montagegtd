@@ -4,12 +4,12 @@
 <div class="container">
     <div class="row">
         <!-- 左侧会话列表 -->
-        <div class="col-md-4 border-right d-flex flex-column" style="background-color: #f8f9fa; height: 100vh;">
+        <div class="col-md-3 border-right d-flex flex-column" style="background-color: #f8f9fa; height: 100vh;">
             <div class="p-3 border-bottom bg-white">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">会话列表</h5>
                     <button id="new-session-btn" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus"></i>
+                        <i class="fa fa-plus"></i>
                     </button>
                 </div>
             </div>
@@ -18,30 +18,24 @@
             <div class="flex-grow-1 overflow-auto p-3" id="sessions-list">
                 <!-- 会话列表将通过JavaScript加载 -->
                 <div class="text-center text-muted py-5">
-                    <i class="fas fa-spinner fa-spin"></i> 加载中...
+                    <i class="fa fa-spinner fa-spin"></i> 加载中...
                 </div>
             </div>
         </div>
         
         <!-- 右侧聊天区域 -->
-        <div class="col-md-8 d-flex flex-column" id="chat-container" style="height: 100vh;">
+        <div class="col-md-9 d-flex flex-column" id="chat-container" style="height: 100vh;">
             <!-- 右侧顶部：智能体选择和会话操作 -->
             <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                     <h5 id="session-title-display" class="mb-0 mr-3"></h5>
-                    <span id="agent-name-display"></span>
-                    <label for="agent-select" class="mr-2 mb-0 ml-2">智能体:</label>
-                    <select class="form-control" id="agent-select" style="width: auto; min-width: 200px;">
-                        <option value="builtin_common">通用</option>
-                        <!-- 智能体选项将通过JavaScript加载 -->
-                    </select>
                 </div>
                 <div>
                     <button id="pin-session-btn" class="btn btn-outline-secondary btn-sm" style="display:none;" title="固定会话">
-                        <i class="fas fa-thumbtack"></i>
+                        <i class="fa fa-thumb-tack"></i>
                     </button>
                     <button id="delete-session-btn" class="btn btn-outline-danger btn-sm ml-2" style="display:none;" title="删除会话">
-                        <i class="fas fa-trash"></i>
+                        <i class="fa fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -50,7 +44,6 @@
             <div class="flex-grow-1 overflow-auto p-3" id="messages-container" style="background-color: #f9f9f9;">
                 <div id="initial-mode" class="d-flex flex-column h-100 justify-content-center align-items-center">
                     <div class="text-center mb-5">
-                        <i class="fas fa-robot" style="font-size: 60px; color: #007bff;"></i>
                         <h3 class="mt-3">欢迎使用</h3>
                     </div>
                     
@@ -60,9 +53,26 @@
                             <textarea class="form-control" id="initial-question" rows="4" placeholder="在这里输入您想问的问题..."></textarea>
                         </div>
                         
-                        <button id="send-initial-btn" class="btn btn-primary w-100">
-                            <i class="fas fa-paper-plane"></i> 开始聊天
-                        </button>
+                        <div class="d-flex align-items-center">
+                            <label for="agent-select" class="mr-2 mb-0">智能体:</label>
+                            <div class="flex-grow-1 d-flex">
+                                <select class="form-control" id="agent-select" style="min-width: 200px; max-width: 300px;">
+                                    <option value="builtin_common">通用</option>
+                                    <!-- 智能体选项将通过JavaScript加载 -->
+                                </select>
+                                <div class="dropdown ml-2">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="moreAgentsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="display: none;">
+                                        更多智能体
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="moreAgentsDropdown" id="moreAgentsMenu">
+                                        <!-- 额外的智能体选项将通过JavaScript加载 -->
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="send-initial-btn" class="btn btn-primary ml-3">
+                                <i class="fa fa-paper-plane"></i> 开始聊天
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -75,7 +85,7 @@
                             <textarea class="form-control" id="message-input" rows="2" placeholder="输入消息..."></textarea>
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button" id="send-message-btn">
-                                    <i class="fas fa-paper-plane"></i>
+                                    <i class="fa fa-paper-plane"></i>
                                 </button>
                             </div>
                         </div>
@@ -250,12 +260,9 @@
 
                     // 显示智能体名称（如果存在）
                     if (currentAgent) {
-                        document.getElementById('agent-name-display').innerHTML =
-                            `<span class="badge badge-primary mr-2">${currentAgent.name}</span>`;
                         // 同时更新顶部的智能体选择框
                         document.getElementById('agent-select').value = currentAgent.id;
                     } else {
-                        document.getElementById('agent-name-display').innerHTML = '';
                     }
 
                     // 设置固定按钮状态
@@ -310,11 +317,63 @@
                 } else {
                     console.error('加载智能体失败:', result.message);
                 }
+                
+                // 处理智能体过多的情况
+                handleTooManyAgents();
             } catch (error) {
                 console.error('请求智能体列表失败:', error);
                 // 即使出错也要显示错误信息
                 const select = document.getElementById('agent-select');
                 select.innerHTML = '<option value="">加载失败: ' + error.message + '</option>';
+            }
+        }
+        
+        // 处理智能体过多的情况
+        function handleTooManyAgents() {
+            const select = document.getElementById('agent-select');
+            const options = select.querySelectorAll('option:not([value="builtin_common"])'); // 排除内置选项
+            
+            if (options.length > 5) { // 如果智能体超过5个，则启用更多下拉菜单
+                const dropdownBtn = document.getElementById('moreAgentsDropdown');
+                const dropdownMenu = document.getElementById('moreAgentsMenu');
+                
+                // 显示更多按钮
+                dropdownBtn.style.display = 'block';
+                
+                // 清空下拉菜单
+                dropdownMenu.innerHTML = '';
+                
+                // 将多余的智能体移到下拉菜单中
+                const agentsToShow = 3; // 主下拉框显示3个智能体
+                
+                // 重新整理选项
+                const allOptions = Array.from(select.querySelectorAll('option'));
+                
+                // 清空下拉框
+                select.innerHTML = '<option value="builtin_common">通用</option>';
+                
+                // 添加前几个智能体到主下拉框
+                for (let i = 1; i < allOptions.length && i <= agentsToShow; i++) {
+                    select.appendChild(allOptions[i]);
+                }
+                
+                // 将其余的智能体添加到下拉菜单中
+                for (let i = agentsToShow + 1; i < allOptions.length; i++) {
+                    const option = allOptions[i];
+                    const menuItem = document.createElement('a');
+                    menuItem.className = 'dropdown-item';
+                    menuItem.href = '#';
+                    menuItem.textContent = option.textContent;
+                    menuItem.onclick = function(e) {
+                        e.preventDefault();
+                        select.value = option.value;
+                        $(dropdownBtn).dropdown('toggle'); // 关闭下拉菜单
+                    };
+                    dropdownMenu.appendChild(menuItem);
+                }
+            } else {
+                // 如果智能体不多，隐藏更多按钮
+                document.getElementById('moreAgentsDropdown').style.display = 'none';
             }
         }
 
@@ -323,7 +382,6 @@
             document.getElementById('initial-mode').classList.remove('initial-mode-hidden');
             document.getElementById('chat-mode').classList.add('chat-mode-hidden');
             document.getElementById('session-title-display').textContent = '新建会话';
-            document.getElementById('agent-name-display').innerHTML = '';
             document.getElementById('pin-session-btn').style.display = 'none';
             document.getElementById('delete-session-btn').style.display = 'none';
             document.getElementById('initial-question').value = '';
@@ -372,8 +430,6 @@
                         const selectedAgent = Array.from(document.getElementById('agent-select').options)
                             .find(opt => opt.value == agentId);
                         if (selectedAgent) {
-                            document.getElementById('agent-name-display').innerHTML =
-                                `<span class="badge badge-primary mr-2">${selectedAgent.text}</span>`;
                         }
                     }
 
@@ -554,7 +610,6 @@
                         document.getElementById('initial-mode').classList.remove('initial-mode-hidden');
                         document.getElementById('chat-mode').classList.add('chat-mode-hidden');
                         document.getElementById('session-title-display').textContent = '请选择一个会话开始聊天';
-                        document.getElementById('agent-name-display').innerHTML = '';
                         document.getElementById('pin-session-btn').style.display = 'none';
                         document.getElementById('delete-session-btn').style.display = 'none';
                         document.getElementById('messages-list').innerHTML = '';
@@ -610,10 +665,7 @@
             if (!currentSessionId) {
                 const selectedOption = this.options[this.selectedIndex];
                 if (selectedOption.value) {
-                    document.getElementById('agent-name-display').innerHTML =
-                        `<span class="badge badge-primary mr-2">${selectedOption.text}</span>`;
                 } else {
-                    document.getElementById('agent-name-display').innerHTML = '';
                 }
             }
         });
@@ -762,6 +814,23 @@
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
+}
+
+/* 智能体选择器样式 */
+.agent-selector-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.agent-selector-container .form-control {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.agent-selector-container .btn {
+    white-space: nowrap;
 }
 </style>
 @endsection
