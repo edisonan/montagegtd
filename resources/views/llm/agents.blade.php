@@ -197,7 +197,7 @@
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fa fa-brain text-primary"></i> LLM 智能体管理</h2>
-                <button class="btn btn-create-agent" onclick="openAgentModal()">
+                <button class="btn btn-create-agent" onclick="showCreateAgentModal()">
                     <i class="fa fa-plus"></i> 新建智能体
                 </button>
             </div>
@@ -249,129 +249,7 @@
     </div>
 </div>
 
-<!-- 智能体模态框 -->
-<div class="modal fade" id="agentModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                <h5 class="modal-title" id="agentModalTitle">添加智能体</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <form id="agentForm">
-                <input type="hidden" id="agent_id" name="agent_id">
-                <div class="modal-body">
-                    <div class="form-section">
-                        <h6 class="section-title"><i class="fa fa-user-circle"></i> 基本信息</h6>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="agent_name">智能体名称 <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="agent_name" name="name" required placeholder="输入智能体名称">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="agent_description">描述</label>
-                            <textarea class="form-control" id="agent_description" name="description" rows="3" placeholder="简要描述智能体的功能和用途"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="agent_avatar">头像URL</label>
-                            <input type="text" class="form-control" id="agent_avatar" name="avatar" placeholder="输入头像图片URL">
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h6 class="section-title"><i class="fa fa-cogs"></i> 模型配置</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="agent_model_id">默认模型 <span class="text-danger">*</span></label>
-                                    <select class="form-control" id="agent_model_id" name="model_id" required>
-                                        <!-- 选项将通过AJAX加载 -->
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="agent_context_length">上下文长度</label>
-                                    <input type="number" class="form-control" id="agent_context_length" name="context_length" value="4000" placeholder="输入上下文长度">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h6 class="section-title"><i class="fa fa-sliders-h"></i> 参数配置</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="agent_temperature">温度参数 (0-2)</label>
-                                    <input type="range" class="form-control-range" id="agent_temperature" name="temperature" min="0" max="2" step="0.01" value="0.7">
-                                    <div class="mt-1">
-                                        <span class="badge badge-secondary">값: <span id="temp-value">0.7</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="agent_top_p">Top P参数 (0-1)</label>
-                                    <input type="range" class="form-control-range" id="agent_top_p" name="top_p" min="0" max="1" step="0.01" value="0.9">
-                                    <div class="mt-1">
-                                        <span class="badge badge-secondary">값: <span id="top-p-value">0.9</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="agent_max_tokens">最大输出Tokens</label>
-                                    <input type="number" class="form-control" id="agent_max_tokens" name="max_tokens" placeholder="输入最大输出Tokens数量">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h6 class="section-title"><i class="fa fa-file-alt"></i> 系统提示词</h6>
-                        <div class="form-group">
-                            <label for="agent_system_prompt">系统提示词 <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="agent_system_prompt" name="system_prompt" rows="6" required placeholder="输入智能体的系统提示词或角色设定"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h6 class="section-title"><i class="fa fa-tools"></i> 工具配置</h6>
-                        <div class="form-group">
-                            <label for="agent_tools_config">工具配置 (JSON格式)</label>
-                            <textarea class="form-control" id="agent_tools_config" name="tools_config" rows="4" placeholder="输入JSON格式的工具配置，如：{\"web_search\": true, \"calculator\": true}"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <h6 class="section-title"><i class="fa fa-toggle-on"></i> 状态设置</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="agent_is_active" name="is_active" value="1" checked>
-                                        <label class="form-check-label" for="agent_is_active">启用智能体</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                    <button type="submit" class="btn btn-primary">保存智能体</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+@include('components.llm-agent-create-modal')
 
 <script>
 // 设置CSRF Token
@@ -485,45 +363,10 @@ function loadModels() {
     });
 }
 
-// 打开智能体模态框
-function openAgentModal() {
-    $('#agentForm')[0].reset();
-    $('#agent_id').val('');
-    $('#agentModalTitle').text('添加智能体');
-    $('#agent_temperature').val('0.7');
-    $('#temp-value').text('0.7');
-    $('#agent_top_p').val('0.9');
-    $('#top-p-value').text('0.9');
-    $('#agent_is_active').prop('checked', true);
-    
-    $('#agentModal').modal('show');
-}
-
 // 编辑智能体
 function editAgent(id) {
-    $.get(`/llm/api/agents/${id}`, function(data) {
-        const agent = data.result;
-        $('#agent_id').val(agent.id);
-        $('#agent_name').val(agent.name);
-        $('#agent_description').val(agent.description);
-        $('#agent_avatar').val(agent.avatar);
-        $('#agent_model_id').val(agent.model_id);
-        $('#agent_system_prompt').val(agent.system_prompt);
-        $('#agent_temperature').val(agent.temperature || '0.7');
-        $('#temp-value').text(agent.temperature || '0.7');
-        $('#agent_top_p').val(agent.top_p || '0.9');
-        $('#top-p-value').text(agent.top_p || '0.9');
-        $('#agent_max_tokens').val(agent.max_tokens);
-        $('#agent_context_length').val(agent.context_length);
-        $('#agent_tools_config').val(agent.tools_config ? JSON.stringify(agent.tools_config, null, 2) : '');
-        $('#agent_is_active').prop('checked', agent.is_active);
-        
-        $('#agentModalTitle').text('编辑智能体');
-        $('#agentModal').modal('show');
-    }).fail(function(xhr) {
-        console.error('加载智能体数据失败:', xhr);
-        alert('加载智能体数据失败: ' + (xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : xhr.statusText));
-    });
+    // 由于现在使用草稿编辑模式，编辑功能跳转到草稿编辑页面
+    window.location.href = `/llm/agents/${id}/draft`;
 }
 
 // 删除智能体
@@ -544,49 +387,6 @@ function deleteAgent(id) {
         });
     }
 }
-
-// 提交智能体表单
-$('#agentForm').submit(function(e) {
-    e.preventDefault();
-    
-    // 从API获取当前用户ID
-    const userId = {{ auth()->id() }};
-    
-    const id = $('#agent_id').val();
-    const url = id ? `/llm/api/agents/${id}` : '/llm/api/agents';
-    const method = id ? 'PUT' : 'POST';
-    
-    const data = {
-        _token: $('meta[name="csrf-token"]').attr('content'),
-        _method: method,
-        user_id: userId, // 设置为当前用户ID
-        name: $('#agent_name').val(),
-        description: $('#agent_description').val(),
-        avatar: $('#agent_avatar').val(),
-        model_id: $('#agent_model_id').val(),
-        system_prompt: $('#agent_system_prompt').val(),
-        temperature: $('#agent_temperature').val(),
-        top_p: $('#agent_top_p').val(),
-        max_tokens: $('#agent_max_tokens').val(),
-        context_length: $('#agent_context_length').val(),
-        tools_config: $('#agent_tools_config').val() ? JSON.parse($('#agent_tools_config').val()) : null,
-        is_active: $('#agent_is_active').is(':checked') ? 1 : 0,
-        // 移除is_public和builtin_slug，这些只在管理端设置
-    };
-    
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: data,
-        success: function() {
-            $('#agentModal').modal('hide');
-            loadAgents();
-        },
-        error: function(xhr) {
-            alert('保存失败: ' + (xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : xhr.statusText));
-        }
-    });
-});
 
 // 处理折叠图标旋转
 $(document).ready(function() {

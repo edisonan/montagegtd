@@ -14,13 +14,7 @@ class LlmAgent extends Model
         'name',
         'description',
         'avatar',
-        'model_id',
-        'system_prompt',
-        'temperature',
-        'top_p',
-        'max_tokens',
-        'context_length',
-        'tools_config',
+
         'is_public',
         'is_active',
         'usage_count',
@@ -31,12 +25,7 @@ class LlmAgent extends Model
 
     protected $casts = [
         'user_id' => 'integer',
-        'model_id' => 'integer',
-        'temperature' => 'decimal:2',
-        'top_p' => 'decimal:3',
-        'max_tokens' => 'integer',
-        'context_length' => 'integer',
-        'tools_config' => 'array',
+        'current_version_id' => 'integer',
         'is_public' => 'boolean',
         'is_active' => 'boolean',
         'usage_count' => 'integer',
@@ -55,6 +44,16 @@ class LlmAgent extends Model
 
     public function model()
     {
-        return $this->belongsTo(LlmModel::class, 'model_id');
+        return $this->currentVersion ? $this->currentVersion->model : null;
+    }
+
+    public function versions()
+    {
+        return $this->hasMany(LlmAgentVersion::class, 'agent_id');
+    }
+
+    public function currentVersion()
+    {
+        return $this->belongsTo(LlmAgentVersion::class, 'current_version_id');
     }
 }

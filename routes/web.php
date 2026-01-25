@@ -235,6 +235,12 @@ Route::group([
         Route::put('/api/agents/{id}', 'LlmAgentController@update');
         Route::delete('/api/agents/{id}', 'LlmAgentController@destroy');
         
+        // 智能体草稿相关API路由
+        Route::post('/api/llm-agents/create-draft', 'LlmAgentController@createDraft');
+        Route::put('/api/llm-agents/{id}/draft', 'LlmAgentController@updateDraft');
+        Route::post('/api/llm-agents/{id}/publish', 'LlmAgentController@publishDraft');
+        Route::post('/api/llm-agents/{id}/test-chat', 'LlmAgentController@testChat');
+        
         // 模型相关API路由
         Route::get('/api/models', 'LlmController@getModels');
     });
@@ -242,7 +248,10 @@ Route::group([
     // 智能体管理页面 - 必须在API路由之后定义，以避免冲突
     Route::get('/llm/agents', function () {
         return view('llm.agents');
-    });
+    })->name('llm.agents.index');
+    
+    // 智能体草稿编辑页面
+    Route::get('/llm/agents/{id}/draft', 'LlmAgentController@showDraftEditor');
     
     // 获取当前用户信息
     Route::get('/api/user', 'LlmAgentController@getCurrentUser');

@@ -3,17 +3,21 @@
 namespace App\Services;
 
 use App\Repositories\LlmAgentRepository;
+use App\Repositories\LlmAgentVersionRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class LlmAgentService
 {
     protected $repository;
+    protected $versionRepository;
 
-    public function __construct(LlmAgentRepository $repository)
+    public function __construct(LlmAgentRepository $repository, LlmAgentVersionRepository $versionRepository = null)
     {
         $this->repository = $repository;
+        $this->versionRepository = $versionRepository;
     }
 
     /**
@@ -87,6 +91,57 @@ class LlmAgentService
             return $this->repository->createAgent($data);
         } catch (Exception $e) {
             \Log::error('LlmAgentService@createAgent error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * 创建智能体及其初始草稿版本
+     */
+    public function createAgentWithDraftVersion(array $agentData, array $versionData)
+    {
+        try {
+            if (!$this->versionRepository) {
+                throw new Exception('Version repository not available');
+            }
+
+            return DB::transaction(function () use ($agentData, $versionData) {
+                // 创建智能体
+                $agent = $this->repository->createAgent([
+                    'user_id' => $agentData['user_id'],
+                    'name' => $agentData['name'],
+                    'description' => $agentData['description'] ?? '',
+                    'avatar' => $agentData['avatar'] ?? null,
+                    'is_public' => $agentData['is_public'] ?? 0,
+                    'is_active' => $agentData['is_active'] ?? 1,
+                    'builtin_slug' => $agentData['builtin_slug'] ?? null
+                ]);
+
+                // 创建初始草稿版本
+                $version = $this->versionRepository->createAgentVersion([
+                    'agent_id' => $agent->id,
+                    'version_name' => 'draft',
+                    'version_number' => 1,
+                    'model_id' => $versionData['model_id'],
+                    'system_prompt' => $versionData['system_prompt'] ?? '',
+                    'temperature' => $versionData['temperature'] ?? 0.7,
+                    'top_p' => $versionData['top_p'] ?? 0.9,
+                    'max_tokens' => $versionData['max_tokens'] ?? null,
+                    'context_length' => $versionData['context_length'] ?? 4000,
+                    'tools_config' => $versionData['tools_config'] ?? null,
+                    'is_default' => true, // 草稿版本作为默认版本
+                    'is_active' => true,
+                    'created_by' => $versionData['created_by'],
+                    'change_log' => $versionData['change_log'] ?? 'Initial draft version'
+                ]);
+
+                // 更新智能体的 current_version_id
+                $agent->update(['current_version_id' => $version->id]);
+
+                return $agent;
+            });
+        } catch (Exception $e) {
+            \Log::error('LlmAgentService@createAgentWithDraftVersion error: ' . $e->getMessage());
             throw $e;
         }
     }
