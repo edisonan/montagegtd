@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LlmAgent;
+use App\Models\LlmAgentVersion;
 use App\Models\LlmModel;
 use App\Models\LlmProviderCredential;
 use App\Models\LlmProvider;
 use App\Models\LlmConversation;
 use App\Services\LlmPolishService;
 use App\Services\LlmConversationService;
+use App\Repositories\LlmSessionRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -26,11 +29,19 @@ class LlmController extends Controller
      */
     protected $conversationService;
 
-    public function __construct(LlmConversationService $conversationService)
+    /**
+     * LlmSessionRepository 实例.
+     *
+     * @var LlmSessionRepository
+     */
+    protected $sessionRepository;
+
+    public function __construct(LlmConversationService $conversationService, LlmSessionRepository $sessionRepository)
     {
         $this->middleware('auth');
         
         $this->conversationService = $conversationService;
+        $this->sessionRepository = $sessionRepository;
     }
 
     public function getProviders()
@@ -412,10 +423,9 @@ class LlmController extends Controller
     public function chat(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'agent_id' => 'string',
-            'agent_builtin_slug' => 'string',
-            'session_id' => 'string',
-            'refer_text' => 'string',
+            'agent_id' => 'nullable|string',
+            'session_id' => 'nullable|integer',
+            'refer_text' => 'nullable|string',
             'query' => 'required|string|max:1000',
         ]);
 
@@ -423,30 +433,83 @@ class LlmController extends Controller
             return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // 直接使用 $request->input() 获取数据
         $query = $request->input('query');
         $referText = $request->input('refer_text', '');
         $sessionId = $request->input('session_id', '');
-        $agentId = $request->input('agent_id', '');
-        $agentBuiltinSlug = $request->input('builtin_slug', '');
+
+        // 获取会话和智能体信息
+        $session = $this->sessionRepository->findById($sessionId);
+        if (!$session) {
+            return response()->json([
+                'success' => false,
+                'message' => '会话不存在或无权限访问'
+            ], 404);
+        }
+
+        $tempAgentId = $request->input('agent_id', 'builtin_common');
+        $agent = null;
+
+        if ($tempAgentId) {
+            // 检查是否包含 builtin
+            if (strpos($tempAgentId, 'builtin') !== false) {
+                // 如果是 builtin，使用 builtin_slug 查询
+                $agent = LlmAgent::where('builtin_slug', $tempAgentId)->first();
+            } else {
+                // 否则使用 id 查询
+                $agent = LlmAgent::find($tempAgentId);
+            }
+        }
+
+        if (!$agent) {
+            if ($session->agent_id) {
+                $agent = $session->agent;
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => '指定智能体不存在'
+                ], 404);
+            }
+        }
+
+        if(!empty($agent->current_version_id)) {
+            $agentVersion = LlmAgentVersion::where('id', $agent->current_version_id)->first();
+        } else {
+            $agentVersion = LlmAgentVersion::where('agent_id', $agent->id)->first();
+        }
 
         try {
             $user = Auth::user();
-            $credential = LlmProviderCredential::where('user_id', $user->id)
-                ->where('is_active', 1)
-                ->first();
+            if($agent->user_id != $user->id) {
+                $credential = LlmProviderCredential::where('user_id', $user->id)
+                    ->where('is_active', 1)
+                    ->first();
 
-            if (!$credential) {
-                return response()->json(['error' => '未找到有效的API凭据'], 400);
+                if (!$credential) {
+                    return response()->json(['error' => '未找到有效的API凭据'], 400);
+                }
+
+                $provider = LLMProvider::where('id', $credential->provider_id)->first();
+
+                $model = LlmModel::where('provider_id', $credential->provider_id)
+                    ->first();
+
+                if (!$model) {
+                    return response()->json(['error' => '未找到有效的模型'], 400);
+                }
+            } else {
+                $model = LlmModel::where('id', $agentVersion->model_id)
+                    ->first();
+
+                $provider = LLMProvider::where('id', $model->provider_id)->first();
+
+                $credential = LlmProviderCredential::where('user_id', $user->id)->where('provider_id', $provider->id)
+                    ->where('is_active', 1)
+                    ->first();
             }
 
-            $provider = LLMProvider::where('id', $credential->provider_id)->first();
-
-            $model = LlmModel::where('provider_id', $credential->provider_id)
-                ->first();
-
-            if (!$model) {
-                return response()->json(['error' => '未找到有效的模型'], 400);
+            $systemContent = $agentVersion->system_content;
+            if(!empty($referText)) {
+                $systemContent = $systemContent."\n引用文本：\n" .$referText;
             }
 
             // 记录请求数据
@@ -454,8 +517,12 @@ class LlmController extends Controller
                 'model' => $model->name,
                 'messages' => [
                     [
+                        'role' => 'system',
+                        'content' => $referText,
+                    ],
+                    [
                         'role' => 'user',
-                        'content' => $query."\n引用文本：\n".$referText,
+                        'content' => $query,
                     ]
                 ],
                 'stream' => true

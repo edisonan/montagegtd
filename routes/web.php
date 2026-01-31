@@ -252,10 +252,7 @@ Route::group([
     
     // 智能体草稿编辑页面
     Route::get('/llm/agents/{id}/draft', 'LlmAgentController@showDraftEditor');
-    
-    // 获取当前用户信息
-    Route::get('/api/user', 'LlmAgentController@getCurrentUser');
-    
+
     // 用户端LLM管理页面
     Route::get('/llm/management', function () {
         return view('llm.management');
@@ -296,22 +293,17 @@ Route::group([
         Route::post('/', 'PersonalAccessTokenController@store')->name('personal-access-tokens.store');
         Route::delete('/{id}', 'PersonalAccessTokenController@destroy')->name('personal-access-tokens.destroy');
     });
-    
-    // 通用API路由
-    Route::get('/api/users', 'ApiController@getUsers');
-
-    Route::post('/llm/chat', 'LlmController@chat'); // 问问AI功能
 
     // LLM会话相关路由
-    Route::prefix('api/llm')->group(function () {
+    Route::prefix('llm')->group(function () {
         Route::get('/sessions', 'LlmSessionController@getSessions');
         Route::post('/sessions', 'LlmSessionController@createSession');
         Route::get('/sessions/{id}', 'LlmSessionController@getSession');
         Route::put('/sessions/{id}/title', 'LlmSessionController@updateSessionTitle');
         Route::delete('/sessions/{id}', 'LlmSessionController@deleteSession');
         Route::post('/sessions/{id}/toggle-pin', 'LlmSessionController@togglePinSession');
-        Route::get('/agents', 'LlmSessionController@getAgents');
-        Route::post('/chat', 'LlmSessionController@chat');
+        Route::get('/agents', 'LlmAgentController@getAgents');
+        Route::post('/chat', 'LlmController@chat');
     });
 
     // AI助手页面路由

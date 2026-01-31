@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LlmAgent;
 use App\Services\LlmAgentService;
 use App\Services\LlmAgentVersionService;
 use Illuminate\Http\Request;
@@ -226,31 +227,6 @@ class LlmAgentController extends Controller
     }
     
     /**
-     * 获取当前用户信息
-     */
-    public function getCurrentUser()
-    {
-        try {
-            $user = Auth::user();
-            $isAdmin = in_array($user->email, config('admin.super_users', [])) || ($user->hasRole('administrator') ?? false);
-            
-            return response()->json([
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'is_admin' => $isAdmin,
-                'success' => true
-            ]);
-        } catch (Exception $e) {
-            \Log::error('LlmAgentController@getCurrentUser error: ' . $e->getMessage());
-            return response()->json([
-                'message' => '获取用户信息失败: ' . $e->getMessage(),
-                'success' => false
-            ], 500);
-        }
-    }
-    
-    /**
      * 显示草稿编辑界面
      */
     public function showDraftEditor($agentId)
@@ -457,34 +433,33 @@ class LlmAgentController extends Controller
     }
 
     /**
-     * 测试聊天功能
+     * 获取智能体列表
      */
-    public function testChat(Request $request, $agentId)
+    public function getAgents()
     {
         try {
-            $agent = \App\Models\LlmAgent::with(['currentVersion'])->findOrFail($agentId);
+            $userId = Auth::id();
 
-            // 检查用户权限
-            if ($agent->user_id != Auth::id() && !$agent->is_public) {
-                abort(403, 'Unauthorized');
-            }
-
-            $validated = $request->validate([
-                'message' => 'required|string',
-            ]);
-
-            // 这里应该集成实际的聊天功能
-            // 目前我们只返回模拟响应
-            $response = "This is a test response for agent: {$agent->name}. Your message was: " . $validated['message'];
+            // 获取所有公开激活的智能体以及当前用户的智能体
+            $agents = LlmAgent::where('is_active', true)
+                ->where(function ($query) use ($userId) {
+                    $query->where('is_public', true)
+                        ->orWhere('user_id', $userId);
+                })
+                ->select('id', 'name', 'description', 'avatar')
+                ->get();
 
             return response()->json([
                 'success' => true,
-                'response' => $response,
-                'agent' => $agent
+                'data' => $agents
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error in test chat: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to process chat'], 500);
+
+            return response()->json([
+                'success' => false,
+                'message' => '获取智能体列表失败: ' . $e->getMessage()
+            ], 500);
         }
     }
+
 }

@@ -14,6 +14,7 @@
             </div>
             <input type="hidden" id="refer_text_id" value="">
             <input type="hidden" id="replace_text_id" value="">
+            <input type="hidden" id="current_session_id" value="">
             <div class="modal-body p-0">
                 <!-- 聊天容器 -->
                 <div id="chatContainer" class="chat-container" style="height: 400px; overflow-y: auto; padding: 15px;">
@@ -356,6 +357,52 @@
             langPrefix: 'hljs language-',
         });
     }
+    
+    // 初始化当前会话ID
+    let currentSessionId = null;
+    
+    // 创建新会话
+    async function createNewSession(agentId = 'builtin_common') {
+        try {
+            // 获取CSRF令牌
+            let csrfToken = '';
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            const inputToken = document.querySelector('input[name="_token"]');
+
+            if (metaToken) {
+                csrfToken = metaToken.getAttribute('content');
+            } else if (inputToken) {
+                csrfToken = inputToken.value;
+            }
+            
+            const response = await fetch('/llm/sessions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    agent_id: agentId,
+                    title: 'AI助手对话' // 默认标题
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 更新当前会话ID
+                currentSessionId = result.data.id;
+                document.getElementById('current_session_id').value = result.data.id;
+                return result.data.id;
+            } else {
+                console.error('创建会话失败:', result.message);
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.error('创建会话时出错:', error);
+            throw error;
+        }
+    }
 
     function setTemplate(name, text) {
         document.getElementById('query').value = text;
@@ -371,9 +418,15 @@
     }
 
     // AI问答功能
-    function openAskAIModal($referTextId='', $replaceTextId='') {
+    function openAskAIModal($referTextId='', $replaceTextId='', createNewSession=false) {
         document.getElementById('refer_text_id').value = $referTextId;
         document.getElementById('replace_text_id').value = $replaceTextId;
+        
+        // 如果指定了创建新会话，清空当前会话ID
+        if(createNewSession) {
+            document.getElementById('current_session_id').value = '';
+            currentSessionId = null;
+        }
 
         // 清空之前的聊天记录
         chatMessages = [];
@@ -438,7 +491,23 @@
     }
 
     // 处理AI问答
-    function startAskAIProcess(referText, query) {
+    async function startAskAIProcess(referText, query) {
+        // 检查是否有当前会话ID，如果没有则创建一个
+        const sessionInput = document.getElementById('current_session_id');
+        let sessionId = sessionInput.value;
+        
+        if (!sessionId) {
+            // 如果没有会话ID，则创建一个新会话
+            try {
+                sessionId = await createNewSession();
+            } catch (error) {
+                console.error('创建会话失败:', error);
+                addMessage('assistant', '创建会话失败: ' + error.message);
+                document.getElementById('askAILoading').style.display = 'none';
+                return;
+            }
+        }
+        
         // 添加用户消息到聊天记录
         addMessage('user', query);
 
@@ -468,7 +537,8 @@
             },
             body: JSON.stringify({
                 refer_text: referText,
-                query: query
+                query: query,
+                session_id: sessionId
             })
         })
             .then(response => {

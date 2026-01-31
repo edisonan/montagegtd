@@ -118,6 +118,9 @@
     </div>
 </div>
 
+<!-- 隐藏字段保存当前会话的agent_id -->
+<input type="hidden" id="current-agent-id" value="">
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -133,7 +136,7 @@
         // 加载会话列表
         async function loadSessions() {
             try {
-                const response = await fetch('/api/llm/sessions', {
+                const response = await fetch('/llm/sessions', {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -239,7 +242,7 @@
         // 切换到指定会话
         async function switchToSession(sessionId) {
             try {
-                const response = await fetch(`/api/llm/sessions/${sessionId}`, {
+                const response = await fetch(`/llm/sessions/${sessionId}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -262,7 +265,12 @@
                     if (currentAgent) {
                         // 同时更新顶部的智能体选择框
                         document.getElementById('agent-select').value = currentAgent.id;
+                        
+                        // 保存当前会话的agent_id到隐藏字段
+                        document.getElementById('current-agent-id').value = currentAgent.id;
                     } else {
+                        // 如果会话没有关联智能体，清空隐藏字段
+                        document.getElementById('current-agent-id').value = '';
                     }
 
                     // 设置固定按钮状态
@@ -288,7 +296,7 @@
         // 加载智能体列表
         async function loadAgents() {
             try {
-                const response = await fetch('/api/llm/agents', {
+                const response = await fetch('/llm/agents', {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -401,7 +409,7 @@
 
             // 创建新会话
             try {
-                const response = await fetch('/api/llm/sessions', {
+                const response = await fetch('/llm/sessions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -456,7 +464,14 @@
                 // 显示AI正在思考的指示器
                 const thinkingIndicator = showThinkingIndicator();
 
-                const response = await fetch('/api/llm/chat', {
+                // 如果没有明确传入agentId，尝试从当前会话的agent或隐藏字段获取
+                let finalAgentId = agentId;
+                if (!finalAgentId) {
+                    // 优先使用参数传入的agentId，然后是当前选中的agentId，最后是会话关联的agentId
+                    finalAgentId = document.getElementById('agent-select').value || document.getElementById('current-agent-id').value;
+                }
+
+                const response = await fetch('/llm/chat', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -464,23 +479,123 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
-                        message: message,
+                        query: message,
                         session_id: currentSessionId,
-                        agent_id: agentId
+                        agent_id: finalAgentId
                     })
                 });
 
-                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
+                // 获取读取流
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
                 // 移除思考指示器
                 removeThinkingIndicator(thinkingIndicator);
-
-                if (result.success) {
-                    // 添加AI响应到聊天
-                    addMessageToChat('ai', result.data.ai_response);
-                } else {
-                    addMessageToChat('ai', '抱歉，AI处理您的请求时出现错误: ' + result.message);
+                
+                // 创建一个新的AI消息气泡
+                const aiMessageElement = document.createElement('div');
+                aiMessageElement.className = 'ai-message';
+                
+                // 创建消息内容容器
+                const messageContainer = document.createElement('div');
+                messageContainer.className = 'd-flex';
+                messageContainer.innerHTML = `
+                    <div class="message-bubble">
+                        <div class="ai-response-content"></div>
+                    </div>
+                `;
+                
+                aiMessageElement.appendChild(messageContainer);
+                
+                // 添加AI消息元素到聊天区域
+                const messagesList = document.getElementById('messages-list');
+                messagesList.appendChild(aiMessageElement);
+                messagesList.scrollTop = messagesList.scrollHeight;
+                
+                // 获取内容显示元素
+                const responseElement = messageContainer.querySelector('.ai-response-content');
+                
+                let accumulatedResponse = '';
+                let streamingDone = false;
+                let buffer = ''; // 用于存储不完整的数据块
+                
+                while (!streamingDone) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        streamingDone = true;
+                        // 处理缓冲区中的最后剩余数据
+                        if (buffer.trim()) {
+                            await processChunk(buffer);
+                        }
+                        break;
+                    }
+                    
+                    // 解码数据块
+                    const chunk = decoder.decode(value, { stream: true });
+                    
+                    // 将新数据添加到缓冲区
+                    buffer += chunk;
+                    
+                    // 按行分割数据块，因为SSE通常每行一个事件
+                    const lines = buffer.split('\n');
+                    
+                    // 保留最后一个不完整的行到缓冲区
+                    buffer = lines.pop() || '';
+                    
+                    // 处理完整的行
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            await processChunk(line);
+                        }
+                    }
                 }
+                
+                // 流结束，确保滚动到底部
+                messagesList.scrollTop = messagesList.scrollHeight;
+                
+                reader.releaseLock();
+                
+                // 处理单个数据块的辅助函数
+                async function processChunk(chunkLine) {
+                    if (chunkLine.startsWith('data: ')) {
+                        try {
+                            const data = chunkLine.slice(6); // 移除 'data: ' 前缀
+                            if (data.trim()) {
+                                const jsonData = JSON.parse(data);
+                                
+                                // 检查是否是包含内容的数据块
+                                if (jsonData.choices && jsonData.choices[0] && jsonData.choices[0].delta) {
+                                    const content = jsonData.choices[0].delta.content;
+                                    if (content !== undefined && content !== null) { // 检查content是否存在
+                                        accumulatedResponse += content;
+                                        
+                                        // 更新AI响应显示
+                                        if (responseElement) {
+                                            responseElement.innerHTML = accumulatedResponse;
+                                            messagesList.scrollTop = messagesList.scrollHeight;
+                                        }
+                                    }
+                                }
+                                // 跳过处理usage数据块，根据经验教训内存
+                                if (jsonData.usage) {
+                                    return; // 直接返回，不处理usage数据
+                                }
+                            }
+                        } catch (e) {
+                            // 忽略解析错误，这可能是由于不完整的消息块造成的
+                            console.warn('Error parsing JSON:', e, 'Data:', chunkLine);
+                        }
+                    }
+                }
+                
+                // 流结束，确保滚动到底部
+                messagesList.scrollTop = messagesList.scrollHeight;
+                
+                reader.releaseLock();
             } catch (error) {
                 console.error('发送消息到AI失败:', error);
 
@@ -574,14 +689,20 @@
             addMessageToChat('user', message);
 
             // 发送消息到AI
-            await sendMessageToAI(message);
+            await sendMessageToAI(message, null); // 传递null，让函数内部处理agent_id
         });
 
-        // 支持Shift+Enter换行，Enter发送
+        // 支持Shift+Enter换行，Ctrl+Enter发送
         document.getElementById('message-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            // Ctrl+Enter 或 Cmd+Enter (Mac) 发送消息
+            if ((e.key === 'Enter' && (e.ctrlKey || e.metaKey)) && !e.shiftKey) {
                 e.preventDefault();
                 document.getElementById('send-message-btn').click();
+            }
+            // Shift+Enter 换行，不发送消息
+            else if (e.key === 'Enter' && e.shiftKey) {
+                // 让默认换行行为继续，不需要阻止事件
+                // 不做任何事情，允许换行
             }
         });
 
@@ -594,7 +715,7 @@
 
             document.getElementById('confirm-delete-btn').onclick = async function() {
                 try {
-                    const response = await fetch(`/api/llm/sessions/${currentSessionId}`, {
+                    const response = await fetch(`/llm/sessions/${currentSessionId}`, {
                         method: 'DELETE',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
@@ -633,7 +754,7 @@
             if (!currentSessionId) return;
 
             try {
-                const response = await fetch(`/api/llm/sessions/${currentSessionId}/toggle-pin`, {
+                const response = await fetch(`/llm/sessions/${currentSessionId}/toggle-pin`, {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -674,7 +795,7 @@
     // 全局函数供HTML调用
     async function togglePinSession(sessionId) {
         try {
-            const response = await fetch(`/api/llm/sessions/${sessionId}/toggle-pin`, {
+            const response = await fetch(`/llm/sessions/${sessionId}/toggle-pin`, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -734,6 +855,11 @@
     border: 1px solid #e0e0e0;
 }
 
+.message-bubble {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 .message {
     animation: fadeIn 0.3s ease-in;
 }
@@ -746,6 +872,24 @@
 #messages-container {
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 200px);
+    overflow: hidden;
+}
+
+#messages-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+#messages-container .bg-white.border-top {
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+#sessions-list {
+    height: calc(100vh - 100px);
+    overflow-y: auto;
 }
 
 .chat-mode-hidden {
