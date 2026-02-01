@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Log;
 use Monolog\Processor\UidProcessor;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider {
 	/**
@@ -18,13 +19,9 @@ class AppServiceProvider extends ServiceProvider {
 		\DB::listen ( function ($query) {
 			Log::info ( $query->sql );
 		} );
-		
-		//
-		
-		// 注册LLM服务提供者
-		$this->app->register(\App\Providers\LlmServiceProvider::class);
-		// 注册课程服务提供者
-		$this->app->register(\App\Providers\CourseServiceProvider::class);
+
+        Paginator::defaultView('vendor.pagination.tailwind');
+        Paginator::defaultSimpleView('vendor.pagination.simple-tailwind');
 	}
 	
 	/**

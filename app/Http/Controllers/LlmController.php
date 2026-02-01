@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Utils\ResponseDataUtil;
 use App\Models\LlmAgent;
 use App\Models\LlmAgentVersion;
 use App\Models\LlmModel;
@@ -44,7 +45,7 @@ class LlmController extends Controller
         $this->sessionRepository = $sessionRepository;
     }
 
-    public function getProviders()
+    public function getProviders(Request $request)
     {
         try {
             $user = Auth::user();
@@ -59,12 +60,13 @@ class LlmController extends Controller
             ->orderBy('priority', 'desc')
             ->orderBy('name')
             ->get();
-            
-            return response()->json([
-                'result' => [
-                    'providers' => $providers
-                ]
-            ]);
+
+            return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $providers ) );
+//            return response()->json([
+//                'result' => [
+//                    'providers' => $providers
+//                ]
+//            ]);
         } catch (\Exception $e) {
             Log::error('获取供应商失败: ' . $e->getMessage());
             return response()->json(['message' => '获取供应商失败'], 500);
@@ -163,7 +165,7 @@ class LlmController extends Controller
         }
     }
 
-    public function getModels()
+    public function getModels(Request $request)
     {
         try {
             $user = Auth::user();
@@ -178,12 +180,13 @@ class LlmController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->get();
-            
-            return response()->json([
-                'result' => [
-                    'models' => $models
-                ]
-            ]);
+
+            return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $models ) );
+//            return response()->json([
+//                'result' => [
+//                    'models' => $models
+//                ]
+//            ]);
         } catch (\Exception $e) {
             Log::error('获取模型失败: ' . $e->getMessage());
             return response()->json(['message' => '获取模型失败'], 500);
@@ -284,7 +287,7 @@ class LlmController extends Controller
         }
     }
 
-    public function getCredentials()
+    public function getCredentials(Request $request)
     {
         try {
             $user = Auth::user();
@@ -299,12 +302,13 @@ class LlmController extends Controller
                 ->orderBy('is_default', 'desc')
                 ->orderBy('name')
                 ->get();
-            
-            return response()->json([
-                'result' => [
-                    'credentials' => $credentials
-                ]
-            ]);
+
+            return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $credentials ) );
+//            return response()->json([
+//                'result' => [
+//                    'credentials' => $credentials
+//                ]
+//            ]);
         } catch (\Exception $e) {
             Log::error('获取凭据失败: ' . $e->getMessage());
             return response()->json(['message' => '获取凭据失败'], 500);

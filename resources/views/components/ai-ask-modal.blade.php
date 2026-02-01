@@ -1,63 +1,75 @@
-<div class="modal fade" id="askAIModal" tabindex="-1" role="dialog" aria-labelledby="askAIModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="askAIModalLabel">AI对话助手</h5>
-                <div class="header-controls">
-                    <button type="button" class="minimize-btn" id="minimizeBtn" title="最小化">
-                        <i class="fa fa-minus"></i>
+<!-- AI助手对话模态框 -->
+<div id="askAIModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+
+    <div class="flex items-center justify-center min-h-screen px-4 py-8">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
+            <!-- 模态框头部 -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-900" id="askAIModalLabel">AI对话助手</h3>
+                <div class="flex items-center space-x-2">
+                    <button type="button" class="minimize-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                            id="minimizeBtn" title="最小化">
+                        <i class="fas fa-minus"></i>
                     </button>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="close-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                            onclick="hideAIModal()" title="关闭">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
+
+            <!-- 隐藏字段 -->
             <input type="hidden" id="refer_text_id" value="">
             <input type="hidden" id="replace_text_id" value="">
             <input type="hidden" id="current_session_id" value="">
-            <div class="modal-body p-0">
+
+            <!-- 模态框内容 -->
+            <div class="p-0">
                 <!-- 聊天容器 -->
-                <div id="chatContainer" class="chat-container" style="height: 400px; overflow-y: auto; padding: 15px;">
+                <div id="chatContainer" class="chat-container h-[400px] overflow-y-auto p-4 bg-gray-50">
                     <!-- 聊天消息将在这里动态添加 -->
                     <div class="message message-assistant">
                         <div class="avatar">
-                            <i class="fa fa-robot"></i>
+                            <i class="fas fa-robot"></i>
                         </div>
                         <div class="content">
                             <p>你好！我是AI助手，请问有什么可以帮助你的？</p>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 快速模板区域 -->
-                <div class="px-3 py-2 border-top">
-                    <div class="templates-container d-flex flex-nowrap overflow-auto" style="max-width: 100%; gap: 8px;">
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('翻译', '请帮我翻译成英文')">翻译</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('扩写', '请帮我扩写这段内容')">扩写</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('简化', '请简化这段文字')">简化</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('改写', '请改写这段文字')">改写</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('检查', '请检查这段文字的语法错误')">检查</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('建议', '请给这段文字提供改进建议')">建议</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="setTemplate('日报', '请基于提供的内容，生成我的工作和生活日报，如：\n工作日报:\n1.2.3. \n生活日报:\n1.2.3')">日报</button>
+                <div class="px-4 py-3 border-t border-gray-200">
+                    <div class="templates-container flex overflow-x-auto space-x-2 pb-2">
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('翻译', '请帮我翻译成英文')">翻译</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('扩写', '请帮我扩写这段内容')">扩写</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('简化', '请简化这段文字')">简化</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('改写', '请改写这段文字')">改写</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('检查', '请检查这段文字的语法错误')">检查</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('建议', '请给这段文字提供改进建议')">建议</button>
+                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('日报', '请基于提供的内容，生成我的工作和生活日报，如：\n工作日报:\n1.2.3. \n生活日报:\n1.2.3')">日报</button>
                     </div>
                 </div>
-                
+
                 <!-- 输入区域 -->
-                <div class="input-area p-3 border-top">
-                    <div class="input-group">
-                        <textarea class="form-control" id="query" rows="1" placeholder="输入消息..." style="resize: none; height: 50px;"></textarea>
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-info" id="sendBtn" onclick="triggerAskAI()">
-                                <i class="fa fa-paper-plane"></i>
-                            </button>
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex items-end space-x-2">
+                        <div class="flex-1">
+                            <textarea class="input w-full resize-none min-h-[50px] max-h-[150px]"
+                                      id="query"
+                                      placeholder="输入消息..."></textarea>
                         </div>
+                        <button type="button" class="btn btn-primary h-[50px] px-4" id="sendBtn" onclick="triggerAskAI()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
-                    <div id="askAILoading" class="text-center mt-2" style="display: none;">
-                        <small>AI正在思考中...</small>
-                        <div class="spinner-border spinner-border-sm ml-2" role="status">
-                            <span class="sr-only">加载中...</span>
+                    <div id="askAILoading" class="hidden text-center mt-2">
+                        <div class="flex items-center justify-center space-x-2">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-color"></div>
+                            <small class="text-gray-600">AI正在思考中...</small>
                         </div>
                     </div>
                 </div>
@@ -67,300 +79,308 @@
 </div>
 
 <!-- 最小化后的悬浮窗 -->
-<div id="floatingWindow" class="floating-window" style="display: none;">
-    <div class="floating-window-header">
-        <span class="floating-title">AI助手</span>
-        <div class="floating-controls">
-            <button type="button" class="restore-btn" id="restoreBtn" title="恢复">
-                <i class="fa fa-window-restore"></i>
+<div id="floatingWindow" class="fixed bottom-6 right-6 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50 hidden transform transition-all" style="transform: translate3d(0px, 0px, 0px);">
+    <div class="floating-window-header flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-lg cursor-move">
+        <span class="font-medium text-sm">AI助手</span>
+        <div class="flex items-center space-x-1">
+            <button type="button" class="restore-btn p-1 hover:bg-white/20 rounded transition-colors"
+                    id="restoreBtn" title="恢复">
+                <i class="fas fa-window-restore text-xs"></i>
             </button>
         </div>
+    </div>
+    <div class="p-3">
+        <p class="text-sm text-gray-600">点击恢复按钮继续对话</p>
     </div>
 </div>
 
 <style>
-.chat-container {
-    display: flex;
-    flex-direction: column;
-}
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+    }
 
-.message {
-    display: flex;
-    margin-bottom: 15px;
-    align-items: flex-start;
-    max-width: 90%;
-}
+    .message {
+        display: flex;
+        margin-bottom: 15px;
+        align-items: flex-start;
+        max-width: 90%;
+    }
 
-.message.user {
-    justify-content: flex-end;
-    margin-left: auto;
-}
+    .message.user {
+        justify-content: flex-end;
+        margin-left: auto;
+    }
 
-.message.assistant {
-    justify-content: flex-start;
-    margin-right: auto;
-}
+    .message.assistant {
+        justify-content: flex-start;
+        margin-right: auto;
+    }
 
-.avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #17a2b8, #138a9e);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    flex-shrink: 0;
-    color: white;
-    font-size: 16px;
-}
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        flex-shrink: 0;
+        color: white;
+        font-size: 16px;
+    }
 
-.message.user .avatar {
-    background: linear-gradient(135deg, #a0d8d6, #c0e9e5);
-    margin-right: 0;
-    margin-left: 12px;
-}
+    .message.user .avatar {
+        background: linear-gradient(135deg, #a0d8d6, #c0e9e5);
+        margin-right: 0;
+        margin-left: 12px;
+    }
 
-.content {
-    position: relative;
-    padding: 12px 16px;
-    border-radius: 18px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
-}
+    .content {
+        position: relative;
+        padding: 12px 16px;
+        border-radius: 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+        max-width: 80%;
+    }
 
-.message-user .content {
-    background: linear-gradient(to right, #17a2b8, #138a9e);
-    color: white;
-    border-bottom-right-radius: 4px;
-}
+    .message.user .content {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
 
-.message-assistant .content {
-    background: #f0f4f8;
-    color: #333;
-    border-bottom-left-radius: 4px;
-}
+    .message.assistant .content {
+        background: #f0f4f8;
+        color: #333;
+        border-bottom-left-radius: 4px;
+    }
 
-.message-content {
-    margin-bottom: 5px;
-}
+    .message-content {
+        margin-bottom: 5px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
 
-/* 修改复制按钮样式 */
-.copy-btn {
-    position: absolute;
-    bottom: 5px;
-    right: 8px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid #ddd;
-    color: #666;
-    cursor: pointer;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    opacity: 0;
-    transition: opacity 0.2s, background-color 0.2s, color 0.2s;
-    z-index: 10;
-    min-height: 18px;
-}
+    .copy-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid #ddd;
+        color: #666;
+        cursor: pointer;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        opacity: 0;
+        transition: opacity 0.2s, background-color 0.2s, color 0.2s;
+        z-index: 10;
+        min-height: 18px;
+    }
 
-.copy-btn:hover {
-    color: #333;
-    background-color: #f0f0f0;
-    border-color: #999;
-}
+    .copy-btn:hover {
+        color: #333;
+        background-color: #f0f0f0;
+        border-color: #999;
+    }
 
-.content:hover .copy-btn {
-    opacity: 1;
-}
+    .content:hover .copy-btn {
+        opacity: 1;
+    }
 
-/* 当鼠标悬停在消息内容上时，始终显示复制按钮 */
-.content:focus-within .copy-btn {
-    opacity: 1;
-}
+    /* 当鼠标悬停在消息内容上时，始终显示复制按钮 */
+    .content:focus-within .copy-btn {
+        opacity: 1;
+    }
 
-.templates-container {
-    scrollbar-width: thin;
-}
+    .templates-container {
+        scrollbar-width: thin;
+    }
 
-.templates-container::-webkit-scrollbar {
-    height: 6px;
-}
+    .templates-container::-webkit-scrollbar {
+        height: 6px;
+    }
 
-.templates-container::-webkit-scrollbar-thumb {
-    background-color: #c0c0c0;
-    border-radius: 3px;
-}
+    .templates-container::-webkit-scrollbar-thumb {
+        background-color: #c0c0c0;
+        border-radius: 3px;
+    }
 
-#query {
-    min-height: 50px;
-    max-height: 150px;
-}
+    .input-area {
+        position: relative;
+    }
 
-.input-area {
-    position: relative;
-}
+    /* 滚动条样式 */
+    .chat-container::-webkit-scrollbar {
+        width: 6px;
+    }
 
-/* 滚动条样式 */
-.chat-container::-webkit-scrollbar {
-    width: 6px;
-}
+    .chat-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
 
-.chat-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
+    .chat-container::-webkit-scrollbar-thumb {
+        background: #c0c0c0;
+        border-radius: 3px;
+    }
 
-.chat-container::-webkit-scrollbar-thumb {
-    background: #c0c0c0;
-    border-radius: 3px;
-}
+    .chat-container::-webkit-scrollbar-thumb:hover {
+        background: #a0a0a0;
+    }
 
-.chat-container::-webkit-scrollbar-thumb:hover {
-    background: #a0a0a0;
-}
+    .floating-window-header {
+        cursor: move;
+        user-select: none;
+    }
 
-/* 最小化悬浮窗样式 */
-.floating-window {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 200px;
-    z-index: 9999;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: all 0.3s ease;
-}
+    /* Markdown 样式 */
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3 {
+        border-left: 4px solid #7aa2f7;
+        padding-left: 10px;
+        margin-top: 24px;
+        font-weight: 600;
+    }
 
-.floating-window-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background: linear-gradient(135deg, #17a2b8, #138a9e);
-    color: white;
-    border-radius: 8px 8px 0 0;
-    cursor: move;
-}
+    .markdown-body h1 { font-size: 1.5em; }
+    .markdown-body h2 { font-size: 1.3em; }
+    .markdown-body h3 { font-size: 1.1em; }
 
-.floating-title {
-    font-size: 14px;
-    font-weight: bold;
-}
+    .markdown-body blockquote {
+        margin: 20px 0;
+        padding: 12px 18px;
+        background: #eef4ff;
+        border-left: 4px solid #6b8df7;
+        border-radius: 6px;
+    }
 
-.floating-controls {
-    display: flex;
-    gap: 5px;
-}
+    /* 增强代码块可读性 */
+    .markdown-body pre code {
+        display: block;
+        padding: 14px;
+        background: #f3f3f3;
+        color: #333;
+        border-radius: 6px;
+        overflow-x: auto;
+        line-height: 1.5;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 13px;
+    }
 
-.restore-btn {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 2px;
-    font-size: 12px;
-}
+    .markdown-body code:not(pre code) {
+        background: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 13px;
+    }
 
-.restore-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-}
+    .markdown-body table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 20px 0;
+        font-size: 14px;
+    }
 
-.header-controls {
-    display: flex;
-    gap: 5px;
-}
+    .markdown-body th,
+    .markdown-body td {
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+    }
 
-.minimize-btn {
-    background: none;
-    border: none;
-    color: #6c757d;
-    cursor: pointer;
-    padding: 2px;
-    font-size: 16px;
-    line-height: 1;
-    margin-right: 10px;
-}
+    .markdown-body th {
+        background: #fafafa;
+        font-weight: 600;
+    }
 
-.minimize-btn:hover {
-    background: #f8f9fa;
-    border-radius: 3px;
-}
+    .markdown-body ul, .markdown-body ol {
+        padding-left: 24px;
+        margin: 12px 0;
+    }
 
-/* Markdown 样式 */
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3 {
-    border-left: 4px solid #7aa2f7;
-    padding-left: 10px;
-    margin-top: 24px;
-    font-weight: 600;
-}
+    .markdown-body li {
+        margin: 4px 0;
+    }
 
-.markdown-body blockquote {
-    margin: 20px 0;
-    padding: 12px 18px;
-    background: #eef4ff;
-    border-left: 4px solid #6b8df7;
-    border-radius: 6px;
-}
+    .markdown-body a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
 
-/* 增强代码块可读性 */
-.markdown-body pre code {
-    display: block;
-    padding: 14px;
-    background: #f3f3f3;
-    color: #333;
-    border-radius: 6px;
-    overflow-x: auto;
-    line-height: 1.5;
-}
-
-.markdown-body code {
-    background: #f0f0f0;
-    padding: 2px 4px;
-    border-radius: 4px;
-}
-
-.markdown-body table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 20px 0;
-}
-
-.markdown-body th,
-.markdown-body td {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
-
-.markdown-body th {
-    background: #fafafa;
-}
+    .markdown-body a:hover {
+        text-decoration: underline;
+    }
 </style>
 
 <script>
     // 存储聊天记录
     let chatMessages = [];
+    let isModalOpen = false;
+    let isMinimized = false;
+
+    // 模态框控制函数
+    function showAIModal() {
+        const modal = document.getElementById('askAIModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        isModalOpen = true;
+
+        // 添加动画效果
+        setTimeout(() => {
+            const dialog = modal.querySelector('.bg-white');
+            dialog.classList.add('scale-100', 'opacity-100');
+            dialog.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+
+        // 自动聚焦到输入框
+        setTimeout(() => {
+            document.getElementById('query').focus();
+        }, 300);
+    }
+
+    function hideAIModal() {
+        const modal = document.getElementById('askAIModal');
+        const dialog = modal.querySelector('.bg-white');
+
+        dialog.classList.remove('scale-100', 'opacity-100');
+        dialog.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            isModalOpen = false;
+        }, 300);
+    }
+
+    function toggleAIModal() {
+        if (isModalOpen) {
+            hideAIModal();
+        } else {
+            showAIModal();
+        }
+    }
 
     // 初始化 Markdown 渲染器
     if (typeof marked !== 'undefined') {
         marked.setOptions({
             highlight: function(code, lang) {
                 if (lang && window.hljs) {
-                    return hljs.highlightAuto(code).value;
+                    return hljs.highlightAuto(code, [lang]).value;
                 } else {
-                    return code;
+                    return hljs.highlightAuto(code).value;
                 }
             },
             langPrefix: 'hljs language-',
         });
     }
-    
+
     // 初始化当前会话ID
     let currentSessionId = null;
-    
+
     // 创建新会话
     async function createNewSession(agentId = 'builtin_common') {
         try {
@@ -374,7 +394,7 @@
             } else if (inputToken) {
                 csrfToken = inputToken.value;
             }
-            
+
             const response = await fetch('/llm/sessions', {
                 method: 'POST',
                 headers: {
@@ -386,9 +406,9 @@
                     title: 'AI助手对话' // 默认标题
                 })
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 // 更新当前会话ID
                 currentSessionId = result.data.id;
@@ -404,26 +424,13 @@
         }
     }
 
-    function setTemplate(name, text) {
-        document.getElementById('query').value = text;
-        document.getElementById('query').focus();
-
-        // 给用户反馈
-        const btn = event.target;
-        const originalClass = btn.className;
-        btn.className = 'btn btn-info btn-sm flex-shrink-0';
-        setTimeout(() => {
-            btn.className = originalClass;
-        }, 300);
-    }
-
-    // AI问答功能
-    function openAskAIModal($referTextId='', $replaceTextId='', createNewSession=false) {
+    // AI助手对话框函数
+    function openAskAIModal($referTextId='', $replaceTextId='', createNewSessionFlag=false) {
         document.getElementById('refer_text_id').value = $referTextId;
         document.getElementById('replace_text_id').value = $replaceTextId;
-        
+
         // 如果指定了创建新会话，清空当前会话ID
-        if(createNewSession) {
+        if(createNewSessionFlag) {
             document.getElementById('current_session_id').value = '';
             currentSessionId = null;
         }
@@ -435,12 +442,8 @@
         // 设置默认提示
         document.getElementById('query').value = '';
 
-        $('#askAIModal').modal('show');
-
-        // 自动聚焦到输入框
-        setTimeout(() => {
-            document.getElementById('query').focus();
-        }, 300);
+        // 显示模态框
+        showAIModal();
     }
 
     // 添加消息到聊天记录
@@ -475,7 +478,7 @@
 
             messageDiv.innerHTML = [
                 '<div class="avatar">',
-                '<i class="fa ' + (msg.role === 'user' ? 'fa-user' : 'fa-robot') + '"></i>',
+                '<i class="fas ' + (msg.role === 'user' ? 'fa-user' : 'fa-robot') + '"></i>',
                 '</div>',
                 '<div class="content markdown-body">',
                 '<div class="message-content">' + renderedContent + '</div>',
@@ -495,7 +498,7 @@
         // 检查是否有当前会话ID，如果没有则创建一个
         const sessionInput = document.getElementById('current_session_id');
         let sessionId = sessionInput.value;
-        
+
         if (!sessionId) {
             // 如果没有会话ID，则创建一个新会话
             try {
@@ -507,14 +510,14 @@
                 return;
             }
         }
-        
+
         // 添加用户消息到聊天记录
         addMessage('user', query);
 
         // 显示加载状态
-        document.getElementById('askAILoading').style.display = 'block';
+        document.getElementById('askAILoading').classList.remove('hidden');
 
-        // 获取CSRF令牌 - 修复可能找不到meta标签的问题
+        // 获取CSRF令牌
         let csrfToken = '';
         const metaToken = document.querySelector('meta[name="csrf-token"]');
         const inputToken = document.querySelector('input[name="_token"]');
@@ -524,7 +527,6 @@
         } else if (inputToken) {
             csrfToken = inputToken.value;
         } else {
-            // 如果都没找到，尝试从页面其他地方获取
             csrfToken = '{{ csrf_token() }}';
         }
 
@@ -575,7 +577,7 @@
 
                                 for(const line of lines) {
                                     if(line.startsWith('data: ') && line !== 'data: [DONE]') {
-                                        const dataStr = line.slice(6); // 移除 'data: ' 前缀
+                                        const dataStr = line.slice(6);
                                         try {
                                             const parsed = JSON.parse(dataStr);
                                             // 检查是否为OpenAI格式的流式响应
@@ -585,24 +587,18 @@
                                                     const content = parsed.choices[0].delta.content;
                                                     completeResult += content;
                                                     // 实时更新AI回复
-                                                    // 更新最后一条AI消息
                                                     if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
                                                         chatMessages[chatMessages.length - 1].content = completeResult;
                                                         updateChatDisplay();
                                                     }
                                                 }
-                                                // 如果有finish_reason，说明响应结束，不需要特殊处理
                                             }
-                                            // 如果存在usage字段，则跳过处理（这是一个统计信息，不是实际内容）
                                             else if (parsed.usage) {
-                                                // 这是usage统计信息，不处理为内容
                                                 continue;
                                             }
                                             else {
-                                                // 处理简单文本响应
                                                 if(dataStr.trim()) {
                                                     completeResult += dataStr;
-                                                    // 更新最后一条AI消息
                                                     if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
                                                         chatMessages[chatMessages.length - 1].content = completeResult;
                                                         updateChatDisplay();
@@ -610,12 +606,9 @@
                                                 }
                                             }
                                         } catch (e) {
-                                            // 如果解析JSON失败，直接当作文本处理
                                             if(dataStr.trim()) {
-                                                // 检查是否是[DONE]或仅包含空白字符
                                                 if(dataStr.trim() !== '[DONE]' && dataStr.trim() !== '') {
                                                     completeResult += dataStr;
-                                                    // 更新最后一条AI消息
                                                     if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
                                                         chatMessages[chatMessages.length - 1].content = completeResult;
                                                         updateChatDisplay();
@@ -636,11 +629,7 @@
                 }
             })
             .then(data => {
-                // 在非流式响应的情况下添加AI回复
-                // 这里不能使用response.headers，因为在流式响应处理中我们已经添加了消息
-                // 我们只需在非流式响应时添加消息
                 if (typeof data === 'string' && data) {
-                    // 检查最后一条消息是否是AI回复，避免重复
                     if (chatMessages.length === 0 || chatMessages[chatMessages.length - 1].role !== 'assistant') {
                         addMessage('assistant', data);
                     }
@@ -648,19 +637,17 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                // 检查错误是否是"response is not defined"，如果是，则说明作用域问题
                 const errorMessage = error.name === 'ReferenceError' && error.message.includes('response')
                     ? 'AI回复失败: 网络请求错误，请检查网络连接'
                     : 'AI回复失败: ' + error.message +
-                      '\n\n请检查：\n1. 是否已配置LLM提供商\n2. 是否有可用的模型\n3. 凭据是否有效';
+                    '\n\n请检查：\n1. 是否已配置LLM提供商\n2. 是否有可用的模型\n3. 凭据是否有效';
 
-                // 检查最后一条消息是否是AI回复，避免重复
                 if (chatMessages.length === 0 || chatMessages[chatMessages.length - 1].role !== 'assistant') {
                     addMessage('assistant', errorMessage);
                 }
             })
             .finally(() => {
-                document.getElementById('askAILoading').style.display = 'none';
+                document.getElementById('askAILoading').classList.add('hidden');
             });
     }
 
@@ -679,7 +666,6 @@
         if (referTextId != '') {
             const element = document.getElementById(referTextId);
             if (element) {
-                // 尝试获取value属性，如果没有则获取textContent
                 referText = element.value !== undefined ? element.value :
                     (element.textContent || element.innerText || "");
             }
@@ -691,17 +677,20 @@
         startAskAIProcess(referText, query);
     }
 
-    // 监听回车键发送消息
-    document.addEventListener('DOMContentLoaded', function() {
+    // 快捷模板函数
+    function setTemplate(name, text) {
         const queryInput = document.getElementById('query');
+        queryInput.value = text;
+        queryInput.focus();
 
-        queryInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                triggerAskAI();
-            }
-        });
-    });
+        // 给用户反馈
+        const btn = event.target;
+        const originalClass = btn.className;
+        btn.className = 'btn btn-sm btn-primary flex-shrink-0';
+        setTimeout(() => {
+            btn.className = originalClass;
+        }, 300);
+    }
 
     function useAskAIText() {
         if (chatMessages.length > 0) {
@@ -711,7 +700,7 @@
                 if (referTextId != '') {
                     document.getElementById(referTextId).value = lastAssistantMsg.content;
                 }
-                $('#askAIModal').modal('hide');
+                hideAIModal();
             } else {
                 alert('没有AI回复可以使用');
             }
@@ -731,75 +720,44 @@
         if(replaceTextId == ''){
             return;
         }
-        // 获取消息内容
-        const contentElement = button.previousElementSibling; // 获取消息内容元素
-        // 提取纯文本内容，而不是innerHTML，避免复制HTML标签
+
+        const contentElement = button.previousElementSibling;
         const content = contentElement.innerText || contentElement.textContent;
-
-        // 创建临时textarea用于复制
-        const textarea = document.createElement('textarea');
-        textarea.value = content;
-        document.body.appendChild(textarea);
-
-        // 选中文本
-        textarea.select();
-        textarea.setSelectionRange(0, 99999); // 移动设备兼容性
 
         try {
             document.getElementById(replaceTextId).value = content;
             button.textContent = '已替换';
             setTimeout(() => {
-                button.textContent = originalText;
+                button.textContent = '替换';
             }, 2000);
         } catch (err) {
             console.error('无法替换文本: ', err);
-            // 降级方案：仍然尝试使用execCommand
-            try {
-                document.execCommand('copy');
-                const originalText = button.textContent;
-                button.textContent = '已替换';
-                setTimeout(() => {
-                    button.textContent = originalText;
-                }, 2000);
-            } catch (fallbackErr) {
-                alert('替换失败，请手动选择文本');
-            }
+            alert('替换失败，请手动选择文本');
         }
-
-        // 移除临时textarea
-        document.body.removeChild(textarea);
     }
 
     // 复制消息内容
     function copyMessage(button) {
-        // 获取消息内容
-        const contentElement = button.previousElementSibling; // 获取消息内容元素
-        // 提取纯文本内容，而不是innerHTML，避免复制HTML标签
+        const contentElement = button.previousElementSibling;
         const content = contentElement.innerText || contentElement.textContent;
 
-        // 创建临时textarea用于复制
         const textarea = document.createElement('textarea');
         textarea.value = content;
         document.body.appendChild(textarea);
-        
-        // 选中文本
+
         textarea.select();
-        textarea.setSelectionRange(0, 99999); // 移动设备兼容性
+        textarea.setSelectionRange(0, 99999);
 
         try {
-            // 尝试使用现代Clipboard API
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(content);
-                // 显示复制成功的提示
                 const originalText = button.textContent;
                 button.textContent = '已复制';
                 setTimeout(() => {
                     button.textContent = originalText;
                 }, 2000);
             } else {
-                // 回退到旧的document.execCommand方法
                 document.execCommand('copy');
-                // 显示复制成功的提示
                 const originalText = button.textContent;
                 button.textContent = '已复制';
                 setTimeout(() => {
@@ -808,7 +766,6 @@
             }
         } catch (err) {
             console.error('无法复制文本: ', err);
-            // 降级方案：仍然尝试使用execCommand
             try {
                 document.execCommand('copy');
                 const originalText = button.textContent;
@@ -821,7 +778,6 @@
             }
         }
 
-        // 移除临时textarea
         document.body.removeChild(textarea);
     }
 
@@ -829,111 +785,105 @@
     document.addEventListener('DOMContentLoaded', function() {
         const minimizeBtn = document.getElementById('minimizeBtn');
         const restoreBtn = document.getElementById('restoreBtn');
-        const modalDialog = document.querySelector('#askAIModal .modal-dialog');
         const floatingWindow = document.getElementById('floatingWindow');
         const modal = document.getElementById('askAIModal');
-        
-        let isMinimized = false;
-        
+
         // 最小化功能
         minimizeBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            
+
             // 隐藏模态框
-            $(modal).modal('hide');
-            
+            hideAIModal();
+
             // 显示悬浮窗
-            floatingWindow.style.display = 'block';
-            
+            floatingWindow.classList.remove('hidden');
+
             isMinimized = true;
         });
-        
+
         // 恢复功能
         restoreBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            
+
             // 隐藏悬浮窗
-            floatingWindow.style.display = 'none';
-            
+            floatingWindow.classList.add('hidden');
+
             // 显示模态框
-            $(modal).modal('show');
-            
+            showAIModal();
+
             isMinimized = false;
         });
-        
-        // 监听模态框隐藏事件，如果是因为最小化则不执行隐藏
-        $('#askAIModal').on('hide.bs.modal', function (e) {
-            if (isMinimized) {
-                e.preventDefault();
-                $(this).data('bs.modal')._isTransitioning = false;
-            }
-        });
-        
-        // 当模态框完全隐藏时，重置状态
-        $('#askAIModal').on('hidden.bs.modal', function () {
-            if (!isMinimized) {
-                // 只有在非最小化状态下才真正关闭
-                floatingWindow.style.display = 'none';
-                isMinimized = false;
-            }
-        });
-        
-        // 当模态框显示时，确保悬浮窗隐藏
-        $('#askAIModal').on('shown.bs.modal', function () {
-            if (isMinimized) {
-                isMinimized = false;
-            }
-            floatingWindow.style.display = 'none';
-        });
-        
+
         // 悬浮窗拖拽功能
         let isDragging = false;
-        let currentX;
-        let currentY;
-        let initialX;
-        let initialY;
-        let xOffset = 0;
-        let yOffset = 0;
-        
+        let startX, startY, initialX, initialY;
+
         const floatingHeader = floatingWindow.querySelector('.floating-window-header');
-        
+
         floatingHeader.addEventListener('mousedown', dragStart);
         document.addEventListener('mouseup', dragEnd);
         document.addEventListener('mousemove', drag);
-        
+
         function dragStart(e) {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-            
-            if (e.target === floatingHeader || e.target === document.querySelector('.floating-title') || e.target.classList.contains('restore-btn')) {
+            if (e.target === floatingHeader || e.target.closest('.floating-window-header')) {
                 isDragging = true;
-            }
-        }
-        
-        function dragEnd(e) {
-            initialX = currentX;
-            initialY = currentY;
-            
-            isDragging = false;
-        }
-        
-        function drag(e) {
-            if (isDragging) {
+                startX = e.clientX;
+                startY = e.clientY;
+
+                const style = window.getComputedStyle(floatingWindow);
+                const matrix = new WebKitCSSMatrix(style.transform);
+                initialX = matrix.m41;
+                initialY = matrix.m42;
+
+                floatingHeader.style.cursor = 'grabbing';
                 e.preventDefault();
-                
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                
-                xOffset = currentX;
-                yOffset = currentY;
-                
-                setTranslate(currentX, currentY, floatingWindow);
             }
         }
-        
-        function setTranslate(xPos, yPos, el) {
-            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+
+        function dragEnd(e) {
+            if (!isDragging) return;
+
+            isDragging = false;
+            floatingHeader.style.cursor = 'move';
         }
+
+        function drag(e) {
+            if (!isDragging) return;
+
+            e.preventDefault();
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            const newX = initialX + dx;
+            const newY = initialY + dy;
+
+            floatingWindow.style.transform = `translate3d(${newX}px, ${newY}px, 0)`;
+        }
+
+        // 监听回车键发送消息
+        const queryInput = document.getElementById('query');
+
+        queryInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                triggerAskAI();
+            }
+        });
+
+        // 点击模态框外部关闭
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideAIModal();
+            }
+        });
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isModalOpen && !isMinimized) {
+                hideAIModal();
+            }
+        });
     });
 </script>
 

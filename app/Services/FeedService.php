@@ -94,7 +94,7 @@ class FeedService {
 	 */
 	public function getIndexInfo($url = '') {
 		// 如果上送地址参数，将会自动读取地址信息
-		$title = ! empty ( $url ) ? CommonUtil::page_title ( $url ) : '';
+		$title = ! empty ( $url ) ? CommonUtil::pageTitle ( $url ) : '';
 		
 		// 获取已订阅信息
 		$feedSubs = $this->feedSubRepository->getUserFeedSubList ( Auth::id () );

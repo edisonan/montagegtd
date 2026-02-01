@@ -131,7 +131,7 @@ class FeedController extends Controller
             $weiboId = $request->input('weibo_user_id');
             // todo weibo
             $url = env('WEIBO_RSS_ADDR') . $weiboId;
-            $feedName = CommonUtil::page_title($url);
+            $feedName = CommonUtil::pageTitle($url);
         }
 
         $this->feedService->store($feedName, $url, $categoryId);
@@ -248,7 +248,7 @@ class FeedController extends Controller
         $this->feedService->validateFeedUrl($feedUrl);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'title' => CommonUtil::page_title($feedUrl)
+            'title' => CommonUtil::pageTitle($feedUrl)
         )));
     }
 

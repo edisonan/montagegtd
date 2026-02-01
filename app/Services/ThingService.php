@@ -32,10 +32,14 @@ class ThingService {
 	/**
 	 * 获取记事列表
 	 *
+	 * @param int $pageSize
 	 * @return Collection
 	 */
-	public function getList() {
-		return $this->thingRepository->getUserList ( Auth::id () );
+	public function getList($pageSize = 10) {
+        $filters = [
+            "user_id" => Auth::id()
+        ];
+		return $this->thingRepository->getThingListWithPagination($filters, $pageSize);
 	}
 	
 	/**

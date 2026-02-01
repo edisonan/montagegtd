@@ -15,6 +15,21 @@ class ThingRepository {
 	}
 	
 	/**
+	 * 获取记事列表(支持分页参数)
+	 *
+	 * @param array $filters
+	 * @param int $pageSize
+	 * @return Collection
+	 */
+	public function getThingListWithPagination($filters, $pageSize = 10) {
+		$thing = Thing::orderBy ( 'updated_at', 'desc' );
+        if(isset($filters["user_id"])) {
+            $thing = $thing->where("user_id", $filters['user_id']);
+        }
+        return $thing->paginate($pageSize);
+	}
+	
+	/**
 	 * 为总结获取记事列表
 	 * 
 	 * @param unknown $userId        	

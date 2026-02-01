@@ -134,7 +134,7 @@ class DailySummaryService {
 		$users = User::where ( 'last_login', '>', date ( 'Y-m-d 00:00:00', time () - 3 * 24 * 60 * 60 ) )->get ();
 		foreach ( $users as $user ) {
 			if (isset ( $user->setting->ifttt_notify )) {
-				CommonUtil::iftttnotify ( '日报提醒', '记录一下这一天的日报吧~',  config('app.url').'/dailycreate', $user->setting->ifttt_notify );
+				CommonUtil::iftttNotify ( '日报提醒', '记录一下这一天的日报吧~',  config('app.url').'/dailycreate', $user->setting->ifttt_notify );
 			}
 		}
 	}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Utils\PaginationHelper;
 use Illuminate\Http\Request;
 use App\Models\Pomo;
 use App\Models\Thing;
@@ -59,7 +60,8 @@ class PomoController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$pomos = $this->pomoService->getList ();
+        $pageSize = PaginationHelper::getPageSize($request);
+		$pomos = $this->pomoService->getPomoListWithPagination ($pageSize);
 		
 		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
 				'pomos' => $pomos 

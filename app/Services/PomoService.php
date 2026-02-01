@@ -43,11 +43,16 @@ class PomoService {
 	
 	/**
 	 * 获取番茄列表
-	 * 
+	 *
 	 * @return \App\Repositories\unknown
 	 */
-	public function getList() {
-		return $this->pomoRepository->getUserListByStatus ( Auth::id (), 2 );
+	public function getPomoListWithPagination($pageSize) {
+        $filters = array(
+            "status" => 2,
+            "user_id" => Auth::id (),
+            "page_size" => $pageSize
+        );
+		return $this->pomoRepository->getPomoListWithPagination ( $filters , $pageSize);
 	}
 	
 	/**
@@ -243,7 +248,7 @@ class PomoService {
 			}
 			// ifttt通知
 			if (isset ( $user->setting->ifttt_notify )) {
-				CommonUtil::iftttnotify ( '番茄提醒', '快来开始新的番茄吧~',  config('app.url'), $user->setting->ifttt_notify );
+				CommonUtil::iftttNotify ( '番茄提醒', '快来开始新的番茄吧~',  config('app.url'), $user->setting->ifttt_notify );
 			}
 		}
 	}
@@ -259,7 +264,7 @@ class PomoService {
 		foreach ( $pomos as $pomo ) {
 			// ifttt通知
 			if (isset ( $pomo->user->setting->ifttt_notify )) {
-				CommonUtil::iftttnotify ( '番茄提醒', '您已经完成了一个番茄，快来记录一下吧~',  config('app.url'), $pomo->user->setting->ifttt_notify );
+				CommonUtil::iftttNotify ( '番茄提醒', '您已经完成了一个番茄，快来记录一下吧~',  config('app.url'), $pomo->user->setting->ifttt_notify );
 			}
 		}
 	}
@@ -277,7 +282,7 @@ class PomoService {
 				continue;
 			}
 			if (isset ( $pomo->user->setting->ifttt_notify )) {
-				CommonUtil::iftttnotify ( '番茄提醒', '休息完成，快来开始下一个番茄吧~',  config('app.url'), $pomo->user->setting->ifttt_notify );
+				CommonUtil::iftttNotify ( '番茄提醒', '休息完成，快来开始下一个番茄吧~',  config('app.url'), $pomo->user->setting->ifttt_notify );
 			}
 		}
 	}

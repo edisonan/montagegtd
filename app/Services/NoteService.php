@@ -186,7 +186,7 @@ class NoteService {
 				$formatContent = '#分享图片#';
 			} else {
 				if (CommonUtil::isUrl ( $addContent )) {
-					$title = CommonUtil::page_title ( $addContent );
+					$title = CommonUtil::pageTitle ( $addContent );
 					$shortUrl = CommonUtil::shortUrl ( $addContent );
 					if (! empty ( $shortUrl )) {
 						$addContent = $shortUrl;

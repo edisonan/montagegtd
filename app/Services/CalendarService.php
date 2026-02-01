@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Http\Utils\ICSUtil;
-use App\Http\Utils\ICSUtil2;
-use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\CalendarRepository;
 use App\Repositories\SettingRepository;
@@ -145,7 +143,7 @@ class CalendarService {
 			);
 		}
 		
-		$ics = new ICSUtil2 ( $taskProps );
+		$ics = new ICSUtil ( $taskProps );
 		$ics_file_contents = $ics->to_string ();
 		
 		// TODO 换用封装方式存储 方便后续更换为S3等地方

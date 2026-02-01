@@ -7,16 +7,18 @@ use DateTime;
 class ICSUtil
 {
     const DT_FORMAT = 'Ymd\THis';
-    public $cal_name = "Montage Tasks";
-    public $cal_desc = "Montage GTD Util By Edison An";
     protected $properties = array();
     private $available_properties = array(
-        'description',
+        'trigger',
+        'dtstamp',
         'dtend',
         'dtstart',
-        'location',
-        'summary',
-        'url'
+        'due',
+        'completed',
+        'repeat',
+        'priority',
+        'status',
+        'summary'
     );
 
     public function __construct($props)
@@ -84,19 +86,19 @@ class ICSUtil
             'VERSION:2.0',
             'PRODID:-//Edison An//NONSGML v1.0//EN',
             'CALSCALE:GREGORIAN',
-            'X-WR-CALNAME:' . $this->cal_name,
+            'X-WR-CALNAME:Montage Tasks',
             'X-WR-TIMEZONE:Asia/Shanghai',
-            'X-WR-CALDESC:' . $this->cal_desc
+            'X-WR-CALDESC:Montage GTD Util By Edison An'
         );
 
         foreach ($this->properties as $key => $val) {
-            $ics_props [] = 'BEGIN:VEVENT';
+            $ics_props [] = 'BEGIN:VTODO';
             foreach ($val as $k => $v) {
                 $ics_props [] = strtoupper($k . ($k === 'url' ? ';VALUE=URI' : '')) . ':' . $v;
             }
             $ics_props [] = 'DTSTAMP:' . $this->format_timestamp('now');
             $ics_props [] = 'UID:' . uniqid();
-            $ics_props [] = 'END:VEVENT';
+            $ics_props [] = 'END:VTODO';
         }
 
         $ics_props [] = 'END:VCALENDAR';

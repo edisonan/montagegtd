@@ -1,162 +1,317 @@
 @extends('layouts.app')
 
+@section('title', '探索发现 - 蒙太奇')
+@section('description', '发现和订阅优质RSS源，分类浏览推荐订阅，轻松管理您的阅读内容。')
+
 @section('content')
-    <style>
-
-        .rowone {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 1;
-            padding-left: 10px;
-            padding-top: 10px;
-        }
-
-        .suggest_feed_title {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 1;
-            padding-left: 10px;
-            padding-top: 10px;
-            max-width: 60%;
-        }
-
-        .suggest_feed_content {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            display: box;
-            -webkit-box-orient: vertical;
-            box-orient: vertical;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            padding-left: 10px;
-            font-size: 14px;
-            line-height: 1.5;
-            color: #333;
-            min-height: calc(2 * 1.5em); /* 根据行高和行数计算最小高度，这里假设行高为 1.5em，显示两行 */
-        }
-    </style>
-
-    <script type="text/javascript">
-        $(document).ready(function () {
-
-            $(".feed_quick_sub").click(function () {
-                var feed_id = $(this).attr('feed_id');
-                $.get("{{ url('/feeds/quickstore') }}", {"feed_id": feed_id}, function (result_arr) {
-                    if (result_arr.code != 9999) {
-                        alert(result_arr.msg);
-                    } else {
-                        alert(result_arr.msg);
-                    }
-                });
-            });
-
-        });
-    </script>
-    <div class="container">
-
-            <div class="card" style="margin-bottom: 10px;">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <div>订阅推荐</div>
-                    <div class="d-flex align-items-center">
-                        <form action="/feeds/search" class="d-flex">
-                            <input type="text" value="" name="name" class="form-control me-2" placeholder="请输入想要搜索的关键字"/>
-                            <button type="submit" class="btn btn-primary">即刻搜索</button>
-                        </form>
-{{--                        [<a href="{{ url('articles') }}">返回阅读</a>]--}}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 快速订阅卡片 -->
+        <div class="card mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">订阅推荐</h2>
+                        <p class="text-sm text-gray-500 mt-1">快速开始您的订阅之旅</p>
                     </div>
-                </div>
 
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3" style="padding:10px">
-                            <div class="card card-block" style="text-align:center">
-                                <b class="card-title rowone">
-                                    <a href="/feeds">直接订阅</a>
-                                </b>
-                            </div>
+                    <form action="/feeds/search" class="flex gap-2 w-full md:w-auto">
+                        <div class="flex-1 md:flex-none">
+                            <input type="text" name="name" placeholder="搜索订阅源..."
+                                   class="input w-full" value="{{ request('name') ?? '' }}">
                         </div>
-                        <div class="col-md-3" style="padding:10px">
-                            <div class="card card-block" style="text-align:center">
-                                <b class="card-title rowone">
-                                    <a href="/feeds/weiborss">订阅微博</a>
-                                </b>
-                            </div>
-                        </div>
-                        <div class="col-md-3" style="padding:10px">
-                            <div class="card card-block" style="text-align:center">
-                                <b class="card-title rowone">
-                                    <a href="/feeds/weixinrss">订阅公众号</a>
-                                </b>
-                            </div>
-                        </div>
-                        <div class="col-md-3" style="padding:10px">
-                            <div class="card card-block" style="text-align:center">
-                                <b class="card-title rowone">
-                                    <a href="/feeds/opml">OPML导入</a>
-                                </b>
-                            </div>
-                        </div>
-                    </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search mr-2"></i>
+                            搜索
+                        </button>
+                    </form>
                 </div>
             </div>
 
-        <div class="card" style="margin-bottom: 10px;">
-            <div class="card-header">
-                分类订阅
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    @foreach ($recommend_categorys as $id => $name)
-                        <div class="col-md-3" style="padding:10px;">
-                            <div class="card card-block" style="text-align:center;">
-                                <b class="card-title rowone">
-                                    <a href="/feeds/search?recommend_category_id={{ $id }}">{{ $name }}</a>
-                                </b>
+            <div class="p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    @php
+                        $quickLinks = [
+                            ['url' => '/feeds', 'label' => '直接订阅', 'icon' => 'fas fa-rss', 'color' => 'from-blue-500 to-blue-600'],
+                            ['url' => '/feeds/weiborss', 'label' => '订阅微博', 'icon' => 'fab fa-weibo', 'color' => 'from-red-500 to-red-600'],
+                            ['url' => '/feeds/weixinrss', 'label' => '订阅公众号', 'icon' => 'fab fa-weixin', 'color' => 'from-green-500 to-green-600'],
+                            ['url' => '/feeds/opml', 'label' => 'OPML导入', 'icon' => 'fas fa-file-import', 'color' => 'from-purple-500 to-purple-600'],
+                        ];
+                    @endphp
+
+                    @foreach ($quickLinks as $link)
+                        <a href="{{ $link['url'] }}" class="group">
+                            <div class="card hover:card-elevated transition-all duration-200 h-full">
+                                <div class="p-5 text-center">
+                                    <div class="w-12 h-12 bg-gradient-to-br {{ $link['color'] }} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                        <i class="{{ $link['icon'] }} text-white text-lg"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
+                                        {{ $link['label'] }}
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-2">快速添加订阅源</p>
+                                </div>
                             </div>
-                        </div>
+                        </a>
                     @endforeach
                 </div>
             </div>
         </div>
 
-            <div class="card" style="margin-bottom: 10px;">
-                <div class="card-header">
-                    推荐订阅源
-                </div>
+        <!-- 分类订阅 -->
+        <div class="card mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">分类订阅</h2>
+                <p class="text-sm text-gray-500 mt-1">按类别发现优质内容</p>
+            </div>
 
-                <div class="card-body">
-                    <!-- Display Validation Errors -->
-                    @include('common.errors')
-
-                    @if (count($feeds) > 0)
-
-                        <div class="row">
-                            @foreach ($feeds as $feed)
-                                <div class="col-md-4" style="padding:10px">
-                                    <div class="card card-block">
-                                        <b class="card-title suggest_feed_title">
-                                            <img alt="" style="width: 15px;" src="{{ $feed->favicon }}">
-                                            <a href="{{ url('article/list') }}?feed_id={{$feed->id}}">{{ $feed->feed_name }}</a>
-                                        </b>
-                                        <p class="card-text suggest_feed_content"><small>{{ $feed->feed_desc }} &nbsp;</small></p>
-                                        <a class="card-link text-right" style="padding:10px"
-                                           href="javascript:void(0)" feed_id="{{ $feed->id }}" class="feed_quick_sub">直接订阅</a>
+            <div class="p-6">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    @foreach ($recommend_categorys as $id => $name)
+                        <a href="/feeds/search?recommend_category_id={{ $id }}"
+                           class="group">
+                            <div class="card hover:bg-gray-50 transition-colors h-full">
+                                <div class="p-4 text-center">
+                                    <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-gray-200 transition-colors">
+                                        <i class="fas fa-folder text-gray-500"></i>
                                     </div>
+                                    <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors truncate block">
+                                {{ $name }}
+                            </span>
                                 </div>
-                            @endforeach
-                        </div>
-                        <br>
-                        {!! $feeds->links() !!}
-                    @endif
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- 推荐订阅源 -->
+        <div class="card">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">推荐订阅源</h2>
+                        <p class="text-sm text-gray-500 mt-1">精选优质内容源</p>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        共 {{ $feeds->total() }} 个订阅源
+                    </div>
                 </div>
             </div>
 
+            <div class="p-6">
+                <!-- 错误提示 -->
+                @include('common.errors')
 
+                @if (count($feeds) > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach ($feeds as $feed)
+                            <div class="card hover:card-elevated transition-all duration-200 h-full flex flex-col">
+                                <div class="p-5 flex-grow">
+                                    <!-- 标题区域 -->
+                                    <div class="flex items-start gap-3 mb-3">
+                                        @if($feed->favicon)
+                                            <img src="{{ $feed->favicon }}" alt="{{ $feed->feed_name }}"
+                                                 class="w-8 h-8 rounded-full flex-shrink-0 border border-gray-200">
+                                        @else
+                                            <div class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-rss text-white text-sm"></i>
+                                            </div>
+                                        @endif
+
+                                        <div class="flex-grow min-w-0">
+                                            <h3 class="font-semibold text-gray-800 truncate hover:text-gray-900 transition-colors">
+                                                <a href="{{ url('article/list') }}?feed_id={{$feed->id}}" class="hover:underline">
+                                                    {{ $feed->feed_name }}
+                                                </a>
+                                            </h3>
+                                        </div>
+                                    </div>
+
+                                    <!-- 描述内容 -->
+                                    @if($feed->feed_desc)
+                                        <div class="mb-4">
+                                            <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                                                {{ $feed->feed_desc }}
+                                            </p>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- 操作区域 -->
+                                <div class="px-5 pb-5 pt-0">
+                                    <div class="flex items-center justify-between">
+                                        <a href="{{ url('article/list') }}?feed_id={{$feed->id}}"
+                                           class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                                            <i class="fas fa-newspaper mr-1"></i>浏览文章
+                                        </a>
+                                        <button type="button"
+                                                data-feed-id="{{ $feed->id }}"
+                                                class="feed-quick-subscribe btn btn-sm btn-outline py-1 px-3">
+                                            <i class="fas fa-plus mr-1"></i>
+                                            订阅
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- 分页 -->
+                    @if($feeds->hasPages())
+                        <div class="mt-8 border-t border-gray-200 pt-6">
+                            <div class="flex items-center justify-between">
+                                <div class="text-sm text-gray-500">
+                                    显示 {{ $feeds->firstItem() }} 到 {{ $feeds->lastItem() }} 条，共 {{ $feeds->total() }} 条
+                                </div>
+                                <div class="flex gap-1">
+                                    @if($feeds->onFirstPage())
+                                        <span class="px-3 py-2 text-gray-400 bg-gray-100 rounded-lg">
+                            <i class="fas fa-chevron-left mr-1"></i>上一页
+                        </span>
+                                    @else
+                                        <a href="{{ $feeds->previousPageUrl() }}" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-chevron-left mr-1"></i>上一页
+                                        </a>
+                                    @endif
+
+                                    @if($feeds->hasMorePages())
+                                        <a href="{{ $feeds->nextPageUrl() }}" class="btn btn-secondary btn-sm">
+                                            下一页<i class="fas fa-chevron-right ml-1"></i>
+                                        </a>
+                                    @else
+                                        <span class="px-3 py-2 text-gray-400 bg-gray-100 rounded-lg">
+                            下一页<i class="fas fa-chevron-right ml-1"></i>
+                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                @else
+                    <!-- 空状态 -->
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-rss text-gray-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">暂无推荐订阅源</h3>
+                        <p class="text-gray-500 max-w-md mx-auto">
+                            当前没有推荐的订阅源，您可以尝试搜索其他内容或稍后再来查看。
+                        </p>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
+
+    <style>
+        /* 文本截断样式 */
+        .line-clamp-1 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+        }
+
+        .line-clamp-2 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+        }
+
+        .line-clamp-3 {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            // 快速订阅功能
+            $(document).on('click', '.feed-quick-subscribe', function() {
+                const button = $(this);
+                const feedId = button.data('feed-id');
+
+                // 防止重复点击
+                if (button.hasClass('loading')) return;
+
+                // 显示加载状态
+                button.addClass('loading').prop('disabled', true);
+                const originalText = button.html();
+                button.html('<i class="fas fa-spinner fa-spin mr-1"></i>处理中...');
+
+                $.ajax({
+                    url: "{{ url('/feeds/quickstore') }}",
+                    method: 'GET',
+                    data: { feed_id: feedId },
+                    success: function(response) {
+                        if (response.code === 9999) {
+                            // 成功 - 更新按钮状态
+                            button.removeClass('btn-outline').addClass('btn-success');
+                            button.html('<i class="fas fa-check mr-1"></i>已订阅');
+
+                            // 显示成功消息
+                            showNotification('success', response.msg || '订阅成功！');
+                        } else {
+                            // 失败
+                            showNotification('error', response.msg || '订阅失败，请重试');
+                            button.html(originalText).removeClass('loading').prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr) {
+                        showNotification('error', '网络错误，请稍后重试');
+                        button.html(originalText).removeClass('loading').prop('disabled', false);
+                    }
+                });
+            });
+
+            // 通知函数
+            function showNotification(type, message) {
+                // 创建通知元素
+                const notification = $('<div class="fixed top-4 right-4 z-50 fade-in"></div>');
+                const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+
+                notification.html(`
+                <div class="card ${bgColor} text-white shadow-xl max-w-sm">
+                    <div class="p-4 flex items-center gap-3">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} text-lg"></i>
+                        <div class="flex-1">${message}</div>
+                        <button class="text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `);
+
+                // 添加到页面
+                $('body').append(notification);
+
+                // 点击关闭
+                notification.find('button').on('click', function() {
+                    notification.remove();
+                });
+
+                // 5秒后自动关闭
+                setTimeout(() => {
+                    notification.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+            }
+
+            // 搜索表单优化
+            $('form[action="/feeds/search"]').on('submit', function(e) {
+                const input = $(this).find('input[name="name"]');
+                if (!input.val().trim()) {
+                    e.preventDefault();
+                    input.focus();
+                    showNotification('warning', '请输入搜索关键词');
+                }
+            });
+        });
+    </script>
 @endsection

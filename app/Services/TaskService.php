@@ -66,11 +66,16 @@ class TaskService {
 	/**
 	 * 获取首页待办列表
 	 * 
-	 * @param string $status        	
+	 * @param string $status
+	 * @param int $pageSize
 	 * @return unknown
 	 */
-	public function getIndexList($status) {
-		$tasks = $this->taskRepository->getUserList ( Auth::id (), $status );
+	public function getTaskListWithPagination($status, $pageSize = 10) {
+        $filters = array(
+            "status" => $status,
+            "user_id" => Auth::id ()
+        );
+		$tasks = $this->taskRepository->getTaskListWithPagination ( $filters, $pageSize );
 		return $tasks;
 	}
 	
@@ -231,7 +236,7 @@ class TaskService {
 			} );
 			// ifttt通知
 			if (isset ( $task->user->setting->ifttt_notify )) {
-				CommonUtil::iftttnotify ( $title, $task->name,  config('app.url'), $task->user->setting->ifttt_notify );
+				CommonUtil::iftttNotify ( $title, $task->name,  config('app.url'), $task->user->setting->ifttt_notify );
 			}
 		}
 	}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Utils\PaginationHelper;
 use App\Models\Task;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
@@ -46,7 +47,8 @@ class TaskController extends Controller {
 	 */
 	public function index(Request $request) {
 		$status = $request->input ( 'status', '' );
-		$tasks = $this->taskService->getIndexList ( $status );
+		$pageSize = PaginationHelper::getPageSize($request);
+		$tasks = $this->taskService->getTaskListWithPagination ( $status, $pageSize );
 		
 		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
 				'tasks' => $tasks 
