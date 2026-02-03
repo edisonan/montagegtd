@@ -448,8 +448,9 @@
 
     .content-preview {
         color: #475569;
-        line-height: 1.7;
-        font-size: 0.95rem;
+        line-height: 1.75; /* 提升行高，增强可读性 */
+        font-size: 1.05rem; /* 从0.95rem提升至1.05rem (16.8px) */
+        letter-spacing: -0.01em; /* 微调字间距 */
         max-height: 360px;
         overflow: hidden;
         position: relative;
@@ -460,16 +461,82 @@
         max-height: 5000px !important;
     }
 
+    /* 段落优化 - 增强阅读节奏 */
+    .content-preview p {
+        margin-bottom: 1.25em; /* 段落间距 */
+        text-align: justify; /* 两端对齐（中文更美观） */
+        text-justify: inter-ideograph;
+    }
+
+    /* 标题层级优化 */
+    .content-preview h1,
+    .content-preview h2,
+    .content-preview h3,
+    .content-preview h4 {
+        font-weight: 600;
+        margin-top: 1.5em;
+        margin-bottom: 0.75em;
+        line-height: 1.4;
+        color: #1e293b;
+    }
+
+    .content-preview h1 { font-size: 1.6rem; margin-top: 2em; }
+    .content-preview h2 { font-size: 1.4rem; }
+    .content-preview h3 { font-size: 1.25rem; }
+    .content-preview h4 { font-size: 1.15rem; }
+
+    /* 列表优化 */
+    .content-preview ul,
+    .content-preview ol {
+        padding-left: 1.5em;
+        margin: 1.25em 0;
+        line-height: 1.8;
+    }
+
+    .content-preview li {
+        margin-bottom: 0.5em;
+    }
+
+    /* 引用块优化 */
+    .content-preview blockquote {
+        border-left: 4px solid #4a90e2;
+        padding: 1em 1.5em;
+        background-color: #f8fafc;
+        margin: 1.5em 0;
+        font-style: italic;
+        color: #475569;
+    }
+
+    /* 代码块优化 */
+    .content-preview code {
+        background-color: #f1f5f9;
+        padding: 0.2em 0.4em;
+        border-radius: 4px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.95em;
+    }
+
+    .content-preview pre {
+        background-color: #f8fafc;
+        padding: 1.2em;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1.5em 0;
+    }
+
+    /* 图片优化 */
     .content-preview img {
         max-width: 100%;
         height: auto;
         border-radius: 8px;
-        margin: 12px 0;
-        transition: transform 0.3s ease;
+        margin: 1.5em auto;
+        display: block;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .content-preview img:hover {
-        transform: scale(1.02);
+        transform: scale(1.03);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
 
     .content-fade {
@@ -1178,9 +1245,9 @@
                                                     <i class="far fa-star"></i>
                                                     <span class="action-label">收藏</span>
                                                 </button>
-                                            </div>
+{{--                                            </div>--}}
 
-                                            <div class="audio-control">
+{{--                                            <div class="audio-control">--}}
                                                 <button type="button"
                                                         class="action-btn playaudio"
                                                         data-article-id="{{ $articleSub->id }}"

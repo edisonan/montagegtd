@@ -2,241 +2,215 @@
 <script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 
 <!-- 任务编辑模态框 -->
-<div id="taskUpdateModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+<div id="taskUpdateModal" class="hidden fixed inset-0 z-50">
     <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
 
-    <div class="flex items-center justify-center min-h-screen px-4 py-8">
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
-            <!-- 模态框头部 -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-900" id="taskUpdateModalLabel">修改待办</h3>
-                <button type="button" class="close-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                        onclick="hideTaskUpdateModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <!-- 模态框内容 -->
-            <div class="p-6">
-                <div id="taskUpdateErrors" class="hidden p-4 mb-6 bg-red-50 border border-red-200 rounded-lg">
-                    <ul id="taskUpdateErrorList" class="text-red-600 text-sm space-y-1"></ul>
+    <!-- 修复：使用fixed和flex居中容器 -->
+    <div class="fixed inset-0 overflow-y-auto py-4 sm:py-8 px-4">
+        <!-- 修复：添加flex居中容器 -->
+        <div class="min-h-full flex items-center justify-center">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
+                <!-- 模态框头部 - 固定 -->
+                <div class="sticky top-0 z-10 bg-white rounded-t-lg flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900">修改待办</h3>
+                    <button type="button" class="close-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                            onclick="hideTaskUpdateModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
 
-                <form id="taskUpdateForm" method="POST" class="space-y-6">
-                    {{ csrf_field() }}
-                    <input type="hidden" name="_method" value="POST">
-                    <input type="hidden" name="id" id="task_id_input" value="">
-
-                    <!-- 待办名称 -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                        <label for="task_name_input" class="font-medium text-gray-700">待办名称</label>
-                        <div class="md:col-span-3">
-                            <input type="text" name="name" id="task_name_input"
-                                   class="input w-full"
-                                   placeholder="请输入待办事项名称"
-                                   required>
-                        </div>
+                <!-- 模态框内容 - 可滚动区域 -->
+                <div class="overflow-y-auto max-h-[calc(100vh-200px)] sm:max-h-[calc(100vh-240px)] p-4 sm:p-6">
+                    <div id="taskUpdateErrors" class="hidden p-3 sm:p-4 mb-4 sm:mb-6 bg-red-50 border border-red-200 rounded-lg">
+                        <ul id="taskUpdateErrorList" class="text-red-600 text-sm space-y-1"></ul>
                     </div>
 
-                    <!-- 父级任务 -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                        <label for="parent_task_id_input" class="font-medium text-gray-700">父级任务</label>
-                        <div class="md:col-span-3">
-                            <select name="parent_task_id" id="parent_task_id_input" class="input w-full">
-                                <option value="">-- 无父级任务 --</option>
-                                <!-- 父级任务选项将通过JavaScript动态加载 -->
-                            </select>
-                        </div>
-                    </div>
+                    <form id="taskUpdateForm" method="POST" class="space-y-4 sm:space-y-6">
+                        {{ csrf_field() }}
+                        <input type="hidden" name="_method" value="POST">
+                        <input type="hidden" name="id" id="task_id_input" value="">
 
-                    <!-- 待办等级 -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="font-medium text-gray-700">待办等级</div>
-                        <div class="md:col-span-3">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                    <input type="radio" name="priority" value="1"
-                                           class="w-4 h-4 text-blue-600" id="priority1_input">
-                                    <span class="text-gray-700">不重要不紧急</span>
-                                </label>
-
-                                <label class="flex items-center space-x-3 p-3 border border-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer">
-                                    <input type="radio" name="priority" value="2"
-                                           class="w-4 h-4 text-blue-600" id="priority2_input">
-                                    <span class="text-blue-700 font-medium">不重要紧急</span>
-                                </label>
-
-                                <label class="flex items-center space-x-3 p-3 border border-orange-200 rounded-lg bg-orange-50 hover:bg-orange-100 cursor-pointer">
-                                    <input type="radio" name="priority" value="3"
-                                           class="w-4 h-4 text-blue-600" id="priority3_input">
-                                    <span class="text-orange-700 font-medium">重要不紧急</span>
-                                </label>
-
-                                <label class="flex items-center space-x-3 p-3 border border-red-200 rounded-lg bg-red-50 hover:bg-red-100 cursor-pointer">
-                                    <input type="radio" name="priority" value="4"
-                                           class="w-4 h-4 text-blue-600" id="priority4_input">
-                                    <span class="text-red-700 font-medium">重要紧急</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 待办状态 -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="font-medium text-gray-700">待办状态</div>
-                        <div class="md:col-span-3">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                    <input type="radio" name="status" value="1"
-                                           class="w-4 h-4 text-blue-600" id="status1_input">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                        <span class="text-gray-700">进行中</span>
-                                    </div>
-                                </label>
-
-                                <label class="flex items-center space-x-3 p-3 border border-green-200 rounded-lg bg-green-50 hover:bg-green-100 cursor-pointer">
-                                    <input type="radio" name="status" value="2"
-                                           class="w-4 h-4 text-blue-600" id="status2_input">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-check-circle text-green-500"></i>
-                                        <span class="text-green-700 font-medium">已完成</span>
-                                    </div>
-                                </label>
-
-                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                    <input type="radio" name="status" value="3"
-                                           class="w-4 h-4 text-blue-600" id="status3_input">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-folder text-gray-500"></i>
-                                        <span class="text-gray-700">已折叠</span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 时间选择器 -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- 提醒时间 -->
-                        <div class="space-y-2">
-                            <label for="remindtime_input" class="font-medium text-gray-700">
-                                <i class="far fa-bell mr-2 text-blue-500"></i>提醒时间
-                            </label>
-                            <div class="relative">
-                                <input type="text" name="remindtime" id="remindtime_input"
-                                       class="input w-full pl-10"
-                                       onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})"
-                                       placeholder="选择提醒时间">
-                                <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <!-- 待办名称 -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 items-start">
+                            <label for="task_name_input" class="font-medium text-gray-700 pt-2">待办名称</label>
+                            <div class="md:col-span-3">
+                                <input type="text" name="name" id="task_name_input"
+                                       class="input w-full text-sm sm:text-base"
+                                       placeholder="请输入待办事项名称"
+                                       required>
                             </div>
                         </div>
 
-                        <!-- 截止时间 -->
-                        <div class="space-y-2">
-                            <label for="deadline_input" class="font-medium text-gray-700">
-                                <i class="far fa-clock mr-2 text-red-500"></i>截止时间
-                            </label>
-                            <div class="relative">
-                                <input type="text" name="deadline" id="deadline_input"
-                                       class="input w-full pl-10"
-                                       onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})"
-                                       placeholder="选择截止时间">
-                                <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <!-- 父级任务 -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 items-start">
+                            <label for="parent_task_id_input" class="font-medium text-gray-700 pt-2">父级任务</label>
+                            <div class="md:col-span-3">
+                                <select name="parent_task_id" id="parent_task_id_input" class="input w-full text-sm sm:text-base">
+                                    <option value="">-- 无父级任务 --</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- 待办置顶 -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="font-medium text-gray-700">待办置顶</div>
-                        <div class="md:col-span-3">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <label class="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                                    <input type="radio" name="is_top" value="0"
-                                           class="w-4 h-4 text-blue-600" id="is_top1_input">
-                                    <span class="text-gray-700">不置顶</span>
-                                </label>
+                        <!-- 待办等级 -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+                            <div class="font-medium text-gray-700 pt-2">待办等级</div>
+                            <div class="md:col-span-3">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="priority" value="1"
+                                               class="w-4 h-4 text-blue-600">
+                                        <span class="text-gray-700">不重要不紧急</span>
+                                    </label>
 
-                                <label class="flex items-center space-x-3 p-3 border border-yellow-200 rounded-lg bg-yellow-50 hover:bg-yellow-100 cursor-pointer">
-                                    <input type="radio" name="is_top" value="1"
-                                           class="w-4 h-4 text-blue-600" id="is_top2_input">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-thumbtack text-yellow-500"></i>
-                                        <span class="text-yellow-700 font-medium">置顶</span>
-                                    </div>
-                                </label>
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="priority" value="2"
+                                               class="w-4 h-4 text-blue-600">
+                                        <span class="text-blue-700 font-medium">不重要紧急</span>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-orange-200 rounded-lg bg-orange-50 hover:bg-orange-100 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="priority" value="3"
+                                               class="w-4 h-4 text-blue-600">
+                                        <span class="text-orange-700 font-medium">重要不紧急</span>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-red-200 rounded-lg bg-red-50 hover:bg-red-100 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="priority" value="4"
+                                               class="w-4 h-4 text-blue-600">
+                                        <span class="text-red-700 font-medium">重要紧急</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- 模式 -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="font-medium text-gray-700">模式</div>
-                        <div class="md:col-span-3">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <label class="flex items-center space-x-3 p-3 border border-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer">
-                                    <input type="radio" name="mode" value="1"
-                                           class="w-4 h-4 text-blue-600" id="mode1_input">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-briefcase text-blue-500"></i>
-                                        <span class="text-blue-700 font-medium">工作</span>
-                                    </div>
-                                </label>
+                        <!-- 待办状态 -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+                            <div class="font-medium text-gray-700 pt-2">待办状态</div>
+                            <div class="md:col-span-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="status" value="1"
+                                               class="w-4 h-4 text-blue-600">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                            <span class="text-gray-700">进行中</span>
+                                        </div>
+                                    </label>
 
-                                <label class="flex items-center space-x-3 p-3 border border-green-200 rounded-lg bg-green-50 hover:bg-green-100 cursor-pointer">
-                                    <input type="radio" name="mode" value="2"
-                                           class="w-4 h-4 text-blue-600" id="mode2_input">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-home text-green-500"></i>
-                                        <span class="text-green-700 font-medium">生活</span>
-                                    </div>
-                                </label>
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-green-200 rounded-lg bg-green-50 hover:bg-green-100 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="status" value="2"
+                                               class="w-4 h-4 text-blue-600">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                                            <span class="text-green-700 font-medium">已完成</span>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="status" value="3"
+                                               class="w-4 h-4 text-blue-600">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-folder text-gray-500 text-sm"></i>
+                                            <span class="text-gray-700">已折叠</span>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
-            </div>
 
-            <!-- 模态框底部 -->
-            <div class="flex items-center justify-end p-6 border-t border-gray-200 space-x-3">
-                <button type="button" class="btn btn-outline" onclick="hideTaskUpdateModal()">取消</button>
-                <button type="button" class="btn btn-primary" onclick="submitTaskUpdateForm()">
-                    <i class="fas fa-save mr-2"></i>保存修改
-                </button>
+                        <!-- 时间选择器 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                            <!-- 提醒时间 -->
+                            <div class="space-y-2">
+                                <label for="remindtime_input" class="font-medium text-gray-700 text-sm sm:text-base">
+                                    <i class="far fa-bell mr-2 text-blue-500"></i>提醒时间
+                                </label>
+                                <div class="relative">
+                                    <input type="text" name="remindtime" id="remindtime_input"
+                                           class="input w-full pl-10 text-sm sm:text-base"
+                                           onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})"
+                                           placeholder="选择提醒时间">
+                                    <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+
+                            <!-- 截止时间 -->
+                            <div class="space-y-2">
+                                <label for="deadline_input" class="font-medium text-gray-700 text-sm sm:text-base">
+                                    <i class="far fa-clock mr-2 text-red-500"></i>截止时间
+                                </label>
+                                <div class="relative">
+                                    <input type="text" name="deadline" id="deadline_input"
+                                           class="input w-full pl-10 text-sm sm:text-base"
+                                           onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',minDate:'%y-%M-%d'})"
+                                           placeholder="选择截止时间">
+                                    <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 待办置顶 -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+                            <div class="font-medium text-gray-700 pt-2">待办置顶</div>
+                            <div class="md:col-span-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="is_top" value="0"
+                                               class="w-4 h-4 text-blue-600">
+                                        <span class="text-gray-700">不置顶</span>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-yellow-200 rounded-lg bg-yellow-50 hover:bg-yellow-100 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="is_top" value="1"
+                                               class="w-4 h-4 text-blue-600">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-thumbtack text-yellow-500 text-sm"></i>
+                                            <span class="text-yellow-700 font-medium">置顶</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 模式 -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+                            <div class="font-medium text-gray-700 pt-2">模式</div>
+                            <div class="md:col-span-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="mode" value="1"
+                                               class="w-4 h-4 text-blue-600">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-briefcase text-blue-500 text-sm"></i>
+                                            <span class="text-blue-700 font-medium">工作</span>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-green-200 rounded-lg bg-green-50 hover:bg-green-100 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="mode" value="2"
+                                               class="w-4 h-4 text-blue-600">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-home text-green-500 text-sm"></i>
+                                            <span class="text-green-700 font-medium">生活</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 模态框底部 - 固定 -->
+                <div class="sticky bottom-0 bg-white rounded-b-lg flex items-center justify-end p-4 sm:p-6 border-t border-gray-200 space-x-2 sm:space-x-3">
+                    <button type="button" class="btn btn-outline px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base" onclick="hideTaskUpdateModal()">取消</button>
+                    <button type="button" class="btn btn-primary px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base" onclick="submitTaskUpdateForm()">
+                        <i class="fas fa-save mr-1 sm:mr-2"></i>保存修改
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    /* 日期选择器输入框样式 */
-    .datepicker-input {
-        cursor: pointer;
-    }
-
-    /* 选项标签悬停效果 */
-    .option-label {
-        transition: all 0.2s ease;
-    }
-
-    .option-label:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    /* 选中的选项样式 */
-    input[type="radio"]:checked + * {
-        font-weight: 600;
-    }
-
-    /* 自定义单选按钮样式 */
-    input[type="radio"] {
-        width: 18px;
-        height: 18px;
-        accent-color: var(--primary-color);
-    }
-</style>
 
 <script>
     let isTaskModalOpen = false;
@@ -272,6 +246,12 @@
             modal.classList.remove('flex');
             modal.classList.add('hidden');
             isTaskModalOpen = false;
+
+            // 滚动到顶部
+            const contentArea = modal.querySelector('.overflow-y-auto');
+            if (contentArea) {
+                contentArea.scrollTop = 0;
+            }
         }, 300);
     }
 
@@ -303,10 +283,8 @@
 
                 if(response.code == 9999) {
                     hideTaskUpdateModal();
-                    // 刷新页面或更新列表
                     location.reload();
                 } else {
-                    // 显示错误信息
                     $('#taskUpdateErrorList').empty();
                     if(response.msg) {
                         $('#taskUpdateErrorList').append('<li>' + response.msg + '</li>');
@@ -316,7 +294,10 @@
                     $('#taskUpdateErrors').removeClass('hidden');
 
                     // 滚动到错误位置
-                    $('#taskUpdateErrors')[0].scrollIntoView({ behavior: 'smooth' });
+                    const errorElement = document.getElementById('taskUpdateErrors');
+                    if (errorElement) {
+                        errorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }
             },
             error: function(xhr) {
@@ -324,7 +305,6 @@
                 submitBtn.prop('disabled', false);
                 submitBtn.html('<i class="fas fa-save mr-2"></i>保存修改');
 
-                // 显示验证错误
                 $('#taskUpdateErrorList').empty();
                 if(xhr.responseJSON && xhr.responseJSON.errors) {
                     $.each(xhr.responseJSON.errors, function(key, value) {
@@ -335,8 +315,10 @@
                 }
                 $('#taskUpdateErrors').removeClass('hidden');
 
-                // 滚动到错误位置
-                $('#taskUpdateErrors')[0].scrollIntoView({ behavior: 'smooth' });
+                const errorElement = document.getElementById('taskUpdateErrors');
+                if (errorElement) {
+                    errorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
         });
     }
@@ -352,7 +334,6 @@
             url: url,
             type: 'GET',
             beforeSend: function() {
-                // 显示加载状态
                 const select = $('#parent_task_id_input');
                 select.html('<option value="">加载中...</option>');
             },
@@ -368,7 +349,6 @@
                         selectElement.append('<option value="' + task.id + '">' + type + ' ' + statusIcon + task.name + '</option>');
                     });
 
-                    // 如果提供了当前父任务ID，则选中该项
                     if(currentParentTaskId) {
                         selectElement.val(currentParentTaskId);
                     }
@@ -384,9 +364,7 @@
 
     // 打开任务编辑模态框的函数
     function openTaskUpdateModal(taskData) {
-        console.log('openTaskUpdateModal 函数被调用，任务数据:', taskData);
-
-        // 先加载父级任务选项，排除当前任务本身，并设置当前父任务ID
+        // 先加载父级任务选项
         loadParentTasks(taskData.id, taskData.parent_task_id);
 
         // 填充表单数据

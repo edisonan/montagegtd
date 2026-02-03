@@ -212,6 +212,8 @@
         opacity: 0;
     }
 
+
+
     .read-more {
         text-align: center;
         padding-top: 16px;

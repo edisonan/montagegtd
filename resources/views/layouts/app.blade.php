@@ -68,8 +68,8 @@
                             'label'=>'记想法',
                             'icon'=>'fas fa-lightbulb',
                             'submenu' => [
-                                ['url'=>'/notes', 'label'=>'新想法', 'icon'=>'fas fa-plus'],
-                                ['url'=>'/notes', 'label'=>'想法列表', 'icon'=>'fas fa-list'],
+                                ['url'=>'/notes', 'label'=>'新的想法', 'icon'=>'fas fa-plus'],
+                                ['url'=>'/minds', 'label'=>'思维导图', 'icon'=>'fas fa-sitemap'],
                             ]
                         ],
                         [
@@ -82,14 +82,6 @@
                                 ['url'=>'/articles?status=star', 'label'=>'收藏文章', 'icon'=>'fas fa-star'],
                                 ['url'=>'/feeds', 'label'=>'订阅管理', 'icon'=>'fas fa-rss'],
                                 ['url'=>'/feeds/explorer', 'label'=>'探索发现', 'icon'=>'fas fa-compass'],
-                            ]
-                        ],
-                        [
-                            'url'=>'/minds',
-                            'label'=>'绘导图',
-                            'icon'=>'fas fa-project-diagram',
-                            'submenu' => [
-                                ['url'=>'/minds', 'label'=>'思维导图', 'icon'=>'fas fa-sitemap'],
                             ]
                         ],
                         [
