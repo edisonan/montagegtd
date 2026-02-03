@@ -27,7 +27,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- 引入ECharts -->
-    <script src="{{ url('/js/echarts.min.js') }}" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js" defer></script>
 
     <!-- 引入自定义CSS -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">

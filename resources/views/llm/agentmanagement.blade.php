@@ -631,7 +631,7 @@
                     const response = await fetch('/llm/api/agents', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
 
@@ -813,7 +813,7 @@
                     const response = await fetch('/llm/api/models', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
 

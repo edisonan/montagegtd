@@ -325,7 +325,7 @@
                 事情列表
             </h1>
             <div class="btn-group">
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#thingCreateModal">
+                <button type="button" class="btn btn-primary" data-toggle="modal"  onclick="showThingCreateModal()">
                     <i class="fas fa-plus mr-2"></i>
                     新增事情
                 </button>

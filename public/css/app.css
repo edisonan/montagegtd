@@ -3,7 +3,7 @@
 :root {
     /* 调整为更柔和的蓝色和紫色 */
     --primary-color: #4caf50;    /* 柔和的蓝色 */
-    --secondary-color: #8a6cff;  /* 柔和的紫色 */
+    --secondary-color: #2196f3;  /* 柔和的紫色 */
     --success-color: #27ae60;    /* 稍微柔和的绿色 */
     --warning-color: #f39c12;    /* 稍微柔和的橙色 */
     --danger-color: #e74c3c;     /* 稍微柔和的红色 */

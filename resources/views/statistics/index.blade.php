@@ -512,35 +512,71 @@
         </div>
     </div>
 
-    <!-- ECharts脚本 -->
-
     <script type="text/javascript">
-        $(document).ready(function() {
+        // 等待 ECharts 加载的辅助函数
+        function waitForECharts(callback, attempts = 30) {
+            if (typeof echarts !== 'undefined') {
+                console.log('ECharts 已加载，版本:', echarts.version);
+                callback();
+            } else if (attempts > 0) {
+                setTimeout(function() {
+                    waitForECharts(callback, attempts - 1);
+                }, 100);
+            } else {
+                console.error('等待 ECharts 加载超时');
+                // 显示错误信息
+                showAllEmptyStates('图表库加载失败，请刷新页面重试');
+            }
+        }
 
+        // 显示所有空状态
+        function showAllEmptyStates(message) {
+            const charts = [
+                { id: 'pomo_main', type: 'pomo' },
+                { id: 'task_main', type: 'task' },
+                { id: 'note_main', type: 'note' },
+                { id: 'article_main', type: 'article' },
+                { id: 'mind_main', type: 'mind' },
+                { id: 'pie_main', type: 'pie' }
+            ];
+
+            charts.forEach(chart => {
+                const element = document.getElementById(chart.id);
+                if (element) {
+                    showEmptyState(element, chart.type, message);
+                }
+            });
+        }
+
+        $(document).ready(function() {
             console.log('统计页面已加载');
             console.log('检查 ECharts:', typeof echarts);
 
-            // 先检查 echarts 是否加载
-            if (typeof echarts === 'undefined') {
-                console.error('ECharts 未加载，尝试重新加载...');
-                loadEChartsManually();
-            } else {
-                console.log('ECharts 版本:', echarts.version);
+            // 使用等待函数确保 ECharts 加载完成
+            waitForECharts(function() {
+                // 初始化图表
                 initCharts();
-                initDateRangeSelector();
-            }
 
-            // 窗口大小变化时重绘图表
-            $(window).on('resize', function() {
-                if (typeof echarts !== 'undefined') {
+                // 初始化日期范围选择器
+                initDateRangeSelector();
+
+                // 窗口大小变化时重绘图表
+                $(window).on('resize', function() {
                     setTimeout(initCharts, 300);
-                }
+                });
             });
         });
 
         // 初始化图表
         function initCharts() {
             try {
+                if (typeof echarts === 'undefined') {
+                    console.error('ECharts 未定义，无法初始化图表');
+                    return;
+                }
+
+                console.log('开始初始化图表...');
+
                 // 初始化ECharts实例
                 const chartOptions = {
                     pomo: {
@@ -586,6 +622,12 @@
         // 渲染单个图表
         function renderChart(domElement, optionData, chartType) {
             try {
+                if (typeof echarts === 'undefined') {
+                    console.error('ECharts 未定义，无法渲染图表');
+                    showEmptyState(domElement, chartType, '图表库未加载');
+                    return;
+                }
+
                 const chart = echarts.init(domElement);
 
                 // 统一主题和样式配置
@@ -679,7 +721,6 @@
 
         // 显示自定义日期选择器
         function showCustomDatePicker() {
-            // 这里可以添加自定义日期选择器的逻辑
             alert('自定义日期选择功能开发中...');
         }
 
@@ -701,8 +742,6 @@
                 type: 'GET',
                 data: { range: range },
                 success: function(response) {
-                    // 这里应该根据实际返回的数据结构来更新页面
-                    // 由于这是示例，我们只刷新页面
                     location.reload();
                 },
                 error: function() {

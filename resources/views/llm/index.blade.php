@@ -4,36 +4,41 @@
 @section('description', '与智能助手对话，获取帮助和建议')
 
 @section('content')
-    <div class="h-screen flex bg-gray-50">
+    <div class="h-screen flex bg-white">
         <!-- 左侧会话列表 -->
-        <div class="w-80 border-r border-gray-200 bg-white flex flex-col">
+        <div class="w-64 border-r border-gray-200 bg-white flex flex-col">
             <!-- 会话列表头部 -->
             <div class="p-4 border-b border-gray-200">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold text-gray-900">会话列表</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">对话</h2>
+                    <button onclick="switchToInitialMode()" class="btn btn-sm btn-primary flex items-center">
+                        <i class="fas fa-plus mr-1 text-xs"></i>
+                        新建
+                    </button>
                 </div>
 
                 <!-- 搜索会话 -->
-                <div class="relative mb-3">
+                <div class="relative">
                     <input
                             type="text"
                             id="search-sessions"
-                            class="input w-full pl-9 text-sm"
-                            placeholder="搜索会话..."
+                            class="input input-sm w-full pl-8"
+                            placeholder="搜索对话..."
                     >
-                    <div class="absolute left-3 top-3 text-gray-400">
-                        <i class="fas fa-search text-sm"></i>
+                    <div class="absolute left-2.5 top-2.5 text-gray-400">
+                        <i class="fas fa-search text-xs"></i>
                     </div>
                 </div>
             </div>
 
             <!-- 会话列表内容 -->
             <div class="flex-1 overflow-hidden">
-                <div id="sessions-list" class="p-2 overflow-y-auto h-full">
+                <div id="sessions-list" class="overflow-y-auto h-full">
+                    <!-- 会话会动态加载到这里 -->
                     <div class="flex items-center justify-center h-40">
                         <div class="text-center">
-                            <div class="w-10 h-10 mx-auto mb-2">
-                                <i class="fas fa-spinner fa-spin text-primary-color text-xl"></i>
+                            <div class="w-8 h-8 mx-auto mb-2">
+                                <i class="fas fa-spinner fa-spin text-primary-color"></i>
                             </div>
                             <p class="text-gray-500 text-sm">加载中...</p>
                         </div>
@@ -41,72 +46,126 @@
                 </div>
             </div>
 
-            <!-- 会话统计 -->
-            <div class="p-3 border-t border-gray-200 bg-gray-50">
-                <div class="text-xs text-gray-600">
-                    <div class="flex justify-between items-center">
-                        <span>会话总数：</span>
-                        <span id="session-count" class="font-medium">0</span>
-                    </div>
+            <!-- 底部信息 -->
+            <div class="p-3 border-t border-gray-200">
+                <div class="text-xs text-gray-500 flex justify-between">
+                    <span>对话总数</span>
+                    <span id="session-count" class="font-medium">0</span>
                 </div>
             </div>
         </div>
 
-        <!-- 右侧聊天区域 -->
+        <!-- 右侧主区域 -->
         <div class="flex-1 flex flex-col">
             <!-- ==================== 状态1：新建对话界面 ==================== -->
-            <div id="initial-mode" class="flex-1 flex flex-col">
-                <!-- Header: 新建对话 -->
-                <div class="border-b border-gray-200 bg-white px-6 py-4">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                            <i class="fas fa-comments text-blue-600 text-lg"></i>
+            <div id="initial-mode" class="flex-1 flex flex-col bg-gray-50">
+                <!-- 顶部留空 -->
+                <div class="h-4 bg-white"></div>
+
+                <!-- 主内容区 -->
+                <div class="flex-1 bg-white flex flex-col items-center justify-center">
+                    <div class="max-w-2xl w-full text-center">
+                        <!-- 欢迎语 -->
+                        <div class="mb-10">
+{{--                            <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">--}}
+{{--                                <i class="fas fa-comments text-primary-color text-2xl"></i>--}}
+{{--                            </div>--}}
+                            <h1 class="text-2xl font-bold text-gray-900 mb-2">欢迎使用AI助手</h1>
+{{--                            <p class="text-gray-600">选择智能体开始对话</p>--}}
                         </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900 text-lg">新建对话</h3>
-                            <div class="text-sm text-gray-500">开始一段新的AI对话</div>
+
+                        <!-- 智能体选择 -->
+                        <div class="max-w-md mx-auto mb-8">
+                            <div class="relative inline-block w-48">
+                                <select id="agent-select" class="input w-full text-sm py-2 px-3">
+                                    <!-- 智能体会动态加载 -->
+                                </select>
+{{--                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">--}}
+{{--                                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>--}}
+{{--                                </div>--}}
+                            </div>
                         </div>
+
+                        <!-- 快捷问题示例 -->
+{{--                        <div class="mb-12">--}}
+{{--                            <h4 class="text-sm font-medium text-gray-500 mb-4">试试这样问我：</h4>--}}
+{{--                            <div class="grid grid-cols-2 gap-3 max-w-lg mx-auto">--}}
+{{--                                <button onclick="setQuickQuestion('如何提高工作效率？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
+{{--                                    <div class="flex items-center justify-center">--}}
+{{--                                        <i class="fas fa-briefcase text-blue-500 mr-2 text-sm"></i>--}}
+{{--                                        <span>工作效率</span>--}}
+{{--                                    </div>--}}
+{{--                                </button>--}}
+{{--                                <button onclick="setQuickQuestion('如何制定学习计划？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
+{{--                                    <div class="flex items-center justify-center">--}}
+{{--                                        <i class="fas fa-graduation-cap text-green-500 mr-2 text-sm"></i>--}}
+{{--                                        <span>学习计划</span>--}}
+{{--                                    </div>--}}
+{{--                                </button>--}}
+{{--                                <button onclick="setQuickQuestion('如何写一份项目报告？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
+{{--                                    <div class="flex items-center justify-center">--}}
+{{--                                        <i class="fas fa-file-alt text-purple-500 mr-2 text-sm"></i>--}}
+{{--                                        <span>项目报告</span>--}}
+{{--                                    </div>--}}
+{{--                                </button>--}}
+{{--                                <button onclick="setQuickQuestion('帮我写一封邮件')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
+{{--                                    <div class="flex items-center justify-center">--}}
+{{--                                        <i class="fas fa-envelope text-red-500 mr-2 text-sm"></i>--}}
+{{--                                        <span>邮件写作</span>--}}
+{{--                                    </div>--}}
+{{--                                </button>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
                     </div>
                 </div>
 
-                <!-- 消息引导区域（固定高度） -->
-                <div class="flex-1 overflow-hidden">
-                    <div class="h-full flex flex-col items-center justify-center p-6">
-                        <div class="max-w-2xl w-full text-center">
-                            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center">
-                                <i class="fas fa-robot text-primary-color text-4xl"></i>
-                            </div>
+                <!-- 底部输入区域 -->
+                <div class="bg-white">
+                    <div class="max-w-3xl mx-auto p-4">
+                        <!-- 输入框容器 -->
+                        <div class="relative bg-white rounded-xl border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                        <textarea
+                                id="initial-message-input"
+                                rows="2"
+                                class="w-full p-4 text-gray-900 resize-none focus:outline-none bg-transparent placeholder-gray-500 text-sm"
+                                placeholder="输入您的问题..."
+                        ></textarea>
 
-                            <h2 class="text-2xl font-bold text-gray-900 mb-3">欢迎使用AI助手</h2>
-                            <p class="text-gray-600 mb-8">选择智能体后开始您的对话</p>
-
-                            <!-- 快捷问题示例 -->
-                            <div class="mb-8">
-                                <h4 class="text-sm font-medium text-gray-700 mb-4">尝试询问：</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl mx-auto">
-                                    <button onclick="setQuickQuestion('如何提高工作效率？')" class="p-4 bg-white border border-gray-200 rounded-xl text-left hover:border-primary-color hover:shadow-sm transition-all duration-200">
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-                                                <i class="fas fa-briefcase text-blue-600"></i>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium text-gray-900">提高工作效率</div>
-                                                <div class="text-xs text-gray-500 mt-1">获取高效工作方法</div>
-                                            </div>
-                                        </div>
+                            <div class="flex items-center justify-between px-4 pb-3">
+                                <!-- 左侧功能按钮 -->
+                                <div class="flex items-center space-x-1">
+                                    <button id="initial-attachment-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="上传文件">
+                                        <i class="fas fa-paperclip text-sm"></i>
                                     </button>
-                                    <button onclick="setQuickQuestion('如何制定学习计划？')" class="p-4 bg-white border border-gray-200 rounded-xl text-left hover:border-primary-color hover:shadow-sm transition-all duration-200">
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-3">
-                                                <i class="fas fa-graduation-cap text-green-600"></i>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium text-gray-900">制定学习计划</div>
-                                                <div class="text-xs text-gray-500 mt-1">定制个性化学习方案</div>
-                                            </div>
-                                        </div>
+                                    <button id="initial-voice-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="语音输入">
+                                        <i class="fas fa-microphone text-sm"></i>
+                                    </button>
+                                    <button id="initial-clear-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="清空">
+                                        <i class="fas fa-times text-sm"></i>
                                     </button>
                                 </div>
+
+                                <!-- 右侧发送按钮 -->
+                                <div class="flex items-center space-x-3">
+                                    <div id="initial-char-count" class="text-xs text-gray-400">0/2000</div>
+                                    <button id="initial-send-btn" class="btn btn-primary btn-sm px-4">
+                                        <i class="fas fa-paper-plane mr-1 text-xs"></i>
+                                        发送
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 场景功能按钮 -->
+                            <div class="px-4 pb-3 flex justify-center space-x-2">
+                                <button onclick="setQuickQuestion('帮我生成一段代码')" class="btn-scene">
+                                    <i class="fas fa-code mr-1 text-xs"></i> 代码生成
+                                </button>
+                                <button onclick="setQuickQuestion('帮我优化文案')" class="btn-scene">
+                                    <i class="fas fa-edit mr-1 text-xs"></i> 文案优化
+                                </button>
+                                <button onclick="setQuickQuestion('给我一些创意灵感')" class="btn-scene">
+                                    <i class="fas fa-lightbulb mr-1 text-xs"></i> 创意生成
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -115,50 +174,45 @@
 
             <!-- ==================== 状态2：聊天界面 ==================== -->
             <div id="chat-mode" class="llm-hidden flex-1 flex flex-col">
-                <!-- Header: 会话信息 -->
-                <div class="border-b border-gray-200 bg-white px-6 py-4">
+                <!-- 会话标题栏 -->
+                <div class="border-b border-gray-200 bg-white px-6 py-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                <i class="fas fa-comments text-blue-600 text-lg"></i>
+                            <div class="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center">
+                                <i class="fas fa-comment text-blue-500 text-xs"></i>
                             </div>
                             <div>
-                                <h3 id="session-title-display" class="font-semibold text-gray-900 text-lg">会话标题</h3>
-                                <div class="flex items-center space-x-3 text-sm text-gray-500">
+                                <h3 id="session-title-display" class="font-semibold text-gray-900 text-sm">会话标题</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-500">
                                     <span id="session-agent">智能体：加载中...</span>
+                                    <span>•</span>
                                     <span id="session-time"></span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 会话操作按钮 -->
-                        <div class="flex items-center space-x-2">
+                        <!-- 会话操作 -->
+                        <div class="flex items-center space-x-1">
+                            <button id="pin-session-btn" class="btn-icon-sm" title="固定会话">
+                                <i class="fas fa-thumbtack text-xs"></i>
+                            </button>
                             <div class="dropdown relative">
-                                <button class="btn btn-sm btn-outline">
-                                    <i class="fas fa-ellipsis-h"></i>
+                                <button class="btn-icon-sm">
+                                    <i class="fas fa-ellipsis-h text-xs"></i>
                                 </button>
-                                <div class="dropdown-menu llm-hidden" style="right: 0; left: auto;">
-                                    <button id="pin-session-btn" class="dropdown-item">
-                                        <i class="fas fa-thumbtack mr-2"></i>
-                                        <span>固定会话</span>
-                                    </button>
+                                <div class="dropdown-menu llm-hidden">
                                     <button id="rename-session-btn" class="dropdown-item">
-                                        <i class="fas fa-edit mr-2"></i>
-                                        <span>重命名</span>
+                                        <i class="fas fa-edit mr-2 text-xs"></i>重命名
                                     </button>
-                                    <div class="border-t border-gray-200 my-1"></div>
                                     <button id="export-session-btn" class="dropdown-item">
-                                        <i class="fas fa-download mr-2"></i>
-                                        <span>导出会话</span>
+                                        <i class="fas fa-download mr-2 text-xs"></i>导出对话
                                     </button>
-                                    <button id="clear-session-btn" class="dropdown-item">
-                                        <i class="fas fa-trash mr-2"></i>
-                                        <span>清空对话</span>
+                                    <div class="border-t my-1"></div>
+                                    <button id="clear-session-btn" class="dropdown-item text-red-600">
+                                        <i class="fas fa-trash mr-2 text-xs"></i>清空对话
                                     </button>
-                                    <div class="border-t border-gray-200 my-1"></div>
                                     <button id="delete-session-btn" class="dropdown-item text-red-600">
-                                        <i class="fas fa-trash-alt mr-2"></i>
-                                        <span>删除会话</span>
+                                        <i class="fas fa-trash-alt mr-2 text-xs"></i>删除对话
                                     </button>
                                 </div>
                             </div>
@@ -166,105 +220,64 @@
                     </div>
                 </div>
 
-                <!-- 消息气泡区域（固定高度） -->
-                <div class="flex-1 overflow-hidden bg-gray-50">
-                    <div id="messages-list" class="h-full overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <!-- 消息列表 -->
+                <div class="flex-1 overflow-hidden  bg-white ">
+                    <div id="messages-list" class="h-full overflow-y-auto p-4 space-y-4">
                         <!-- 消息会动态插入到这里 -->
                     </div>
                 </div>
-            </div>
 
-            <!-- ==================== 底部输入区域 ==================== -->
-            <div class="border-t border-gray-200 bg-white">
-                <div class="max-w-3xl mx-auto p-4">
-                    <!-- 状态1：智能体选择 + 输入框 -->
-                    <div id="initial-input-area">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                选择智能体
-                            </label>
-                            <select id="agent-select" class="input w-full">
-                                <option value="">请选择智能体</option>
-                                <option value="builtin_common">通用助手</option>
-                                <!-- 智能体会动态加载 -->
-                            </select>
-                        </div>
-
-                        <div class="relative bg-white rounded-lg border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
-                        <textarea
-                                id="initial-message-input"
-                                rows="3"
-                                class="w-full p-4 text-gray-900 resize-none focus:outline-none bg-transparent"
-                                placeholder="输入您的问题... (Enter 发送，Shift+Enter 换行)"
-                        ></textarea>
-
-                            <div class="flex items-center justify-between px-4 pb-3">
-                                <div class="flex items-center space-x-3">
-                                    <button id="initial-attachment-btn" class="text-gray-400 hover:text-gray-600" title="添加附件">
-                                        <i class="fas fa-paperclip"></i>
-                                    </button>
-                                    <button id="initial-clear-btn" class="text-gray-400 hover:text-gray-600" title="清空输入">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-
-                                <div class="flex items-center space-x-4">
-                                    <div id="initial-char-count" class="text-xs text-gray-400">0/2000</div>
-                                    <button id="initial-send-btn" class="btn btn-primary flex items-center">
-                                        <i class="fas fa-paper-plane mr-2"></i>
-                                        发送
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 状态2：聊天输入框 -->
-                    <div id="chat-input-area" class="llm-hidden">
-                        <div class="relative bg-white rounded-lg border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
+                <!-- 底部输入区 -->
+                <div class=" bg-white">
+                    <div class="max-w-3xl mx-auto p-4">
+                        <div class="relative bg-white rounded-xl border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                         <textarea
                                 id="message-input"
-                                rows="3"
-                                class="w-full p-4 text-gray-900 resize-none focus:outline-none bg-transparent"
-                                placeholder="输入消息... (Enter 发送，Shift+Enter 换行)"
+                                rows="2"
+                                class="w-full p-4 text-gray-900 resize-none focus:outline-none bg-transparent placeholder-gray-500 text-sm"
+                                placeholder="输入消息...（Shift+Enter 换行，Enter 发送）"
                         ></textarea>
 
                             <div class="flex items-center justify-between px-4 pb-3">
-                                <div class="flex items-center space-x-3">
-                                    <button id="chat-attachment-btn" class="text-gray-400 hover:text-gray-600" title="添加附件">
-                                        <i class="fas fa-paperclip"></i>
+                                <!-- 左侧功能按钮 -->
+                                <div class="flex items-center space-x-1">
+                                    <button id="chat-attachment-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="上传文件">
+                                        <i class="fas fa-paperclip text-sm"></i>
                                     </button>
-                                    <button id="chat-clear-btn" class="text-gray-400 hover:text-gray-600" title="清空输入">
-                                        <i class="fas fa-times"></i>
+                                    <button id="chat-voice-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="语音输入">
+                                        <i class="fas fa-microphone text-sm"></i>
+                                    </button>
+                                    <button id="chat-clear-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="清空">
+                                        <i class="fas fa-times text-sm"></i>
                                     </button>
                                 </div>
 
-                                <div class="flex items-center space-x-4">
+                                <!-- 右侧发送按钮 -->
+                                <div class="flex items-center space-x-3">
                                     <div id="chat-char-count" class="text-xs text-gray-400">0/2000</div>
-                                    <button id="chat-send-btn" class="btn btn-primary flex items-center">
-                                        <i class="fas fa-paper-plane mr-2"></i>
+                                    <button id="chat-send-btn" class="btn btn-primary btn-sm px-4">
+                                        <i class="fas fa-paper-plane mr-1 text-xs"></i>
                                         发送
                                     </button>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- 输入提示 -->
-                        <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
-                            <div class="flex items-center space-x-4">
-                            <span class="flex items-center">
-                                <i class="fas fa-lightbulb mr-1"></i>
-                                支持Markdown格式
-                            </span>
+                            <!-- 提示信息 -->
+                            <div class="px-4 pb-3 flex items-center justify-between text-xs text-gray-500">
+                                <div class="flex items-center space-x-3">
                                 <span class="flex items-center">
-                                <i class="fas fa-keyboard mr-1"></i>
-                                Enter 发送，Shift+Enter 换行
-                            </span>
+                                    <i class="fas fa-lightbulb mr-1 text-xs"></i>
+                                    支持 Markdown
+                                </span>
+                                    <span class="flex items-center">
+                                    <i class="fas fa-keyboard mr-1 text-xs"></i>
+                                    Enter 发送
+                                </span>
+                                </div>
+                                <button id="regenerate-btn" class="btn-scene">
+                                    <i class="fas fa-redo mr-1 text-xs"></i>重新生成
+                                </button>
                             </div>
-                            <button id="regenerate-btn" class="btn btn-outline btn-sm llm-hidden">
-                                <i class="fas fa-redo mr-1"></i>
-                                重新生成
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -279,8 +292,8 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-4" id="confirm-title">确认操作</h3>
                 <p class="text-gray-600 mb-6" id="confirm-message">确定要执行此操作吗？</p>
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal()" class="btn btn-secondary">取消</button>
-                    <button type="button" id="confirm-action-btn" class="btn btn-danger">确认</button>
+                    <button type="button" onclick="closeModal()" class="btn btn-sm btn-outline">取消</button>
+                    <button type="button" id="confirm-action-btn" class="btn btn-sm btn-primary">确认</button>
                 </div>
             </div>
         </div>
@@ -289,22 +302,19 @@
     <div class="modal" id="renameModal">
         <div class="modal-content max-w-md">
             <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">重命名会话</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">重命名对话</h3>
                 <div class="space-y-4">
                     <div>
-                        <label for="new-session-name" class="block text-sm font-medium text-gray-700 mb-2">
-                            新会话名称
-                        </label>
                         <input
                                 type="text"
                                 id="new-session-name"
                                 class="input w-full"
-                                placeholder="请输入会话名称"
+                                placeholder="请输入对话名称"
                         >
                     </div>
                     <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="closeRenameModal()" class="btn btn-secondary">取消</button>
-                        <button type="button" id="save-rename-btn" class="btn btn-primary">保存</button>
+                        <button type="button" onclick="closeRenameModal()" class="btn btn-sm btn-outline">取消</button>
+                        <button type="button" id="save-rename-btn" class="btn btn-sm btn-primary">保存</button>
                     </div>
                 </div>
             </div>
@@ -364,6 +374,7 @@
                 document.getElementById('initial-message-input').focus();
             });
             document.getElementById('initial-attachment-btn').addEventListener('click', showAttachmentOptions);
+            document.getElementById('initial-voice-btn').addEventListener('click', showVoiceInput);
 
             // ========== 聊天状态 ==========
             const chatInput = document.getElementById('message-input');
@@ -382,6 +393,7 @@
                 document.getElementById('message-input').focus();
             });
             document.getElementById('chat-attachment-btn').addEventListener('click', showAttachmentOptions);
+            document.getElementById('chat-voice-btn').addEventListener('click', showVoiceInput);
             document.getElementById('regenerate-btn').addEventListener('click', regenerateLastResponse);
 
             // 搜索会话
@@ -410,6 +422,13 @@
                     e.preventDefault();
                     document.getElementById('save-rename-btn').click();
                 }
+            });
+
+            // 场景按钮点击
+            document.querySelectorAll('.btn-scene').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
             });
         }
 
@@ -460,7 +479,9 @@
                     }
                 });
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
 
                 const result = await response.json();
 
@@ -468,6 +489,7 @@
                     displaySessions(result.data);
                     updateSessionCount(result.data.length);
                 } else {
+                    console.error('加载会话列表失败：', result.message);
                     showError('加载会话列表失败：' + result.message);
                 }
             } catch (error) {
@@ -482,14 +504,14 @@
 
             if (!sessions || sessions.length === 0) {
                 container.innerHTML = `
-            <div class="text-center py-8">
-                <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-comment text-gray-400 text-xl"></i>
+                <div class="text-center py-8">
+                    <div class="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-comment text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm">暂无对话记录</p>
+                    <p class="text-xs text-gray-400 mt-1">开始新对话</p>
                 </div>
-                <p class="text-gray-500 text-sm">暂无会话记录</p>
-                <p class="text-xs text-gray-400 mt-1">选择智能体开始新对话</p>
-            </div>
-        `;
+            `;
                 return;
             }
 
@@ -502,12 +524,12 @@
             // 固定会话
             if (pinnedSessions.length > 0) {
                 html += `
-            <div class="px-2 py-2">
-                <div class="flex items-center text-xs text-gray-500 mb-2">
-                    <i class="fas fa-thumbtack mr-2 text-yellow-500"></i>
-                    <span>固定会话</span>
-                </div>
-        `;
+                <div class="px-2 pt-2">
+                    <div class="flex items-center text-xs text-gray-500 mb-2 px-2">
+                        <i class="fas fa-thumbtack mr-1.5 text-yellow-500 text-xs"></i>
+                        <span>固定对话</span>
+                    </div>
+            `;
 
                 pinnedSessions.forEach(session => {
                     html += createSessionItemHTML(session);
@@ -523,9 +545,9 @@
                 }
 
                 html += `
-            <div class="px-2 py-2">
-                <div class="text-xs text-gray-500 mb-2">最近会话</div>
-        `;
+                <div class="px-2 pt-2">
+                    <div class="text-xs text-gray-500 mb-2 px-2">最近对话</div>
+            `;
 
                 regularSessions.forEach(session => {
                     html += createSessionItemHTML(session);
@@ -543,37 +565,45 @@
                     switchToSession(sessionId);
                 });
             });
+
+            // 添加固定按钮事件
+            document.querySelectorAll('.session-pin-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const sessionId = this.closest('.session-item').dataset.sessionId;
+                    togglePinSession(sessionId);
+                });
+            });
         }
 
         // 创建会话项HTML
         function createSessionItemHTML(session) {
-            const title = session.title || '未命名会话';
+            const title = session.title || '未命名对话';
             const time = formatTime(session.updated_at || session.created_at);
             const isActive = currentSessionId === session.id;
             const agentName = session.agent_name || '通用';
             const agentColor = getAgentColor(session.agent_id);
 
             return `
-        <div class="session-item p-3 mb-2 rounded-lg cursor-pointer transition-all duration-200 ${isActive ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'}"
-             data-session-id="${session.id}">
-            <div class="flex justify-between items-start mb-1">
-                <div class="flex-1 min-w-0">
-                    <div class="font-medium text-gray-900 text-sm truncate" title="${title}">${title}</div>
-                    <div class="flex items-center mt-1">
-                        <span class="text-xs px-2 py-0.5 ${agentColor} text-gray-700 rounded-full mr-2">
-                            ${agentName}
-                        </span>
-                        <span class="text-xs text-gray-500">${time}</span>
+            <div class="session-item p-2 mb-1 rounded-lg cursor-pointer transition-colors ${isActive ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'}"
+                 data-session-id="${session.id}">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-900 text-sm truncate mb-1" title="${title}">${title}</div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500">${time}</span>
+                            <span class="text-xs px-1.5 py-0.5 ${agentColor} text-gray-700 rounded-full">
+                                ${agentName}
+                            </span>
+                        </div>
                     </div>
-                </div>
-                <div class="flex items-center space-x-1 ml-2">
-                    <button class="session-pin-btn p-1 text-gray-400 hover:text-yellow-500" onclick="event.stopPropagation(); togglePinSession('${session.id}', event)" title="${session.is_pinned ? '取消固定' : '固定会话'}">
+                    <button class="session-pin-btn p-1 ml-1 text-gray-400 hover:text-yellow-500"
+                            title="${session.is_pinned ? '取消固定' : '固定对话'}">
                         <i class="fas fa-thumbtack ${session.is_pinned ? 'text-yellow-500' : ''} text-xs"></i>
                     </button>
                 </div>
             </div>
-        </div>
-    `;
+        `;
         }
 
         // 获取智能体颜色
@@ -648,12 +678,20 @@
         // 填充智能体选择框
         function populateAgentsSelect(agents) {
             const select = document.getElementById('agent-select');
-            let options = '<option value="">请选择智能体</option><option value="builtin_common">通用助手</option>';
 
+            // 如果有智能体，默认选中第一个
+            let options = '';
             if (agents && agents.length > 0) {
-                agents.forEach(agent => {
-                    options += `<option value="${agent.id}">${agent.name}</option>`;
+                options += `<option value="">请选择智能体</option>`;
+                agents.forEach((agent, index) => {
+                    const selected = index === 0 ? 'selected' : '';
+                    options += `<option value="${agent.id}" ${selected}>${agent.name}</option>`;
                 });
+            } else {
+                options = `
+                <option value="">请选择智能体</option>
+                <option value="builtin_common" selected>通用助手</option>
+            `;
             }
 
             select.innerHTML = options;
@@ -728,7 +766,7 @@
                         document.getElementById('message-input').focus();
                     }, 100);
 
-                    showToast('新会话已创建', 'success');
+                    showToast('新对话已创建', 'success');
                 } else {
                     throw new Error(result.message);
                 }
@@ -749,8 +787,6 @@
         function switchToChatMode() {
             document.getElementById('initial-mode').classList.add('llm-hidden');
             document.getElementById('chat-mode').classList.remove('llm-hidden');
-            document.getElementById('initial-input-area').classList.add('llm-hidden');
-            document.getElementById('chat-input-area').classList.remove('llm-hidden');
         }
 
         // 切换到初始模式
@@ -760,12 +796,10 @@
 
             document.getElementById('initial-mode').classList.remove('llm-hidden');
             document.getElementById('chat-mode').classList.add('llm-hidden');
-            document.getElementById('initial-input-area').classList.remove('llm-hidden');
-            document.getElementById('chat-input-area').classList.add('llm-hidden');
 
             document.getElementById('initial-message-input').value = '';
             updateInitialCharCount();
-            document.getElementById('agent-select').value = '';
+            document.getElementById('agent-select').selectedIndex = 0;
 
             document.getElementById('current-agent-id').value = '';
             document.getElementById('current-session-id').value = '';
@@ -773,7 +807,7 @@
 
         // 更新会话信息
         function updateSessionInfo(sessionData) {
-            document.getElementById('session-title-display').textContent = sessionData.title || '未命名会话';
+            document.getElementById('session-title-display').textContent = sessionData.title || '未命名对话';
 
             let agentName = '通用助手';
             let agentId = '';
@@ -847,50 +881,45 @@
             }
         }
 
-        // ========== 修复：添加消息到聊天 ==========
+        // 添加消息到聊天
         function addMessage(role, content) {
             const messagesList = document.getElementById('messages-list');
             const messageId = 'msg-' + Date.now();
 
             if (role === 'user') {
-                // 用户消息 - 修复样式
                 const userMessageHTML = `
-            <div id="${messageId}" class="flex justify-end mb-4">
-                <div class="max-w-xl">
-                    <div class="bg-primary-color text-white rounded-2xl rounded-br-none px-5 py-3">
-                        <div class="whitespace-pre-wrap">${escapeHtml(content)}</div>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1 text-right">
-                        ${formatTime(new Date().toISOString())}
+                <div id="${messageId}" class="flex justify-end mb-3">
+                    <div class="max-w-xl">
+                        <div class="bg-primary-color text-white rounded-2xl rounded-br-none px-4 py-2.5 text-sm">
+                            <div class="whitespace-pre-wrap">${escapeHtml(content)}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
                 messagesList.insertAdjacentHTML('beforeend', userMessageHTML);
             } else {
-                // AI消息
                 const aiMessageHTML = `
-            <div id="${messageId}" class="flex mb-6">
-                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
-                    <i class="fas fa-robot text-blue-600 text-sm"></i>
-                </div>
-                <div class="max-w-xl flex-1">
-                    <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-5 py-3">
-                        <div class="markdown-content whitespace-pre-wrap">${marked.parse(content)}</div>
+                <div id="${messageId}" class="flex mb-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas fa-robot text-blue-500 text-xs"></i>
                     </div>
-                    <div class="flex items-center justify-between mt-2">
-                        <div class="text-xs text-gray-500">
-                            ${formatTime(new Date().toISOString())}
+                    <div class="max-w-xl flex-1">
+                        <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-2.5 text-sm">
+                            <div class="markdown-content whitespace-pre-wrap">${marked.parse(content)}</div>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-gray-600 p-1" title="复制">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                        <div class="flex items-center justify-between mt-1">
+                            <div class="text-xs text-gray-400">
+                                ${formatTime(new Date().toISOString())}
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-gray-600 p-1" title="复制">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
                 messagesList.insertAdjacentHTML('beforeend', aiMessageHTML);
             }
 
@@ -982,20 +1011,20 @@
                 const messageId = 'ai-msg-' + Date.now();
                 const messagesList = document.getElementById('messages-list');
                 messagesList.insertAdjacentHTML('beforeend', `
-            <div id="${messageId}" class="flex mb-6">
-                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
-                    <i class="fas fa-robot text-blue-600 text-sm"></i>
-                </div>
-                <div class="max-w-xl flex-1">
-                    <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-5 py-3">
-                        <div id="${messageId}-content" class="markdown-content"></div>
+                <div id="${messageId}" class="flex mb-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="fas fa-robot text-blue-500 text-xs"></i>
                     </div>
-                    <div class="text-xs text-gray-500 mt-2">
-                        正在思考...
+                    <div class="max-w-xl flex-1">
+                        <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-2.5 text-sm">
+                            <div id="${messageId}-content" class="markdown-content"></div>
+                        </div>
+                        <div class="text-xs text-gray-400 mt-1">
+                            正在思考...
+                        </div>
                     </div>
                 </div>
-            </div>
-        `);
+            `);
 
                 // 处理流式响应
                 const reader = response.body.getReader();
@@ -1025,7 +1054,7 @@
                                 if (parsed.choices && parsed.choices[0]) {
                                     const choice = parsed.choices[0];
 
-                                    // 修复：检查delta.content字段
+                                    // 检查delta.content字段
                                     if (choice.delta && choice.delta.content) {
                                         accumulatedContent += choice.delta.content;
 
@@ -1051,15 +1080,15 @@
                 const footer = messageElement.querySelector('.text-xs');
                 if (footer) {
                     footer.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <span>${formatTime(new Date().toISOString())}</span>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-gray-600 p-1" title="复制">
-                            <i class="fas fa-copy"></i>
-                        </button>
+                    <div class="flex items-center justify-between">
+                        <span>${formatTime(new Date().toISOString())}</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-gray-600 p-1" title="复制">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
                 }
 
                 reader.releaseLock();
@@ -1089,21 +1118,21 @@
             const indicatorId = 'thinking-' + Date.now();
 
             messagesList.insertAdjacentHTML('beforeend', `
-        <div id="${indicatorId}" class="flex mb-6">
-            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
-                <i class="fas fa-robot text-blue-600 text-sm"></i>
-            </div>
-            <div class="max-w-xl flex-1">
-                <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-5 py-3">
-                    <div class="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+            <div id="${indicatorId}" class="flex mb-3">
+                <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fas fa-robot text-blue-500 text-xs"></i>
+                </div>
+                <div class="max-w-xl flex-1">
+                    <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-2.5">
+                        <div class="typing-indicator flex items-center space-x-1">
+                            <div class="w-2 h-2 bg-gray-300 rounded-full animate-pulse"></div>
+                            <div class="w-2 h-2 bg-gray-300 rounded-full animate-pulse delay-150"></div>
+                            <div class="w-2 h-2 bg-gray-300 rounded-full animate-pulse delay-300"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `);
+        `);
 
             // 滚动到底部
             messagesList.scrollTop = messagesList.scrollHeight;
@@ -1118,7 +1147,7 @@
                 if (element) element.remove();
             } else {
                 document.querySelectorAll('.typing-indicator').forEach(ind => {
-                    ind.closest('.flex.mb-6')?.remove();
+                    ind.closest('.flex.mb-3')?.remove();
                 });
             }
         }
@@ -1131,7 +1160,7 @@
             sessionItems.forEach(item => {
                 const title = item.querySelector('.font-medium').textContent.toLowerCase();
                 if (title.includes(searchTerm) || !searchTerm) {
-                    item.style.display = 'block';
+                    item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
                 }
@@ -1139,9 +1168,7 @@
         }
 
         // 固定/取消固定会话
-        async function togglePinSession(sessionId, event) {
-            if (event) event.stopPropagation();
-
+        async function togglePinSession(sessionId) {
             try {
                 const response = await fetch(`/llm/sessions/${sessionId}/toggle-pin`, {
                     method: 'POST',
@@ -1159,7 +1186,7 @@
                     // 重新加载会话列表
                     loadSessions();
 
-                    showToast(result.data.is_pinned ? '已固定会话' : '已取消固定', 'success');
+                    showToast(result.data.is_pinned ? '已固定对话' : '已取消固定', 'success');
                 } else {
                     throw new Error(result.message);
                 }
@@ -1172,14 +1199,14 @@
         // 固定当前会话
         async function togglePinCurrentSession() {
             if (!currentSessionId) return;
-            await togglePinSession(currentSessionId, { stopPropagation: () => {} });
+            await togglePinSession(currentSessionId);
         }
 
         // 清空当前会话
         async function clearCurrentSession() {
             if (!currentSessionId) return;
 
-            showConfirmModal('清空对话', '确定要清空当前会话的所有消息吗？此操作不可撤销。', async () => {
+            showConfirmModal('清空对话', '确定要清空当前对话的所有消息吗？此操作不可撤销。', async () => {
                 try {
                     const response = await fetch(`/llm/sessions/${currentSessionId}/clear`, {
                         method: 'POST',
@@ -1194,7 +1221,7 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        showToast('会话已清空', 'success');
+                        showToast('对话已清空', 'success');
 
                         // 清空消息列表，显示欢迎消息
                         document.getElementById('messages-list').innerHTML = '';
@@ -1219,7 +1246,7 @@
         async function deleteCurrentSession() {
             if (!currentSessionId) return;
 
-            showConfirmModal('删除会话', '确定要删除这个会话吗？此操作不可撤销。', async () => {
+            showConfirmModal('删除对话', '确定要删除这个对话吗？此操作不可撤销。', async () => {
                 try {
                     const response = await fetch(`/llm/sessions/${currentSessionId}`, {
                         method: 'DELETE',
@@ -1234,7 +1261,7 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        showToast('会话已删除', 'success');
+                        showToast('对话已删除', 'success');
 
                         // 切换回初始模式
                         switchToInitialMode();
@@ -1266,7 +1293,7 @@
             const newName = document.getElementById('new-session-name').value.trim();
 
             if (!newName) {
-                showToast('请输入会话名称', 'error');
+                showToast('请输入对话名称', 'error');
                 return;
             }
 
@@ -1288,7 +1315,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast('会话已重命名', 'success');
+                    showToast('对话已重命名', 'success');
                     document.getElementById('session-title-display').textContent = newName;
                     closeRenameModal();
                     loadSessions();
@@ -1306,9 +1333,13 @@
             showToast('附件功能开发中...', 'info');
         }
 
+        // 语音输入
+        function showVoiceInput() {
+            showToast('语音功能开发中...', 'info');
+        }
+
         // 重新生成最后一条消息
         async function regenerateLastResponse() {
-            // TODO: 实现重新生成逻辑
             showToast('重新生成功能开发中...', 'info');
         }
 
@@ -1358,22 +1389,22 @@
         // 显示提示消息
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white animate-fade-in ${
+            toast.className = `fixed top-4 right-4 z-50 px-4 py-2.5 rounded-lg shadow-lg text-white animate-fade-in ${
                 type === 'success' ? 'bg-green-500' :
                     type === 'error' ? 'bg-red-500' :
                         type === 'info' ? 'bg-blue-500' : 'bg-gray-500'
             }`;
             toast.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-${type === 'success' ? 'check-circle' :
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' :
                 type === 'error' ? 'exclamation-circle' :
-                    type === 'info' ? 'info-circle' : 'bell'} mr-3"></i>
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 hover:opacity-80">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
+                    type === 'info' ? 'info-circle' : 'bell'} mr-2 text-sm"></i>
+                <span class="text-sm">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-3 hover:opacity-80">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+        `;
             document.body.appendChild(toast);
 
             setTimeout(() => {
@@ -1390,79 +1421,179 @@
     </script>
 
     <style>
-        /* 高度和布局 */
+        /* 基础样式 */
         .h-screen {
-            height: calc(100vh - 64px);
+            height: 100vh;
         }
 
-        /* 会话列表样式 */
-        #sessions-list {
-            scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 #f1f5f9;
+        /* 按钮样式 */
+        .btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
         }
 
-        .session-item {
-            transition: all 0.2s ease;
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
         }
 
-        .session-item:hover {
-            transform: translateX(2px);
+        .btn-primary {
+            background-color: var(--primary-color, #3b82f6);
+            color: white;
+            border: none;
         }
 
-        /* 消息气泡样式 */
-        .typing-indicator {
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+
+        .btn-outline:hover {
+            border-color: #9ca3af;
+        }
+
+        .btn-icon {
+            padding: 0.375rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .btn-icon-sm {
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover, .btn-icon-sm:hover {
+            background-color: #f3f4f6;
+        }
+
+        .btn-scene {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            border-radius: 9999px;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .btn-scene:hover {
+            color: var(--primary-color, #3b82f6);
+            border-color: var(--primary-color, #3b82f6);
+        }
+
+        /* 输入框样式 */
+        .input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary-color, #3b82f6);
+            ring: 2px solid var(--primary-color, #3b82f6);
+        }
+
+        .input-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        /* 下拉菜单 */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            min-width: 160px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            text-align: left;
+            transition: background-color 0.2s;
         }
 
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background-color: #9ca3af;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out;
+        .dropdown-item:hover {
+            background-color: #f9fafb;
         }
 
-        .typing-indicator span:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-
-        @keyframes typing {
-            0%, 80%, 100% {
-                transform: translateY(0);
-                opacity: 0.5;
-            }
-            40% {
-                transform: translateY(-4px);
-                opacity: 1;
-            }
-        }
-
-        /* 消息滚动条 */
+        /* 滚动条 */
         .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
+            background: transparent;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
+            background: #d1d5db;
+            border-radius: 2px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: #9ca3af;
         }
 
-        /* 消息动画 */
-        @keyframes fadeInUp {
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+        }
+
+        /* 隐藏类 */
+        .llm-hidden {
+            display: none !important;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(10px);
@@ -1473,28 +1604,70 @@
             }
         }
 
-        .flex.justify-end.mb-4,
-        .flex.mb-6 {
-            animation: fadeInUp 0.3s ease-out;
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
         }
 
-        /* 代码块样式 */
-        .markdown-content pre {
-            background-color: #1e293b;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 0.375rem;
-            overflow-x: auto;
-            margin: 0.5rem 0;
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .delay-150 {
+            animation-delay: 150ms;
+        }
+
+        .delay-300 {
+            animation-delay: 300ms;
+        }
+
+        /* Markdown 内容样式 */
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3 {
+            font-weight: 600;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        .markdown-content p {
+            margin-bottom: 0.75em;
+            line-height: 1.6;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            padding-left: 1.5em;
+            margin-bottom: 0.75em;
+        }
+
+        .markdown-content li {
+            margin-bottom: 0.25em;
         }
 
         .markdown-content code {
-            background-color: #f1f5f9;
-            color: #0f172a;
-            padding: 0.2rem 0.4rem;
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.25rem;
             border-radius: 0.25rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.875em;
+        }
+
+        .markdown-content pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
         }
 
         .markdown-content pre code {
@@ -1503,51 +1676,20 @@
             padding: 0;
         }
 
-        /* 隐藏类 */
-        .llm-hidden {
-            display: none !important;
-        }
-
-        /* 模态框动画 */
-        .modal.show .modal-content {
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 输入区域样式 */
-        #initial-message-input,
-        #message-input {
-            min-height: 60px;
-            max-height: 200px;
-            line-height: 1.5;
-        }
-
-        /* 响应式调整 */
+        /* 响应式设计 */
         @media (max-width: 768px) {
-            .h-screen {
-                height: calc(100vh - 56px);
+            .w-64 {
+                width: 100%;
+                position: absolute;
+                z-index: 40;
+                height: 100%;
             }
 
-            #messages-list {
-                padding: 1rem !important;
+            .flex-1 {
+                width: 100%;
             }
 
-            .markdown-content pre {
-                padding: 0.75rem;
-                font-size: 0.875rem;
-            }
-
-            .grid-cols-1.md\:grid-cols-2 {
+            .grid-cols-2 {
                 grid-template-columns: 1fr;
             }
         }
