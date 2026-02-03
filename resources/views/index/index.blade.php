@@ -888,11 +888,46 @@
             }
         }
 
+        // 为首页加载任务数据并打开编辑弹窗的函数
         function editTask(taskId) {
-            // 调用原有的编辑函数
-            if (typeof loadTaskDataAndOpenModalForIndex === 'function') {
-                loadTaskDataAndOpenModalForIndex(taskId);
-            }
+            // 从服务器获取任务数据 - 使用现有的API
+            $.get('/tasks/' + taskId, function(response) {
+                if(response.code == 9999) {
+                    var task = response.result;
+                    openTaskUpdateModal(task);
+                    // // 填充表单数据
+                    // $('#task_name_input').val(task.name);
+                    // $('input[name="priority"][value="' + (task.priority || 1) + '"]').prop('checked', true);
+                    // $('#remindtime_input').val(task.remindtime || '');
+                    // $('#deadline_input').val(task.deadline || '');
+                    // $('input[name="status"][value="' + (task.status || 1) + '"]').prop('checked', true);
+                    // $('input[name="is_top"][value="' + (task.is_top || 0) + '"]').prop('checked', true);
+                    // $('input[name="mode"][value="' + (task.mode || 1) + '"]').prop('checked', true);
+                    //
+                    // // 添加隐藏字段存储任务ID
+                    // if ($('#taskUpdateForm input[name=id]').length === 0) {
+                    //     $('#taskUpdateForm').append('<input type="hidden" name="id" value="">');
+                    // }
+                    // $('#taskUpdateForm input[name=id]').val(task.id);
+                    //
+                    // // 设置表单提交URL
+                    // $('#taskUpdateForm').attr('action', '/task/' + task.id);
+                    //
+                    // // 清除错误信息
+                    // $('#taskUpdateErrors').hide();
+                    // $('#taskUpdateErrorList').empty();
+                    //
+                    // // 加载父级任务选项（排除当前任务本身，并设置当前父任务ID），然后显示模态框
+                    // loadParentTasks(task.id, task.parent_task_id);
+                    //
+                    // // 显示模态框
+                    // $('#taskUpdateModal').modal('show');
+                } else {
+                    alert('获取任务数据失败：' + (response.msg || '未知错误'));
+                }
+            }).fail(function() {
+                alert('获取任务数据失败');
+            });
         }
 
         // 显示待办列表
@@ -1147,13 +1182,5 @@
             }, 5000);
         }
 
-        // 原有的 loadTaskDataAndOpenModalForIndex 函数（确保存在）
-        if (typeof loadTaskDataAndOpenModalForIndex === 'undefined') {
-            window.loadTaskDataAndOpenModalForIndex = function(taskId) {
-                console.log('打开任务编辑弹窗，任务ID:', taskId);
-                // 这里应该打开编辑模态框
-                // 由于您说已有这个函数，这里保留一个兼容版本
-            };
-        }
     </script>
 @endsection

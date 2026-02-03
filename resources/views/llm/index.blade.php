@@ -54,110 +54,111 @@
 
         <!-- 右侧聊天区域 -->
         <div class="flex-1 flex flex-col">
-            <!-- 会话标题栏 -->
-            <div class="border-b border-gray-200 bg-white px-6 py-4">
-                <div class="flex items-center justify-between">
+            <!-- ==================== 状态1：新建对话界面 ==================== -->
+            <div id="initial-mode" class="flex-1 flex flex-col">
+                <!-- Header: 新建对话 -->
+                <div class="border-b border-gray-200 bg-white px-6 py-4">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                             <i class="fas fa-comments text-blue-600 text-lg"></i>
                         </div>
                         <div>
-                            <h3 id="session-title-display" class="font-semibold text-gray-900 text-lg">请选择或新建会话</h3>
-                            <div class="flex items-center space-x-3 text-sm text-gray-500">
-                                <span id="session-agent">未选择智能体</span>
-                                <span id="session-time"></span>
-                            </div>
+                            <h3 class="font-semibold text-gray-900 text-lg">新建对话</h3>
+                            <div class="text-sm text-gray-500">开始一段新的AI对话</div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- 会话操作按钮 -->
-                    <div class="flex items-center space-x-2" id="session-actions" style="display: none;">
-                        <div class="dropdown relative">
-                            <button class="btn btn-sm btn-outline">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                            <div class="dropdown-menu llm-hidden" style="right: 0; left: auto;">
-                                <button id="pin-session-btn" class="dropdown-item">
-                                    <i class="fas fa-thumbtack mr-2"></i>
-                                    <span>固定会话</span>
-                                </button>
-                                <button id="rename-session-btn" class="dropdown-item">
-                                    <i class="fas fa-edit mr-2"></i>
-                                    <span>重命名</span>
-                                </button>
-                                <div class="border-t border-gray-200 my-1"></div>
-                                <button id="export-session-btn" class="dropdown-item">
-                                    <i class="fas fa-download mr-2"></i>
-                                    <span>导出会话</span>
-                                </button>
-                                <button id="clear-session-btn" class="dropdown-item">
-                                    <i class="fas fa-trash mr-2"></i>
-                                    <span>清空对话</span>
-                                </button>
-                                <div class="border-t border-gray-200 my-1"></div>
-                                <button id="delete-session-btn" class="dropdown-item text-red-600">
-                                    <i class="fas fa-trash-alt mr-2"></i>
-                                    <span>删除会话</span>
-                                </button>
+                <!-- 消息引导区域（固定高度） -->
+                <div class="flex-1 overflow-hidden">
+                    <div class="h-full flex flex-col items-center justify-center p-6">
+                        <div class="max-w-2xl w-full text-center">
+                            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center">
+                                <i class="fas fa-robot text-primary-color text-4xl"></i>
+                            </div>
+
+                            <h2 class="text-2xl font-bold text-gray-900 mb-3">欢迎使用AI助手</h2>
+                            <p class="text-gray-600 mb-8">选择智能体后开始您的对话</p>
+
+                            <!-- 快捷问题示例 -->
+                            <div class="mb-8">
+                                <h4 class="text-sm font-medium text-gray-700 mb-4">尝试询问：</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl mx-auto">
+                                    <button onclick="setQuickQuestion('如何提高工作效率？')" class="p-4 bg-white border border-gray-200 rounded-xl text-left hover:border-primary-color hover:shadow-sm transition-all duration-200">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-briefcase text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-900">提高工作效率</div>
+                                                <div class="text-xs text-gray-500 mt-1">获取高效工作方法</div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button onclick="setQuickQuestion('如何制定学习计划？')" class="p-4 bg-white border border-gray-200 rounded-xl text-left hover:border-primary-color hover:shadow-sm transition-all duration-200">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-graduation-cap text-green-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-900">制定学习计划</div>
+                                                <div class="text-xs text-gray-500 mt-1">定制个性化学习方案</div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 消息区域 -->
-            <div class="flex-1 overflow-hidden flex flex-col bg-gray-50">
-                <!-- 初始状态：欢迎界面 -->
-                <div id="initial-mode" class="flex-1 flex flex-col">
-                    <!-- 智能体选择区域 -->
-                    <div class="bg-white border-b border-gray-200 p-4">
-                        <div class="max-w-3xl mx-auto">
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-1">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        选择智能体
-                                    </label>
-                                    <select id="agent-select" class="input w-full">
-                                        <option value="">请选择智能体</option>
-                                        <option value="builtin_common">通用助手</option>
-                                        <!-- 智能体会动态加载 -->
-                                    </select>
+            <!-- ==================== 状态2：聊天界面 ==================== -->
+            <div id="chat-mode" class="llm-hidden flex-1 flex flex-col">
+                <!-- Header: 会话信息 -->
+                <div class="border-b border-gray-200 bg-white px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-comments text-blue-600 text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 id="session-title-display" class="font-semibold text-gray-900 text-lg">会话标题</h3>
+                                <div class="flex items-center space-x-3 text-sm text-gray-500">
+                                    <span id="session-agent">智能体：加载中...</span>
+                                    <span id="session-time"></span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- 消息输入区域（初始状态） -->
-                    <div class="flex-1 flex items-center justify-center p-6">
-                        <div class="max-w-3xl w-full">
-                            <!-- 欢迎内容 -->
-                            <div class="text-center mb-8">
-                                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center">
-                                    <i class="fas fa-robot text-primary-color text-3xl"></i>
-                                </div>
-                                <h2 class="text-2xl font-bold text-gray-900 mb-2">欢迎使用AI助手</h2>
-                                <p class="text-gray-600">选择智能体后，开始您的对话</p>
-                            </div>
-
-                            <!-- 快捷问题示例 -->
-                            <div class="mb-6">
-                                <h4 class="text-sm font-medium text-gray-700 mb-3">尝试询问：</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    <button onclick="setQuickQuestion('如何提高工作效率？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm text-left hover:border-primary-color transition-colors duration-200">
-                                        <i class="fas fa-briefcase text-blue-500 mr-2"></i>
-                                        提高工作效率
+                        <!-- 会话操作按钮 -->
+                        <div class="flex items-center space-x-2">
+                            <div class="dropdown relative">
+                                <button class="btn btn-sm btn-outline">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <div class="dropdown-menu llm-hidden" style="right: 0; left: auto;">
+                                    <button id="pin-session-btn" class="dropdown-item">
+                                        <i class="fas fa-thumbtack mr-2"></i>
+                                        <span>固定会话</span>
                                     </button>
-                                    <button onclick="setQuickQuestion('如何制定学习计划？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm text-left hover:border-primary-color transition-colors duration-200">
-                                        <i class="fas fa-graduation-cap text-green-500 mr-2"></i>
-                                        制定学习计划
+                                    <button id="rename-session-btn" class="dropdown-item">
+                                        <i class="fas fa-edit mr-2"></i>
+                                        <span>重命名</span>
                                     </button>
-                                    <button onclick="setQuickQuestion('帮我写一个周报模板')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm text-left hover:border-primary-color transition-colors duration-200">
-                                        <i class="fas fa-file-alt text-purple-500 mr-2"></i>
-                                        周报模板
+                                    <div class="border-t border-gray-200 my-1"></div>
+                                    <button id="export-session-btn" class="dropdown-item">
+                                        <i class="fas fa-download mr-2"></i>
+                                        <span>导出会话</span>
                                     </button>
-                                    <button onclick="setQuickQuestion('推荐时间管理技巧')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm text-left hover:border-primary-color transition-colors duration-200">
-                                        <i class="fas fa-clock text-orange-500 mr-2"></i>
-                                        时间管理技巧
+                                    <button id="clear-session-btn" class="dropdown-item">
+                                        <i class="fas fa-trash mr-2"></i>
+                                        <span>清空对话</span>
+                                    </button>
+                                    <div class="border-t border-gray-200 my-1"></div>
+                                    <button id="delete-session-btn" class="dropdown-item text-red-600">
+                                        <i class="fas fa-trash-alt mr-2"></i>
+                                        <span>删除会话</span>
                                     </button>
                                 </div>
                             </div>
@@ -165,15 +166,61 @@
                     </div>
                 </div>
 
-                <!-- 聊天模式 -->
-                <div id="chat-mode" class="llm-hidden flex-1 flex flex-col">
-                    <!-- 消息列表 -->
-                    <div id="messages-list" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar"></div>
+                <!-- 消息气泡区域（固定高度） -->
+                <div class="flex-1 overflow-hidden bg-gray-50">
+                    <div id="messages-list" class="h-full overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                        <!-- 消息会动态插入到这里 -->
+                    </div>
                 </div>
+            </div>
 
-                <!-- 通用输入区域（始终显示） -->
-                <div class="border-t border-gray-200 bg-white p-4">
-                    <div class="max-w-3xl mx-auto">
+            <!-- ==================== 底部输入区域 ==================== -->
+            <div class="border-t border-gray-200 bg-white">
+                <div class="max-w-3xl mx-auto p-4">
+                    <!-- 状态1：智能体选择 + 输入框 -->
+                    <div id="initial-input-area">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                选择智能体
+                            </label>
+                            <select id="agent-select" class="input w-full">
+                                <option value="">请选择智能体</option>
+                                <option value="builtin_common">通用助手</option>
+                                <!-- 智能体会动态加载 -->
+                            </select>
+                        </div>
+
+                        <div class="relative bg-white rounded-lg border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
+                        <textarea
+                                id="initial-message-input"
+                                rows="3"
+                                class="w-full p-4 text-gray-900 resize-none focus:outline-none bg-transparent"
+                                placeholder="输入您的问题... (Enter 发送，Shift+Enter 换行)"
+                        ></textarea>
+
+                            <div class="flex items-center justify-between px-4 pb-3">
+                                <div class="flex items-center space-x-3">
+                                    <button id="initial-attachment-btn" class="text-gray-400 hover:text-gray-600" title="添加附件">
+                                        <i class="fas fa-paperclip"></i>
+                                    </button>
+                                    <button id="initial-clear-btn" class="text-gray-400 hover:text-gray-600" title="清空输入">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center space-x-4">
+                                    <div id="initial-char-count" class="text-xs text-gray-400">0/2000</div>
+                                    <button id="initial-send-btn" class="btn btn-primary flex items-center">
+                                        <i class="fas fa-paper-plane mr-2"></i>
+                                        发送
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 状态2：聊天输入框 -->
+                    <div id="chat-input-area" class="llm-hidden">
                         <div class="relative bg-white rounded-lg border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
                         <textarea
                                 id="message-input"
@@ -183,20 +230,18 @@
                         ></textarea>
 
                             <div class="flex items-center justify-between px-4 pb-3">
-                                <!-- 左侧功能按钮 -->
                                 <div class="flex items-center space-x-3">
-                                    <button id="attachment-btn" class="text-gray-400 hover:text-gray-600" title="添加附件">
+                                    <button id="chat-attachment-btn" class="text-gray-400 hover:text-gray-600" title="添加附件">
                                         <i class="fas fa-paperclip"></i>
                                     </button>
-                                    <button id="clear-input-btn" class="text-gray-400 hover:text-gray-600" title="清空输入">
+                                    <button id="chat-clear-btn" class="text-gray-400 hover:text-gray-600" title="清空输入">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
 
-                                <!-- 右侧发送按钮和字数统计 -->
                                 <div class="flex items-center space-x-4">
-                                    <div id="input-char-count" class="text-xs text-gray-400">0/2000</div>
-                                    <button id="send-message-btn" class="btn btn-primary flex items-center">
+                                    <div id="chat-char-count" class="text-xs text-gray-400">0/2000</div>
+                                    <button id="chat-send-btn" class="btn btn-primary flex items-center">
                                         <i class="fas fa-paper-plane mr-2"></i>
                                         发送
                                     </button>
@@ -227,7 +272,7 @@
         </div>
     </div>
 
-    <!-- 确认模态框 -->
+    <!-- 模态框 -->
     <div class="modal" id="confirmModal">
         <div class="modal-content max-w-md">
             <div class="p-6">
@@ -241,7 +286,6 @@
         </div>
     </div>
 
-    <!-- 重命名模态框 -->
     <div class="modal" id="renameModal">
         <div class="modal-content max-w-md">
             <div class="p-6">
@@ -267,11 +311,11 @@
         </div>
     </div>
 
-    <!-- 当前会话的agent_id -->
+    <!-- 当前会话信息 -->
     <input type="hidden" id="current-agent-id" value="">
     <input type="hidden" id="current-session-id" value="">
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/js/marked.min.js"></script>
 
     <script>
         // 全局变量
@@ -300,52 +344,56 @@
         function initEventListeners() {
             // 智能体选择
             document.getElementById('agent-select').addEventListener('change', function() {
-                const agentId = this.value;
-                const agentName = this.options[this.selectedIndex].text;
-
-                if (agentId && !currentSessionId) {
-                    // 创建新会话
-                    createNewSessionWithAgent(agentId, agentName);
-                }
+                console.log('智能体选择变更:', this.value);
             });
 
-            // 消息输入相关事件
-            const messageInput = document.getElementById('message-input');
-            messageInput.addEventListener('keydown', function(e) {
-                // Enter 发送，Shift+Enter 换行
+            // ========== 初始状态（新建对话） ==========
+            const initialInput = document.getElementById('initial-message-input');
+            initialInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    startNewChat();
+                }
+            });
+            initialInput.addEventListener('input', updateInitialCharCount);
+
+            document.getElementById('initial-send-btn').addEventListener('click', startNewChat);
+            document.getElementById('initial-clear-btn').addEventListener('click', function() {
+                document.getElementById('initial-message-input').value = '';
+                updateInitialCharCount();
+                document.getElementById('initial-message-input').focus();
+            });
+            document.getElementById('initial-attachment-btn').addEventListener('click', showAttachmentOptions);
+
+            // ========== 聊天状态 ==========
+            const chatInput = document.getElementById('message-input');
+            chatInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendMessage();
                 }
             });
-            messageInput.addEventListener('input', updateCharCount);
+            chatInput.addEventListener('input', updateChatCharCount);
 
-            // 发送按钮
-            document.getElementById('send-message-btn').addEventListener('click', sendMessage);
-
-            // 清空输入按钮
-            document.getElementById('clear-input-btn').addEventListener('click', function() {
+            document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
+            document.getElementById('chat-clear-btn').addEventListener('click', function() {
                 document.getElementById('message-input').value = '';
-                updateCharCount();
+                updateChatCharCount();
                 document.getElementById('message-input').focus();
             });
-
-            // 重新生成按钮
+            document.getElementById('chat-attachment-btn').addEventListener('click', showAttachmentOptions);
             document.getElementById('regenerate-btn').addEventListener('click', regenerateLastResponse);
 
             // 搜索会话
             document.getElementById('search-sessions').addEventListener('input', searchSessions);
 
-            // 为模态框按钮绑定事件
+            // 模态框按钮
             document.getElementById('save-rename-btn').addEventListener('click', saveRenameSession);
             document.getElementById('rename-session-btn')?.addEventListener('click', renameCurrentSession);
             document.getElementById('delete-session-btn')?.addEventListener('click', deleteCurrentSession);
             document.getElementById('pin-session-btn')?.addEventListener('click', togglePinCurrentSession);
             document.getElementById('clear-session-btn')?.addEventListener('click', clearCurrentSession);
             document.getElementById('export-session-btn')?.addEventListener('click', exportCurrentSession);
-
-            // 附件按钮
-            document.getElementById('attachment-btn').addEventListener('click', showAttachmentOptions);
 
             // 模态框关闭事件
             document.querySelectorAll('.modal').forEach(modal => {
@@ -367,13 +415,21 @@
 
         // 初始化字符计数器
         function initCharCounters() {
-            updateCharCount();
+            updateInitialCharCount();
+            updateChatCharCount();
         }
 
-        // 更新消息输入字符计数
-        function updateCharCount() {
+        // 更新初始输入字符计数
+        function updateInitialCharCount() {
+            const textarea = document.getElementById('initial-message-input');
+            const counter = document.getElementById('initial-char-count');
+            updateCharCounter(textarea, counter, 2000);
+        }
+
+        // 更新聊天输入字符计数
+        function updateChatCharCount() {
             const textarea = document.getElementById('message-input');
-            const counter = document.getElementById('input-char-count');
+            const counter = document.getElementById('chat-char-count');
             updateCharCounter(textarea, counter, 2000);
         }
 
@@ -603,14 +659,21 @@
             select.innerHTML = options;
         }
 
-        // 使用智能体创建新会话
-        async function createNewSessionWithAgent(agentId, agentName) {
-            try {
-                // 如果当前有会话，先切换到初始状态
-                if (currentSessionId) {
-                    resetToInitialState();
-                }
+        // 开始新聊天
+        async function startNewChat() {
+            const agentId = document.getElementById('agent-select').value;
+            const message = document.getElementById('initial-message-input').value.trim();
 
+            if (!agentId) {
+                showToast('请选择智能体', 'error');
+                return;
+            }
+
+            // 获取智能体名称
+            const agentSelect = document.getElementById('agent-select');
+            const agentName = agentSelect.options[agentSelect.selectedIndex].text;
+
+            try {
                 const response = await fetch('/llm/sessions', {
                     method: 'POST',
                     headers: {
@@ -620,7 +683,7 @@
                     },
                     body: JSON.stringify({
                         agent_id: agentId,
-                        title: `${agentName}对话`
+                        title: message ? message.substring(0, 30) : `${agentName}对话`
                     })
                 });
 
@@ -642,14 +705,25 @@
                     document.getElementById('current-agent-id').value = agentId;
                     document.getElementById('current-session-id').value = result.data.id;
 
-                    // 显示欢迎消息
-                    const welcomeMessage = `您好！我是${agentName}，有什么可以帮您的吗？`;
-                    addMessage('ai', welcomeMessage);
+                    // 如果有消息，发送给AI
+                    if (message) {
+                        addMessage('user', message);
+                        await sendMessageToAI(message, agentId);
+                    } else {
+                        // 显示欢迎消息
+                        const welcomeMessage = `您好！我是${agentName}，有什么可以帮您的吗？`;
+                        addMessage('ai', welcomeMessage);
+                    }
+
+                    // 清空初始输入
+                    document.getElementById('initial-message-input').value = '';
+                    updateInitialCharCount();
+                    document.getElementById('agent-select').value = '';
 
                     // 重新加载会话列表
                     await loadSessions();
 
-                    // 聚焦到输入框
+                    // 聚焦到聊天输入框
                     setTimeout(() => {
                         document.getElementById('message-input').focus();
                     }, 100);
@@ -661,54 +735,38 @@
             } catch (error) {
                 console.error('创建会话失败:', error);
                 showToast('创建会话失败: ' + error.message, 'error');
-                // 重置选择
-                document.getElementById('agent-select').value = '';
             }
         }
 
         // 设置快捷问题
         function setQuickQuestion(question) {
-            if (!currentSessionId) {
-                showToast('请先选择智能体创建会话', 'error');
-                return;
-            }
-
-            document.getElementById('message-input').value = question;
-            updateCharCount();
-            document.getElementById('message-input').focus();
+            document.getElementById('initial-message-input').value = question;
+            updateInitialCharCount();
+            document.getElementById('initial-message-input').focus();
         }
 
         // 切换到聊天模式
         function switchToChatMode() {
             document.getElementById('initial-mode').classList.add('llm-hidden');
             document.getElementById('chat-mode').classList.remove('llm-hidden');
-            document.getElementById('session-actions').style.display = 'flex';
+            document.getElementById('initial-input-area').classList.add('llm-hidden');
+            document.getElementById('chat-input-area').classList.remove('llm-hidden');
         }
 
-        // 重置到初始状态
-        function resetToInitialState() {
+        // 切换到初始模式
+        function switchToInitialMode() {
             currentSessionId = null;
             currentSessionAgent = null;
 
             document.getElementById('initial-mode').classList.remove('llm-hidden');
             document.getElementById('chat-mode').classList.add('llm-hidden');
-            document.getElementById('session-actions').style.display = 'none';
+            document.getElementById('initial-input-area').classList.remove('llm-hidden');
+            document.getElementById('chat-input-area').classList.add('llm-hidden');
 
-            document.getElementById('session-title-display').textContent = '请选择或新建会话';
-            document.getElementById('session-agent').textContent = '未选择智能体';
-            document.getElementById('session-time').textContent = '';
-
-            // 清空消息列表
-            document.getElementById('messages-list').innerHTML = '';
-
-            // 清空智能体选择
+            document.getElementById('initial-message-input').value = '';
+            updateInitialCharCount();
             document.getElementById('agent-select').value = '';
 
-            // 清空输入框
-            document.getElementById('message-input').value = '';
-            updateCharCount();
-
-            // 清隐藏藏的ID
             document.getElementById('current-agent-id').value = '';
             document.getElementById('current-session-id').value = '';
         }
@@ -728,10 +786,7 @@
                 agentName = sessionData.agent_name;
             }
 
-            document.getElementById('session-agent').textContent = agentName;
-
-            // 更新固定按钮状态
-            updatePinButton(sessionData.is_pinned);
+            document.getElementById('session-agent').textContent = `智能体：${agentName}`;
 
             if (sessionData.updated_at) {
                 document.getElementById('session-time').textContent = formatTime(sessionData.updated_at);
@@ -739,23 +794,6 @@
 
             // 更新当前会话ID
             document.getElementById('current-session-id').value = sessionData.id;
-        }
-
-        // 更新固定按钮状态
-        function updatePinButton(isPinned) {
-            const pinBtn = document.getElementById('pin-session-btn');
-            if (!pinBtn) return;
-
-            const icon = pinBtn.querySelector('i');
-            const text = pinBtn.querySelector('span');
-
-            if (isPinned) {
-                icon.className = 'fas fa-thumbtack text-yellow-500 mr-2';
-                text.textContent = '取消固定';
-            } else {
-                icon.className = 'fas fa-thumbtack mr-2';
-                text.textContent = '固定会话';
-            }
         }
 
         // 切换到指定会话
@@ -785,8 +823,6 @@
                     // 更新当前智能体ID
                     if (currentSessionAgent && currentSessionAgent.id) {
                         document.getElementById('current-agent-id').value = currentSessionAgent.id;
-                    } else {
-                        document.getElementById('current-agent-id').value = '';
                     }
 
                     // 清空消息列表并加载历史消息
@@ -800,7 +836,7 @@
                         addMessage('ai', `您好！我是${agentName}，有什么可以帮您的吗？`);
                     }
 
-                    // 聚焦到输入框
+                    // 聚焦到聊天输入框
                     setTimeout(() => {
                         document.getElementById('message-input').focus();
                     }, 100);
@@ -811,18 +847,18 @@
             }
         }
 
-        // 添加消息到聊天
+        // ========== 修复：添加消息到聊天 ==========
         function addMessage(role, content) {
             const messagesList = document.getElementById('messages-list');
             const messageId = 'msg-' + Date.now();
 
-            // 用户消息
             if (role === 'user') {
+                // 用户消息 - 修复样式
                 const userMessageHTML = `
             <div id="${messageId}" class="flex justify-end mb-4">
-                <div class="max-w-3xl">
+                <div class="max-w-xl">
                     <div class="bg-primary-color text-white rounded-2xl rounded-br-none px-5 py-3">
-                        ${escapeHtml(content).replace(/\n/g, '<br>')}
+                        <div class="whitespace-pre-wrap">${escapeHtml(content)}</div>
                     </div>
                     <div class="text-xs text-gray-500 mt-1 text-right">
                         ${formatTime(new Date().toISOString())}
@@ -831,18 +867,16 @@
             </div>
         `;
                 messagesList.insertAdjacentHTML('beforeend', userMessageHTML);
-            }
-            // AI消息
-            else {
+            } else {
+                // AI消息
                 const aiMessageHTML = `
             <div id="${messageId}" class="flex mb-6">
                 <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
                     <i class="fas fa-robot text-blue-600 text-sm"></i>
                 </div>
-                <div class="max-w-3xl flex-1">
+                <div class="max-w-xl flex-1">
                     <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-5 py-3">
-                        // <div class="markdown-content">${marked.parse(content)}</div>
-<!--                        // <div class="markdown-content">${content}</div>-->
+                        <div class="markdown-content whitespace-pre-wrap">${marked.parse(content)}</div>
                     </div>
                     <div class="flex items-center justify-between mt-2">
                         <div class="text-xs text-gray-500">
@@ -858,9 +892,6 @@
             </div>
         `;
                 messagesList.insertAdjacentHTML('beforeend', aiMessageHTML);
-
-                // 高亮代码块
-                highlightCodeBlocks();
             }
 
             // 滚动到底部
@@ -876,28 +907,6 @@
             return div.innerHTML;
         }
 
-        // 高亮代码块
-        function highlightCodeBlocks() {
-            if (typeof hljs !== 'undefined') {
-                document.querySelectorAll('pre code').forEach(block => {
-                    hljs.highlightBlock(block);
-                });
-            }
-        }
-
-        // 复制消息
-        function copyMessage(messageId) {
-            const messageElement = document.getElementById(messageId);
-            const content = messageElement.querySelector('.markdown-content')?.textContent ||
-                messageElement.querySelector('.bg-primary-color')?.textContent;
-
-            if (content) {
-                navigator.clipboard.writeText(content).then(() => {
-                    showToast('已复制到剪贴板', 'success');
-                });
-            }
-        }
-
         // 发送消息
         async function sendMessage() {
             const messageInput = document.getElementById('message-input');
@@ -909,7 +918,7 @@
             }
 
             if (!currentSessionId) {
-                showToast('请先选择智能体创建会话', 'error');
+                showToast('请先创建会话', 'error');
                 return;
             }
 
@@ -922,7 +931,7 @@
 
             // 清空输入框
             messageInput.value = '';
-            updateCharCount();
+            updateChatCharCount();
 
             // 显示用户消息
             addMessage('user', message);
@@ -931,7 +940,7 @@
             await sendMessageToAI(message, agentId);
         }
 
-        // 发送消息到AI - 修复流式输出解析
+        // 发送消息到AI
         async function sendMessageToAI(message, agentId = null) {
             if (isStreaming && currentStreamController) {
                 currentStreamController.abort();
@@ -977,7 +986,7 @@
                 <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
                     <i class="fas fa-robot text-blue-600 text-sm"></i>
                 </div>
-                <div class="max-w-3xl flex-1">
+                <div class="max-w-xl flex-1">
                     <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-5 py-3">
                         <div id="${messageId}-content" class="markdown-content"></div>
                     </div>
@@ -988,7 +997,7 @@
             </div>
         `);
 
-                // 处理流式响应 - 修复解析逻辑
+                // 处理流式响应
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let accumulatedContent = '';
@@ -1016,32 +1025,18 @@
                                 if (parsed.choices && parsed.choices[0]) {
                                     const choice = parsed.choices[0];
 
-                                    // 如果有delta.content字段
+                                    // 修复：检查delta.content字段
                                     if (choice.delta && choice.delta.content) {
                                         accumulatedContent += choice.delta.content;
 
                                         // 更新消息内容
                                         const contentElement = document.getElementById(`${messageId}-content`);
                                         if (contentElement) {
-                                            // contentElement.innerHTML = marked.parse(accumulatedContent);
-                                            contentElement.innerHTML = accumulatedContent;
-                                            highlightCodeBlocks();
-                                        }
-                                    }
-                                    // 如果有message.content字段
-                                    else if (choice.message && choice.message.content) {
-                                        accumulatedContent += choice.message.content;
-
-                                        const contentElement = document.getElementById(`${messageId}-content`);
-                                        if (contentElement) {
-                                            // contentElement.innerHTML = marked.parse(accumulatedContent);
-                                            contentElement.innerHTML = accumulatedContent;
-                                            highlightCodeBlocks();
+                                            contentElement.innerHTML = marked.parse(accumulatedContent);
                                         }
                                     }
                                 }
                             } catch (e) {
-                                // 忽略解析错误，继续处理下一个数据块
                                 console.warn('解析流数据失败:', e, '数据:', data);
                             }
                         }
@@ -1098,7 +1093,7 @@
             <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
                 <i class="fas fa-robot text-blue-600 text-sm"></i>
             </div>
-            <div class="max-w-3xl flex-1">
+            <div class="max-w-xl flex-1">
                 <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-5 py-3">
                     <div class="typing-indicator">
                         <span></span>
@@ -1125,31 +1120,6 @@
                 document.querySelectorAll('.typing-indicator').forEach(ind => {
                     ind.closest('.flex.mb-6')?.remove();
                 });
-            }
-        }
-
-        // 重新生成最后一条消息
-        async function regenerateLastResponse() {
-            const messagesList = document.getElementById('messages-list');
-            const lastAiMessage = messagesList.querySelector('.flex.mb-6:last-child');
-
-            if (!lastAiMessage) return;
-
-            const messageId = lastAiMessage.id;
-            lastAiMessage.remove();
-
-            // 获取上一条用户消息
-            const allMessages = Array.from(messagesList.children);
-            const userMessages = allMessages.filter(msg => msg.classList.contains('justify-end'));
-            const lastUserMessage = userMessages[userMessages.length - 1];
-
-            if (lastUserMessage) {
-                const userContent = lastUserMessage.querySelector('.bg-primary-color')?.textContent || '';
-                const agentId = document.getElementById('current-agent-id').value;
-
-                if (userContent.trim() && agentId) {
-                    await sendMessageToAI(userContent.trim(), agentId);
-                }
             }
         }
 
@@ -1188,11 +1158,6 @@
                 if (result.success) {
                     // 重新加载会话列表
                     loadSessions();
-
-                    // 如果当前会话被固定，更新按钮状态
-                    if (currentSessionId === sessionId) {
-                        updatePinButton(result.data.is_pinned);
-                    }
 
                     showToast(result.data.is_pinned ? '已固定会话' : '已取消固定', 'success');
                 } else {
@@ -1233,7 +1198,7 @@
 
                         // 清空消息列表，显示欢迎消息
                         document.getElementById('messages-list').innerHTML = '';
-                        const agentName = document.getElementById('session-agent').textContent;
+                        const agentName = document.getElementById('session-agent').textContent.replace('智能体：', '');
                         addMessage('ai', `您好！我是${agentName}，有什么可以帮您的吗？`);
                     } else {
                         throw new Error(result.message);
@@ -1271,8 +1236,8 @@
                     if (result.success) {
                         showToast('会话已删除', 'success');
 
-                        // 重置到初始状态
-                        resetToInitialState();
+                        // 切换回初始模式
+                        switchToInitialMode();
 
                         // 重新加载会话列表
                         loadSessions();
@@ -1339,6 +1304,25 @@
         // 显示附件选项
         function showAttachmentOptions() {
             showToast('附件功能开发中...', 'info');
+        }
+
+        // 重新生成最后一条消息
+        async function regenerateLastResponse() {
+            // TODO: 实现重新生成逻辑
+            showToast('重新生成功能开发中...', 'info');
+        }
+
+        // 复制消息
+        function copyMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            const content = messageElement.querySelector('.markdown-content')?.textContent ||
+                messageElement.querySelector('.bg-primary-color')?.textContent;
+
+            if (content) {
+                navigator.clipboard.writeText(content).then(() => {
+                    showToast('已复制到剪贴板', 'success');
+                });
+            }
         }
 
         // 显示确认模态框
@@ -1408,7 +1392,7 @@
     <style>
         /* 高度和布局 */
         .h-screen {
-            height: calc(100vh - 64px); /* 减去顶部导航栏高度 */
+            height: calc(100vh - 64px);
         }
 
         /* 会话列表样式 */
@@ -1540,23 +1524,8 @@
             }
         }
 
-        /* 下拉菜单样式 */
-        .dropdown-menu {
-            animation: dropdownSlideIn 0.2s ease-out;
-        }
-
-        @keyframes dropdownSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         /* 输入区域样式 */
+        #initial-message-input,
         #message-input {
             min-height: 60px;
             max-height: 200px;

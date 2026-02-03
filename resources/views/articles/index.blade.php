@@ -45,9 +45,9 @@
     }
 
     .sidebar-header {
-        background: linear-gradient(135deg, #4a90e2, #8a6cff);
+        background: linear-gradient(135deg, #f4f7fb, #c0bec8);
         padding: 20px;
-        color: white;
+        color: black;
         border-radius: 12px 12px 0 0;
         display: flex;
         justify-content: space-between;
@@ -954,22 +954,22 @@
                     <!-- 内容头部 -->
                     <div class="content-header">
                         <div>
-                            <h2 class="status-title">
-                                @if($status == 'unread')
-                                    <i class="fas fa-envelope text-red-500"></i>
-                                    未读文章
-                                @elseif($status == 'read')
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                    已读文章
-                                @elseif($status == 'star')
-                                    <i class="fas fa-star text-yellow-500"></i>
-                                    收藏文章
-                                @elseif($status == 'read_later')
-                                    <i class="fas fa-clock text-blue-500"></i>
-                                    稍后阅读
-                                @endif
-                                <span class="status-badge">{{ count($article_subs) }} 篇</span>
-                            </h2>
+{{--                            <h2 class="status-title">--}}
+{{--                                @if($status == 'unread')--}}
+{{--                                    <i class="fas fa-envelope text-red-500"></i>--}}
+{{--                                    未读文章--}}
+{{--                                @elseif($status == 'read')--}}
+{{--                                    <i class="fas fa-check-circle text-green-500"></i>--}}
+{{--                                    已读文章--}}
+{{--                                @elseif($status == 'star')--}}
+{{--                                    <i class="fas fa-star text-yellow-500"></i>--}}
+{{--                                    收藏文章--}}
+{{--                                @elseif($status == 'read_later')--}}
+{{--                                    <i class="fas fa-clock text-blue-500"></i>--}}
+{{--                                    稍后阅读--}}
+{{--                                @endif--}}
+{{--                                <span class="status-badge">{{ count($article_subs) }} 篇</span>--}}
+{{--                            </h2>--}}
 
                             <div class="status-tabs">
                                 <a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}"
@@ -1275,9 +1275,153 @@
             var unableDesc = {{ $unable_desc == "true" ? 'true' : 'false' }};
 
             // 原有功能保持
-            // 分类导航处理
+            // 存储的键名
+            const NAV_STORAGE_KEY = 'nav_storage_data';
+            const NAV_STORAGE_TIMESTAMP_KEY = 'nav_storage_timestamp';
+            const STORAGE_EXPIRY_HOURS = 2; // 存储过期时间（小时）
+
+            // 主处理函数 - 优先从localStorage加载，没有则请求远程
             function processNav(status) {
                 $('#nav').html('<li class="text-center py-4 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</li>');
+
+                // 尝试从localStorage获取缓存数据
+                const cachedData = getNavFromStorage(status);
+
+                if (cachedData) {
+                    // 使用缓存数据渲染导航
+                    renderNav(cachedData, status);
+                    // 可选：后台静默更新（不阻塞界面）
+                    setTimeout(() => fetchNavFromRemote(status, true), 100);
+                } else {
+                    // 没有缓存或已过期，请求远程数据
+                    fetchNavFromRemote(status, false);
+                }
+            }
+
+// 从localStorage获取缓存的导航数据
+            function getNavFromStorage(status) {
+                try {
+                    // 获取缓存数据和时间戳
+                    const cacheDataStr = localStorage.getItem(NAV_STORAGE_KEY);
+                    const timestampStr = localStorage.getItem(NAV_STORAGE_TIMESTAMP_KEY);
+
+                    if (!cacheDataStr || !timestampStr) {
+                        return null;
+                    }
+
+                    // 解析缓存数据
+                    const cacheData = JSON.parse(cacheDataStr);
+                    const cacheTimestamp = parseInt(timestampStr);
+                    const currentTime = new Date().getTime();
+
+                    // 检查缓存是否过期
+                    const expiryTime = STORAGE_EXPIRY_HOURS * 60 * 60 * 1000;
+                    if (currentTime - cacheTimestamp > expiryTime) {
+                        // 缓存过期，清除旧数据
+                        clearNavStorage();
+                        return null;
+                    }
+
+                    // 返回对应状态的数据
+                    return cacheData[status] || null;
+
+                } catch (error) {
+                    console.error('读取localStorage缓存失败:', error);
+                    clearNavStorage(); // 解析失败时清除可能损坏的缓存
+                    return null;
+                }
+            }
+
+// 将导航数据保存到localStorage
+            function saveNavToStorage(status, data) {
+                try {
+                    let storageData = {};
+                    const existingStorageStr = localStorage.getItem(NAV_STORAGE_KEY);
+
+                    // 合并现有缓存（如果有）
+                    if (existingStorageStr) {
+                        storageData = JSON.parse(existingStorageStr);
+                    }
+
+                    // 更新对应状态的数据
+                    storageData[status] = data;
+
+                    // 保存到localStorage
+                    localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify(storageData));
+                    localStorage.setItem(NAV_STORAGE_TIMESTAMP_KEY, new Date().getTime().toString());
+
+                    // 触发自定义事件，通知其他组件缓存已更新
+                    window.dispatchEvent(new CustomEvent('navStorageUpdated', {
+                        detail: { status, timestamp: new Date().getTime() }
+                    }));
+
+                    return true;
+                } catch (error) {
+                    console.error('保存到localStorage失败:', error);
+
+                    // 如果存储失败，可能是存储空间满了，尝试清理
+                    if (error.name === 'QuotaExceededError') {
+                        console.warn('localStorage存储空间不足，尝试清理...');
+                        clearOldStorageData();
+                        // 重试一次
+                        try {
+                            localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify({ [status]: data }));
+                            localStorage.setItem(NAV_STORAGE_TIMESTAMP_KEY, new Date().getTime().toString());
+                            return true;
+                        } catch (retryError) {
+                            console.error('重试保存到localStorage也失败:', retryError);
+                        }
+                    }
+                    return false;
+                }
+            }
+
+// 清理旧的存储数据（当存储空间不足时）
+            function clearOldStorageData() {
+                // 保留最近3种状态的缓存
+                try {
+                    const storageDataStr = localStorage.getItem(NAV_STORAGE_KEY);
+                    if (storageDataStr) {
+                        const storageData = JSON.parse(storageDataStr);
+                        const keys = Object.keys(storageData);
+
+                        // 如果状态超过3个，只保留最新的3个
+                        if (keys.length > 3) {
+                            // 这里可以根据实际需要修改清理策略
+                            // 例如：只保留当前状态和另外两个最常用的状态
+                            const newStorageData = {};
+
+                            // 假设我们保留 'unread', 'read', 'star' 这三种状态
+                            const keepStatuses = ['unread', 'read', 'star'];
+                            keepStatuses.forEach(status => {
+                                if (storageData[status]) {
+                                    newStorageData[status] = storageData[status];
+                                }
+                            });
+
+                            localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify(newStorageData));
+                        }
+                    }
+                } catch (error) {
+                    console.error('清理旧存储数据失败:', error);
+                }
+            }
+
+// 清空导航缓存
+            function clearNavStorage() {
+                localStorage.removeItem(NAV_STORAGE_KEY);
+                localStorage.removeItem(NAV_STORAGE_TIMESTAMP_KEY);
+
+                // 触发自定义事件
+                window.dispatchEvent(new CustomEvent('navStorageCleared'));
+            }
+
+// 从远程获取导航数据
+            function fetchNavFromRemote(status, isSilentUpdate = false) {
+                // 如果是静默更新，不显示加载动画
+                if (!isSilentUpdate) {
+                    $('#nav').html('<li class="text-center py-4 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</li>');
+                }
 
                 $.ajax({
                     url: "{{ url('article/navinfo') }}",
@@ -1285,57 +1429,162 @@
                     data: {"_token": "{{ csrf_token() }}", "status": status},
                     success: function (result_arr) {
                         if (result_arr.code != 9999) {
-                            $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败</li>');
+                            if (!isSilentUpdate) {
+                                $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败</li>');
+                            }
                         } else {
-                            processNavFlag = true;
-                            $('#nav').html('');
+                            // 保存到localStorage
+                            saveNavToStorage(status, result_arr.result);
 
-                            $.each(result_arr.result.nav_infos, function (navId, navInfo) {
-                                var itemCount = Object.getOwnPropertyNames(navInfo.list).length;
-                                var li = `
-                                <li class="category-item">
-                                    <div class="category-header" data-category-id="${navId}">
-                                        <div class="category-name">
-                                            <i class="fas fa-folder"></i>
-                                            ${navInfo.category_info.category_name}
-                                        </div>
-                                        <div class="flex items-center gap-3">
-                                            <span class="category-count">${itemCount}</span>
-                                            <i class="fas fa-chevron-right category-toggle"></i>
-                                        </div>
-                                    </div>
-                                    <ul class="feed-list" id="category-${navId}">
-                            `;
-
-                                if (itemCount > 0) {
-                                    $.each(navInfo.list, function (index, item) {
-                                        var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
-                                        var isActive = '{{ $feed_id }}' == item.feed_id ? 'active' : '';
-
-                                        li += `
-                                        <li class="feed-item ${isActive}">
-                                            <a href="{{ url('articles') }}?feed_id=${item.feed_id}&status=${status}" class="feed-link">
-                                                <i class="fas fa-rss"></i>
-                                                <span class="flex-1 text-truncate-1">${item.feed_name}</span>
-                                                <span class="feed-count">${countInfo}</span>
-                                            </a>
-                                        </li>
-                                    `;
-                                    });
-                                }
-
-                                li += '</ul></li>';
-                                $("#nav").append(li);
-                            });
-
-                            // 初始化分类切换
-                            initCategoryToggle();
+                            // 如果不是静默更新，才更新界面
+                            if (!isSilentUpdate) {
+                                renderNav(result_arr.result, status);
+                            } else {
+                                // 静默更新时，可以更新页面上的某些提示
+                                updateLastUpdateTime();
+                            }
                         }
                     },
-                    error: function() {
-                        $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>网络错误，请刷新重试</li>');
+                    error: function(xhr, status, error) {
+                        if (!isSilentUpdate) {
+                            $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>网络错误，请刷新重试</li>');
+                        }
+
+                        // 如果是静默更新失败，可以记录日志
+                        if (isSilentUpdate) {
+                            console.warn('静默更新导航数据失败:', error);
+                        }
+                    },
+                    complete: function() {
+                        // 如果是静默更新，可以在这里做一些清理工作
+                        if (isSilentUpdate) {
+                            console.log('导航数据静默更新完成');
+                        }
                     }
                 });
+            }
+
+// 渲染导航的通用函数
+            function renderNav(data, status) {
+                processNavFlag = true;
+                $('#nav').html('');
+
+                // 添加最后更新时间提示
+                const updateTime = new Date().toLocaleTimeString();
+                $('#nav').append(`
+        <li class="text-xs text-gray-400 text-center py-2 border-b">
+            <i class="fas fa-clock mr-1"></i>最后更新: ${updateTime}
+            <button class="ml-2 text-blue-500 hover:text-blue-700" onclick="refreshNav('${status}')">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </li>
+    `);
+
+                $.each(data.nav_infos, function (navId, navInfo) {
+                    var itemCount = Object.getOwnPropertyNames(navInfo.list).length;
+                    var li = `
+        <li class="category-item">
+            <div class="category-header" data-category-id="${navId}">
+                <div class="category-name">
+                    <i class="fas fa-folder"></i>
+                    ${navInfo.category_info.category_name}
+                </div>
+                <div class="flex items-center gap-3">
+                    <!--<span class="category-count"></span>-->
+                    <i class="fas fa-chevron-right category-toggle"></i>
+                </div>
+            </div>
+            <ul class="feed-list" id="category-${navId}">
+        `;
+
+                    if (itemCount > 0) {
+                        $.each(navInfo.list, function (index, item) {
+                            var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
+                            var isActive = '{{ $feed_id }}' == item.feed_id ? 'active' : '';
+
+                            li += `
+                <li class="feed-item ${isActive}">
+                    <a href="{{ url('articles') }}?feed_id=${item.feed_id}&status=${status}" class="feed-link">
+                        <i class="fas fa-rss"></i>
+                        <span class="flex-1 text-truncate-1">${item.feed_name}</span>
+                        <span class="feed-count">${countInfo}</span>
+                    </a>
+                </li>
+            `;
+                        });
+                    }
+
+                    li += '</ul></li>';
+                    $("#nav").append(li);
+                });
+
+                // 如果没有数据
+                if ($.isEmptyObject(data.nav_infos)) {
+                    $('#nav').append(`
+            <li class="text-center py-8 text-gray-500">
+                <i class="fas fa-inbox text-3xl mb-2"></i>
+                <div>暂无订阅源</div>
+            </li>
+        `);
+                }
+
+                // 初始化分类切换
+                initCategoryToggle();
+            }
+
+// 更新最后更新时间显示
+            function updateLastUpdateTime() {
+                const updateTime = new Date().toLocaleTimeString();
+                const timeElement = $('#nav').find('.text-xs.text-gray-400');
+                if (timeElement.length) {
+                    timeElement.html(`
+            <i class="fas fa-clock mr-1"></i>最后更新: ${updateTime}
+            <button class="ml-2 text-blue-500 hover:text-blue-700" onclick="refreshNav('${getCurrentStatus()}')">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        `);
+                }
+            }
+
+// 获取当前状态
+            function getCurrentStatus() {
+                // 这里根据你的实际情况获取当前状态
+                // 例如从URL参数或全局变量获取
+                return '{{ $status }}' || 'unread';
+            }
+
+// 清空并重新加载的方法
+            function refreshNav(status) {
+                // 显示加载状态，添加刷新动画
+                const refreshBtn = $('#nav').find('.fa-sync-alt');
+                if (refreshBtn.length) {
+                    refreshBtn.addClass('fa-spin');
+                }
+
+                // 清空缓存
+                clearNavStorage();
+
+                // 显示重新加载提示
+                $('#nav').html(`
+        <li class="text-center py-4 text-blue-500">
+            <i class="fas fa-sync-alt fa-spin mr-2"></i>重新加载中...
+        </li>
+    `);
+
+                // 强制从远程获取最新数据
+                fetchNavFromRemote(status, false);
+            }
+
+// 检查存储是否可用
+            function isStorageAvailable() {
+                try {
+                    const testKey = '__storage_test__';
+                    localStorage.setItem(testKey, testKey);
+                    localStorage.removeItem(testKey);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
             }
 
             // 分类切换功能

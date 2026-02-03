@@ -23,376 +23,14 @@
     <!-- 引入谷歌字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- 引入jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- 引入ECharts -->
     <script src="{{ url('/js/echarts.min.js') }}" defer></script>
 
-
-    <style>
-        :root {
-            /* 调整为更柔和的蓝色和紫色 */
-            --primary-color: #4a90e2;    /* 柔和的蓝色 */
-            --secondary-color: #8a6cff;  /* 柔和的紫色 */
-            /* 原色对比：#4a90e2, #8a6cff */
-
-            --success-color: #27ae60;    /* 稍微柔和的绿色 */
-            --warning-color: #f39c12;    /* 稍微柔和的橙色 */
-            --danger-color: #e74c3c;     /* 稍微柔和的红色 */
-
-            /* 灰度系统保持不变 */
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: var(--gray-50);
-            color: var(--gray-800);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* 蒙太奇设计系统 - 简洁专业版 */
-
-        /* 1. 卡片组件规范 */
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--gray-200);
-            transition: box-shadow 0.2s ease, transform 0.2s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .card-elevated {
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 2. 按钮组件规范 */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 14px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            gap: 8px;
-        }
-
-        /*.btn-primary {*/
-        /*    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));*/
-        /*    color: white;*/
-        /*}*/
-        /* 主按钮渐变调整为柔和版 */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-        }
-
-
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-200);
-        }
-
-        /*.btn-outline {*/
-        /*    background: transparent;*/
-        /*    color: var(--primary-color);*/
-        /*    border: 2px solid var(--primary-color);*/
-        /*}*/
-        /* 轮廓按钮调整为柔和版 */
-        .btn-outline {
-            background: transparent;
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-        }
-
-        .btn-outline:hover {
-            background: rgba(74, 144, 226, 0.05);
-        }
-
-        /*.btn-outline:hover {*/
-        /*    background: rgba(59, 130, 246, 0.1);*/
-        /*}*/
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 13px;
-        }
-
-        /* 3. 输入框规范 */
-        .input {
-            padding: 10px 14px;
-            border: 1px solid var(--gray-300);
-            border-radius: 8px;
-            background: white;
-            font-size: 14px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        /* 4. 标签/徽章规范 */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-primary {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--primary-color);
-        }
-
-        .badge-success {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success-color);
-        }
-
-        /* 5. 进度条规范 */
-        .progress {
-            height: 6px;
-            background: var(--gray-200);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        /*.progress-bar {*/
-        /*    height: 100%;*/
-        /*    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));*/
-        /*    border-radius: 3px;*/
-        /*    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);*/
-        /*}*/
-
-        /* 进度条渐变调整为柔和版 */
-        .progress-bar {
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-        }
-
-        /* 6. 表格规范 */
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th {
-            background: var(--gray-50);
-            padding: 12px 16px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--gray-700);
-            border-bottom: 2px solid var(--gray-200);
-        }
-
-        .table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        /* 7. 列表规范 */
-        .list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .list-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--gray-200);
-            transition: background 0.2s ease;
-        }
-
-        .list-item:hover {
-            background: var(--gray-50);
-        }
-
-        /* 8. 导航链接规范 */
-
-        a {
-            color: var(--gray-700);
-            text-decoration: none;
-            transition: color 0.2s ease;
-            font-weight: 500;
-        }
-
-        a:hover {
-            color: var(--primary-color);
-            text-decoration: underline;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 8px 16px;
-            color: var(--gray-600);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-
-        .nav-link:hover {
-            background: var(--gray-100);
-            color: var(--gray-800);
-        }
-
-        /*.nav-link.active {*/
-        /*    background: rgba(59, 130, 246, 0.1);*/
-        /*    color: var(--primary-color);*/
-        /*}*/
-
-        /* 导航链接保持原有样式，但调整激活状态颜色 */
-        .nav-link.active {
-            background: rgba(74, 144, 226, 0.08); /* 更柔和的蓝色背景 */
-            color: var(--primary-color);
-        }
-
-        /* 9. 下拉菜单规范 */
-        .dropdown {
-            position: relative;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            z-index: 1000;
-            min-width: 200px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--gray-200);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-        }
-
-        .dropdown-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 16px;
-            color: var(--gray-700);
-            text-decoration: none;
-            transition: background 0.2s ease;
-            gap: 10px;
-        }
-
-        .dropdown-item:hover {
-            background: var(--gray-50);
-        }
-
-        /* 10. 模态框规范 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal.show .modal-content {
-            transform: translateY(0);
-        }
-
-        /* 11. 动画规范 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        /* 12. 自定义滚动条 */
-        .custom-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: var(--gray-300) var(--gray-100);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: var(--gray-100);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: var(--gray-300);
-            border-radius: 3px;
-        }
-
-        /* 13. 响应式断点 */
-        @media (max-width: 768px) {
-            .hidden-mobile {
-                display: none !important;
-            }
-        }
-    </style>
+    <!-- 引入自定义CSS -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
 
 <body class="min-h-screen">
@@ -585,19 +223,19 @@
     <!-- 移动端导航菜单 -->
     <div id="mobileMenu" class="md:hidden bg-white border-t border-gray-200 hidden">
         <div class="px-4 py-3">
-            @foreach ($menuItems as $item)
+            @foreach ($menuItems as $index => $item)
                 <div class="mb-2">
-                    <a href="{{ url($item['url']) }}" class="nav-link justify-between">
+                    <div class="nav-link justify-between cursor-pointer mobile-menu-item" data-index="{{ $index }}">
                         <div class="flex items-center space-x-3">
                             <i class="{{ $item['icon'] }} text-gray-500 text-sm"></i>
                             <span class="font-medium">{{ $item['label'] }}</span>
                         </div>
-                        <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
-                    </a>
+                        <i class="fas fa-chevron-right text-gray-400 text-xs mobile-menu-icon"></i>
+                    </div>
 
-                    <div class="ml-8 mt-1 space-y-1 hidden" id="mobileSubmenu-{{ $loop->index }}">
+                    <div class="ml-8 mt-1 space-y-1 hidden" id="mobileSubmenu-{{ $index }}">
                         @foreach($item['submenu'] as $subitem)
-                            <a href="{{ url($subitem['url']) }}" class="nav-link py-2">
+                            <a href="{{ url($subitem['url']) }}" class="nav-link py-2 mobile-submenu-link">
                                 <i class="{{ $subitem['icon'] }} text-gray-400 text-sm mr-3"></i>
                                 <span>{{ $subitem['label'] }}</span>
                             </a>
@@ -618,108 +256,6 @@
     </div>
 </nav>
 
-<script>
-    // 下拉菜单功能
-    document.addEventListener('DOMContentLoaded', function() {
-        // 桌面端下拉菜单
-        const dropdowns = document.querySelectorAll('.dropdown');
-
-        dropdowns.forEach(dropdown => {
-            const button = dropdown.querySelector('a, button');
-            const menu = dropdown.querySelector('.dropdown-menu');
-
-            if (button && menu) {
-                // 鼠标悬停显示菜单
-                dropdown.addEventListener('mouseenter', () => {
-                    menu.classList.remove('hidden');
-                    setTimeout(() => {
-                        menu.classList.add('show');
-                    }, 10);
-                });
-
-                dropdown.addEventListener('mouseleave', () => {
-                    menu.classList.remove('show');
-                    setTimeout(() => {
-                        menu.classList.add('hidden');
-                    }, 200);
-                });
-
-                // 点击按钮跳转
-                if (button.tagName === 'A') {
-                    button.addEventListener('click', (e) => {
-                        if (window.innerWidth >= 768) { // 只在桌面端跳转
-                            e.preventDefault();
-                            e.stopPropagation();
-                            window.location.href = button.getAttribute('href');
-                        }
-                    });
-                }
-            }
-        });
-
-        // 移动端菜单切换
-        const mobileMenuButton = document.getElementById('mobileMenuButton');
-        const mobileMenu = document.getElementById('mobileMenu');
-
-        if (mobileMenuButton && mobileMenu) {
-            mobileMenuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-
-            // 移动端子菜单切换
-            const mobileNavLinks = mobileMenu.querySelectorAll('.nav-link');
-            mobileNavLinks.forEach((link, index) => {
-                link.addEventListener('click', (e) => {
-                    if (link.querySelector('.fa-chevron-right')) {
-                        e.preventDefault();
-                        const submenuId = 'mobileSubmenu-' + index;
-                        const submenu = document.getElementById(submenuId);
-                        if (submenu) {
-                            submenu.classList.toggle('hidden');
-
-                            const icon = link.querySelector('.fa-chevron-right');
-                            if (icon) {
-                                icon.classList.toggle('rotate-90');
-                            }
-                        }
-                    }
-                });
-            });
-        }
-
-        // 点击其他地方关闭所有下拉菜单
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown')) {
-                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-                    menu.classList.remove('show');
-                    setTimeout(() => {
-                        menu.classList.add('hidden');
-                    }, 200);
-                });
-            }
-        });
-
-        // ESC键关闭下拉菜单
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-                    menu.classList.remove('show');
-                    setTimeout(() => {
-                        menu.classList.add('hidden');
-                    }, 200);
-                });
-            }
-        });
-
-        // CSRF令牌设置
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-    });
-</script>
-
 <!-- 主内容区域 -->
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     @yield('content')
@@ -730,10 +266,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
             <div class="mb-6 md:mb-0">
-{{--                <div class="flex items-center space-x-3">--}}
-{{--                    <img src="/favicon.ico" width="32" height="32" alt="蒙太奇" class="rounded-full">--}}
-{{--                    <span class="text-lg font-bold text-gray-900">蒙太奇</span>--}}
-{{--                </div>--}}
+                <!-- Logo位置 -->
             </div>
 
             <div class="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
@@ -759,7 +292,8 @@
     </div>
 </footer>
 
-
+<!-- 引入自定义JavaScript -->
+<script src="{{ asset('js/app.js') }}"></script>
 
 <!-- 百度统计 -->
 <script>
