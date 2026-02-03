@@ -22,10 +22,10 @@
                     <i class="fas fa-th-large mr-2"></i>
                     四象限视图
                 </a>
-                <button onclick="openTaskUpdateModal()" class="btn btn-primary">
-                    <i class="fas fa-plus mr-2"></i>
-                    新建任务
-                </button>
+{{--                <button onclick="openTaskUpdateModal()" class="btn btn-primary">--}}
+{{--                    <i class="fas fa-plus mr-2"></i>--}}
+{{--                    新建任务--}}
+{{--                </button>--}}
             </div>
         </div>
 
@@ -225,7 +225,7 @@
                                                title="添加笔记">
                                                 <i class="fas fa-sticky-note"></i>
                                             </a>
-                                            <button onclick="callOpenTaskUpdateModal('{{ addslashes(json_encode($task->toArray())) }}')"
+                                            <button onclick="editTask('{{ $task->id }}')"
                                                     class="text-gray-400 hover:text-green-600 transition-colors"
                                                     title="编辑任务">
                                                 <i class="fas fa-edit"></i>
@@ -410,10 +410,10 @@
                             <h3 class="text-xl font-semibold text-gray-900 mb-2">当前没有待办任务</h3>
                             <p class="text-gray-600 mb-6">创建您的第一个任务，开始高效工作吧！</p>
                         </div>
-                        <button onclick="openTaskUpdateModal()" class="btn btn-primary">
-                            <i class="fas fa-plus mr-2"></i>
-                            创建第一个任务
-                        </button>
+{{--                        <button onclick="openTaskUpdateModal()" class="btn btn-primary">--}}
+{{--                            <i class="fas fa-plus mr-2"></i>--}}
+{{--                            创建第一个任务--}}
+{{--                        </button>--}}
                         <a href="{{url('/index')}}" class="btn btn-outline ml-4">
                             <i class="fas fa-home mr-2"></i>
                             返回首页
@@ -507,29 +507,19 @@
             });
         });
 
-        // 安全地调用 openTaskUpdateModal 函数
-        function callOpenTaskUpdateModal(taskDataStr) {
-            try {
-                var taskData = JSON.parse(taskDataStr);
-                openTaskUpdateModal(taskData);
-            } catch(e) {
-                console.error('解析任务数据时出错:', e);
-                console.log('原始数据:', taskDataStr);
-                alert('数据解析失败，请重试');
-            }
+        function editTask(taskId) {
+            // 从服务器获取任务数据 - 使用现有的API
+            $.get('/tasks/' + taskId, function(response) {
+                if(response.code == 9999) {
+                    var task = response.result;
+                    openTaskUpdateModal(task);
+                } else {
+                    alert('获取任务数据失败：' + (response.msg || '未知错误'));
+                }
+            }).fail(function() {
+                alert('获取任务数据失败');
+            });
         }
 
-        // 打开新建任务模态框
-        function openTaskUpdateModal(taskData = null) {
-            if (taskData) {
-                // 编辑现有任务
-                $('#taskUpdateModal').modal('show');
-                // 这里需要填充模态框表单数据的代码
-            } else {
-                // 新建任务
-                $('#taskUpdateModal').modal('show');
-                // 这里需要清空模态框表单数据的代码
-            }
-        }
     </script>
 @endsection

@@ -513,21 +513,28 @@
     </div>
 
     <!-- ECharts脚本 -->
-    <script src="{{ url('/js/echarts.min.js') }}"></script>
 
     <script type="text/javascript">
         $(document).ready(function() {
+
             console.log('统计页面已加载');
+            console.log('检查 ECharts:', typeof echarts);
 
-            // 初始化图表
-            initCharts();
-
-            // 日期范围选择器
-            initDateRangeSelector();
+            // 先检查 echarts 是否加载
+            if (typeof echarts === 'undefined') {
+                console.error('ECharts 未加载，尝试重新加载...');
+                loadEChartsManually();
+            } else {
+                console.log('ECharts 版本:', echarts.version);
+                initCharts();
+                initDateRangeSelector();
+            }
 
             // 窗口大小变化时重绘图表
             $(window).on('resize', function() {
-                setTimeout(initCharts, 300);
+                if (typeof echarts !== 'undefined') {
+                    setTimeout(initCharts, 300);
+                }
             });
         });
 

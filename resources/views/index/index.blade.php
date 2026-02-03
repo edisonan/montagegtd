@@ -5,12 +5,6 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <!-- 页面标题 -->
-{{--        <div class="mb-6">--}}
-{{--            <h1 class="text-2xl font-bold text-gray-900">今日聚焦</h1>--}}
-{{--            <p class="text-gray-600 mt-1">专注于当下最重要的事务</p>--}}
-{{--        </div>--}}
-
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左侧：番茄钟面板 -->
             <div class="space-y-6">
@@ -66,65 +60,33 @@
                                         </div>
                                     </div>
 
-                                    <!-- 改进的进度条 -->
-                                    <div id="progressContainer" class="relative">
+                                    <!-- 简洁的进度条 -->
+                                    <div class="relative">
                                         <svg class="w-full h-48" viewBox="0 0 100 100">
-                                            <!-- 背景圆 - 半透明的淡绿色 -->
+                                            <!-- 背景圆 - 很淡的绿色 -->
                                             <circle cx="50" cy="50" r="45" fill="none"
-                                                    stroke="rgba(167, 243, 208, 0.3)" stroke-width="10"/>
+                                                    stroke="#e8f5e9" stroke-width="2"/>
 
-                                            <!-- 外发光效果 -->
-                                            <circle cx="50" cy="50" r="45" fill="none"
-                                                    stroke="rgba(167, 243, 208, 0.2)" stroke-width="14"
-                                                    stroke-dasharray="283" stroke-dashoffset="0"/>
-
-                                            <!-- 主进度圆 - 更明显的绿色渐变 -->
+                                            <!-- 进度圆 - 简洁的绿色 -->
                                             <circle id="progressCircle" cx="50" cy="50" r="45" fill="none"
-                                                    stroke="url(#vibrantGreenGradient)" stroke-width="10"
+                                                    stroke="#4caf50" stroke-width="2"
                                                     stroke-linecap="round"
                                                     transform="rotate(-90 50 50)"
                                                     stroke-dasharray="283"
-                                                    stroke-dashoffset="283"
-                                                    style="filter: drop-shadow(0 0 8px rgba(22, 163, 74, 0.3));"/>
+                                                    stroke-dashoffset="283"/>
 
-                                            <!-- 中心装饰 -->
-                                            <circle cx="50" cy="50" r="38" fill="rgba(255, 255, 255, 0.9)"/>
-
-                                            <!-- 中心图标 -->
-                                            <g transform="translate(50, 50)">
-                                                <circle cx="0" cy="0" r="25" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
-                                                <text x="0" y="5" text-anchor="middle" fill="#16a34a" font-size="10" font-weight="bold" id="centerText">
-                                                    {{ $current_pomo_status == 2 ? '专注' : '休息' }}
-                                                </text>
-                                            </g>
-
-                                            <defs>
-                                                <!-- 更鲜艳的绿色渐变 -->
-                                                <linearGradient id="vibrantGreenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                    <stop offset="0%" stop-color="#86efac" stop-opacity="1"/>
-                                                    <stop offset="50%" stop-color="#4ade80" stop-opacity="1"/>
-                                                    <stop offset="100%" stop-color="#22c55e" stop-opacity="1"/>
-                                                </linearGradient>
-
-                                                <!-- 发光的绿色渐变 -->
-                                                <linearGradient id="glowGreenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                    <stop offset="0%" stop-color="#a7f3d0"/>
-                                                    <stop offset="100%" stop-color="#10b981"/>
-                                                </linearGradient>
-                                            </defs>
+                                            <!-- 中心文字（纯净模式下显示剩余分钟） -->
+                                            <text id="centerTimeText" x="50" y="55" text-anchor="middle"
+                                                  fill="#2e7d32" font-size="14" font-weight="bold" class="hidden">
+                                                25
+                                            </text>
                                         </svg>
 
-                                        <!-- 可选的进度百分比显示（可以放在右下角） -->
-                                        <div id="progressPercent" class="absolute bottom-4 right-4 bg-white bg-opacity-80 rounded-full w-12 h-12 flex items-center justify-center">
-                                            <span class="text-sm font-bold text-green-700">0%</span>
-                                        </div>
+                                        <button onclick="discard()"
+                                                class="absolute top-2 right-2 w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
-
-                                    <!-- 放弃按钮 -->
-                                    <button onclick="discard()"
-                                            class="absolute top-2 right-2 w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 transition-colors z-10">
-                                        <i class="fas fa-times"></i>
-                                    </button>
                                 </div>
                             @elseif($current_pomo_status == 3)
                                 <!-- 记录番茄内容 -->
@@ -152,8 +114,6 @@
                                                value=""
                                                placeholder="记录刚完成的番茄内容（点击任务名快速添加）..."
                                                class="input w-full">
-
-
 
                                         <div class="flex gap-2">
                                             <button onclick="discard()"
@@ -207,12 +167,8 @@
                     <div class="px-6 py-4 border-b border-gray-200">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
-{{--                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">--}}
-{{--                                    <i class="fas fa-tasks text-white"></i>--}}
-{{--                                </div>--}}
                                 <div>
                                     <h2 class="text-lg font-semibold text-gray-800">待办事项</h2>
-{{--                                    <p class="text-sm text-gray-500 mt-1">今日需要完成的任务</p>--}}
                                 </div>
                             </div>
 
@@ -295,48 +251,14 @@
     @include('components.thing-create-modal')
 
     <style>
-        /* 进度条动画效果 */
-        @keyframes progressAnimation {
-            from {
-                stroke-dashoffset: 283;
-            }
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% {
-                filter: drop-shadow(0 0 8px rgba(22, 163, 74, 0.3));
-            }
-            50% {
-                filter: drop-shadow(0 0 12px rgba(22, 163, 74, 0.5));
-            }
-        }
-
+        /* 进度条样式 */
         #progressCircle {
-            animation:
-                    progressAnimation linear,
-                    pulseGlow 2s ease-in-out infinite;
-            transition: stroke-dashoffset 0.3s ease;
+            transition: stroke-dashoffset 0.3s ease, stroke 0.3s ease;
         }
 
-        /* 确保百分比显示美观 */
-        #progressPercent {
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(167, 243, 208, 0.3);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        #progressPercent:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* 中心文字样式 */
-        #centerText {
-            transition: all 0.3s ease;
+        /* 纯净模式切换 */
+        #pomoTimerContainer {
+            transition: opacity 0.3s ease;
         }
 
         /* 任务和番茄项样式 */
@@ -465,21 +387,6 @@
             margin-top: 4px;
             padding-top: 4px;
             border-top: 1px dashed var(--gray-200);
-        }
-
-        /* 进度动画 */
-        @keyframes progressAnimation {
-            from {
-                stroke-dashoffset: 283;
-            }
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        #progressCircle {
-            animation: progressAnimation linear;
-            animation-fill-mode: both;
         }
 
         /* 状态指示器 */
@@ -677,6 +584,22 @@
             if (!pureMode) {
                 document.getElementById('pomoTimer').textContent = timeText;
                 document.getElementById('pomoStatus').textContent = statusText;
+                document.getElementById('centerTimeText').classList.add('hidden');
+            } else {
+                // 纯净模式下显示剩余分钟在中心
+                const centerText = document.getElementById('centerTimeText');
+                centerText.classList.remove('hidden');
+                const displayMinutes = Math.ceil(remain / 60);
+                centerText.textContent = displayMinutes > 0 ? displayMinutes : "✓";
+
+                // 根据剩余时间改变颜色
+                if (displayMinutes > 5) {
+                    centerText.setAttribute('fill', '#2e7d32'); // 深绿
+                } else if (displayMinutes > 1) {
+                    centerText.setAttribute('fill', '#f57c00'); // 橙色
+                } else {
+                    centerText.setAttribute('fill', '#d32f2f'); // 红色
+                }
             }
 
             document.title = `${statusText} ${timeText} - ${title}`;
@@ -685,98 +608,52 @@
             updateProgressCircle();
         }
 
-
-
         // 更新进度条显示的函数
         function updateProgressCircle() {
             const progressCircle = document.getElementById('progressCircle');
-            const progressPercent = document.getElementById('progressPercent');
 
             if (progressCircle) {
-                // 计算进度百分比 (0-100)
-                const progressPercentage = Math.max(0, Math.min(100, ((totalTime - remain) / totalTime) * 100));
-
-                // 计算stroke-dashoffset (283是周长)
-                const progress = (totalTime - remain) / totalTime * 283;
+                // 计算进度 (283是周长)
+                const progress = ((totalTime - remain) / totalTime) * 283;
                 progressCircle.style.strokeDashoffset = 283 - progress;
 
-                // 更新百分比显示
-                if (progressPercent) {
-                    progressPercent.querySelector('span').textContent = Math.round(progressPercentage) + '%';
+                // 根据进度改变进度条颜色
+                const progressPercentage = ((totalTime - remain) / totalTime) * 100;
 
-                    // 根据进度改变颜色
-                    if (progressPercentage >= 75) {
-                        progressPercent.querySelector('span').className = 'text-sm font-bold text-green-700';
-                    } else if (progressPercentage >= 50) {
-                        progressPercent.querySelector('span').className = 'text-sm font-bold text-green-600';
-                    } else if (progressPercentage >= 25) {
-                        progressPercent.querySelector('span').className = 'text-sm font-bold text-yellow-600';
-                    } else {
-                        progressPercent.querySelector('span').className = 'text-sm font-bold text-red-600';
-                    }
-                }
-
-                // 更新中心文字（剩余时间）
-                const centerText = document.getElementById('centerText');
-                if (centerText && pureMode) {
-                    const minutes = Math.ceil(remain / 60);
-                    centerText.textContent = minutes > 0 ? minutes + "'" : "完成";
-
-                    // 根据剩余时间改变颜色
-                    if (remain > 300) { // 5分钟以上
-                        centerText.setAttribute('fill', '#16a34a');
-                    } else if (remain > 60) { // 1-5分钟
-                        centerText.setAttribute('fill', '#f59e0b');
-                    } else { // 1分钟以内
-                        centerText.setAttribute('fill', '#ef4444');
-                    }
+                if (progressPercentage >= 75) {
+                    progressCircle.setAttribute('stroke', '#4caf50'); // 绿色
+                } else if (progressPercentage >= 50) {
+                    progressCircle.setAttribute('stroke', '#4caf50'); // 橙色
+                } else if (progressPercentage >= 25) {
+                    progressCircle.setAttribute('stroke', '#4caf50'); // 橙色
+                } else {
+                    progressCircle.setAttribute('stroke', '#4caf50'); // 红色
                 }
             }
         }
-
-
 
         // 切换纯净模式
         function togglePureMode() {
             pureMode = !pureMode;
             const toggleBtn = document.getElementById('pureModeToggle');
             const timerContainer = document.getElementById('pomoTimerContainer');
-            const centerText = document.getElementById('centerText');
 
             if (pureMode) {
                 // 切换到纯净模式
                 if (timerContainer) {
                     timerContainer.classList.add('opacity-0');
-                    timerContainer.classList.remove('opacity-100');
-                }
-
-                if (centerText) {
-                    centerText.textContent = status == 2 ? '专注' : '休息';
                 }
 
                 toggleBtn.innerHTML = '<i class="fas fa-eye mr-1"></i>显示时间';
                 toggleBtn.className = 'text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors';
-
-                // 隐藏百分比显示
-                const progressPercent = document.getElementById('progressPercent');
-                if (progressPercent) {
-                    progressPercent.classList.add('opacity-0');
-                }
             } else {
                 // 切换到正常模式
                 if (timerContainer) {
                     timerContainer.classList.remove('opacity-0');
-                    timerContainer.classList.add('opacity-100');
                 }
 
                 toggleBtn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i>纯净模式';
                 toggleBtn.className = 'text-sm px-3 py-1 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors';
-
-                // 显示百分比显示
-                const progressPercent = document.getElementById('progressPercent');
-                if (progressPercent) {
-                    progressPercent.classList.remove('opacity-0');
-                }
             }
 
             // 立即更新一次显示
@@ -912,7 +789,6 @@
         }
 
         // 创建任务列表项
-        // 创建任务列表项 - 保持原有结构
         function createTaskListItem(data) {
             const isChild = data.parent_task_id !== null;
             const isTop = data.is_top == 1;
@@ -1063,8 +939,28 @@
                     success: function(response) {
                         if (response.code == 9999) {
                             const taskItem = createTaskListItem(response.result);
-                            const tasksList = document.getElementById('tasks');
-                            tasksList.insertAdjacentHTML('beforeend', taskItem);
+                            const parentElement = document.getElementById(`task${taskId}`);
+
+                            // 找到父任务后面的位置插入
+                            if (parentElement) {
+                                // 如果父任务已经有子任务，找到最后一个子任务后面插入
+                                let nextElement = parentElement.nextElementSibling;
+                                let lastChildElement = parentElement;
+
+                                // 找到父任务下的最后一个子任务元素
+                                while (nextElement && nextElement.classList.contains('child-task')) {
+                                    lastChildElement = nextElement;
+                                    nextElement = nextElement.nextElementSibling;
+                                }
+
+                                // 在最后一个子任务后面插入新子任务
+                                lastChildElement.insertAdjacentHTML('afterend', taskItem);
+                            } else {
+                                // 如果找不到父任务，就添加到列表末尾
+                                const tasksList = document.getElementById('tasks');
+                                tasksList.insertAdjacentHTML('beforeend', taskItem);
+                            }
+
                             updateTaskCount();
                             showNotification('success', '子任务添加成功');
                         } else {
@@ -1082,33 +978,6 @@
                 if(response.code == 9999) {
                     var task = response.result;
                     openTaskUpdateModal(task);
-                    // // 填充表单数据
-                    // $('#task_name_input').val(task.name);
-                    // $('input[name="priority"][value="' + (task.priority || 1) + '"]').prop('checked', true);
-                    // $('#remindtime_input').val(task.remindtime || '');
-                    // $('#deadline_input').val(task.deadline || '');
-                    // $('input[name="status"][value="' + (task.status || 1) + '"]').prop('checked', true);
-                    // $('input[name="is_top"][value="' + (task.is_top || 0) + '"]').prop('checked', true);
-                    // $('input[name="mode"][value="' + (task.mode || 1) + '"]').prop('checked', true);
-                    //
-                    // // 添加隐藏字段存储任务ID
-                    // if ($('#taskUpdateForm input[name=id]').length === 0) {
-                    //     $('#taskUpdateForm').append('<input type="hidden" name="id" value="">');
-                    // }
-                    // $('#taskUpdateForm input[name=id]').val(task.id);
-                    //
-                    // // 设置表单提交URL
-                    // $('#taskUpdateForm').attr('action', '/task/' + task.id);
-                    //
-                    // // 清除错误信息
-                    // $('#taskUpdateErrors').hide();
-                    // $('#taskUpdateErrorList').empty();
-                    //
-                    // // 加载父级任务选项（排除当前任务本身，并设置当前父任务ID），然后显示模态框
-                    // loadParentTasks(task.id, task.parent_task_id);
-                    //
-                    // // 显示模态框
-                    // $('#taskUpdateModal').modal('show');
                 } else {
                     alert('获取任务数据失败：' + (response.msg || '未知错误'));
                 }

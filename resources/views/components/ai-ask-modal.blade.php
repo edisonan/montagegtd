@@ -1,75 +1,79 @@
 <!-- AI助手对话模态框 -->
-<div id="askAIModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+<div id="askAIModal" class="hidden fixed inset-0 z-50">
     <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
 
-    <div class="flex items-center justify-center min-h-screen px-4 py-8">
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
-            <!-- 模态框头部 -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-900" id="askAIModalLabel">AI对话助手</h3>
-                <div class="flex items-center space-x-2">
-                    <button type="button" class="minimize-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                            id="minimizeBtn" title="最小化">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                    <button type="button" class="close-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                            onclick="hideAIModal()" title="关闭">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 隐藏字段 -->
-            <input type="hidden" id="refer_text_id" value="">
-            <input type="hidden" id="replace_text_id" value="">
-            <input type="hidden" id="current_session_id" value="">
-
-            <!-- 模态框内容 -->
-            <div class="p-0">
-                <!-- 聊天容器 -->
-                <div id="chatContainer" class="chat-container h-[400px] overflow-y-auto p-4 bg-gray-50">
-                    <!-- 聊天消息将在这里动态添加 -->
-                    <div class="message message-assistant">
-                        <div class="avatar">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div class="content">
-                            <p>你好！我是AI助手，请问有什么可以帮助你的？</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 快速模板区域 -->
-                <div class="px-4 py-3 border-t border-gray-200">
-                    <div class="templates-container flex overflow-x-auto space-x-2 pb-2">
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('翻译', '请帮我翻译成英文')">翻译</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('扩写', '请帮我扩写这段内容')">扩写</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('简化', '请简化这段文字')">简化</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('改写', '请改写这段文字')">改写</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('检查', '请检查这段文字的语法错误')">检查</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('建议', '请给这段文字提供改进建议')">建议</button>
-                        <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('日报', '请基于提供的内容，生成我的工作和生活日报，如：\n工作日报:\n1.2.3. \n生活日报:\n1.2.3')">日报</button>
-                    </div>
-                </div>
-
-                <!-- 输入区域 -->
-                <div class="p-4 border-t border-gray-200">
-                    <div class="flex items-end space-x-2">
-                        <div class="flex-1">
-                            <textarea class="input w-full resize-none min-h-[50px] max-h-[150px]"
-                                      id="query"
-                                      placeholder="输入消息..."></textarea>
-                        </div>
-                        <button type="button" class="btn btn-primary h-[50px] px-4" id="sendBtn" onclick="triggerAskAI()">
-                            <i class="fas fa-paper-plane"></i>
+    <!-- 修复：使用fixed和flex居中容器 -->
+    <div class="fixed inset-0 overflow-y-auto py-4 sm:py-8 px-4">
+        <!-- 修复：添加flex居中容器 -->
+        <div class="min-h-full flex items-center justify-center">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
+                <!-- 模态框头部 -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-900" id="askAIModalLabel">AI对话助手</h3>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" class="minimize-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                id="minimizeBtn" title="最小化">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button type="button" class="close-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                onclick="hideAIModal()" title="关闭">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div id="askAILoading" class="hidden text-center mt-2">
-                        <div class="flex items-center justify-center space-x-2">
-                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-color"></div>
-                            <small class="text-gray-600">AI正在思考中...</small>
+                </div>
+
+                <!-- 隐藏字段 -->
+                <input type="hidden" id="refer_text_id" value="">
+                <input type="hidden" id="replace_text_id" value="">
+                <input type="hidden" id="current_session_id" value="">
+
+                <!-- 模态框内容 -->
+                <div class="p-0">
+                    <!-- 聊天容器 -->
+                    <div id="chatContainer" class="chat-container h-[400px] overflow-y-auto p-4 bg-gray-50">
+                        <!-- 聊天消息将在这里动态添加 -->
+                        <div class="message message-assistant">
+                            <div class="avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="content">
+                                <p>你好！我是AI助手，请问有什么可以帮助你的？</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速模板区域 -->
+                    <div class="px-4 py-3 border-t border-gray-200">
+                        <div class="templates-container flex overflow-x-auto space-x-2 pb-2">
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('翻译', '请帮我翻译成英文')">翻译</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('扩写', '请帮我扩写这段内容')">扩写</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('简化', '请简化这段文字')">简化</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('改写', '请改写这段文字')">改写</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('检查', '请检查这段文字的语法错误')">检查</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('建议', '请给这段文字提供改进建议')">建议</button>
+                            <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('日报', '请基于提供的内容，生成我的工作和生活日报，如：\n工作日报:\n1.2.3. \n生活日报:\n1.2.3')">日报</button>
+                        </div>
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <div class="p-4 border-t border-gray-200">
+                        <div class="flex items-end space-x-2">
+                            <div class="flex-1">
+                                <textarea class="input w-full resize-none min-h-[50px] max-h-[150px]"
+                                          id="query"
+                                          placeholder="输入消息..."></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary h-[50px] px-4" id="sendBtn" onclick="triggerAskAI()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div id="askAILoading" class="hidden text-center mt-2">
+                            <div class="flex items-center justify-center space-x-2">
+                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-color"></div>
+                                <small class="text-gray-600">AI正在思考中...</small>
+                            </div>
                         </div>
                     </div>
                 </div>

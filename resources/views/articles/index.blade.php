@@ -1195,7 +1195,7 @@
                                             <div class="action-buttons">
                                                 <button type="button"
                                                         class="action-btn ai-assist-btn"
-                                                        data-content-id="content{{ $articleSub->id }}"
+                                                        data-content-id="desc{{ $articleSub->id }}"
                                                         data-refer-text="{{ strip_tags($formattedContent) }}"
                                                         data-title="{{ $article->subject }}"
                                                         title="AI助手">
@@ -1858,43 +1858,44 @@
 
             // AI助手 - 修复refer_text参数
             $(".ai-assist-btn").on('click', function() {
+                console.log('AI助手');
                 var contentId = $(this).data('content-id');
                 var referText = $(this).data('refer-text');
                 var title = $(this).data('title');
 
                 // 调用全局函数，传递refer_text
-                openAskAIModal(contentId, referText, title);
+                openAskAIModal(contentId);
             });
 
             // 修复AI助手函数
-            window.openAskAIModal = function(contentId, referText, title) {
-                // 获取内容
-                var content = '';
-                if (contentId) {
-                    content = document.getElementById(contentId) ?
-                        document.getElementById(contentId).innerText : '';
-                }
-
-                // 优先使用传递的referText参数
-                if (!referText && content) {
-                    referText = content.substring(0, 1000); // 限制长度
-                }
-
-                // 设置表单值
-                if (referText) {
-                    $('#ask_ai_refer_text').val(referText);
-                }
-
-                if (title) {
-                    $('#ask_ai_title').val(title);
-                }
-
-                // 显示模态框
-                $('#aiAskModal').addClass('show').show();
-
-                // 防止模态框闪动
-                $('#aiAskModal').css('display', 'flex');
-            };
+            // window.openAskAIModal = function(contentId, referText, title) {
+            //     // 获取内容
+            //     var content = '';
+            //     if (contentId) {
+            //         content = document.getElementById(contentId) ?
+            //             document.getElementById(contentId).innerText : '';
+            //     }
+            //
+            //     // 优先使用传递的referText参数
+            //     if (!referText && content) {
+            //         referText = content.substring(0, 1000); // 限制长度
+            //     }
+            //
+            //     // 设置表单值
+            //     if (referText) {
+            //         $('#ask_ai_refer_text').val(referText);
+            //     }
+            //
+            //     if (title) {
+            //         $('#ask_ai_title').val(title);
+            //     }
+            //
+            //     // 显示模态框
+            //     $('#aiAskModal').addClass('show').show();
+            //
+            //     // 防止模态框闪动
+            //     $('#aiAskModal').css('display', 'flex');
+            // };
 
             // 通知函数
             function showNotification(message, type = 'success') {

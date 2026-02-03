@@ -308,7 +308,7 @@
 
                                             <button class="task-action-btn edit"
                                                     title="编辑任务"
-                                                    onclick="loadTaskDataAndOpenModalForPriority({{ json_encode($task->toArray()) }})">
+                                                    onclick="editTask({{ $task->id }})">
                                                 <i class="fas fa-edit"></i>
                                             </button>
 
@@ -414,41 +414,18 @@
             });
         }
 
-        function loadTaskDataAndOpenModalForPriority(taskData) {
-            try {
-                // 填充表单数据
-                $('#task_name_input').val(taskData.name);
-                $('input[name="priority"][value="' + (taskData.priority || 1) + '"]').prop('checked', true);
-                $('#remindtime_input').val(taskData.remindtime || '');
-                $('#deadline_input').val(taskData.deadline || '');
-                $('input[name="status"][value="' + (taskData.status || 1) + '"]').prop('checked', true);
-                $('input[name="is_top"][value="' + (taskData.is_top || 0) + '"]').prop('checked', true);
-                $('input[name="mode"][value="' + (taskData.mode || 1) + '"]').prop('checked', true);
-
-                // 添加隐藏字段存储任务ID
-                if ($('#taskUpdateForm input[name=id]').length === 0) {
-                    $('#taskUpdateForm').append('<input type="hidden" name="id" value="">');
+        function editTask(taskId) {
+            // 从服务器获取任务数据 - 使用现有的API
+            $.get('/tasks/' + taskId, function(response) {
+                if(response.code == 9999) {
+                    var task = response.result;
+                    openTaskUpdateModal(task);
+                } else {
+                    alert('获取任务数据失败：' + (response.msg || '未知错误'));
                 }
-                $('#taskUpdateForm input[name=id]').val(taskData.id);
-
-                // 设置表单提交URL
-                $('#taskUpdateForm').attr('action', '/task/' + taskData.id);
-
-                // 清除错误信息
-                $('#taskUpdateErrors').hide();
-                $('#taskUpdateErrorList').empty();
-
-                // 显示模态框
-                const modal = document.getElementById('taskUpdateModal');
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.add('show');
-                }, 10);
-
-            } catch(error) {
-                console.error('加载任务数据时出错:', error);
-                alert('加载任务数据失败，请刷新页面重试');
-            }
+            }).fail(function() {
+                alert('获取任务数据失败');
+            });
         }
 
         function deleteTask(taskId) {
