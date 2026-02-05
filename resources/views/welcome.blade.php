@@ -3,14 +3,16 @@
 @section('title', '蒙太奇 - 知而善用，行稳致远')
 @section('description', '利用番茄工作法结合待办列表来高效完成每一件事，实时统计，笔记记录，RSS阅读，思维导图，订阅推送到kindle来帮助你记录更多想法，希望它可以帮你更多')
 
+@section('content')
 <style>
     /* 首页专用样式 */
     .homepage-hero {
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(139, 92, 246, 0.9)),
-        url('/img/index_background2.jpg');
+        background-image:
+                linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(139, 92, 246, 0.85)),
+                url('/img/index_background2.jpg');
         background-size: cover;
         background-position: center;
-        background-blend-mode: overlay;
+        background-blend-mode: normal; /* 或直接删除这一行 */
         border-radius: 24px;
         margin: 40px auto;
         padding: 80px 40px;
@@ -497,7 +499,7 @@
     }
 </style>
 
-@section('content')
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- 首页英雄区域 -->
         <div class="homepage-hero animate-floatIn">
@@ -589,63 +591,63 @@
         </section>
 
         <!-- 优势特点 -->
-        <section class="advantages-section animate-fadeIn">
-            <h2 class="section-title">为什么选择蒙太奇？</h2>
-            <div class="advantages-grid">
-                <div class="advantage-item">
-                    <div class="advantage-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <div class="advantage-content">
-                        <h3>效率倍增</h3>
-                        <p>科学的番茄工作法+智能待办管理，让您的工作效率提升300%以上。</p>
-                    </div>
-                </div>
+{{--        <section class="advantages-section animate-fadeIn">--}}
+{{--            <h2 class="section-title">为什么选择蒙太奇？</h2>--}}
+{{--            <div class="advantages-grid">--}}
+{{--                <div class="advantage-item">--}}
+{{--                    <div class="advantage-icon">--}}
+{{--                        <i class="fas fa-bolt"></i>--}}
+{{--                    </div>--}}
+{{--                    <div class="advantage-content">--}}
+{{--                        <h3>效率倍增</h3>--}}
+{{--                        <p>科学的番茄工作法+智能待办管理，让您的工作效率提升300%以上。</p>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
 
-                <div class="advantage-item">
-                    <div class="advantage-icon">
-                        <i class="fas fa-sync-alt"></i>
-                    </div>
-                    <div class="advantage-content">
-                        <h3>全平台同步</h3>
-                        <p>Web端 + 移动端 + 浏览器插件 + Kindle推送，数据实时同步，随时随地使用。</p>
-                    </div>
-                </div>
+{{--                <div class="advantage-item">--}}
+{{--                    <div class="advantage-icon">--}}
+{{--                        <i class="fas fa-sync-alt"></i>--}}
+{{--                    </div>--}}
+{{--                    <div class="advantage-content">--}}
+{{--                        <h3>全平台同步</h3>--}}
+{{--                        <p>Web端 + 移动端 + 浏览器插件 + Kindle推送，数据实时同步，随时随地使用。</p>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
 
-                <div class="advantage-item">
-                    <div class="advantage-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="advantage-content">
-                        <h3>数据安全</h3>
-                        <p>端到端加密，私有化部署可选，您的数据完全由您掌控。</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+{{--                <div class="advantage-item">--}}
+{{--                    <div class="advantage-icon">--}}
+{{--                        <i class="fas fa-shield-alt"></i>--}}
+{{--                    </div>--}}
+{{--                    <div class="advantage-content">--}}
+{{--                        <h3>数据安全</h3>--}}
+{{--                        <p>端到端加密，私有化部署可选，您的数据完全由您掌控。</p>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </section>--}}
 
-        <!-- 数据统计展示 -->
-        <section class="stats-section animate-fadeIn">
-            <h2 class="section-title" style="color: #1e293b;">用户成就</h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number">10,000+</div>
-                    <div class="stat-label">活跃用户</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">2.5M+</div>
-                    <div class="stat-label">完成任务</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">500K+</div>
-                    <div class="stat-label">记录想法</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">100K+</div>
-                    <div class="stat-label">思维导图</div>
-                </div>
-            </div>
-        </section>
+{{--        <!-- 数据统计展示 -->--}}
+{{--        <section class="stats-section animate-fadeIn">--}}
+{{--            <h2 class="section-title" style="color: #1e293b;">用户成就</h2>--}}
+{{--            <div class="stats-grid">--}}
+{{--                <div class="stat-item">--}}
+{{--                    <div class="stat-number">10,000+</div>--}}
+{{--                    <div class="stat-label">活跃用户</div>--}}
+{{--                </div>--}}
+{{--                <div class="stat-item">--}}
+{{--                    <div class="stat-number">2.5M+</div>--}}
+{{--                    <div class="stat-label">完成任务</div>--}}
+{{--                </div>--}}
+{{--                <div class="stat-item">--}}
+{{--                    <div class="stat-number">500K+</div>--}}
+{{--                    <div class="stat-label">记录想法</div>--}}
+{{--                </div>--}}
+{{--                <div class="stat-item">--}}
+{{--                    <div class="stat-number">100K+</div>--}}
+{{--                    <div class="stat-label">思维导图</div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </section>--}}
 
         <!-- CTA区域 -->
         <section class="cta-section animate-floatIn">
