@@ -35,7 +35,7 @@
                 <!-- 编辑表单 -->
                 <form action="{{ url('thing/'.$thing->id) }}" method="POST" class="space-y-6">
                     {!! csrf_field() !!}
-                    @method('PUT')
+                    <input type="hidden" name="_method" value="PUT">
 
                     <!-- 事情内容 -->
                     <div class="space-y-2">

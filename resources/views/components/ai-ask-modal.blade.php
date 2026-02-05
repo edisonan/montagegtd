@@ -584,11 +584,22 @@
                                         const dataStr = line.slice(6);
                                         try {
                                             const parsed = JSON.parse(dataStr);
-                                            // 检查是否为OpenAI格式的流式响应
+                                            // 检查是否为流式响应格式
                                             if (parsed.choices && parsed.choices[0]) {
-                                                // 处理内容更新
-                                                if (parsed.choices[0].delta && parsed.choices[0].delta.content) {
-                                                    const content = parsed.choices[0].delta.content;
+                                                const delta = parsed.choices[0].delta;
+                                                let content = "";
+
+                                                // 优先使用 reasoning 内容（针对OpenRouter格式）
+                                                if (delta.reasoning && delta.reasoning.trim()) {
+                                                    content = delta.reasoning;
+                                                }
+                                                // 其次使用 content 内容（针对OpenAI格式）
+                                                else if (delta.content && delta.content.trim()) {
+                                                    content = delta.content;
+                                                }
+
+                                                // 如果有内容则处理
+                                                if (content) {
                                                     completeResult += content;
                                                     // 实时更新AI回复
                                                     if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
@@ -598,9 +609,10 @@
                                                 }
                                             }
                                             else if (parsed.usage) {
-                                                continue;
+                                                continue; // 忽略usage信息
                                             }
                                             else {
+                                                // 处理非标准格式
                                                 if(dataStr.trim()) {
                                                     completeResult += dataStr;
                                                     if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
@@ -610,6 +622,7 @@
                                                 }
                                             }
                                         } catch (e) {
+                                            console.error('Error parsing JSON:', e);
                                             if(dataStr.trim()) {
                                                 if(dataStr.trim() !== '[DONE]' && dataStr.trim() !== '') {
                                                     completeResult += dataStr;

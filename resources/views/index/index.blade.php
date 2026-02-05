@@ -69,7 +69,7 @@
 
                                             <!-- 进度圆 - 简洁的绿色 -->
                                             <circle id="progressCircle" cx="50" cy="50" r="45" fill="none"
-                                                    stroke="#4caf50" stroke-width="2"
+                                                    stroke="#00b894" stroke-width="2"
                                                     stroke-linecap="round"
                                                     transform="rotate(-90 50 50)"
                                                     stroke-dasharray="283"
@@ -622,13 +622,13 @@
                 const progressPercentage = ((totalTime - remain) / totalTime) * 100;
 
                 if (progressPercentage >= 75) {
-                    progressCircle.setAttribute('stroke', '#4caf50'); // 绿色
+                    progressCircle.setAttribute('stroke', '#00b894'); // 绿色
                 } else if (progressPercentage >= 50) {
-                    progressCircle.setAttribute('stroke', '#4caf50'); // 橙色
+                    progressCircle.setAttribute('stroke', '#00b894'); // 橙色
                 } else if (progressPercentage >= 25) {
-                    progressCircle.setAttribute('stroke', '#4caf50'); // 橙色
+                    progressCircle.setAttribute('stroke', '#00b894'); // 橙色
                 } else {
-                    progressCircle.setAttribute('stroke', '#4caf50'); // 红色
+                    progressCircle.setAttribute('stroke', '#00b894'); // 红色
                 }
             }
         }

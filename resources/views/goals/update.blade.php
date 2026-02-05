@@ -72,7 +72,7 @@
 
                 <form action="{{ url('goal/'.$goal->id) }}" method="POST" class="space-y-6" id="goalForm">
                     {!! csrf_field() !!}
-                    @method('PUT')
+                    <input type="hidden" name="_method" value="PUT">
 
                     <!-- 目标名称 -->
                     <div class="space-y-2">

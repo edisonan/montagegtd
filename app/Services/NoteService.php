@@ -141,7 +141,7 @@ class NoteService {
 			if (empty ( $pomo ) || $pomo->user_id != Auth::id ()) {
 				throw new CustomException ( "系统异常，无此番茄!" );
 			}
-			$formatContent = "#记录番茄# " . $pomo->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $pomo->created_at ) ) . "\n持续时长:20分钟\n";
+			$formatContent = "[[记录番茄]] " . $pomo->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $pomo->created_at ) ) . "\n持续时长:20分钟\n";
 			return $formatContent;
 		}
 		
@@ -150,7 +150,7 @@ class NoteService {
 			if (empty ( $article )) {
 				throw new CustomException ( "系统异常，无此文章!" );
 			}
-			$formatContent = "#记录文章# " . $article->subject . "\n时间：" . date ( 'm月d日 H时i分' ) . "\n地址: " . config('app.url').'/article/'. $article->id . "\n原文地址：". $article->url . "\n";
+			$formatContent = "[[记录文章]] " . $article->subject . "\n时间：" . date ( 'm月d日 H时i分' ) . "\n地址: " . config('app.url').'/article/'. $article->id . "\n原文地址：". $article->url . "\n";
 			return $formatContent;
 		}
 		
@@ -161,7 +161,7 @@ class NoteService {
 			}
 			$parentTaskName = isset ( $task->parentTask->name ) ? "#" . $task->parentTask->name . "#" : "";
 			$modeName = $task->mode == 2 ? "#life#" : "#work#";
-			$formatContent = "#记录待办# " . $modeName . $parentTaskName . $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
+			$formatContent = "[[记录待办]] " . $modeName . $parentTaskName . $task->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( '-20 minute' ) ) . "\n持续时长:20分钟\n";
 			return $formatContent;
 		}
 
@@ -171,7 +171,7 @@ class NoteService {
                 throw new CustomException ( "系统异常，无此事情!" );
             }
 
-            $formatContent = "#记录事情# "  . $thing->name ;
+            $formatContent = "[[记录事情]] "  . $thing->name ;
             if(!empty($thing->start_time) && !empty($thing->end_time)) {
                 $duration = round((strtotime($thing->end_time) - strtotime($thing->start_time))/60);
                 $formatContent = $formatContent . "\n时间：" . date ( 'm月d日 H时i分', strtotime($thing->start_time) ) . '-' . date ( 'm月d日 H时i分', strtotime($thing->end_time) ). "\n持续时长:". $duration . "分钟\n";
@@ -183,7 +183,7 @@ class NoteService {
 		if (! empty ( $addContent )) {
 			if ($type == 'image') {
 				$this->validateImage ( $addContent );
-				$formatContent = '#分享图片#';
+				$formatContent = '[[分享图片]]';
 			} else {
 				if (CommonUtil::isUrl ( $addContent )) {
 					$title = CommonUtil::pageTitle ( $addContent );
@@ -191,9 +191,9 @@ class NoteService {
 					if (! empty ( $shortUrl )) {
 						$addContent = $shortUrl;
 					}
-					$formatContent = '#分享链接# ' . $addContent . ' ' . $title."\n";
+					$formatContent = '[[分享链接]] ' . $addContent . ' ' . $title."\n";
 				} else if (strpos ( $addContent, '#' ) === false) {
-					$formatContent = "#分享#" . $addContent."\n";
+					$formatContent = "[[分享]]" . $addContent."\n";
 				}
 			}
 		}

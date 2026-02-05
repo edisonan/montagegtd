@@ -4,503 +4,509 @@
 @section('description', '利用番茄工作法结合待办列表来高效完成每一件事，实时统计，笔记记录，RSS阅读，思维导图，订阅推送到kindle来帮助你记录更多想法，希望它可以帮你更多')
 
 @section('content')
-<style>
-    /* 首页专用样式 */
-    .homepage-hero {
-        background-image:
-                linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(139, 92, 246, 0.85)),
-                url('/img/index_background2.jpg');
-        background-size: cover;
-        background-position: center;
-        background-blend-mode: normal; /* 或直接删除这一行 */
-        border-radius: 24px;
-        margin: 40px auto;
-        padding: 80px 40px;
-        position: relative;
-        overflow: hidden;
-        max-width: 1200px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .homepage-hero::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 1;
-        max-width: 800px;
-        margin: 0 auto;
-        text-align: center;
-    }
-
-    .hero-title {
-        font-size: 3rem;
-        font-weight: 800;
-        color: white;
-        margin-bottom: 24px;
-        line-height: 1.2;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .hero-subtitle {
-        font-size: 1.5rem;
-        font-weight: 400;
-        color: rgba(255, 255, 255, 0.95);
-        margin-bottom: 48px;
-        line-height: 1.6;
-        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .hero-description {
-        font-size: 1.125rem;
-        color: rgba(255, 255, 255, 0.85);
-        margin-bottom: 60px;
-        line-height: 1.7;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .hero-actions {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        margin-bottom: 40px;
-        flex-wrap: wrap;
-    }
-
-    .hero-btn-primary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 16px 40px;
-        font-size: 1.125rem;
-        font-weight: 600;
-        background: white;
-        color: #4a90e2;
-        border-radius: 12px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
-    }
-
-    .hero-btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(255, 255, 255, 0.4);
-        color: #4a90e2;
-    }
-
-    .hero-btn-secondary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 16px 40px;
-        font-size: 1.125rem;
-        font-weight: 600;
-        background: transparent;
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.7);
-        border-radius: 12px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    .hero-btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: white;
-        transform: translateY(-3px);
-        color: white;
-    }
-
-    /* 核心功能展示 */
-    .core-features {
-        max-width: 1200px;
-        margin: 80px auto;
-    }
-
-    .section-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #1e293b;
-        text-align: center;
-        margin-bottom: 60px;
-        position: relative;
-    }
-
-    .section-title::after {
-        content: '';
-        position: absolute;
-        bottom: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80px;
-        height: 4px;
-        background: linear-gradient(90deg, #4a90e2, #8a6cff);
-        border-radius: 2px;
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 32px;
-    }
-
-    .feature-card {
-        background: white;
-        border-radius: 16px;
-        padding: 40px 32px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .feature-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #4a90e2, #8a6cff);
-    }
-
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    }
-
-    .feature-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #4a90e2, #8a6cff);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 24px;
-        color: white;
-        font-size: 2rem;
-        transition: transform 0.3s ease;
-    }
-
-    .feature-card:hover .feature-icon {
-        transform: scale(1.1) rotate(5deg);
-    }
-
-    .feature-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #1e293b;
-        margin-bottom: 16px;
-    }
-
-    .feature-description {
-        color: #64748b;
-        line-height: 1.6;
-        font-size: 1rem;
-        margin-bottom: 24px;
-    }
-
-    .feature-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: #4a90e2;
-        font-weight: 500;
-        text-decoration: none;
-        font-size: 0.95rem;
-        transition: gap 0.3s ease;
-    }
-
-    .feature-link:hover {
-        color: #8a6cff;
-        gap: 12px;
-    }
-
-    /* 数据统计展示 */
-    .stats-section {
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-        border-radius: 24px;
-        padding: 80px 40px;
-        margin: 80px auto;
-        max-width: 1200px;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 40px;
-        margin-top: 60px;
-    }
-
-    .stat-item {
-        text-align: center;
-    }
-
-    .stat-number {
-        font-size: 3rem;
-        font-weight: 800;
-        color: #4a90e2;
-        margin-bottom: 12px;
-        background: linear-gradient(135deg, #4a90e2, #8a6cff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .stat-label {
-        color: #64748b;
-        font-size: 1rem;
-        font-weight: 500;
-    }
-
-    /* CTA区域 */
-    .cta-section {
-        background: linear-gradient(135deg, #4a90e2, #8a6cff);
-        border-radius: 24px;
-        padding: 80px 40px;
-        margin: 80px auto;
-        max-width: 1200px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .cta-section::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 300px;
-        height: 300px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        opacity: 0.5;
-    }
-
-    .cta-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 24px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .cta-description {
-        font-size: 1.25rem;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 48px;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-        line-height: 1.6;
-        position: relative;
-        z-index: 1;
-    }
-
-    .cta-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 18px 48px;
-        font-size: 1.25rem;
-        font-weight: 600;
-        background: white;
-        color: #4a90e2;
-        border-radius: 12px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 15px 30px rgba(255, 255, 255, 0.3);
-        position: relative;
-        z-index: 1;
-    }
-
-    .cta-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 20px 40px rgba(255, 255, 255, 0.4);
-        color: #4a90e2;
-    }
-
-    /* 优势特点 */
-    .advantages-section {
-        max-width: 1200px;
-        margin: 80px auto;
-    }
-
-    .advantages-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 32px;
-    }
-
-    .advantage-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 20px;
-        padding: 32px;
-        background: white;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        transition: all 0.3s ease;
-    }
-
-    .advantage-item:hover {
-        border-color: #4a90e2;
-        box-shadow: 0 15px 30px rgba(59, 130, 246, 0.1);
-        transform: translateY(-5px);
-    }
-
-    .advantage-icon {
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #4a90e2;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-
-    .advantage-content h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #1e293b;
-        margin-bottom: 12px;
-    }
-
-    .advantage-content p {
-        color: #64748b;
-        line-height: 1.6;
-        font-size: 1rem;
-    }
-
-    /* 动画效果 */
-    @keyframes floatIn {
-        0% {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        100% {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animate-floatIn {
-        animation: floatIn 0.8s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
-    }
-
-    .animate-fadeIn {
-        animation: fadeIn 1s ease-out;
-    }
-
-    /* 响应式调整 */
-    @media (max-width: 768px) {
+    <style>
+        /* 首页专用样式 - 已调整为蒙太奇设计系统色调 */
         .homepage-hero {
-            margin: 20px 16px;
-            padding: 60px 24px;
-            border-radius: 16px;
+            background-image:
+                    linear-gradient(135deg,
+                    rgba(76, 175, 80, 0.75),    /* #00b894 75%透明度 */
+                    rgba(33, 150, 243, 0.8)     /* #00a085 80%透明度 */
+                    ),
+                    url('/img/index_background2.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 24px;
+            margin: 40px auto;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+            max-width: 1200px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 添加颜色变量的RGB版本用于透明效果 */
+        .homepage-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
         }
 
         .hero-title {
-            font-size: 2rem;
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 24px;
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         .hero-subtitle {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 48px;
+            line-height: 1.6;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-description {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 60px;
+            line-height: 1.7;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .hero-actions {
-            flex-direction: column;
-            align-items: center;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
         }
 
-        .hero-btn-primary, .hero-btn-secondary {
-            width: 100%;
-            max-width: 300px;
+        .hero-btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 40px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            background: white;
+            color: var(--primary-color);
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 255, 255, 0.4);
+            color: var(--primary-color);
+        }
+
+        .hero-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 40px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .hero-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            transform: translateY(-3px);
+            color: white;
+        }
+
+        /* 核心功能展示 */
+        .core-features {
+            max-width: 1200px;
+            margin: 80px auto;
         }
 
         .section-title {
-            font-size: 2rem;
-            margin-bottom: 40px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
         }
 
         .feature-card {
-            padding: 32px 24px;
+            background: white;
+            border-radius: 16px;
+            padding: 40px 32px;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .features-grid, .advantages-grid {
-            gap: 24px;
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
         }
 
-        .stats-section, .cta-section {
-            padding: 60px 24px;
-            margin: 60px 16px;
-        }
-
-        .cta-title {
-            font-size: 2rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-        }
-
-        .advantage-item {
-            padding: 24px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .hero-title {
-            font-size: 1.75rem;
-        }
-
-        .hero-subtitle {
-            font-size: 1.125rem;
-        }
-
-        .section-title {
-            font-size: 1.75rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: var(--gray-300);
         }
 
         .feature-icon {
-            width: 64px;
-            height: 64px;
-            font-size: 1.75rem;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 2rem;
+            transition: transform 0.3s ease;
         }
-    }
-</style>
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+        }
+
+        .feature-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+            font-size: 1rem;
+            margin-bottom: 24px;
+        }
+
+        .feature-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-link:hover {
+            color: var(--secondary-color);
+            gap: 12px;
+        }
+
+        /* 数据统计展示 */
+        .stats-section {
+            background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+            border-radius: 24px;
+            padding: 80px 40px;
+            margin: 80px auto;
+            max-width: 1200px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* CTA区域 */
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 24px;
+            padding: 80px 40px;
+            margin: 80px auto;
+            max-width: 1200px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-description {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 48px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 48px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: white;
+            color: var(--primary-color);
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.4);
+            color: var(--primary-color);
+        }
+
+        /* 优势特点 */
+        .advantages-section {
+            max-width: 1200px;
+            margin: 80px auto;
+        }
+
+        .advantages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .advantage-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 32px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+        }
+
+        .advantage-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 15px 30px rgba(var(--primary-color-rgb), 0.1);
+            transform: translateY(-5px);
+        }
+
+        .advantage-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg,
+            rgba(var(--primary-color-rgb), 0.1),
+            rgba(var(--secondary-color-rgb), 0.1));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .advantage-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+        }
+
+        .advantage-content p {
+            color: var(--gray-600);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        /* 动画效果 */
+        @keyframes floatIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-floatIn {
+            animation: floatIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 1s ease-out;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .homepage-hero {
+                margin: 20px 16px;
+                padding: 60px 24px;
+                border-radius: 16px;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.25rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero-btn-primary, .hero-btn-secondary {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+                margin-bottom: 40px;
+            }
+
+            .feature-card {
+                padding: 32px 24px;
+            }
+
+            .features-grid, .advantages-grid {
+                gap: 24px;
+            }
+
+            .stats-section, .cta-section {
+                padding: 60px 24px;
+                margin: 60px 16px;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+            }
+
+            .advantage-item {
+                padding: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.75rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 1.75rem;
+            }
+        }
+    </style>
 
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto ">
         <!-- 首页英雄区域 -->
         <div class="homepage-hero animate-floatIn">
             <div class="hero-content">

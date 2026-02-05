@@ -96,7 +96,7 @@
                 <!-- 修改分类表单 -->
                 <form action="{{ url('category/'.$category->id) }}" method="POST" class="space-y-6" id="editCategoryForm">
                     {!! csrf_field() !!}
-                    @method('PUT')
+                    <input type="hidden" name="_method" value="PUT">
 
                     <div class="space-y-6">
                         <!-- 分类名称 -->

@@ -63,6 +63,92 @@
             border-left: 1px solid var(--gray-200) !important;
         }
 
+        /* 录音相关样式 - 恢复以前的样式 */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .audio-controls button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            font-size: 18px;
+        }
+
+        .audio-controls #start-record {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .audio-controls #start-record:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .audio-controls #start-record:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .audio-controls #stop-record {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .audio-controls #stop-record:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .audio-controls #stop-record:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .audio-timer {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            background: var(--gray-100);
+            padding: 8px 16px;
+            border-radius: 20px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .audio-recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         /* 笔记标签 */
         .note-tags {
             display: flex;
@@ -502,14 +588,15 @@
 
     <script src="/js/recorder/recorder.js"></script>
     <script>
-        // 全局变量
+        // 全局变量 - 恢复以前的录音变量
         let recorder = null;
-        let easymde = null;
-        let isRecording = false;
         let timerInterval = null;
         let startTime = null;
+        let isRecording = false;
 
         // 初始化Markdown编辑器
+        let easymde = null;
+
         function initMarkdownEditor() {
             easymde = new EasyMDE({
                 element: document.getElementById('markdown-editor'),
@@ -595,11 +682,43 @@
             easymde.codemirror.focus();
         }
 
-        // 录音功能
+        // ================== 恢复以前的录音功能 ==================
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
             const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
             return `${mins}:${secs}`;
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+
+            const currentTime = new Date();
+            const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+            const timerDisplay = document.getElementById('audio-timer');
+
+            if (timerDisplay) {
+                timerDisplay.textContent = formatTime(elapsedSeconds);
+            }
+        }
+
+        function showRecordingIndicator() {
+            const container = document.getElementById('audio-container');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="audio-recording-indicator" id="recording-indicator">
+                    <div class="pulse-dot"></div>
+                    <span style="color: var(--danger-color); font-weight: 500;">正在录音中...</span>
+                    <span id="audio-timer">00:00</span>
+                </div>
+            `;
+        }
+
+        function hideRecordingIndicator() {
+            const indicator = document.getElementById('recording-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
         }
 
         function startRecording() {
@@ -608,61 +727,125 @@
                 return;
             }
 
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(function(stream) {
-                    recorder.start();
+            try {
+                // 检查浏览器权限
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function(stream) {
+                        // 开始录音
+                        recorder.start();
 
-                    document.getElementById('start-record').disabled = true;
-                    document.getElementById('stop-record').disabled = false;
+                        // 更新UI状态 - 恢复以前的按钮状态
+                        document.getElementById('start-record').disabled = true;
+                        document.getElementById('start-record').style.display = 'none';
+                        document.getElementById('stop-record').disabled = false;
+                        document.getElementById('stop-record').style.display = 'flex';
 
-                    startTime = new Date();
-                    timerInterval = setInterval(function() {
-                        const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
-                        document.getElementById('record-timer').textContent = formatTime(elapsedSeconds);
-                    }, 1000);
+                        // 开始计时
+                        startTime = new Date();
+                        timerInterval = setInterval(updateTimer, 1000);
+                        isRecording = true;
 
-                    isRecording = true;
-
-                    // 显示录音状态
-                    document.getElementById('record-status').innerHTML = `
-                        <div class="audio-recording-indicator">
-                            <div class="pulse-dot"></div>
-                            <span style="color: var(--danger-color); font-weight: 500;">正在录音中...</span>
-                            <span id="audio-timer">00:00</span>
-                        </div>
-                    `;
-                })
-                .catch(function(err) {
-                    console.error('麦克风权限被拒绝:', err);
-                    alert('需要麦克风权限才能录音。请在浏览器设置中允许麦克风访问。');
-                });
+                        // 显示录音指示器
+                        showRecordingIndicator();
+                    })
+                    .catch(function(err) {
+                        console.error('麦克风权限被拒绝:', err);
+                        alert('需要麦克风权限才能录音。请在浏览器设置中允许麦克风访问。');
+                        resetRecordingState();
+                    });
+            } catch (error) {
+                console.error('录音启动失败:', error);
+                alert('录音功能启动失败，请确保浏览器支持录音功能');
+                resetRecordingState();
+            }
         }
 
         function stopRecording() {
             if (!recorder || !isRecording) return;
 
-            recorder.stop();
-            isRecording = false;
+            try {
+                // 停止录音
+                recorder.stop();
+                isRecording = false;
 
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-
-            recorder.getBlob(function(blob) {
-                // 添加录音标记到编辑器
-                if (easymde) {
-                    const timestamp = new Date().toLocaleTimeString();
-                    easymde.codemirror.replaceSelection(`\n\n🎤 录音记录 ${timestamp}\n`);
+                // 停止计时
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
                 }
 
-                // 上传音频
-                uploadAudioFile(blob);
-            });
+                // 获取录音数据
+                recorder.getBlob(function(blob) {
+                    // 处理录音数据
+                    processRecordingBlob(blob);
+                });
 
-            document.getElementById('start-record').disabled = false;
-            document.getElementById('stop-record').disabled = true;
-            document.getElementById('record-status').innerHTML = '';
+                // 隐藏录音指示器
+                hideRecordingIndicator();
+
+            } catch (error) {
+                console.error('停止录音失败:', error);
+                alert('停止录音失败');
+            } finally {
+                resetRecordingState();
+            }
+        }
+
+        function processRecordingBlob(blob) {
+            // 创建音频播放器
+            const container = document.getElementById('audio-container');
+            const audioUrl = URL.createObjectURL(blob);
+            const duration = Math.round(blob.size / (128 * 1000) * 8); // 估算时长
+
+            container.innerHTML = `
+                <div class="audio-player">
+                    <button class="audio-player-btn" onclick="playAudio(this)">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div style="flex: 1">
+                        <div style="font-weight: 500; color: var(--gray-700); margin-bottom: 4px;">录音回放</div>
+                        <div style="font-size: 13px; color: var(--gray-500);">点击播放按钮收听录音</div>
+                    </div>
+                    <div class="audio-duration">${formatTime(duration)}</div>
+                    <audio id="recorded-audio" src="${audioUrl}" preload="metadata"></audio>
+                </div>
+            `;
+
+            // 设置编辑器内容 - 修改为适应Markdown编辑器
+            if (easymde) {
+                const currentValue = easymde.value();
+                if (!currentValue.includes("#分享语音#")) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    easymde.codemirror.replaceSelection(`\n\n#分享语音# (${timestamp})\n\n`);
+                }
+            }
+
+            // 上传音频文件
+            uploadAudioFile(blob);
+        }
+
+        function playAudio(button) {
+            const audio = document.getElementById('recorded-audio');
+            const icon = button.querySelector('i');
+
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-pause';
+                button.onclick = function() { pauseAudio(button); };
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-play';
+                button.onclick = function() { playAudio(button); };
+            }
+        }
+
+        function pauseAudio(button) {
+            const audio = document.getElementById('recorded-audio');
+            const icon = button.querySelector('i');
+
+            audio.pause();
+            icon.className = 'fas fa-play';
+            button.onclick = function() { playAudio(button); };
         }
 
         function uploadAudioFile(blob) {
@@ -678,19 +861,124 @@
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function(response) {
-                    try {
-                        const data = JSON.parse(response);
-                        if (data.code == 9999) {
-                            document.getElementById('fname').value = filename;
-                            showToast('音频上传成功', 'success');
-                        }
-                    } catch (e) {
-                        console.error('上传失败:', e);
-                    }
+                beforeSend: function() {
+                    // 可以在这里显示上传进度
                 }
+            }).done(function(response) {
+                try {
+                    const data = JSON.parse(response);
+                    if (data.code == 9999) {
+                        document.getElementById('fname').value = filename;
+                        showToast('音频上传成功', 'success');
+                    } else {
+                        showToast('音频上传失败: ' + (data.msg || '未知错误'), 'error');
+                    }
+                } catch (e) {
+                    showToast('音频上传失败: 响应格式错误', 'error');
+                }
+            }).fail(function() {
+                showToast('音频上传失败: 网络错误', 'error');
             });
         }
+
+        function resetRecordingState() {
+            const startBtn = document.getElementById('start-record');
+            const stopBtn = document.getElementById('stop-record');
+
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.style.display = 'flex';
+            }
+
+            if (stopBtn) {
+                stopBtn.disabled = true;
+                stopBtn.style.display = 'none';
+            }
+
+            startTime = null;
+            isRecording = false;
+        }
+
+        function showToast(message, type = 'info') {
+            // 恢复以前的toast提示
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#4a90e2'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+            `;
+
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Markdown编辑器
+            initMarkdownEditor();
+            updateCharCount();
+
+            // 初始化录音器 - 恢复以前的初始化逻辑
+            try {
+                recorder = new Recorder({
+                    sampleRate: 44100,
+                    bitRate: 128,
+                    success: function() {
+                        console.log('录音器初始化成功');
+                        document.getElementById('start-record').disabled = false;
+                    },
+                    error: function(msg) {
+                        console.error('录音器初始化失败:', msg);
+                        document.getElementById('start-record').disabled = true;
+                        document.getElementById('start-record').innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                        document.getElementById('start-record').title = '录音功能不可用';
+                    }
+                });
+
+                // 绑定按钮事件
+                document.getElementById('start-record').addEventListener('click', startRecording);
+                document.getElementById('stop-record').addEventListener('click', stopRecording);
+
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+            }
+
+            // 检查笔记是否需要折叠
+            document.querySelectorAll('.note-content').forEach(content => {
+                const noteId = content.id.replace('note-content-', '');
+                const lineHeight = parseInt(getComputedStyle(content).lineHeight);
+                const maxLines = 8;
+
+                if (content.scrollHeight > lineHeight * maxLines) {
+                    content.classList.add('collapsed');
+
+                    // 添加展开按钮
+                    const expandBtn = document.createElement('button');
+                    expandBtn.className = 'expand-btn';
+                    expandBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>展开';
+                    expandBtn.onclick = () => toggleNoteExpand(noteId);
+                    content.parentNode.appendChild(expandBtn);
+                }
+            });
+        });
 
         // 打开AI助手
         function openNoteAI(noteId, noteContent) {
@@ -744,77 +1032,6 @@
                 }
             });
         }
-
-        // 显示提示
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white animate-fade-in ${
-                type === 'success' ? 'bg-green-500' :
-                    type === 'error' ? 'bg-red-500' :
-                        type === 'info' ? 'bg-blue-500' : 'bg-gray-500'
-            }`;
-            toast.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' :
-                type === 'error' ? 'exclamation-circle' :
-                    type === 'info' ? 'info-circle' : 'bell'} mr-3"></i>
-                    <span>${message}</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 hover:opacity-80">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 3000);
-        }
-
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化Markdown编辑器
-            initMarkdownEditor();
-            updateCharCount();
-
-            // 初始化录音器
-            try {
-                recorder = new Recorder({
-                    sampleRate: 44100,
-                    bitRate: 128,
-                    success: function() {
-                        document.getElementById('start-record').disabled = false;
-                    },
-                    error: function(msg) {
-                        console.error('录音器初始化失败:', msg);
-                        document.getElementById('start-record').disabled = true;
-                        document.getElementById('start-record').innerHTML = '<i class="fas fa-microphone-slash"></i>';
-                    }
-                });
-            } catch (error) {
-                console.error('录音器初始化失败:', error);
-            }
-
-            // 检查笔记是否需要折叠
-            document.querySelectorAll('.note-content').forEach(content => {
-                const noteId = content.id.replace('note-content-', '');
-                const lineHeight = parseInt(getComputedStyle(content).lineHeight);
-                const maxLines = 8;
-
-                if (content.scrollHeight > lineHeight * maxLines) {
-                    content.classList.add('collapsed');
-
-                    // 添加展开按钮
-                    const expandBtn = document.createElement('button');
-                    expandBtn.className = 'expand-btn';
-                    expandBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>展开';
-                    expandBtn.onclick = () => toggleNoteExpand(noteId);
-                    content.parentNode.appendChild(expandBtn);
-                }
-            });
-        });
     </script>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -864,18 +1081,19 @@
                         </div>
                     </div>
 
-                    <!-- 录音功能 -->
+                    <!-- 录音功能 - 恢复以前的HTML结构 -->
                     <div class="mb-6">
                         <div class="text-sm font-medium text-gray-700 mb-2">语音记录</div>
                         <div class="audio-controls">
-                            <button type="button" id="start-record" class="btn btn-outline" onclick="startRecording()" disabled>
-                                <i class="fas fa-microphone mr-2"></i>开始录音
+                            <button type="button" id="start-record" disabled title="开始录音" style="display: flex;">
+                                <i class="fas fa-microphone"></i>
                             </button>
-                            <button type="button" id="stop-record" class="btn btn-outline btn-danger" onclick="stopRecording()" disabled>
-                                <i class="fas fa-stop mr-2"></i>停止录音
+                            <button type="button" id="stop-record" disabled title="停止录音" style="display:none;">
+                                <i class="fas fa-stop"></i>
                             </button>
-                            <div id="record-status"></div>
                         </div>
+                        <!-- 音频容器 -->
+                        <div id="audio-container"></div>
                     </div>
 
                     <!-- 图片预览 -->
@@ -1074,7 +1292,7 @@
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">还没有笔记</h3>
                 <p class="text-gray-600 mb-6">开始记录您的第一个想法吧！</p>
-                <button type="button" class="btn btn-primary" onclick="document.getElementById('markdown-editor').focus()">
+                <button type="button" class="btn btn-primary" onclick="easymde && easymde.codemirror.focus()">
                     <i class="fas fa-plus mr-2"></i>
                     开始记录
                 </button>
@@ -1127,48 +1345,6 @@
             const content = document.getElementById('note-content-' + noteId).innerText;
             openAskAIModal('note-translate-' + noteId, 'note-content-' + noteId, '请帮我把这段笔记翻译成英文');
         }
-
-        function renderMarkdownContent() {
-            document.querySelectorAll('.note-content').forEach(container => {
-                const content = container.textContent || container.innerText;
-                if (content) {
-                    try {
-                        // 使用marked.js渲染Markdown
-                        container.innerHTML = marked.parse(content);
-
-                        // 高亮代码块
-                        if (typeof hljs !== 'undefined') {
-                            container.querySelectorAll('pre code').forEach(block => {
-                                hljs.highlightBlock(block);
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Markdown渲染失败:', error);
-                        // 如果渲染失败，保留原内容
-                        container.innerHTML = '<div class="whitespace-pre-wrap">' +
-                            htmlEscape(content).replace(/\n/g, '<br>') +
-                            '</div>';
-                    }
-                }
-            });
-        }
-
-        // HTML转义函数
-        function htmlEscape(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // 页面加载完成后渲染
-        document.addEventListener('DOMContentLoaded', function() {
-            // 等待marked.js加载完成
-            if (typeof marked !== 'undefined') {
-                // renderMarkdownContent();
-            } else {
-                console.warn('marked.js未加载，无法渲染Markdown');
-            }
-        });
 
         // 删除笔记
         $(document).ready(function(){

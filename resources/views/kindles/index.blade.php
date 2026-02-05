@@ -153,7 +153,7 @@
 
                 <form action="{{ url('setting/'.$setting->id) }}" method="POST" class="space-y-6">
                     {!! csrf_field() !!}
-                    @method('PUT')
+                    <input type="hidden" name="_method" value="PUT">
                     <input type="hidden" name="page_info" value="kindle_page">
 
                     <!-- Kindle邮箱地址 -->

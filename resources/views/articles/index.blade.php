@@ -971,6 +971,50 @@
             border-color: transparent !important;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
         }
+
+        .playaudio {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .playaudio.playing {
+            color: var(--primary-color);
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+        }
+
+        .playaudio:hover {
+            transform: scale(1.05);
+        }
+
+        /* 语音控制面板 */
+        .speech-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .speech-controls button {
+            padding: 6px 12px;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .speech-controls button:hover {
+            background: var(--gray-100);
+        }
+
+        .speech-controls button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
     </style>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reading-page">
@@ -1145,7 +1189,7 @@
                                         </div>
 
                                         <!-- 文章内容 -->
-                                        <div class="article-content">
+                                        <div class="article-content" id="content{{ $articleSub->id }}" @if($unable_desc == "true") style="display:none" @endif>
                                             <div id="desc{{ $articleSub->id }}"
                                                  class="content-preview {{ $unable_desc == "true" && $needsCollapse ? '' : 'expanded' }}"
                                                  data-article-id="{{ $articleSub->id }}">
@@ -1174,8 +1218,7 @@
                                             <div class="action-buttons" style="margin-left: auto;">
                                                 <button type="button"
                                                         class="action-btn ai-assist-btn"
-                                                        data-content-id="content{{ $articleSub->id }}"
-                                                        data-refer-text="{{ strip_tags($formattedContent) }}"
+                                                        data-content-id="desc{{ $articleSub->id }}"
                                                         data-title="{{ $article->subject }}"
                                                         title="AI助手">
                                                     <i class="fas fa-robot"></i>
@@ -1697,7 +1740,17 @@
 
             // 修复展开收起功能
             function initExpandButtons() {
-                $(".expand-btn, .read-more-btn").off('click').on('click', function(e) {
+                $(".expand-btn").off('click').on('click', function(e) {
+                    e.stopPropagation();
+
+                    var $button = $(this);
+                    var articleId = $button.data('article-id');
+                    var $content = $("#content" + articleId);
+
+                    // 切换显示/隐藏
+                    $content.toggle();
+                });
+                $(".read-more-btn").off('click').on('click', function(e) {
                     e.stopPropagation();
                     var $button = $(this);
                     var articleId = $button.data('article-id');
@@ -1865,18 +1918,108 @@
             });
 
             // 语音播放
+            // 全局语音控制
+            var speechControl = {
+                currentUtterance: null,
+                currentButton: null,
+
+                speak: function(text, button) {
+                    // 如果正在播放同一个内容，则停止
+                    if (this.currentButton && this.currentButton[0] === button[0]) {
+                        this.stop();
+                        return;
+                    }
+
+                    // 停止之前的播放
+                    this.stop();
+
+                    // 创建新的语音实例
+                    var utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 1;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+
+                    // 保存当前状态
+                    this.currentUtterance = utterance;
+                    this.currentButton = button;
+
+                    // 更新按钮状态
+                    button.addClass('playing').find('i')
+                        .removeClass('fa-play fa-pause')
+                        .addClass('fa-stop');
+
+                    // 事件监听
+                    utterance.onend = utterance.onerror = () => this.reset();
+
+                    // 开始播放
+                    speechSynthesis.speak(utterance);
+                },
+
+                stop: function() {
+                    if (this.currentUtterance) {
+                        speechSynthesis.cancel();
+                        this.reset();
+                    }
+                },
+
+                pause: function() {
+                    if (this.currentUtterance) {
+                        speechSynthesis.pause();
+                        this.currentButton.find('i')
+                            .removeClass('fa-stop')
+                            .addClass('fa-pause');
+                    }
+                },
+
+                resume: function() {
+                    if (this.currentUtterance) {
+                        speechSynthesis.resume();
+                        this.currentButton.find('i')
+                            .removeClass('fa-pause')
+                            .addClass('fa-stop');
+                    }
+                },
+
+                reset: function() {
+                    if (this.currentButton) {
+                        this.currentButton.removeClass('playing').find('i')
+                            .removeClass('fa-stop fa-pause')
+                            .addClass('fa-play');
+                    }
+                    this.currentUtterance = null;
+                    this.currentButton = null;
+                },
+
+                setVoice: function(voiceName) {
+                    var voices = speechSynthesis.getVoices();
+                    var voice = voices.find(v => v.name === voiceName);
+                    if (voice && this.currentUtterance) {
+                        this.currentUtterance.voice = voice;
+                    }
+                }
+            };
+
             $(".playaudio").on('click', function() {
-                var article_sub_id = $(this).data('article-id');
-                var $audioPlayer = $("#audioPlayer");
-                var $audio = $("#audio");
+                var $button = $(this);
+                var articleId = $button.data('article-id');
+                var $content = $("#content" + articleId);
 
-                $audio.attr("src", "/article/record/" + article_sub_id);
-                $audioPlayer.addClass('active');
+                var textToSpeak = $content.text().trim();
+                if (!textToSpeak) {
+                    showNotification('没有内容可朗读', 'warning');
+                    return;
+                }
 
-                // 自动播放
-                $audio[0].play().catch(function(e) {
-                    showNotification('音频播放失败，请点击播放按钮手动播放', 'error');
-                });
+                // 清理文本
+                textToSpeak = textToSpeak
+                    .substring(0, 10000) // 限制长度
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                if (!textToSpeak) return;
+
+                speechControl.speak(textToSpeak, $button);
             });
 
             // 关闭音频播放器
@@ -1916,43 +2059,12 @@
 
             // AI助手 - 修复refer_text参数
             $(".ai-assist-btn").on('click', function() {
+                console.log('AI助手 - 获取内容ID')
                 var contentId = $(this).data('content-id');
-                var referText = $(this).data('refer-text');
-                var title = $(this).data('title');
 
                 // 调用全局函数，传递refer_text
-                openAskAIModal(contentId, referText, title);
+                openAskAIModal(contentId);
             });
-
-            // 修复AI助手函数
-            window.openAskAIModal = function(contentId, referText, title) {
-                // 获取内容
-                var content = '';
-                if (contentId) {
-                    content = document.getElementById(contentId) ?
-                        document.getElementById(contentId).innerText : '';
-                }
-
-                // 优先使用传递的referText参数
-                if (!referText && content) {
-                    referText = content.substring(0, 1000); // 限制长度
-                }
-
-                // 设置表单值
-                if (referText) {
-                    $('#ask_ai_refer_text').val(referText);
-                }
-
-                if (title) {
-                    $('#ask_ai_title').val(title);
-                }
-
-                // 显示模态框
-                $('#aiAskModal').addClass('show').show();
-
-                // 防止模态框闪动
-                $('#aiAskModal').css('display', 'flex');
-            };
 
             // 通知函数
             function showNotification(message, type = 'success') {
