@@ -67,55 +67,9 @@
                     <div class="max-w-2xl w-full text-center">
                         <!-- 欢迎语 -->
                         <div class="mb-10">
-{{--                            <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">--}}
-{{--                                <i class="fas fa-comments text-primary-color text-2xl"></i>--}}
-{{--                            </div>--}}
                             <h1 class="text-2xl font-bold text-gray-900 mb-2">欢迎使用AI助手</h1>
-{{--                            <p class="text-gray-600">选择智能体开始对话</p>--}}
                         </div>
 
-                        <!-- 智能体选择 -->
-                        <div class="max-w-md mx-auto mb-8">
-                            <div class="relative inline-block w-48">
-                                <select id="agent-select" class="input w-full text-sm py-2 px-3">
-                                    <!-- 智能体会动态加载 -->
-                                </select>
-{{--                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">--}}
-{{--                                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>--}}
-{{--                                </div>--}}
-                            </div>
-                        </div>
-
-                        <!-- 快捷问题示例 -->
-{{--                        <div class="mb-12">--}}
-{{--                            <h4 class="text-sm font-medium text-gray-500 mb-4">试试这样问我：</h4>--}}
-{{--                            <div class="grid grid-cols-2 gap-3 max-w-lg mx-auto">--}}
-{{--                                <button onclick="setQuickQuestion('如何提高工作效率？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
-{{--                                    <div class="flex items-center justify-center">--}}
-{{--                                        <i class="fas fa-briefcase text-blue-500 mr-2 text-sm"></i>--}}
-{{--                                        <span>工作效率</span>--}}
-{{--                                    </div>--}}
-{{--                                </button>--}}
-{{--                                <button onclick="setQuickQuestion('如何制定学习计划？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
-{{--                                    <div class="flex items-center justify-center">--}}
-{{--                                        <i class="fas fa-graduation-cap text-green-500 mr-2 text-sm"></i>--}}
-{{--                                        <span>学习计划</span>--}}
-{{--                                    </div>--}}
-{{--                                </button>--}}
-{{--                                <button onclick="setQuickQuestion('如何写一份项目报告？')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
-{{--                                    <div class="flex items-center justify-center">--}}
-{{--                                        <i class="fas fa-file-alt text-purple-500 mr-2 text-sm"></i>--}}
-{{--                                        <span>项目报告</span>--}}
-{{--                                    </div>--}}
-{{--                                </button>--}}
-{{--                                <button onclick="setQuickQuestion('帮我写一封邮件')" class="p-3 bg-white border border-gray-200 rounded-lg text-sm hover:border-primary-color hover:shadow-sm transition-all">--}}
-{{--                                    <div class="flex items-center justify-center">--}}
-{{--                                        <i class="fas fa-envelope text-red-500 mr-2 text-sm"></i>--}}
-{{--                                        <span>邮件写作</span>--}}
-{{--                                    </div>--}}
-{{--                                </button>--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
                     </div>
                 </div>
 
@@ -157,6 +111,9 @@
 
                             <!-- 场景功能按钮 -->
                             <div class="px-4 pb-3 flex justify-center space-x-2">
+                                <select id="agent-select" class="btn-scene">
+                                    <!-- 智能体会动态加载 -->
+                                </select>
                                 <button onclick="setQuickQuestion('帮我生成一段代码')" class="btn-scene">
                                     <i class="fas fa-code mr-1 text-xs"></i> 代码生成
                                 </button>
@@ -399,6 +356,29 @@
             // 搜索会话
             document.getElementById('search-sessions').addEventListener('input', searchSessions);
 
+            // 使用事件委托处理会话列表点击（更可靠）
+            document.getElementById('sessions-list').addEventListener('click', function(e) {
+                // 处理会话项点击
+                const sessionItem = e.target.closest('.session-item');
+                if (sessionItem) {
+                    const sessionId = sessionItem.dataset.sessionId;
+                    if (sessionId) {
+                        switchToSession(sessionId);
+                    }
+                    return;
+                }
+                
+                // 处理固定按钮点击
+                const pinBtn = e.target.closest('.session-pin-btn');
+                if (pinBtn) {
+                    e.stopPropagation();
+                    const sessionId = pinBtn.closest('.session-item').dataset.sessionId;
+                    if (sessionId) {
+                        togglePinSession(sessionId);
+                    }
+                }
+            });
+
             // 模态框按钮
             document.getElementById('save-rename-btn').addEventListener('click', saveRenameSession);
             document.getElementById('rename-session-btn')?.addEventListener('click', renameCurrentSession);
@@ -557,23 +537,6 @@
             }
 
             container.innerHTML = html;
-
-            // 添加点击事件
-            document.querySelectorAll('.session-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const sessionId = this.dataset.sessionId;
-                    switchToSession(sessionId);
-                });
-            });
-
-            // 添加固定按钮事件
-            document.querySelectorAll('.session-pin-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const sessionId = this.closest('.session-item').dataset.sessionId;
-                    togglePinSession(sessionId);
-                });
-            });
         }
 
         // 创建会话项HTML
@@ -833,6 +796,9 @@
         // 切换到指定会话
         async function switchToSession(sessionId) {
             try {
+                // 显示加载状态
+                showSessionLoading();
+                
                 const response = await fetch(`/llm/sessions/${sessionId}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -861,11 +827,22 @@
 
                     // 清空消息列表并加载历史消息
                     document.getElementById('messages-list').innerHTML = '';
+                    
                     if (result.data.messages && result.data.messages.length > 0) {
-                        result.data.messages.forEach(msg => {
+                        // 逐条添加历史消息，保持时间顺序
+                        for (let i = 0; i < result.data.messages.length; i++) {
+                            const msg = result.data.messages[i];
                             addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
-                        });
+                            
+                            // 添加小延迟以获得更好的视觉效果
+                            if (i < result.data.messages.length - 1) {
+                                await new Promise(resolve => setTimeout(resolve, 50));
+                            }
+                        }
+                        
+                        showToast(`已加载 ${result.data.messages.length} 条历史消息`, 'success');
                     } else {
+                        // 没有历史消息时显示欢迎语
                         const agentName = result.data.agent?.name || '智能助手';
                         addMessage('ai', `您好！我是${agentName}，有什么可以帮您的吗？`);
                     }
@@ -874,10 +851,15 @@
                     setTimeout(() => {
                         document.getElementById('message-input').focus();
                     }, 100);
+                    
+                    // 更新会话列表的选中状态
+                    updateSessionActiveState(sessionId);
                 }
             } catch (error) {
                 console.error('切换会话失败:', error);
                 showToast('切换会话失败: ' + error.message, 'error');
+            } finally {
+                hideSessionLoading();
             }
         }
 
@@ -885,35 +867,41 @@
         function addMessage(role, content) {
             const messagesList = document.getElementById('messages-list');
             const messageId = 'msg-' + Date.now();
+            const inputContainerWidth = 'max-w-3xl'; // 与输入框完全相同的宽度类
 
             if (role === 'user') {
+                // 用户消息 - 宽度80%，右侧与输入框右侧对齐
                 const userMessageHTML = `
-                <div id="${messageId}" class="flex justify-end mb-3">
-                    <div class="max-w-xl">
-                        <div class="bg-primary-color text-white rounded-2xl rounded-br-none px-4 py-2.5 text-sm">
-                            <div class="whitespace-pre-wrap">${escapeHtml(content)}</div>
+                <div id="${messageId}" class="flex justify-end mb-4">
+                    <div class="${inputContainerWidth} w-4/5">
+                        <div class="bg-[#00b894] text-white rounded-2xl rounded-br-none px-4 py-3">
+                            <div class="whitespace-pre-wrap break-words">${escapeHtml(content)}</div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 text-right">
+                            ${formatTime(new Date().toISOString())}
                         </div>
                     </div>
                 </div>
             `;
                 messagesList.insertAdjacentHTML('beforeend', userMessageHTML);
             } else {
+                // AI助手消息 - 宽度100%，与输入框完全对齐
                 const aiMessageHTML = `
-                <div id="${messageId}" class="flex mb-3">
-                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 flex-shrink-0">
-                        <i class="fas fa-robot text-blue-500 text-xs"></i>
-                    </div>
-                    <div class="max-w-xl flex-1">
-                        <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-2.5 text-sm">
-                            <div class="markdown-content whitespace-pre-wrap">${marked.parse(content)}</div>
+                <div id="${messageId}" class="flex justify-start mb-4">
+                    <div class="${inputContainerWidth} w-full">
+                        <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3">
+                            <div class="markdown-content whitespace-pre-wrap break-words">${marked.parse(content)}</div>
                         </div>
-                        <div class="flex items-center justify-between mt-1">
-                            <div class="text-xs text-gray-400">
+                        <div class="flex items-center justify-between mt-2">
+                            <div class="text-xs text-gray-500">
                                 ${formatTime(new Date().toISOString())}
                             </div>
                             <div class="flex items-center space-x-2">
-                                <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-gray-600 p-1" title="复制">
+                                <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-[#00b894] p-1 rounded hover:bg-gray-100" title="复制消息">
                                     <i class="fas fa-copy"></i>
+                                </button>
+                                <button onclick="likeMessage('${messageId}')" class="text-xs text-gray-400 hover:text-red-500 p-1 rounded hover:bg-gray-100" title="点赞">
+                                    <i class="far fa-heart"></i>
                                 </button>
                             </div>
                         </div>
@@ -934,6 +922,101 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // 获取用户头像首字母
+        function getUserAvatarInitial(name) {
+            if (!name) return '我';
+            return name.charAt(0).toUpperCase();
+        }
+
+        // 获取智能体头像首字母
+        function getAgentAvatarInitial(name) {
+            if (!name) return 'AI';
+            return name.charAt(0).toUpperCase();
+        }
+
+        // 获取智能体头像（可以根据名称返回不同颜色）
+        function getAgentAvatar(name) {
+            const avatars = {
+                '通用助手': '🤖',
+                '代码助手': '💻',
+                '写作助手': '✍️',
+                '翻译助手': '🌐',
+                '学习助手': '📚'
+            };
+            return avatars[name] || '🤖';
+        }
+
+        // 点赞消息
+        function likeMessage(messageId) {
+            const button = event.currentTarget;
+            const icon = button.querySelector('i');
+            
+            if (icon.classList.contains('fas')) {
+                // 取消点赞
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far', 'text-gray-400');
+                button.title = '点赞';
+                showToast('已取消点赞', 'info');
+            } else {
+                // 点赞
+                icon.classList.remove('far', 'text-gray-400');
+                icon.classList.add('fas', 'text-red-500');
+                button.title = '取消点赞';
+                showToast('已点赞', 'success');
+            }
+        }
+
+        // 复制消息
+        function copyMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            const contentElement = messageElement.querySelector('.markdown-content') || 
+                                 messageElement.querySelector('.whitespace-pre-wrap');
+            
+            if (contentElement) {
+                const text = contentElement.innerText || contentElement.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('已复制到剪贴板', 'success');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showToast('复制失败', 'error');
+                });
+            }
+        }
+
+        // 显示会话加载状态
+        function showSessionLoading() {
+            const messagesList = document.getElementById('messages-list');
+            messagesList.innerHTML = `
+                <div class="flex justify-center items-center h-full">
+                    <div class="text-center">
+                        <div class="w-8 h-8 mx-auto mb-3">
+                            <i class="fas fa-spinner fa-spin text-blue-500 text-xl"></i>
+                        </div>
+                        <p class="text-gray-500 text-sm">正在加载会话历史...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 隐藏会话加载状态
+        function hideSessionLoading() {
+            // 加载完成后会被实际消息替换，无需特殊处理
+        }
+
+        // 更新会话列表的选中状态
+        function updateSessionActiveState(sessionId) {
+            // 移除所有会话的选中状态
+            document.querySelectorAll('.session-item').forEach(item => {
+                item.classList.remove('bg-blue-50', 'border', 'border-blue-200');
+            });
+            
+            // 为当前会话添加选中状态
+            const activeSession = document.querySelector(`.session-item[data-session-id="${sessionId}"]`);
+            if (activeSession) {
+                activeSession.classList.add('bg-blue-50', 'border', 'border-blue-200');
+            }
         }
 
         // 发送消息
@@ -1010,17 +1093,27 @@
                 // 创建消息元素
                 const messageId = 'ai-msg-' + Date.now();
                 const messagesList = document.getElementById('messages-list');
+                const inputContainerClass = 'max-w-3xl'; // 与输入框完全相同的类名
+                
                 messagesList.insertAdjacentHTML('beforeend', `
-                <div id="${messageId}" class="flex mb-3">
-                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 flex-shrink-0">
-                        <i class="fas fa-robot text-blue-500 text-xs"></i>
-                    </div>
-                    <div class="max-w-xl flex-1">
-                        <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-2.5 text-sm">
-                            <div id="${messageId}-content" class="markdown-content"></div>
+                <div id="${messageId}" class="flex justify-start mb-4">
+                    <div class="${inputContainerClass} w-full mx-auto">
+                        <!-- 消息内容 -->
+                        <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3">
+                            <div id="${messageId}-content" class="markdown-content whitespace-pre-wrap break-words"></div>
                         </div>
-                        <div class="text-xs text-gray-400 mt-1">
-                            正在思考...
+                        
+                        <!-- 消息底部信息 -->
+                        <div class="flex items-center justify-between mt-2">
+                            <div class="text-xs text-gray-500 flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-[#00b894] rounded-full animate-pulse"></div>
+                                <span>正在思考...</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-[#00b894] p-1 rounded hover:bg-gray-100" title="复制消息">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1077,14 +1170,19 @@
 
                 // 更新时间和操作按钮
                 const messageElement = document.getElementById(messageId);
-                const footer = messageElement.querySelector('.text-xs');
+                const footer = messageElement.querySelector('.text-xs.text-gray-500.flex.items-center');
                 if (footer) {
                     footer.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span>${formatTime(new Date().toISOString())}</span>
+                    <div class="flex items-center justify-between mt-2">
+                        <div class="text-xs text-gray-500">
+                            ${formatTime(new Date().toISOString())}
+                        </div>
                         <div class="flex items-center space-x-2">
-                            <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-gray-600 p-1" title="复制">
+                            <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100" title="复制消息">
                                 <i class="fas fa-copy"></i>
+                            </button>
+                            <button onclick="likeMessage('${messageId}')" class="text-xs text-gray-400 hover:text-red-500 p-1 rounded hover:bg-gray-100" title="点赞">
+                                <i class="far fa-heart"></i>
                             </button>
                         </div>
                     </div>
