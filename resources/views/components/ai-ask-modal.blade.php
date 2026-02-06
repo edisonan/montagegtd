@@ -3,10 +3,10 @@
     <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
 
     <!-- 修复：使用fixed和flex居中容器 -->
-    <div class="fixed inset-0 overflow-y-auto py-4 sm:py-8 px-4">
+    <div class="fixed inset-0 overflow-y-auto py-2 sm:py-4 px-2 sm:px-4">
         <!-- 修复：添加flex居中容器 -->
         <div class="min-h-full flex items-center justify-center">
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-3xl transform transition-all">
                 <!-- 模态框头部 -->
                 <div class="flex items-center justify-between p-6 border-b border-gray-200">
                     <h3 class="text-xl font-semibold text-gray-900" id="askAIModalLabel">AI对话助手</h3>
@@ -29,8 +29,22 @@
 
                 <!-- 模态框内容 -->
                 <div class="p-0">
+                    <!-- 引用文本显示区域 -->
+                    <div id="referenceTextContainer" class="hidden border-b border-gray-200 bg-gray-50">
+                        <div class="p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-sm font-medium text-gray-700">引用文本</h4>
+                                <button type="button" id="toggleReferenceBtn" class="text-xs text-blue-600 hover:text-blue-800 flex items-center">
+                                    <i class="fas fa-chevron-down mr-1"></i>
+                                    展开
+                                </button>
+                            </div>
+                            <div id="referenceTextContent" class="text-sm text-gray-600 leading-relaxed max-h-20 overflow-hidden transition-all duration-300 ease-in-out"></div>
+                        </div>
+                    </div>
+
                     <!-- 聊天容器 -->
-                    <div id="chatContainer" class="chat-container h-[400px] overflow-y-auto p-4 bg-gray-50">
+                    <div id="chatContainer" class="chat-container h-[300px] overflow-y-auto p-4 bg-gray-50">
                         <!-- 聊天消息将在这里动态添加 -->
                         <div class="message message-assistant">
                             <div class="avatar">
@@ -318,6 +332,58 @@
     .markdown-body a:hover {
         text-decoration: underline;
     }
+
+    /* 引用文本折叠样式 */
+    .max-h-20 {
+        max-height: 5rem; /* 约3行文本 */
+    }
+    
+    .max-h-none {
+        max-height: none;
+    }
+    
+    #referenceTextContent {
+        position: relative;
+    }
+    
+    #referenceTextContent:not(.max-h-none)::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2rem;
+        background: linear-gradient(transparent, #f9fafb);
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .max-w-3xl {
+            max-width: calc(100vw - 1rem);
+        }
+        
+        .chat-container {
+            height: 250px !important;
+        }
+        
+        .p-4 {
+            padding: 0.75rem;
+        }
+        
+        .p-6 {
+            padding: 1rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .max-w-3xl {
+            max-width: calc(100vw - 0.5rem);
+        }
+        
+        .chat-container {
+            height: 200px !important;
+        }
+    }
 </style>
 
 <script>
@@ -446,8 +512,60 @@
         // 设置默认提示
         document.getElementById('query').value = '';
 
+        // 处理引用文本显示
+        handleReferenceText($referTextId);
+
         // 显示模态框
         showAIModal();
+    }
+
+    // 处理引用文本显示
+    function handleReferenceText(referTextId) {
+        const referenceContainer = document.getElementById('referenceTextContainer');
+        const referenceContent = document.getElementById('referenceTextContent');
+        const toggleBtn = document.getElementById('toggleReferenceBtn');
+        
+        if (referTextId && referTextId !== '') {
+            const element = document.getElementById(referTextId);
+            if (element) {
+                let referText = element.value !== undefined ? element.value : 
+                               (element.textContent || element.innerText || "");
+                
+                if (referText.trim()) {
+                    // 显示引用文本容器
+                    referenceContainer.classList.remove('hidden');
+                    
+                    // 设置文本内容
+                    referenceContent.textContent = referText;
+                    
+                    // 初始化为折叠状态（最多3行）
+                    referenceContent.classList.add('max-h-20');
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i>展开';
+                    
+                    // 绑定展开/折叠事件
+                    let isExpanded = false;
+                    toggleBtn.onclick = function() {
+                        if (isExpanded) {
+                            // 折叠
+                            referenceContent.classList.add('max-h-20');
+                            referenceContent.classList.remove('max-h-none');
+                            toggleBtn.innerHTML = '<i class="fas fa-chevron-down mr-1"></i>展开';
+                        } else {
+                            // 展开
+                            referenceContent.classList.remove('max-h-20');
+                            referenceContent.classList.add('max-h-none');
+                            toggleBtn.innerHTML = '<i class="fas fa-chevron-up mr-1"></i>收起';
+                        }
+                        isExpanded = !isExpanded;
+                    };
+                    
+                    return;
+                }
+            }
+        }
+        
+        // 如果没有引用文本，隐藏容器
+        referenceContainer.classList.add('hidden');
     }
 
     // 添加消息到聊天记录
@@ -566,12 +684,23 @@
                     let completeResult = '';
 
                     return new Promise((resolve, reject) => {
+                        let isStreamEnded = false;
+                        
                         function readStream() {
+                            if (isStreamEnded) {
+                                console.log('Stream already ended, skipping read');
+                                return;
+                            }
+                            
+                            console.log('Reading stream...');
                             reader.read().then(({done, value}) => {
                                 if (done) {
+                                    console.log('Stream completed naturally');
+                                    isStreamEnded = true;
                                     resolve(completeResult);
                                     return;
                                 }
+                                console.log('Reading chunk...');
 
                                 buffer += decoder.decode(value, {stream: true});
 
@@ -580,68 +709,111 @@
                                 buffer = lines.pop(); // 保留不完整的行
 
                                 for(const line of lines) {
-                                    if(line.startsWith('data: ') && line !== 'data: [DONE]') {
-                                        const dataStr = line.slice(6);
+                                    console.log('Raw line:', line); // 调试输出
+
+                                    // 跳过空行
+                                    if(!line.trim()) {
+                                        console.log('Skipping empty line');
+                                        continue;
+                                    }
+
+                                    // 只处理data:开头的行
+                                    if(line.startsWith('data: ')) {
+                                        const jsonStr = line.substring(6); // 移除"data: "
+                                        const trimmedJson = jsonStr.trim();
+
+                                        // 处理结束标记
+                                        if(trimmedJson === '[DONE]') {
+                                            console.log('Received DONE signal, ending stream');
+                                            isStreamEnded = true;
+                                            reader.cancel(); // 主动取消reader
+                                            resolve(completeResult);
+                                            return;
+                                        }
+
+                                        // 跳过非JSON行
+                                        if(!trimmedJson.startsWith('{')) {
+                                            console.log('Skipping non-JSON:', trimmedJson);
+                                            continue;
+                                        }
+
                                         try {
-                                            const parsed = JSON.parse(dataStr);
-                                            // 检查是否为流式响应格式
-                                            if (parsed.choices && parsed.choices[0]) {
-                                                const delta = parsed.choices[0].delta;
-                                                let content = "";
+                                            const data = JSON.parse(trimmedJson);
+                                            console.log('Parsed data:', data);
 
-                                                // 优先使用 reasoning 内容（针对OpenRouter格式）
-                                                if (delta.reasoning && delta.reasoning.trim()) {
-                                                    content = delta.reasoning;
+                                            // 跳过包含usage字段的数据块（统计数据）
+                                            if(data.usage) {
+                                                console.log('Skipping usage data block');
+                                                continue;
+                                            }
+
+                                            // 提取内容
+                                            if(data.choices && data.choices[0] && data.choices[0].delta) {
+                                                const delta = data.choices[0].delta;
+
+                                                // 优先使用reasoning
+                                                if(delta.reasoning !== undefined && delta.reasoning !== null) {
+                                                    const text = String(delta.reasoning);
+                                                    if(text.trim()) {
+                                                        completeResult += text;
+                                                        console.log('Added reasoning:', text);
+                                                    }
                                                 }
-                                                // 其次使用 content 内容（针对OpenAI格式）
-                                                else if (delta.content && delta.content.trim()) {
-                                                    content = delta.content;
+                                                // 其次使用content
+                                                else if(delta.content !== undefined && delta.content !== null) {
+                                                    const text = String(delta.content);
+                                                    if(text.trim()) {
+                                                        completeResult += text;
+                                                        console.log('Added content:', text);
+                                                    }
                                                 }
 
-                                                // 如果有内容则处理
-                                                if (content) {
-                                                    completeResult += content;
-                                                    // 实时更新AI回复
-                                                    if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
-                                                        chatMessages[chatMessages.length - 1].content = completeResult;
+                                                // 更新显示
+                                                if(completeResult && chatMessages.length > 0) {
+                                                    const lastMsg = chatMessages[chatMessages.length - 1];
+                                                    if(lastMsg.role === 'assistant') {
+                                                        lastMsg.content = completeResult;
                                                         updateChatDisplay();
                                                     }
                                                 }
                                             }
-                                            else if (parsed.usage) {
-                                                continue; // 忽略usage信息
-                                            }
-                                            else {
-                                                // 处理非标准格式
-                                                if(dataStr.trim()) {
-                                                    completeResult += dataStr;
-                                                    if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
-                                                        chatMessages[chatMessages.length - 1].content = completeResult;
-                                                        updateChatDisplay();
-                                                    }
-                                                }
-                                            }
-                                        } catch (e) {
-                                            console.error('Error parsing JSON:', e);
-                                            if(dataStr.trim()) {
-                                                if(dataStr.trim() !== '[DONE]' && dataStr.trim() !== '') {
-                                                    completeResult += dataStr;
-                                                    if (chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant') {
-                                                        chatMessages[chatMessages.length - 1].content = completeResult;
-                                                        updateChatDisplay();
-                                                    }
-                                                }
-                                            }
+                                        } catch(e) {
+                                            console.error('Parse error:', e, 'on:', trimmedJson);
                                         }
                                     }
                                 }
 
-                                readStream();
-                            }).catch(reject);
+                                // 只有在流未结束时才继续读取
+                                if (!isStreamEnded) {
+                                    readStream();
+                                }
+                            }).catch(error => {
+                                console.error('Stream read error:', error);
+                                isStreamEnded = true;
+                                
+                                // 给用户显示流式处理错误
+                                const streamErrorMessage = '❌ 流式响应处理失败\\n\\n错误详情：' + error.message + '\\n\\n可能原因：\\n• 网络连接中断\\n• 服务器提前关闭连接\\n• 响应格式异常\\n\\n建议操作：\\n1. 检查网络连接\\n2. 重新发送请求\\n3. 联系技术支持';
+                                
+                                // 更新最后一条AI消息或添加新消息
+                                if (chatMessages.length > 0) {
+                                    const lastMsg = chatMessages[chatMessages.length - 1];
+                                    if (lastMsg.role === 'assistant') {
+                                        lastMsg.content += '\\n\\n' + streamErrorMessage;
+                                        updateChatDisplay();
+                                    } else {
+                                        addMessage('assistant', streamErrorMessage);
+                                    }
+                                } else {
+                                    addMessage('assistant', streamErrorMessage);
+                                }
+                                
+                                reject(error);
+                            });
                         }
                         readStream();
                     });
                 } else {
+                    console.log('Response is not a stream');
                     return response.text();
                 }
             })
@@ -654,13 +826,55 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                const errorMessage = error.name === 'ReferenceError' && error.message.includes('response')
-                    ? 'AI回复失败: 网络请求错误，请检查网络连接'
-                    : 'AI回复失败: ' + error.message +
-                    '\n\n请检查：\n1. 是否已配置LLM提供商\n2. 是否有可用的模型\n3. 凭据是否有效';
+                
+                // 构建用户友好的错误消息
+                let userFriendlyMessage = '';
+                
+                if (error.name === 'ReferenceError' && error.message.includes('response')) {
+                    userFriendlyMessage = '❌ AI回复失败\\n\\n可能的原因：\\n• 网络连接不稳定\\n• 服务器无响应\\n\\n建议操作：\\n1. 检查网络连接\\n2. 刷新页面重试\\n3. 稍后再试';
+                } else if (error.message.includes('HTTP error')) {
+                    const statusCode = error.message.match(/status: (\\d+)/);
+                    const code = statusCode ? statusCode[1] : 'unknown';
+                    
+                    switch(code) {
+                        case '401':
+                            userFriendlyMessage = '❌ 认证失败\\n\\n可能的原因：\\n• API密钥无效或已过期\\n• 凭据配置错误\\n\\n建议操作：\\n1. 检查LLM提供商凭据设置\\n2. 重新配置API密钥\\n3. 联系管理员确认权限';
+                            break;
+                        case '403':
+                            userFriendlyMessage = '❌ 权限不足\\n\\n可能的原因：\\n• 当前账户无权访问此模型\\n• API调用配额已用完\\n\\n建议操作：\\n1. 检查账户权限\\n2. 确认API使用额度\\n3. 升级服务套餐';
+                            break;
+                        case '429':
+                            userFriendlyMessage = '❌ 请求过于频繁\\n\\n可能的原因：\\n• 超出API调用频率限制\\n• 并发请求数过多\\n\\n建议操作：\\n1. 等待1-2分钟后再试\\n2. 减少连续请求次数\\n3. 检查服务商限流策略';
+                            break;
+                        case '500':
+                        case '502':
+                        case '503':
+                            userFriendlyMessage = '❌ 服务暂时不可用 (' + code + ')\\n\\n可能的原因：\\n• LLM服务正在维护\\n• 服务器负载过高\\n• 网络连接问题\\n\\n建议操作：\\n1. 稍后再试\\n2. 检查服务商状态页面\\n3. 联系技术支持';
+                            break;
+                        default:
+                            userFriendlyMessage = '❌ 请求失败 (HTTP ' + code + ')\\n\\n' + error.message + '\\n\\n建议操作：\\n1. 检查网络连接\\n2. 确认API配置正确\\n3. 查看系统日志获取详细信息';
+                    }
+                } else if (error.message.includes('timeout') || error.message.includes('超时')) {
+                    userFriendlyMessage = '❌ 请求超时\\n\\n可能的原因：\\n• 网络延迟过高\\n• LLM服务响应缓慢\\n• 请求数据量过大\\n\\n建议操作：\\n1. 检查网络状况\\n2. 简化输入内容\\n3. 稍后再试';
+                } else if (error.message.includes('未找到有效的API凭据') || error.message.includes('凭据')) {
+                    userFriendlyMessage = '❌ API凭据配置错误\\n\\n请检查：\\n1. 是否已配置LLM提供商\\n2. API密钥是否正确有效\\n3. 凭据是否已激活\\n\\n建议操作：\\n1. 进入系统设置配置凭据\\n2. 联系管理员确认权限\\n3. 检查凭据有效期';
+                } else if (error.message.includes('未找到有效的模型') || error.message.includes('模型')) {
+                    userFriendlyMessage = '❌ 模型配置错误\\n\\n请检查：\\n1. 当前智能体是否绑定了有效模型\\n2. 模型是否处于激活状态\\n3. 模型是否支持当前功能\\n\\n建议操作：\\n1. 检查智能体配置\\n2. 确认模型可用性\\n3. 联系管理员配置模型';
+                } else {
+                    // 通用错误处理
+                    userFriendlyMessage = '❌ AI回复失败\\n\\n错误详情：' + error.message + '\\n\\n可能的解决方案：\\n1. 检查网络连接是否正常\\n2. 确认LLM提供商配置正确\\n3. 验证API凭据是否有效\\n4. 检查是否有可用的AI模型\\n5. 查看系统日志获取更多信息\\n\\n如果问题持续存在，请联系技术支持。';
+                }
 
+                // 确保错误消息显示给用户
                 if (chatMessages.length === 0 || chatMessages[chatMessages.length - 1].role !== 'assistant') {
-                    addMessage('assistant', errorMessage);
+                    addMessage('assistant', userFriendlyMessage);
+                } else {
+                    // 如果已有AI消息，追加错误信息
+                    const lastMsg = chatMessages[chatMessages.length - 1];
+                    if (lastMsg.role === 'assistant') {
+                        lastMsg.content += '\\n\\n---\\n' + userFriendlyMessage;
+                        updateChatDisplay();
+                    }
                 }
             })
             .finally(() => {
@@ -875,7 +1089,7 @@
             const newX = initialX + dx;
             const newY = initialY + dy;
 
-            floatingWindow.style.transform = `translate3d(${newX}px, ${newY}px, 0)`;
+            floatingWindow.style.transform = 'translate3d(' + newX + 'px, ' + newY + 'px, 0)';
         }
 
         // 监听回车键发送消息

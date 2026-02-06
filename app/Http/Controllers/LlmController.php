@@ -511,6 +511,24 @@ class LlmController extends Controller
                     ->first();
             }
 
+            // 验证提供商URL格式
+            if (!$provider || !$provider->base_url) {
+                Log::error("Provider configuration error", [
+                    'provider' => $provider,
+                    'provider_id' => $provider->id ?? null
+                ]);
+                return response()->json(['error' => '提供商配置错误'], 500);
+            }
+            
+            $cleanBaseUrl = rtrim($provider->base_url, '/');
+            if (!filter_var($cleanBaseUrl, FILTER_VALIDATE_URL)) {
+                Log::error("Invalid provider URL", [
+                    'base_url' => $provider->base_url,
+                    'cleaned_url' => $cleanBaseUrl
+                ]);
+                return response()->json(['error' => '提供商URL格式错误'], 500);
+            }
+
             $systemContent = $agentVersion->system_content;
             if(!empty($referText)) {
                 $systemContent = $systemContent."\n引用文本：\n" .$referText;
@@ -532,6 +550,12 @@ class LlmController extends Controller
                 'stream' => true
             ];
 
+            // 设置流式响应头
+            header('Content-Type: text/event-stream');
+            header('Cache-Control: no-cache');
+            header('Connection: keep-alive');
+            header('X-Accel-Buffering: no'); // 禁用Nginx缓冲
+
             // 先创建对话记录
             $conversation = $this->conversationService->createConversation([
                 'user_id' => $user->id,
@@ -542,9 +566,30 @@ class LlmController extends Controller
                 'answer' => '' // 初始化为空，后续填充
             ]);
 
+            // 记录详细的请求信息
+            Log::info("askAi cURL Request Details:", [
+                'provider_base_url' => $provider->base_url,
+                'full_request_url' => $provider->base_url . "/chat/completions",
+                'request_headers' => [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . substr($credential->api_key, 0, 10) . '...', // 只记录前10位
+                    'Accept: text/event-stream',
+                    'Cache-Control: no-cache',
+                    'Connection: keep-alive'
+                ],
+                'request_body' => $requestData,
+                'timeout' => 300
+            ]);
+
             $curl = curl_init();
+            
+            // 启用详细调试信息
+            curl_setopt($curl, CURLOPT_VERBOSE, true);
+            $verbose = fopen('php://temp', 'rw+');
+            curl_setopt($curl, CURLOPT_STDERR, $verbose);
+            
             curl_setopt_array($curl, [
-                CURLOPT_URL => $provider->base_url."/chat/completions",
+                CURLOPT_URL => $provider->base_url . "/chat/completions",
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => json_encode($requestData),
@@ -556,6 +601,13 @@ class LlmController extends Controller
                     'Connection: keep-alive'
                 ],
                 CURLOPT_WRITEFUNCTION => function($ch, $data) use (&$completeAnswer) {
+                    // 记录接收到的数据
+                    Log::debug("cURL WRITEFUNCTION data received:", [
+                        'data_length' => strlen($data),
+                        'data_preview' => substr($data, 0, 200), // 只记录前200字符
+                        'complete_answer_length' => strlen($completeAnswer ?? '')
+                    ]);
+                    
                     // 直接输出原始数据，让前端处理
                     echo $data;
                     ob_flush();
@@ -563,6 +615,10 @@ class LlmController extends Controller
                     return strlen($data);
                 },
                 CURLOPT_HEADERFUNCTION => function($ch, $header) {
+                    // 记录响应头
+                    static $headers = [];
+                    $headers[] = trim($header);
+                    
                     // 转发响应头
                     if (strpos($header, 'HTTP/') !== 0 &&
                         strpos($header, 'Content-Type:') !== 0 &&
@@ -572,33 +628,88 @@ class LlmController extends Controller
                     }
                     return strlen($header);
                 },
-                CURLOPT_TIMEOUT => 300
+                CURLOPT_TIMEOUT => 300,
+                CURLOPT_CONNECTTIMEOUT => 30, // 连接超时
+                CURLOPT_FOLLOWLOCATION => true, // 跟随重定向
+                CURLOPT_MAXREDIRS => 5, // 最大重定向次数
+                CURLOPT_SSL_VERIFYPEER => false, // 禁用SSL证书验证
+                CURLOPT_SSL_VERIFYHOST => false, // 禁用主机验证
+                CURLOPT_CAINFO => null, // 不使用CA证书文件
+                CURLOPT_CAPATH => null, // 不使用CA证书目录
             ]);
 
-            curl_exec($curl);
+            $result = curl_exec($curl);
 
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             $error = curl_error($curl);
+            $errno = curl_errno($curl);
+            $info = curl_getinfo($curl);
+            
+            // 获取调试信息
+            rewind($verbose);
+            $verboseLog = stream_get_contents($verbose);
+            fclose($verbose);
 
-            Log::info("askAi cURL Response:", [
+            Log::info("askAi cURL Response Summary:", [
                 'http_code' => $httpCode,
-                'error' => $error,
-                'request_data' => $requestData
+                'curl_errno' => $errno,
+                'curl_error' => $error,
+                'curl_info' => $info,
+                'result_length' => strlen($result ?? ''),
+                'verbose_log' => $verboseLog
             ]);
 
-            if ($error) {
-                Log::error("askAi cURL Error:", [$error]);
+            if ($error || $errno !== 0) {
+                Log::error("askAi cURL Error Details:", [
+                    'error' => $error,
+                    'errno' => $errno,
+                    'http_code' => $httpCode,
+                    'curl_info' => $info,
+                    'verbose_log' => $verboseLog
+                ]);
+
+                // 根据错误代码提供具体建议
+                $userFriendlyError = '';
+                switch($errno) {
+                    case 77:
+                        $userFriendlyError = 'SSL证书初始化失败，请检查服务器SSL配置或联系管理员';
+                        break;
+                    case 6:
+                        $userFriendlyError = '无法解析主机名，请检查网络连接';
+                        break;
+                    case 7:
+                        $userFriendlyError = '无法连接到服务器，请检查网络或服务器状态';
+                        break;
+                    case 28:
+                        $userFriendlyError = '请求超时，请稍后重试';
+                        break;
+                    default:
+                        $userFriendlyError = '网络连接错误 (errno: ' . $errno . ')';
+                }
 
                 // 更新对话记录，保存错误信息
+                $errorMessage = '发生错误: ' . $userFriendlyError . ' - ' . $error;
                 $this->conversationService->updateConversation($conversation->id, [
-                    'answer' => '发生错误: ' . $error,
-                    'response_data' => ['error' => $error],
+                    'answer' => $errorMessage,
+                    'response_data' => [
+                        'error' => $error,
+                        'errno' => $errno,
+                        'http_code' => $httpCode,
+                        'curl_info' => $info,
+                        'user_friendly_error' => $userFriendlyError
+                    ],
                     'answered_at' => now()
                 ]);
 
-                echo "data: 发生错误: " . $error . "\n\n";
+                echo "data: " . $errorMessage . "\n\n";
                 ob_flush();
                 flush();
+            } elseif ($httpCode >= 400) {
+                Log::warning("askAi HTTP Error Response:", [
+                    'http_code' => $httpCode,
+                    'response_body' => substr($result ?? '', 0, 500),
+                    'curl_info' => $info
+                ]);
             }
 
             curl_close($curl);
@@ -610,13 +721,27 @@ class LlmController extends Controller
 
             exit();
         } catch (\Exception $e) {
-            Log::error("askAi Error:", [$e->getMessage()]);
+            Log::error("askAi Exception Occurred:", [
+                'exception_class' => get_class($e),
+                'exception_message' => $e->getMessage(),
+                'exception_code' => $e->getCode(),
+                'exception_file' => $e->getFile(),
+                'exception_line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user->id ?? null,
+                'session_id' => $sessionId ?? null,
+                'agent_id' => $agent->id ?? null
+            ]);
 
             // 尝试更新对话记录，保存错误信息
             if (isset($conversation)) {
                 $this->conversationService->updateConversation($conversation->id, [
                     'answer' => '发生异常: ' . $e->getMessage(),
-                    'response_data' => ['exception' => $e->getMessage()],
+                    'response_data' => [
+                        'exception' => $e->getMessage(),
+                        'exception_class' => get_class($e),
+                        'exception_trace' => $e->getTraceAsString()
+                    ],
                     'answered_at' => now()
                 ]);
             }
