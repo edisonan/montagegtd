@@ -1354,6 +1354,18 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 确保AI助手模态框初始隐藏
             $('.ai-ask-modal').hide();
+
+            if (localStorage.getItem('scrollToTopAfterMarkAllRead') === 'true') {
+                // 延迟确保DOM渲染完成
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'  // 添加平滑滚动效果
+                    });
+                    localStorage.removeItem('scrollToTopAfterMarkAllRead');
+                    console.log('已滚动到顶部');
+                }, 300);  // 增加延迟时间确保页面完全加载
+            }
         });
 
         $(document).ready(function () {
@@ -1731,9 +1743,11 @@
                         showNotification('设置失败，请重试', 'error');
                     } else {
                         showNotification('全部标记为已读成功', 'success');
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1000);
+                        location.href="";
+                        // localStorage.setItem('scrollToTopAfterMarkAllRead', 'true');
+                        // setTimeout(function() {
+                        //     location.reload();
+                        // }, 1000);
                     }
                 });
             });
