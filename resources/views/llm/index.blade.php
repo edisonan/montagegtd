@@ -56,14 +56,14 @@
         </div>
 
         <!-- 右侧主区域 -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col overflow-hidden">
             <!-- ==================== 状态1：新建对话界面 ==================== -->
-            <div id="initial-mode" class="flex-1 flex flex-col bg-gray-50">
+            <div id="initial-mode" class="flex-1 flex flex-col bg-gray-50 overflow-hidden">
                 <!-- 顶部留空 -->
                 <div class="h-4 bg-white"></div>
 
                 <!-- 主内容区 -->
-                <div class="flex-1 bg-white flex flex-col items-center justify-center">
+                <div class="flex-1 bg-white flex flex-col items-center justify-center overflow-auto">
                     <div class="max-w-2xl w-full text-center">
                         <!-- 欢迎语 -->
                         <div class="mb-10">
@@ -74,7 +74,7 @@
                 </div>
 
                 <!-- 底部输入区域 -->
-                <div class="bg-white">
+                <div class="bg-white border-t border-gray-200">
                     <div class="max-w-3xl mx-auto p-4">
                         <!-- 输入框容器 -->
                         <div class="relative bg-white rounded-xl border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all">
@@ -130,9 +130,9 @@
             </div>
 
             <!-- ==================== 状态2：聊天界面 ==================== -->
-            <div id="chat-mode" class="llm-hidden flex-1 flex flex-col">
+            <div id="chat-mode" class="llm-hidden flex-1 flex flex-col overflow-hidden">
                 <!-- 会话标题栏 -->
-                <div class="border-b border-gray-200 bg-white px-6 py-3">
+                <div class="border-b border-gray-200 bg-white px-6 py-3 shrink-0">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
                             <div class="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center">
@@ -178,14 +178,14 @@
                 </div>
 
                 <!-- 消息列表 -->
-                <div class="flex-1 overflow-hidden  bg-white ">
-                    <div id="messages-list" class="h-full overflow-y-auto p-4 space-y-4">
+                <div class="flex-1 overflow-hidden bg-white">
+                    <div id="messages-list" class="h-full overflow-y-auto p-4 space-y-4 custom-scrollbar">
                         <!-- 消息会动态插入到这里 -->
                     </div>
                 </div>
 
-                <!-- 底部输入区 -->
-                <div class=" bg-white">
+                <!-- 底部输入区 - 固定 -->
+                <div class="bg-white border-t border-gray-200 shrink-0">
                     <div class="max-w-3xl mx-auto p-4">
                         <div class="relative bg-white rounded-xl border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                         <textarea
@@ -367,7 +367,7 @@
                     }
                     return;
                 }
-                
+
                 // 处理固定按钮点击
                 const pinBtn = e.target.closest('.session-pin-btn');
                 if (pinBtn) {
@@ -798,7 +798,7 @@
             try {
                 // 显示加载状态
                 showSessionLoading();
-                
+
                 const response = await fetch(`/llm/sessions/${sessionId}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -827,19 +827,19 @@
 
                     // 清空消息列表并加载历史消息
                     document.getElementById('messages-list').innerHTML = '';
-                    
+
                     if (result.data.messages && result.data.messages.length > 0) {
                         // 逐条添加历史消息，保持时间顺序
                         for (let i = 0; i < result.data.messages.length; i++) {
                             const msg = result.data.messages[i];
                             addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
-                            
+
                             // 添加小延迟以获得更好的视觉效果
                             if (i < result.data.messages.length - 1) {
                                 await new Promise(resolve => setTimeout(resolve, 50));
                             }
                         }
-                        
+
                         showToast(`已加载 ${result.data.messages.length} 条历史消息`, 'success');
                     } else {
                         // 没有历史消息时显示欢迎语
@@ -851,7 +851,7 @@
                     setTimeout(() => {
                         document.getElementById('message-input').focus();
                     }, 100);
-                    
+
                     // 更新会话列表的选中状态
                     updateSessionActiveState(sessionId);
                 }
@@ -867,28 +867,32 @@
         function addMessage(role, content) {
             const messagesList = document.getElementById('messages-list');
             const messageId = 'msg-' + Date.now();
-            const inputContainerWidth = 'max-w-3xl'; // 与输入框完全相同的宽度类
+            const containerClass = 'max-w-3xl mx-auto';
 
             if (role === 'user') {
-                // 用户消息 - 宽度80%，右侧与输入框右侧对齐
+                // 用户消息 - 宽度80%，右侧对齐
                 const userMessageHTML = `
                 <div id="${messageId}" class="flex justify-end mb-4">
-                    <div class="${inputContainerWidth} w-4/5">
-                        <div class="bg-[#00b894] text-white rounded-2xl rounded-br-none px-4 py-3">
-                            <div class="whitespace-pre-wrap break-words">${escapeHtml(content)}</div>
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1 text-right">
-                            ${formatTime(new Date().toISOString())}
+                    <div class="${containerClass} w-full">
+                        <div class="flex justify-end">
+                            <div class="w-4/5 max-w-[80%]">
+                                <div class="bg-[#00b894] text-white rounded-2xl rounded-br-none px-4 py-3">
+                                    <div class="whitespace-pre-wrap break-words">${escapeHtml(content)}</div>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1 text-right">
+                                    ${formatTime(new Date().toISOString())}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
                 messagesList.insertAdjacentHTML('beforeend', userMessageHTML);
             } else {
-                // AI助手消息 - 宽度100%，与输入框完全对齐
+                // AI助手消息 - 宽度100%，左侧与输入框左侧对齐
                 const aiMessageHTML = `
                 <div id="${messageId}" class="flex justify-start mb-4">
-                    <div class="${inputContainerWidth} w-full">
+                    <div class="${containerClass} w-full">
                         <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3">
                             <div class="markdown-content whitespace-pre-wrap break-words">${marked.parse(content)}</div>
                         </div>
@@ -952,7 +956,7 @@
         function likeMessage(messageId) {
             const button = event.currentTarget;
             const icon = button.querySelector('i');
-            
+
             if (icon.classList.contains('fas')) {
                 // 取消点赞
                 icon.classList.remove('fas', 'text-red-500');
@@ -971,9 +975,9 @@
         // 复制消息
         function copyMessage(messageId) {
             const messageElement = document.getElementById(messageId);
-            const contentElement = messageElement.querySelector('.markdown-content') || 
-                                 messageElement.querySelector('.whitespace-pre-wrap');
-            
+            const contentElement = messageElement.querySelector('.markdown-content') ||
+                messageElement.querySelector('.whitespace-pre-wrap');
+
             if (contentElement) {
                 const text = contentElement.innerText || contentElement.textContent;
                 navigator.clipboard.writeText(text).then(() => {
@@ -1011,7 +1015,7 @@
             document.querySelectorAll('.session-item').forEach(item => {
                 item.classList.remove('bg-blue-50', 'border', 'border-blue-200');
             });
-            
+
             // 为当前会话添加选中状态
             const activeSession = document.querySelector(`.session-item[data-session-id="${sessionId}"]`);
             if (activeSession) {
@@ -1093,16 +1097,16 @@
                 // 创建消息元素
                 const messageId = 'ai-msg-' + Date.now();
                 const messagesList = document.getElementById('messages-list');
-                const inputContainerClass = 'max-w-3xl'; // 与输入框完全相同的类名
-                
+                const containerClass = 'max-w-3xl mx-auto';
+
                 messagesList.insertAdjacentHTML('beforeend', `
                 <div id="${messageId}" class="flex justify-start mb-4">
-                    <div class="${inputContainerClass} w-full mx-auto">
+                    <div class="${containerClass} w-full">
                         <!-- 消息内容 -->
                         <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3">
                             <div id="${messageId}-content" class="markdown-content whitespace-pre-wrap break-words"></div>
                         </div>
-                        
+
                         <!-- 消息底部信息 -->
                         <div class="flex items-center justify-between mt-2">
                             <div class="text-xs text-gray-500 flex items-center space-x-1">
@@ -1217,11 +1221,8 @@
 
             messagesList.insertAdjacentHTML('beforeend', `
             <div id="${indicatorId}" class="flex mb-3">
-                <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 flex-shrink-0">
-                    <i class="fas fa-robot text-blue-500 text-xs"></i>
-                </div>
-                <div class="max-w-xl flex-1">
-                    <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-2.5">
+                <div class="max-w-3xl mx-auto w-full">
+                    <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3">
                         <div class="typing-indicator flex items-center space-x-1">
                             <div class="w-2 h-2 bg-gray-300 rounded-full animate-pulse"></div>
                             <div class="w-2 h-2 bg-gray-300 rounded-full animate-pulse delay-150"></div>
@@ -1524,6 +1525,11 @@
             height: 100vh;
         }
 
+        /* 布局优化 */
+        .shrink-0 {
+            flex-shrink: 0;
+        }
+
         /* 按钮样式 */
         .btn {
             padding: 0.375rem 0.75rem;
@@ -1643,20 +1649,21 @@
 
         /* 滚动条 */
         .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
+            background: #f1f1f1;
+            border-radius: 3px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 2px;
+            background: #c1c1c1;
+            border-radius: 3px;
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
+            background: #a8a8a8;
         }
 
         /* 模态框 */
@@ -1774,6 +1781,19 @@
             padding: 0;
         }
 
+        /* 消息气泡优化 */
+        .max-w-3xl {
+            max-width: 48rem;
+        }
+
+        .w-4\/5 {
+            width: 80%;
+        }
+
+        .max-w-\[80\%\] {
+            max-width: 80%;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .w-64 {
@@ -1789,6 +1809,17 @@
 
             .grid-cols-2 {
                 grid-template-columns: 1fr;
+            }
+
+            .max-w-3xl {
+                max-width: 100%;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .w-4\/5, .max-w-\[80\%\] {
+                width: 90%;
+                max-width: 90%;
             }
         }
     </style>
