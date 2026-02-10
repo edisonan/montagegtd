@@ -1,0 +1,107 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Agent 框架命令行工具
+ */
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+class RunAgentCommand extends Command
+{
+    protected static $defaultName = 'agent:run';
+    protected static $defaultDescription = '运行 Agent 任务';
+
+    protected function configure(): void
+    {
+        $this
+            ->addOption('message', 'm', InputOption::VALUE_REQUIRED, '要执行的任务消息')
+            ->addOption('model', null, InputOption::VALUE_OPTIONAL, '使用的模型', 'openai/gpt-4')
+            ->addOption('api-key', null, InputOption::VALUE_OPTIONAL, 'API 密钥')
+            ->addOption('steps', 's', InputOption::VALUE_OPTIONAL, '最大步骤数', 20)
+            ->addOption('workspace', 'w', InputOption::VALUE_OPTIONAL, '工作目录', './workspace');
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+        
+        $message = $input->getOption('message');
+        if (!$message) {
+            $io->error('请提供要执行的任务消息 (--message)');
+            return Command::FAILURE;
+        }
+
+        try {
+            // 创建配置
+            $config = new \App\Agent\Core\Config([
+                'LLM_MODEL' => $input->getOption('model'),
+                'LLM_API_KEY' => $input->getOption('api-key') ?: getenv('OPENAI_API_KEY'),
+                'AGENT_MAX_STEPS' => (int)$input->getOption('steps'),
+                'AGENT_WORKSPACE_DIR' => $input->getOption('workspace')
+            ]);
+
+            // 创建 LLM 客户端
+            $llmClient = new \App\Agent\Core\LLM\Client($config->getLlmConfig());
+
+            // 创建工具
+            $tools = [
+                new \App\Agent\Tools\ReadFileTool($config->get('AGENT_WORKSPACE_DIR')),
+                new \App\Agent\Tools\WriteFileTool($config->get('AGENT_WORKSPACE_DIR')),
+                new \App\Agent\Tools\BashTool($config->get('AGENT_WORKSPACE_DIR'))
+            ];
+
+            // 创建 Agent
+            $agent = new \App\Agent\Core\Agent($llmClient, $config, $tools);
+
+            // 添加进度事件
+            $agent->on('step_start', function ($event, $data) use ($io) {
+                $io->writeln("<info>[步骤 {$data['step']}]</info> 开始执行...");
+            });
+
+            $agent->on('llm_response', function ($event, $data) use ($io) {
+                if ($data['has_tool_calls']) {
+                    $io->writeln("<comment>[LLM]</comment> 检测到 {$data['tool_count']} 个工具调用");
+                }
+            });
+
+            // 执行任务
+            $io->writeln("<fg=green>🚀 开始执行任务:</> {$message}");
+            $io->writeln('');
+
+            $result = $agent->run($message);
+
+            $io->writeln('');
+            $io->section('执行结果');
+            $io->writeln($result);
+
+            // 显示统计信息
+            $stats = $agent->getStats();
+            $io->section('执行统计');
+            $io->listing([
+                "总步骤数: {$stats['current_step']}",
+                "总 Token 数: {$stats['total_tokens']}",
+                "输入 Token: {$stats['total_input_tokens']}",
+                "输出 Token: {$stats['total_output_tokens']}",
+                "使用工具数: {$stats['tool_count']}"
+            ]);
+
+            return Command::SUCCESS;
+
+        } catch (Exception $e) {
+            $io->error("执行失败: " . $e->getMessage());
+            return Command::FAILURE;
+        }
+    }
+}
+
+$app = new Application('PHP Agent Framework', '0.1.0');
+$app->add(new RunAgentCommand());
+$app->run();
