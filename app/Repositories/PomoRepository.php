@@ -20,13 +20,31 @@ class PomoRepository {
 	/**
 	 * 根据状态获取该用户番茄列表
 	 * 
-	 * @param unknown $userId        	
-	 * @param unknown $status        	
+	 * @param unknown $userId         
+	 * @param unknown $status         
 	 * @return unknown
 	 */
 	public function getUserListByStatus($userId, $status) {
 		$pomos = Pomo::where ( 'user_id', $userId )->where ( 'status', $status )->orderBy ( 'id', 'desc' );
 		return $pomos->paginate ( 50 );
+	}
+		
+	/**
+	 * 根据状态获取该用户番茄列表(支持分页参数)
+	 * 
+	 * @param unknown $userId
+	 * @param unknown $status
+	 * @return unknown
+	 */
+	public function getPomoListWithPagination($filters = [], $pageSize = 10) {
+		$pomos = Pomo::orderBy ( 'id', 'desc' );
+        if (isset($filters['user_id'])){
+            $pomos = $pomos->where ( 'user_id', $filters['user_id'] );
+        }
+        if (isset($filters['status'])){
+            $pomos = $pomos->where ( 'status', $filters['status'] );
+        }
+		return $pomos->paginate ($pageSize);
 	}
 	
 	/**

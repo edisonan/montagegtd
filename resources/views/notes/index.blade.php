@@ -1,329 +1,772 @@
 @extends('layouts.app')
 
+@section('title', '记录想法 - 蒙太奇')
+@section('description', '记录和分享您的思考、笔记和灵感，支持Markdown、语音、图片多种形式')
+
 @section('content')
     @include('components.ai-ask-modal')
+
+    <!-- 引入Markdown编辑器 -->
+    <link href="https://unpkg.com/easymde/dist/easymde.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <script src="/js/marked.min.js"></script>
+
     <style>
-        /* ================== 基础风格 ================== */
-        body {
-            background: #fdfdfd;
-            font-family: 'Noto Sans', Arial, sans-serif;
-            color: #4a4a4a;
+        /* Markdown编辑器样式 */
+        .editor-toolbar {
+            border: 1px solid var(--gray-200) !important;
+            border-bottom: none !important;
+            border-radius: 8px 8px 0 0;
+            background: var(--gray-50) !important;
+            opacity: 1 !important;
         }
 
-        .container {
-            max-width: 1140px;
+        .editor-toolbar button {
+            color: var(--gray-600) !important;
+            border: none !important;
+            background: transparent !important;
         }
 
-        /* ================== 笔记创建区 ================== */
-        .card.note-card {
-            margin-bottom: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            padding: 20px;
+        .editor-toolbar button:hover {
+            color: var(--primary-color) !important;
+            background: var(--gray-100) !important;
         }
 
-        .note-card textarea {
-            width: 100%;
-            resize: vertical;
-            min-height: 120px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 10px;
+        .editor-toolbar button.active {
+            color: var(--primary-color) !important;
+            background: var(--gray-200) !important;
         }
 
-        .note-tags {
-            margin-top: 10px;
-        }
-
-        .note-tags .tag {
-            display: inline-block;
-            background: #e6f5ea;
-            color: #39b54a;
-            padding: 5px 10px;
-            margin: 3px 5px 3px 0;
-            border-radius: 20px;
-            cursor: pointer;
+        .CodeMirror {
+            border: 1px solid var(--gray-200) !important;
+            border-radius: 0 0 8px 8px;
+            font-family: 'Inter', 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
             font-size: 14px;
-            transition: all 0.2s;
+            line-height: 1.6;
+            min-height: 300px;
+            background: white !important;
         }
 
-        .note-tags .tag:hover {
-            background: #39b54a;
-            color: #fff;
+        .CodeMirror-focused {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1) !important;
         }
 
+        .editor-preview {
+            background: white !important;
+            border: 1px solid var(--gray-200) !important;
+            border-radius: 8px !important;
+            padding: 20px !important;
+        }
+
+        .editor-preview-side {
+            border-left: 1px solid var(--gray-200) !important;
+        }
+
+        /* 录音相关样式 - 恢复以前的样式 */
         .audio-controls {
-            margin-top: 10px;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
         }
 
         .audio-controls button {
-            background: #39b54a;
-            color: #fff;
-            border: none;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 18px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            color: white;
+            font-size: 18px;
         }
 
-        .audio-controls button#stop {
-            background: #e74c3c;
+        .audio-controls #start-record {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .audio-controls #start-record:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .audio-controls #start-record:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .audio-controls #stop-record {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .audio-controls #stop-record:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .audio-controls #stop-record:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            opacity: 0.6;
         }
 
         .audio-timer {
-            margin-left: 10px;
             font-size: 14px;
-            color: #666;
-            display: inline-block;
-            vertical-align: middle;
+            font-weight: 600;
+            color: var(--gray-700);
+            background: var(--gray-100);
+            padding: 8px 16px;
+            border-radius: 20px;
+            min-width: 80px;
+            text-align: center;
         }
 
-        .audio-controls button:hover {
-            transform: scale(1.1);
+        .audio-recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            margin-top: 12px;
         }
 
-        #audio-container audio {
-            display: block;
-            margin-top: 10px;
-            width: 100%;
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
         }
 
-        /* ================== 发布按钮 ================== */
-        .publish-btns {
-            margin-top: 15px;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
-        .publish-btns button {
-            border-radius: 6px;
-            padding: 8px 18px;
-            font-size: 15px;
+        /* 笔记标签 */
+        .note-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .tag-badge {
+            padding: 6px 12px;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border-radius: 20px;
+            font-size: 13px;
             font-weight: 500;
-            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s ease;
         }
 
-        .publish-btns button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .tag-badge:hover {
+            background: var(--gray-200);
+            transform: translateY(-1px);
+            border-color: var(--gray-300);
         }
 
-        /* ================== 笔记列表 ================== */
-        .card.note-list-card {
+        .tag-badge.active {
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* 笔记卡片 */
+        .note-card {
+            transition: all 0.2s ease;
+            border: 1px solid var(--gray-200);
+            margin-bottom: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            margin-bottom: 15px;
-            padding: 15px;
-            position: relative;
-            transition: all 0.2s;
+            overflow: hidden;
+            background: white;
         }
 
-        .card.note-list-card:hover {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        .note-card:hover {
+            border-color: var(--gray-300);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
         }
 
         .note-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--gray-100);
+            background: var(--gray-50);
         }
 
-        .note-header .user-info {
+        .user-info {
             display: flex;
             align-items: center;
+            gap: 12px;
         }
 
-        .note-header img {
-            width: 35px;
-            height: 35px;
+        .user-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            margin-right: 10px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .note-status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-private {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-public {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
         }
 
         .note-time {
-            font-size: 0.85rem;
-            color: #888;
-        }
-
-        .note-status {
-            font-weight: 500;
-            font-size: 0.85rem;
-            margin-left: 10px;
-        }
-
-        .note-body {
-            font-size: 16px;
-            margin-top: 5px;
-            line-height: 1.6;
-        }
-
-        .note-body img {
-            max-height: 150px;
-            border-radius: 8px;
-            margin-top: 10px;
+            font-size: 13px;
+            color: var(--gray-500);
         }
 
         .note-operations {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .note-operations i {
-            font-size: 1.4rem;
-            margin-left: 10px;
+        .operation-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500);
+            background: transparent;
+            border: none;
             cursor: pointer;
-            color: #555;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
-        .note-operations i:hover {
-            color: #39b54a;
+        .operation-btn:hover {
+            background: var(--gray-100);
+            color: var(--gray-700);
         }
 
+        .operation-btn.edit:hover {
+            color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .operation-btn.delete:hover {
+            color: var(--danger-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .operation-btn.like:hover {
+            color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .operation-btn.ai:hover {
+            color: #8a6cff;
+            background: rgba(138, 108, 255, 0.1);
+        }
+
+        /* 笔记内容区域 */
         .note-body {
-            font-size: 16px;
-            margin-top: 5px;
-            line-height: 1.6;
-            transition: max-height 0.3s ease-in-out;
+            padding: 24px;
         }
 
-        .note-body.has-collapse {
+        .note-content {
+            line-height: 1.8;
+            color: var(--gray-800);
+        }
+
+        .note-content.collapsed {
             max-height: 200px;
             overflow: hidden;
             position: relative;
             cursor: pointer;
-            transition: max-height 0.3s ease-in-out;
         }
 
-        .note-body.has-collapse::after {
-            content: '﹀';
+        .note-content.collapsed::after {
+            content: '';
             position: absolute;
             bottom: 0;
             left: 0;
-            width: 100%;
+            right: 0;
             height: 60px;
-            background: linear-gradient(transparent, #fdfdfd);
-            text-align: center;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 10px;
-            color: #88c888;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.2em;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.9));
+            pointer-events: none;
         }
 
-        .note-body.has-collapse:hover::after {
-            background: linear-gradient(transparent, #f0f0f0);
-            color: #66b266;
-        }
-
-        .note-body.expanded {
-            max-height: none;
-            overflow: visible;
-        }
-
-        .note-body.expanded::after {
-            content: '︿';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 40px;
-            text-align: center;
+        .expand-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 5px 0;
-            color: #88c888;
-            font-weight: bold;
+            padding: 8px 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-top: 16px;
+            color: var(--gray-600);
+            font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            background: #f8f8f8;
-            transition: all 0.3s ease;
-            font-size: 1.2em;
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s ease;
         }
 
-        .note-body.expanded:hover::after {
-            background: #e8e8e8;
-            color: #66b266;
+        .expand-btn:hover {
+            background: var(--gray-100);
+            border-color: var(--gray-300);
         }
 
-        /* ================== 图片缩略图 ================== */
-        .note-body img.thumbnail {
-            max-height: 100px;
+        .expand-btn i {
+            margin-left: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .note-content.expanded .expand-btn i {
+            transform: rotate(180deg);
+        }
+
+        /* Markdown内容样式 */
+        .markdown-content {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3,
+        .markdown-content h4 {
+            color: var(--gray-900);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .markdown-content h1 { font-size: 1.875rem; }
+        .markdown-content h2 { font-size: 1.5rem; }
+        .markdown-content h3 { font-size: 1.25rem; }
+        .markdown-content h4 { font-size: 1.125rem; }
+
+        .markdown-content p {
+            margin: 1em 0;
+            line-height: 1.8;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            padding-left: 1.5em;
+            margin: 1em 0;
+        }
+
+        .markdown-content li {
+            margin: 0.5em 0;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            margin: 1.5em 0;
+            padding: 0.5em 1em;
+            background: var(--gray-50);
+            border-radius: 0 8px 8px 0;
+            color: var(--gray-700);
+        }
+
+        .markdown-content code {
+            background: var(--gray-100);
+            color: var(--gray-800);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .markdown-content pre {
+            background: var(--gray-900);
+            color: var(--gray-100);
+            padding: 1.25em;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5em 0;
+            border: 1px solid var(--gray-800);
+        }
+
+        .markdown-content pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            border: 1px solid var(--gray-200);
+        }
+
+        .markdown-content th,
+        .markdown-content td {
+            padding: 0.75em 1em;
+            border: 1px solid var(--gray-200);
+            text-align: left;
+        }
+
+        .markdown-content th {
+            background: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1.5em 0;
+            border: 1px solid var(--gray-200);
+        }
+
+        /* 媒体内容 */
+        .note-media {
+            margin: 20px 0;
+        }
+
+        .audio-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .audio-player-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .audio-player-btn:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .audio-duration {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-left: auto;
+        }
+
+        /* AI助手按钮 */
+        .ai-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .ai-action-btn {
+            padding: 6px 12px;
+            background: rgba(138, 108, 255, 0.1);
+            color: #8a6cff;
+            border: 1px solid rgba(138, 108, 255, 0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ai-action-btn:hover {
+            background: rgba(138, 108, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* 操作区域 */
+        .publish-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-top: 1px solid var(--gray-100);
+            background: var(--gray-50);
+        }
+
+        .ai-assist-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+
+        .ai-assist-btn:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            transform: translateY(-1px);
+        }
+
+        /* 标签过滤 */
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .filter-tag {
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid var(--gray-300);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tag:hover {
+            background: var(--gray-100);
+            border-color: var(--gray-400);
+        }
+
+        .filter-tag.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }
     </style>
 
     <script src="/js/recorder/recorder.js"></script>
     <script>
-        function submitProcess(status) {
-            document.getElementById('status_id').value = status;
-            document.getElementById('add_note_form').submit();
+        // 全局变量 - 恢复以前的录音变量
+        let recorder = null;
+        let timerInterval = null;
+        let startTime = null;
+        let isRecording = false;
+
+        // 初始化Markdown编辑器
+        let easymde = null;
+
+        function initMarkdownEditor() {
+            easymde = new EasyMDE({
+                element: document.getElementById('markdown-editor'),
+                spellChecker: false,
+                status: false,
+                autosave: {
+                    enabled: false
+                },
+                placeholder: '使用Markdown记录您的想法、灵感和笔记...',
+                renderingConfig: {
+                    singleLineBreaks: false,
+                    codeSyntaxHighlighting: true,
+                },
+                previewClass: ['editor-preview', 'markdown-content'],
+                toolbar: [
+                    'heading', 'bold', 'italic', 'strikethrough', '|',
+                    'quote', 'unordered-list', 'ordered-list', '|',
+                    'link', 'image', 'code',
+                    'preview', 'side-by-side', 'fullscreen', '|',
+                    {
+                        name: "ai-assist",
+                        action: function() {
+                            openAskAIModal('markdown-editor', 'markdown-editor', '请帮我优化这段Markdown内容');
+                        },
+                        className: "fas fa-robot",
+                        title: "AI助手"
+                    }
+                ],
+                sideBySideFullscreen: false,
+                minHeight: '30px',
+                maxHeight: '300px',
+                forceSync: true
+            });
+
+            // 监听编辑器内容变化
+            easymde.codemirror.on('change', function() {
+                updateCharCount();
+            });
+
+            // 初始加载内容
+            @if(isset($add_content) && $add_content)
+            easymde.value(`{{ $add_content }}`);
+            @endif
         }
 
-        function addContent(content) {
-            let note_name = document.getElementById('note-name');
-            if(content === 'code') {
-                note_name.value += "\n<code>\n</code>";
-            } else {
-                note_name.value += content;
+        // 更新字符计数
+        function updateCharCount() {
+            const content = easymde ? easymde.value() : '';
+            const count = content.length;
+            const counter = document.getElementById('char-count');
+
+            if (counter) {
+                counter.textContent = `${count}/10000`;
+                if (count > 10000) {
+                    counter.style.color = 'var(--danger-color)';
+                } else if (count > 9000) {
+                    counter.style.color = 'var(--warning-color)';
+                } else {
+                    counter.style.color = 'var(--gray-400)';
+                }
             }
         }
 
-        window.onload = function () {
-            let startBtn = document.getElementById('start');
-            let stopBtn = document.getElementById('stop');
-            let container = document.getElementById('audio-container');
-            let timerDisplay = document.getElementById('audio-timer');
+        // 添加内容到编辑器
+        function addContent(type, content) {
+            if (!easymde) return;
 
-            let startTime;
-            let timerInterval;
+            switch(type) {
+                case 'tag':
+                    easymde.codemirror.replaceSelection(`#${content}# `);
+                    break;
+                case 'code':
+                    easymde.codemirror.replaceSelection('\n```\n// 在这里输入代码\n```\n');
+                    break;
+                case 'heading':
+                    easymde.codemirror.replaceSelection(`${content} `);
+                    break;
+                case 'list':
+                    easymde.codemirror.replaceSelection(`- ${content}\n`);
+                    break;
+            }
 
-            let recorder = new Recorder({
-                sampleRate: 44100,
-                bitRate: 128,
-                success: function () { startBtn.disabled = false; },
-                error: function () { startBtn.value = '录音不支持'; },
-                fix: function () { startBtn.value = '录音不支持'; }
-            });
+            easymde.codemirror.focus();
+        }
 
-            startBtn.addEventListener('click', function () {
-                this.disabled = true;
-                stopBtn.disabled = false;
-                startBtn.style.display = 'none';
-                stopBtn.style.display = 'inline-block';
+        // ================== 恢复以前的录音功能 ==================
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
 
-                // 开始计时
-                startTime = new Date();
-                timerDisplay.textContent = '00:00';
-                timerInterval = setInterval(function() {
-                    let currentTime = new Date();
-                    let elapsedTime = Math.floor((currentTime - startTime) / 1000);
-                    let minutes = Math.floor(elapsedTime / 60);
-                    let seconds = elapsedTime % 60;
+        function updateTimer() {
+            if (!startTime) return;
 
-                    let formattedTime = ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
-                    timerDisplay.textContent = formattedTime;
-                }, 1000);
+            const currentTime = new Date();
+            const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+            const timerDisplay = document.getElementById('audio-timer');
 
-                let audios = document.querySelectorAll('audio');
-                audios.forEach(a => { if(!a.paused) a.pause(); });
-                recorder.start();
-            });
+            if (timerDisplay) {
+                timerDisplay.textContent = formatTime(elapsedSeconds);
+            }
+        }
 
-            stopBtn.addEventListener('click', function () {
-                this.disabled = true;
-                startBtn.disabled = false;
-                stopBtn.style.display = 'none';
-                startBtn.style.display = 'inline-block';
+        function showRecordingIndicator() {
+            const container = document.getElementById('audio-container');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="audio-recording-indicator" id="recording-indicator">
+                    <div class="pulse-dot"></div>
+                    <span style="color: var(--danger-color); font-weight: 500;">正在录音中...</span>
+                    <span id="audio-timer">00:00</span>
+                </div>
+            `;
+        }
+
+        function hideRecordingIndicator() {
+            const indicator = document.getElementById('recording-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function startRecording() {
+            if (!recorder) {
+                alert('录音功能初始化失败，请刷新页面重试');
+                return;
+            }
+
+            try {
+                // 检查浏览器权限
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function(stream) {
+                        // 开始录音
+                        recorder.start();
+
+                        // 更新UI状态 - 恢复以前的按钮状态
+                        document.getElementById('start-record').disabled = true;
+                        document.getElementById('start-record').style.display = 'none';
+                        document.getElementById('stop-record').disabled = false;
+                        document.getElementById('stop-record').style.display = 'flex';
+
+                        // 开始计时
+                        startTime = new Date();
+                        timerInterval = setInterval(updateTimer, 1000);
+                        isRecording = true;
+
+                        // 显示录音指示器
+                        showRecordingIndicator();
+                    })
+                    .catch(function(err) {
+                        console.error('麦克风权限被拒绝:', err);
+                        alert('需要麦克风权限才能录音。请在浏览器设置中允许麦克风访问。');
+                        resetRecordingState();
+                    });
+            } catch (error) {
+                console.error('录音启动失败:', error);
+                alert('录音功能启动失败，请确保浏览器支持录音功能');
+                resetRecordingState();
+            }
+        }
+
+        function stopRecording() {
+            if (!recorder || !isRecording) return;
+
+            try {
+                // 停止录音
+                recorder.stop();
+                isRecording = false;
 
                 // 停止计时
                 if (timerInterval) {
@@ -331,177 +774,633 @@
                     timerInterval = null;
                 }
 
-                recorder.stop();
-                recorder.getBlob(function (blob) {
-                    if (!document.getElementById('note-name').value.includes("#分享语音#")) {
-                        document.getElementById('note-name').value = "#分享语音#";
-                    }
-
-                    container.innerHTML = '';
-                    let audio = document.createElement('audio');
-                    audio.src = URL.createObjectURL(blob);
-                    audio.controls = true;
-                    container.appendChild(audio);
-
-                    // 上传音频
-                    let fd = new FormData();
-                    let fname = '{{ md5(date('YmdHis').rand(0,99)) }}';
-                    fd.append('fname', fname);
-                    fd.append('file', blob);
-                    fd.append('_token', "{{ csrf_token() }}");
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '{{ url("notes/upload") }}',
-                        data: fd,
-                        processData: false,
-                        contentType: false
-                    }).done(function(data){
-                        let data_arr = JSON.parse(data);
-                        if(data_arr.code == 9999){
-                            document.getElementById('fname').value = fname;
-                        }
-                    });
+                // 获取录音数据
+                recorder.getBlob(function(blob) {
+                    // 处理录音数据
+                    processRecordingBlob(blob);
                 });
+
+                // 隐藏录音指示器
+                hideRecordingIndicator();
+
+            } catch (error) {
+                console.error('停止录音失败:', error);
+                alert('停止录音失败');
+            } finally {
+                resetRecordingState();
+            }
+        }
+
+        function processRecordingBlob(blob) {
+            // 创建音频播放器
+            const container = document.getElementById('audio-container');
+            const audioUrl = URL.createObjectURL(blob);
+            const duration = Math.round(blob.size / (128 * 1000) * 8); // 估算时长
+
+            container.innerHTML = `
+                <div class="audio-player">
+                    <button class="audio-player-btn" onclick="playAudio(this)">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div style="flex: 1">
+                        <div style="font-weight: 500; color: var(--gray-700); margin-bottom: 4px;">录音回放</div>
+                        <div style="font-size: 13px; color: var(--gray-500);">点击播放按钮收听录音</div>
+                    </div>
+                    <div class="audio-duration">${formatTime(duration)}</div>
+                    <audio id="recorded-audio" src="${audioUrl}" preload="metadata"></audio>
+                </div>
+            `;
+
+            // 设置编辑器内容 - 修改为适应Markdown编辑器
+            if (easymde) {
+                const currentValue = easymde.value();
+                if (!currentValue.includes("#分享语音#")) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    easymde.codemirror.replaceSelection(`\n\n#分享语音# (${timestamp})\n\n`);
+                }
+            }
+
+            // 上传音频文件
+            uploadAudioFile(blob);
+        }
+
+        function playAudio(button) {
+            const audio = document.getElementById('recorded-audio');
+            const icon = button.querySelector('i');
+
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-pause';
+                button.onclick = function() { pauseAudio(button); };
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-play';
+                button.onclick = function() { playAudio(button); };
+            }
+        }
+
+        function pauseAudio(button) {
+            const audio = document.getElementById('recorded-audio');
+            const icon = button.querySelector('i');
+
+            audio.pause();
+            icon.className = 'fas fa-play';
+            button.onclick = function() { playAudio(button); };
+        }
+
+        function uploadAudioFile(blob) {
+            const formData = new FormData();
+            const filename = '{{ md5(date('YmdHis').rand(0,99)) }}.mp3';
+
+            formData.append('file', blob, filename);
+            formData.append('_token', "{{ csrf_token() }}");
+
+            $.ajax({
+                url: '{{ url("notes/upload") }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    // 可以在这里显示上传进度
+                }
+            }).done(function(response) {
+                try {
+                    const data = JSON.parse(response);
+                    if (data.code == 9999) {
+                        document.getElementById('fname').value = filename;
+                        showToast('音频上传成功', 'success');
+                    } else {
+                        showToast('音频上传失败: ' + (data.msg || '未知错误'), 'error');
+                    }
+                } catch (e) {
+                    showToast('音频上传失败: 响应格式错误', 'error');
+                }
+            }).fail(function() {
+                showToast('音频上传失败: 网络错误', 'error');
             });
-        };
+        }
+
+        function resetRecordingState() {
+            const startBtn = document.getElementById('start-record');
+            const stopBtn = document.getElementById('stop-record');
+
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.style.display = 'flex';
+            }
+
+            if (stopBtn) {
+                stopBtn.disabled = true;
+                stopBtn.style.display = 'none';
+            }
+
+            startTime = null;
+            isRecording = false;
+        }
+
+        function showToast(message, type = 'info') {
+            // 恢复以前的toast提示
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#4a90e2'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+            `;
+
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Markdown编辑器
+            initMarkdownEditor();
+            updateCharCount();
+
+            // 初始化录音器 - 恢复以前的初始化逻辑
+            try {
+                recorder = new Recorder({
+                    sampleRate: 44100,
+                    bitRate: 128,
+                    success: function() {
+                        console.log('录音器初始化成功');
+                        document.getElementById('start-record').disabled = false;
+                    },
+                    error: function(msg) {
+                        console.error('录音器初始化失败:', msg);
+                        document.getElementById('start-record').disabled = true;
+                        document.getElementById('start-record').innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                        document.getElementById('start-record').title = '录音功能不可用';
+                    }
+                });
+
+                // 绑定按钮事件
+                document.getElementById('start-record').addEventListener('click', startRecording);
+                document.getElementById('stop-record').addEventListener('click', stopRecording);
+
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+            }
+
+            // 检查笔记是否需要折叠
+            document.querySelectorAll('.note-content').forEach(content => {
+                const noteId = content.id.replace('note-content-', '');
+                const lineHeight = parseInt(getComputedStyle(content).lineHeight);
+                const maxLines = 8;
+
+                if (content.scrollHeight > lineHeight * maxLines) {
+                    content.classList.add('collapsed');
+
+                    // 添加展开按钮
+                    const expandBtn = document.createElement('button');
+                    expandBtn.className = 'expand-btn';
+                    expandBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>展开';
+                    expandBtn.onclick = () => toggleNoteExpand(noteId);
+                    content.parentNode.appendChild(expandBtn);
+                }
+            });
+        });
+
+        // 打开AI助手
+        function openNoteAI(noteId, noteContent) {
+            openAskAIModal('note-' + noteId, 'note-content-' + noteId, '请帮我优化这段笔记内容');
+        }
+
+        // 切换笔记展开/折叠
+        function toggleNoteExpand(noteId) {
+            const content = document.getElementById('note-content-' + noteId);
+            const btn = document.querySelector(`#note-${noteId} .expand-btn`);
+
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-chevron-up mr-2"></i>收起';
+                }
+            } else {
+                content.classList.add('collapsed');
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>展开';
+                }
+            }
+        }
+
+        // 复制笔记内容
+        function copyNoteContent(noteId) {
+            const content = document.getElementById('note-content-' + noteId);
+            const text = content.innerText || content.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('笔记内容已复制到剪贴板', 'success');
+            });
+        }
+
+        // 标签过滤
+        function filterNotes(tag) {
+            const currentFilter = document.querySelector('.filter-tag.active');
+            if (currentFilter) currentFilter.classList.remove('active');
+
+            event.target.classList.add('active');
+
+            // 这里可以添加AJAX请求来筛选笔记
+            // 暂时先实现简单的客户端筛选
+            const notes = document.querySelectorAll('.note-card');
+            notes.forEach(note => {
+                const content = note.querySelector('.note-content').innerText;
+                if (tag === 'all' || content.includes(`#${tag}#`)) {
+                    note.style.display = 'block';
+                } else {
+                    note.style.display = 'none';
+                }
+            });
+        }
     </script>
 
-    <div class="container">
-        <!-- ================== 新建笔记 ================== -->
-        <div class="card note-card">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 页面标题 -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">记录想法</h1>
+                    <p class="text-gray-600">使用Markdown记录您的思考、灵感和笔记，支持AI助手优化</p>
+                </div>
+                <a href="{{ url('/notes?view=help') }}" class="btn btn-outline btn-sm" target="_blank">
+                    <i class="fas fa-question-circle mr-2"></i>Markdown帮助
+                </a>
+            </div>
+        </div>
+
+        <!-- 新建笔记卡片 -->
+        <div class="card card-elevated mb-8">
             <form id="add_note_form" action="{{ url('note') }}" method="POST">
-                {{ csrf_field() }}
-                <textarea id="note-name" name="name" placeholder="记录下你的想法...">{{ $add_content }}</textarea>
+                {!! csrf_field() !!}
 
-                <div class="note-tags">
-                    <span class="tag" onclick="addContent('#每日小目标#')">#每日小目标#</span>
-                    <span class="tag" onclick="addContent('#每日总结#')">#每日总结#</span>
-                    <span class="tag" onclick="addContent('#读书笔记#')">#读书笔记#</span>
-                    <span class="tag" onclick="addContent('#分享#')">#分享#</span>
-                    <span class="tag" onclick="addContent('#碎碎念#')">#碎碎念#</span>
-                    <span class="tag" onclick='addContent("code")'>[代码片段]</span>
-                </div>
-
-                <div class="audio-controls">
-                    <button type="button" id="start" disabled title="开始录音"><i class="fa fa-microphone"></i></button>
-                    <button type="button" id="stop" disabled title="停止录音" style="display:none;"><i class="fa fa-stop"></i></button>
-                    <span class="audio-timer" id="audio-timer">00:00</span>
-                </div>
-                <div id="audio-container"></div>
-
-                @if(!empty($add_image))
-                    <div style="margin-top:10px">
-                        <span>预览：</span>
-                        <img src="{{ $add_image }}" alt="preview" height="150px">
-                        <input type="hidden" name="add_image" value="{{ $add_image }}">
+                <div class="p-6">
+                    <!-- Markdown编辑器 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            笔记内容 <span class="text-gray-400 text-xs" id="char-count">0/10000</span>
+                        </label>
+                        <textarea id="markdown-editor" name="name" style="display: none;"></textarea>
                     </div>
-                @endif
 
+                    <!-- 标签快捷输入 -->
+                    <div class="mb-4">
+                        <div class="text-sm font-medium text-gray-700 mb-2">快捷标签</div>
+                        <div class="note-tags">
+                            <div class="tag-badge" onclick="addContent('tag', '每日小目标')">#每日小目标#</div>
+                            <div class="tag-badge" onclick="addContent('tag', '读书笔记')">#读书笔记#</div>
+                            <div class="tag-badge" onclick="addContent('tag', '工作思考')">#工作思考#</div>
+                            <div class="tag-badge" onclick="addContent('tag', '灵感闪现')">#灵感闪现#</div>
+                            <div class="tag-badge" onclick="addContent('tag', '会议记录')">#会议记录#</div>
+                            <div class="tag-badge" onclick="addContent('tag', '项目复盘')">#项目复盘#</div>
+                            <div class="tag-badge" onclick="addContent('code', '')">
+                                <i class="fas fa-code mr-1"></i>代码块
+                            </div>
+                            <div class="tag-badge" onclick="addContent('heading', '##')">
+                                <i class="fas fa-heading mr-1"></i>标题
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 录音功能 - 恢复以前的HTML结构 -->
+                    <div class="mb-6">
+                        <div class="text-sm font-medium text-gray-700 mb-2">语音记录</div>
+                        <div class="audio-controls">
+                            <button type="button" id="start-record" disabled title="开始录音" style="display: flex;">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button type="button" id="stop-record" disabled title="停止录音" style="display:none;">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                        </div>
+                        <!-- 音频容器 -->
+                        <div id="audio-container"></div>
+                    </div>
+
+                    <!-- 图片预览 -->
+                    @if(!empty($add_image))
+                        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-sm font-medium text-gray-700">图片预览</span>
+                                <button type="button" onclick="this.parentElement.parentElement.remove()"
+                                        class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <img src="{{ $add_image }}"
+                                 alt="预览图片"
+                                 class="rounded-lg max-h-[200px] mx-auto">
+                            <input type="hidden" name="add_image" value="{{ $add_image }}">
+                        </div>
+                    @endif
+                </div>
+
+                <!-- 隐藏字段 -->
                 <input type="hidden" name="source_type" value="{{ $source_type }}">
                 <input type="hidden" name="source_id" value="{{ $source_id }}">
                 <input type="hidden" name="fname" id="fname">
-                <input type="hidden" name="status" id="status_id">
+                <input type="hidden" name="status" id="status_id" value="">
 
-                <div class="publish-btns">
-                    <button type="button" class="btn btn-primary" onclick="submitProcess(1)">私密发布</button>
-                    <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">公开发布</button>
-                    <button type="button" class="btn btn-success" onclick="openAskAIModal('note-name', 'note-name')"><small>AI</small></button>
+
+                <!-- 发布操作 -->
+                <div class="publish-actions">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
+                        <span>支持Markdown格式和AI助手优化</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button type="button"
+                                class="btn btn-outline"
+                                onclick="submitProcess(1)">
+                            <i class="fas fa-lock mr-2"></i>私密保存
+                        </button>
+                        <button type="button"
+                                class="btn btn-primary"
+                                onclick="submitProcess(2)">
+                            <i class="fas fa-globe mr-2"></i>公开发布
+                        </button>
+                        <button type="button"
+                                class="btn ai-assist-btn"
+                                onclick="openAskAIModal('markdown-editor', 'markdown-editor', '请帮我优化这段Markdown内容')">
+                            <i class="fas fa-robot mr-2"></i>AI润色
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
 
-        <!-- ================== 笔记列表 ================== -->
+        <!-- 标签过滤 -->
+        <div class="filter-tags">
+            <div class="filter-tag active" onclick="filterNotes('all')">全部笔记</div>
+            <div class="filter-tag" onclick="filterNotes('每日小目标')">每日小目标</div>
+            <div class="filter-tag" onclick="filterNotes('读书笔记')">读书笔记</div>
+            <div class="filter-tag" onclick="filterNotes('工作思考')">工作思考</div>
+            <div class="filter-tag" onclick="filterNotes('灵感闪现')">灵感闪现</div>
+            <div class="filter-tag" onclick="filterNotes('会议记录')">会议记录</div>
+            <div class="filter-tag" onclick="filterNotes('项目复盘')">项目复盘</div>
+        </div>
+
+        <!-- 笔记列表 -->
         @if(count($notes) > 0)
-            <h5 style="margin:15px 0">大家在分享什么</h5>
-            @foreach ($notes as $note)
-                <div class="card note-list-card" id="{{ $note->id }}">
-                    <div class="note-header">
-                        <div class="user-info">
-                            <img src="https://gravatar.loli.net/avatar/{{ md5(strtolower(trim($note->user->email))) }}?s=40">
-                            <strong>{{ $note->user->name }}</strong>
-                            <span class="note-status" style="color: {{ $note->status == 2 ? 'green' : '#f98282' }}">
-                            {{ $note->status == 2 ? '公开' : '仅个人可见' }}
-                        </span>
-                        </div>
-                        <div class="note-time">{{ date('Y-m-d H:i', strtotime($note->created_at)) }}</div>
-                        <div class="note-operations">
-                            @if($note->user_id == Auth::user()->id)
-                                <i class="fa fa-edit" onclick="window.location='{{ url('noteupdate/'.$note->id) }}'"></i>
-                                <i class="fa fa-trash-o delete_note" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" note_type="delete"></i>
-                            @else
-                                <i class="bi-hand-thumbs-up like_note" note_value="{{ $note->id }}" note_token="{{ csrf_token() }}" note_type="like"></i>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="note-body">
-                        @if(!empty($note->record_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-                            <div style="margin-top:5px">语音记录: <a href="{{ url('note/getRecord/'.$note->id) }}">播放🎵</a></div>
-                        @endif
-
-                        @if(!empty($note->image_path) && ($note->user_id == Auth::user()->id  || $note->status == 2))
-                            <a href="{{ $note->image_path }}" target="_blank">
-                                <img src="{{ $note->image_path }}" class="thumbnail">
-                            </a>
-                        @endif
-
-                        {!! App\Http\Utils\CommonUtil::formatContentHtml($note->name) !!}
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900">
+                        <i class="fas fa-comments text-blue-500 mr-2"></i>
+                        笔记列表
+                    </h2>
+                    <div class="text-sm text-gray-500">
+                        共 {{ $notes->total() }} 条笔记
                     </div>
                 </div>
-            @endforeach
-            {!! $notes->links() !!}
+
+                @foreach ($notes as $note)
+                    <div class="note-card" id="note-{{ $note->id }}">
+                        <!-- 笔记头部 -->
+                        <div class="note-header">
+                            <div class="user-info">
+                                <div class="user-avatar" style="background: linear-gradient(135deg, {{ $note->user->color_1 ?? '#4a90e2' }}, {{ $note->user->color_2 ?? '#8a6cff' }})">
+                                    {{ substr($note->user->name, 0, 1) }}
+                                </div>
+                                <div class="user-details">
+                                    <div class="user-name">
+                                        {{ $note->user->name }}
+                                        <span class="note-status-badge {{ $note->status == 2 ? 'status-public' : 'status-private' }}">
+                                            {{ $note->status == 2 ? '公开' : '私密' }}
+                                        </span>
+                                    </div>
+                                    <div class="note-time">
+                                        <i class="far fa-clock mr-1"></i>
+                                        {{ $note->created_at->diffForHumans() }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="note-operations">
+                                <button class="operation-btn ai" onclick="openNoteAI('{{ $note->id }}')" title="AI助手">
+                                    <i class="fas fa-robot"></i>
+                                </button>
+                                <button class="operation-btn" onclick="copyNoteContent('{{ $note->id }}')" title="复制内容">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                @if($note->user_id == Auth::id())
+                                    <button class="operation-btn edit"
+                                            onclick="window.location='{{ url('noteupdate/'.$note->id) }}'"
+                                            title="编辑笔记">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="operation-btn delete delete_note"
+                                            note_value="{{ $note->id }}"
+                                            note_token="{{ csrf_token() }}"
+                                            title="删除笔记">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                @else
+                                    <button class="operation-btn like like_note"
+                                            note_value="{{ $note->id }}"
+                                            note_token="{{ csrf_token() }}"
+                                            title="点赞">
+                                        <i class="far fa-thumbs-up"></i>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- 笔记内容 -->
+                        <div class="note-body">
+                            <!-- 语音记录 -->
+                            @if(!empty($note->record_path) && ($note->user_id == Auth::id() || $note->status == 2))
+                                <div class="note-media">
+                                    <div class="audio-player">
+                                        <button class="audio-player-btn" onclick="playNoteAudio('{{ $note->id }}', this)">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        <div style="flex: 1">
+                                            <div style="font-weight: 500; color: var(--gray-700); margin-bottom: 4px;">语音记录</div>
+                                            <div style="font-size: 13px; color: var(--gray-500);">点击播放收听</div>
+                                        </div>
+                                        <audio id="audio-{{ $note->id }}"
+                                               src="{{ url('note/getRecord/'.$note->id) }}"
+                                               preload="metadata"></audio>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <!-- 图片 -->
+                            @if(!empty($note->image_path) && ($note->user_id == Auth::id() || $note->status == 2))
+                                <div class="note-media">
+                                    <a href="{{ $note->image_path }}" target="_blank">
+                                        <img src="{{ $note->image_path }}"
+                                             alt="笔记图片"
+                                             class="note-image">
+                                    </a>
+                                </div>
+                            @endif
+
+                            <!-- Markdown内容 -->
+                            <div class="note-content markdown-content" id="note-content-{{ $note->id }}">
+                                {!! App\Http\Utils\CommonUtil::formatContentHtml($note->name) !!}
+                            </div>
+
+                            <!-- AI助手操作 -->
+                            <div class="ai-actions">
+                                <button class="ai-action-btn" onclick="openNoteAI('{{ $note->id }}', '{{ addslashes($note->name) }}')">
+                                    <i class="fas fa-robot"></i> AI优化
+                                </button>
+                                <button class="ai-action-btn" onclick="summarizeNote('{{ $note->id }}')">
+                                    <i class="fas fa-file-alt"></i> 总结摘要
+                                </button>
+                                <button class="ai-action-btn" onclick="translateNote('{{ $note->id }}')">
+                                    <i class="fas fa-language"></i> 翻译
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                <!-- 分页 -->
+                @if($notes->hasPages())
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        {{ $notes->links() }}
+                    </div>
+                @endif
+            </div>
+        @else
+            <!-- 空状态 -->
+            <div class="text-center py-16 card">
+                <div class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gray-100 mb-6">
+                    <i class="fas fa-sticky-note text-4xl text-gray-400"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">还没有笔记</h3>
+                <p class="text-gray-600 mb-6">开始记录您的第一个想法吧！</p>
+                <button type="button" class="btn btn-primary" onclick="easymde && easymde.codemirror.focus()">
+                    <i class="fas fa-plus mr-2"></i>
+                    开始记录
+                </button>
+            </div>
         @endif
     </div>
 
     <script>
+        // 提交表单
+        function submitProcess(status) {
+            if (easymde) {
+                document.querySelector('#markdown-editor').value = easymde.value();
+            }
+            document.getElementById('status_id').value = status;
+            document.getElementById('add_note_form').submit();
+        }
+
+        // 播放笔记音频
+        function playNoteAudio(noteId, button) {
+            const audio = document.getElementById('audio-' + noteId);
+            const icon = button.querySelector('i');
+
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-pause';
+                button.onclick = function() { pauseNoteAudio(noteId, button); };
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-play';
+                button.onclick = function() { playNoteAudio(noteId, button); };
+            }
+        }
+
+        function pauseNoteAudio(noteId, button) {
+            const audio = document.getElementById('audio-' + noteId);
+            const icon = button.querySelector('i');
+
+            audio.pause();
+            icon.className = 'fas fa-play';
+            button.onclick = function() { playNoteAudio(noteId, button); };
+        }
+
+        // AI功能
+        function summarizeNote(noteId) {
+            const content = document.getElementById('note-content-' + noteId).innerText;
+            openAskAIModal('note-summary-' + noteId, 'note-content-' + noteId, '请帮我总结这段笔记的主要内容');
+        }
+
+        function translateNote(noteId) {
+            const content = document.getElementById('note-content-' + noteId).innerText;
+            openAskAIModal('note-translate-' + noteId, 'note-content-' + noteId, '请帮我把这段笔记翻译成英文');
+        }
+
+        // 删除笔记
         $(document).ready(function(){
-            $(".delete_note").click(function(){
-                if(!confirm('确认要删除此笔记吗？')) return;
-                let note_id = $(this).attr('note_value');
-                let token = $(this).attr('note_token');
+            $(document).on('click', '.delete_note', function(){
+                if(!confirm('确认要删除此笔记吗？删除后无法恢复。')) return;
+
+                const noteId = $(this).attr('note_value');
+                const token = $(this).attr('note_token');
+
                 $.ajax({
-                    url: "{{ url('note') }}/" + note_id,
+                    url: "{{ url('note') }}/" + noteId,
                     type: 'DELETE',
-                    data: {_token: token, type:'delete'},
-                    success: function(res){
-                        if(res.code == 9999){
-                            $('#' + note_id).remove();
+                    data: {_token: token, type: 'delete'},
+                    success: function(response) {
+                        if (response.code == 9999) {
+                            $('#note-' + noteId).fadeOut(300, function() {
+                                $(this).remove();
+                                showToast('笔记删除成功', 'success');
+                            });
                         } else {
-                            alert('删除失败，请稍后重试');
+                            showToast('删除失败: ' + (response.msg || '未知错误'), 'error');
                         }
+                    },
+                    error: function() {
+                        showToast('网络错误，请稍后重试', 'error');
                     }
                 });
             });
 
-            // 长文本折叠展开
-            $(".note-body").each(function(){
-                var $this = $(this);
+            // 点赞笔记
+            $(document).on('click', '.like_note', function(){
+                const noteId = $(this).attr('note_value');
+                const token = $(this).attr('note_token');
+                const button = $(this);
 
-                // 创建临时元素进行准确测量，确保移除所有可能影响高度的样式
-                var $tempDiv = $this.clone()
-                    .css({
-                        position: 'absolute',
-                        visibility: 'hidden',
-                        'max-height': 'none',
-                        height: 'auto',
-                        overflow: 'visible',
-                        'z-index': '-9999',
-                        top: 0,
-                        left: 0
-                    })
-                    .removeClass('has-collapse')
-                    .removeClass('expanded')
-                    .appendTo('body');
-
-                var contentHeight = $tempDiv.height();
-                $tempDiv.remove();
-
-                // 只有当内容高度超过200px时才添加折叠功能
-                if(contentHeight > 200){
-                    $this.addClass('has-collapse').click(function(){
-                        $(this).toggleClass('has-collapse expanded');
-                    });
-                }
+                $.ajax({
+                    url: "{{ url('note') }}/" + noteId + "/like",
+                    type: 'POST',
+                    data: {_token: token},
+                    beforeSend: function() {
+                        button.prop('disabled', true);
+                    },
+                    success: function(response) {
+                        if (response.code == 9999) {
+                            button.html('<i class="fas fa-thumbs-up"></i>');
+                            button.attr('title', '已点赞');
+                            button.removeClass('like_note');
+                            showToast('点赞成功', 'success');
+                        } else {
+                            showToast('操作失败: ' + (response.msg || '未知错误'), 'error');
+                        }
+                    },
+                    complete: function() {
+                        button.prop('disabled', false);
+                    }
+                });
             });
         });
     </script>

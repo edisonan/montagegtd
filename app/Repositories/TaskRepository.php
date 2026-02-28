@@ -20,8 +20,8 @@ class TaskRepository {
 	/**
 	 * 根据状态获取该用户待办列表
 	 * 
-	 * @param int $userId        	
-	 * @param string $status        	
+	 * @param int $userId         
+	 * @param string $status         
 	 * @return unknown
 	 */
 	public function getUserList($userId, $status = '') {
@@ -30,6 +30,26 @@ class TaskRepository {
 			$tasks->where ( 'status', $status );
 		}
 		return $tasks->paginate ( 50 );
+	}
+		
+	/**
+	 * 根据状态获取该用户待办列表(支持分页参数)
+	 * 
+	 * @param int $userId
+	 * @param string $status
+	 * @param int $page
+	 * @param int $pageSize
+	 * @return unknown
+	 */
+	public function getTaskListWithPagination($filters = [], $pageSize = 10) {
+        $tasks = Task::orderBy ( 'updated_at', 'desc' );
+        if (isset($filters['user_id'])){
+            $tasks = $tasks->where ( 'user_id', $filters['user_id'] );
+        }
+        if (isset($filters['status']) && !empty($filters['status'])){
+            $tasks = $tasks->where ( 'status', $filters['status'] );
+        }
+        return $tasks->paginate ($pageSize);
 	}
 	
 	/**

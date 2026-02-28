@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 
 class CommonUtil
 {
-    public static function page_title($url)
+    public static function pageTitle($url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -37,7 +37,7 @@ class CommonUtil
         return $title;
     }
 
-    public static function iftttnotify($title, $message, $url, $key)
+    public static function iftttNotify($title, $message, $url, $key)
     {
         if (empty ($title) || empty ($message) || empty ($url)) {
             Log::info("params can not empty");
@@ -318,10 +318,10 @@ class CommonUtil
 
     public static function formatContentHtml($content)
     {
-        return CommonUtil::HtmlClose(CommonUtil::stringRemoveXSS($content));
+        return CommonUtil::htmlClose(CommonUtil::strRemoveXSS($content));
     }
 
-    public static function HtmlClose($html)
+    public static function htmlClose($html)
     {
         preg_match_all('#<(?!meta|img|br|hr|inputb)b([a-z]+)(?: .*)?(?<![/|/ ])>#iU', $html, $result);
         $openedtags = $result [1];
@@ -342,7 +342,7 @@ class CommonUtil
         return $html;
     }
 
-    public static function stringRemoveXSS($html)
+    public static function strRemoveXSS($html)
     {
         preg_match_all("/\<([^\<]+)\>/is", $html, $ms);
 
@@ -573,7 +573,7 @@ class CommonUtil
         return $urlArr ['host'];
     }
 
-    public function auto_link_text($text)
+    public function autoLinkText($text)
     {
         $pattern = '#\b(([\w-]+://?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/)))#';
         $callback = create_function('$matches', '
@@ -585,5 +585,12 @@ class CommonUtil
 	   ');
 
         return preg_replace_callback($pattern, $callback, $text);
+    }
+
+    public static function strLimit($string, $limit = 100, $end = '...') {
+        if (mb_strlen($string) <= $limit) {
+            return $string;
+        }
+        return mb_substr($string, 0, $limit) . $end;
     }
 }

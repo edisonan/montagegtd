@@ -1,106 +1,513 @@
 @extends('layouts.app')
 
+@section('title', '技能目标 - 蒙太奇')
+@section('description', '管理您的技能发展目标，制定成长计划，追踪学习进度。')
+
 @section('content')
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 页面标题和操作栏 -->
+        <div class="mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">技能目标管理</h1>
+                    <p class="text-gray-600 mt-1">设定并追踪您的技能成长目标</p>
+                </div>
 
-    <script type="text/javascript">
-        $(document).ready(function () {
+                <a href="{{ url('/index') }}" class="btn btn-secondary self-start">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    返回主页
+                </a>
+            </div>
+        </div>
 
-            $(".delete_goal").click(function () {
-                goal_value = $(this).attr("goal_value");
-                goal_token = $(this).attr("goal_token");
-                goal_type = $(this).attr("goal_type");
-
-                if (goal_type == 'delete' && !confirm("确认要删除此目标咩？")) {
-                    return false;
-                }
-
-                $.ajax({
-                    url: "{{ url('goal') }}" + "/" + goal_value,
-                    type: 'DELETE',
-                    data: {type: goal_type, _token: goal_token},
-                    success: function (result_arr) {
-                        if (result_arr.code != 9999) {
-                            alert('处理失败，请稍后再试');
-                        } else {
-                            $('#' + goal_value).remove();
-                        }
-                    }
-                });
-            });
-        });
-    </script>
-    <div class="container">
-        <!-- Current Goals -->
+        <!-- 成功消息 -->
         @include('common.success')
+
+        <!-- 添加目标表单卡片 -->
+        <div class="card mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">添加新技能</h2>
+                <p class="text-sm text-gray-500 mt-1">设定您想要学习或提升的技能</p>
+            </div>
+
+            <div class="p-6">
+                <!-- 错误消息 -->
+                @include('common.errors')
+
+                <form action="{{ url('goal') }}" method="POST" class="space-y-5">
+                    {!! csrf_field() !!}
+
+                    <!-- 技能名称输入 -->
+                    <div class="space-y-2">
+                        <label for="goal-name" class="block text-sm font-medium text-gray-700">
+                            技能名称
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text"
+                               name="name"
+                               id="goal-name"
+                               value="{{ old('goal') }}"
+                               placeholder="例如：Python编程、摄影技巧、英语口语..."
+                               class="input w-full"
+                               required>
+                        <p class="text-xs text-gray-500">请输入您想要学习或提升的具体技能名称</p>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <div class="pt-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            添加技能目标
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 技能列表卡片 -->
         <div class="card">
-            <div class="card-header">
-                技能列表
-                <div style="float:right">
-                    <a href="{{'/index'}}">[返回]</a>
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800">我的技能列表</h2>
+                        <p class="text-sm text-gray-500 mt-1">共 {{ count($goals) }} 个技能目标</p>
+                    </div>
+
+                    @if(count($goals) > 0)
+                        <span class="text-xs px-3 py-1 bg-blue-100 text-blue-600 rounded-full font-medium">
+                    {{ count($goals) }} 个目标
+                </span>
+                    @endif
                 </div>
             </div>
 
-            <div class="card-body">
-                <!-- Display Validation Errors -->
-            @include('common.errors')
-
-            <!-- New Task Form -->
-                <form action="{{ url('goal') }}" method="POST" class="form-horizontal">
-                {{ csrf_field() }}
-
-                <!-- Task Name -->
-                    <div class="form-group row">
-                        <label for="goal-name" class="col-md-3 control-label">技能名称:</label>
-
-                        <div class="col-md-8">
-                            <input type="text" name="name" id="goal-name" class="form-control"
-                                   value="{{ old('goal') }}">
-                        </div>
-                    </div>
-
-                    <!-- Add Task Button -->
-                    <div class="form-group row">
-                        <div class="col-md-offset-3 col-md-6">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-btn fa-plus"></i>添加！
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-
+            <div class="p-6">
                 @if (count($goals) > 0)
-                    <table class="table table-hover goal-table">
-                        <thead>
-                        <th>&nbsp;</th>
-                        <th>&nbsp;</th>
-                        </thead>
-                        <tbody>
+                    <!-- 技能列表 -->
+                    <div class="space-y-3">
                         @foreach ($goals as $goal)
-                            <tr id="{{$goal->id}}">
-                                <td class="table-text" width="80%">
-                                    <div class="preprepre">
-                                        {{ $goal->name }}
-                                        </pre>
-                                </td>
+                            <div id="{{ $goal->id }}"
+                                 class="goal-item card hover:border-gray-300 transition-colors">
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-4 flex-1 min-w-0">
+                                            <!-- 技能图标 -->
+                                            <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-bullseye text-white"></i>
+                                            </div>
 
-                                <td width="10%" align='right'>
-                                    <a href="{{ url('goal/'.$goal->id)}}" style=""><i class="fa fa-edit"
-                                                                                      style="font-size: 1.5rem;"></i></a>
-                                    <a href="javascript:void(0)" class="delete_goal" task_type="delete"
-                                       task_value="{{ $goal->id }}" goal_token="{{ csrf_token() }}"
-                                       style="cursor:pointer;">
-                                        <i class="fa fa-trash-o" style="font-size: 1.5rem;"></i>
-                                    </a>
-                                </td>
-                            </tr>
+                                            <!-- 技能信息 -->
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="font-medium text-gray-800 text-lg truncate">
+                                                    {{ $goal->name }}
+                                                </h3>
+                                                <div class="flex items-center gap-3 mt-1">
+                                        <span class="text-xs text-gray-500">
+                                            <i class="fas fa-calendar-plus mr-1"></i>
+                                            {{ $goal->created_at->format('Y-m-d') }}
+                                        </span>
+                                                    @if($goal->progress)
+                                                        <div class="flex items-center gap-2">
+                                                            <div class="progress w-20">
+                                                                <div class="progress-bar" style="width: {{ $goal->progress }}%"></div>
+                                                            </div>
+                                                            <span class="text-xs text-gray-600">{{ $goal->progress }}%</span>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <!-- 操作按钮 -->
+                                            <div class="flex items-center gap-2 flex-shrink-0 ml-4">
+                                                <!-- 编辑按钮 -->
+                                                <a href="{{ url('goal/'.$goal->id) }}"
+                                                   class="p-2 text-gray-400 hover:text-blue-500 rounded-lg hover:bg-blue-50 transition-colors"
+                                                   title="编辑技能">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+
+                                                <!-- 删除按钮 -->
+                                                <button type="button"
+                                                        data-goal-id="{{ $goal->id }}"
+                                                        class="delete-goal p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                                                        title="删除技能">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 可选：添加子任务或笔记 -->
+                                    <div class="mt-4 pt-3 border-t border-gray-100 hidden">
+                                        <div class="flex items-center justify-between">
+                                            <div class="text-sm text-gray-500">
+                                                <i class="fas fa-tasks mr-1"></i>
+                                                0 个子任务
+                                            </div>
+                                            <button type="button" class="text-xs text-blue-500 hover:text-blue-600">
+                                                <i class="fas fa-plus mr-1"></i>添加任务
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         @endforeach
-                        </tbody>
-                    </table>
-                    {!! $goals->links() !!}
+                    </div>
+
+                    <!-- 分页 -->
+                    @if($goals->hasPages())
+                        <div class="mt-8 pt-6 border-t border-gray-200">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div class="text-sm text-gray-500">
+                                    显示 {{ $goals->firstItem() }} 到 {{ $goals->lastItem() }} 条，共 {{ $goals->total() }} 条
+                                </div>
+
+                                <div class="flex gap-2">
+                                    @if($goals->onFirstPage())
+                                        <span class="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg">
+                            <i class="fas fa-chevron-left mr-2"></i>上一页
+                        </span>
+                                    @else
+                                        <a href="{{ $goals->previousPageUrl() }}" class="btn btn-secondary">
+                                            <i class="fas fa-chevron-left mr-2"></i>上一页
+                                        </a>
+                                    @endif
+
+                                    @if($goals->hasMorePages())
+                                        <a href="{{ $goals->nextPageUrl() }}" class="btn btn-secondary">
+                                            下一页<i class="fas fa-chevron-right ml-2"></i>
+                                        </a>
+                                    @else
+                                        <span class="px-4 py-2 text-gray-400 bg-gray-100 rounded-lg">
+                            下一页<i class="fas fa-chevron-right ml-2"></i>
+                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                @else
+                    <!-- 空状态 -->
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-bullseye text-gray-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">暂无技能目标</h3>
+                        <p class="text-gray-500 max-w-md mx-auto mb-6">
+                            您还没有设定任何技能目标，从上面的表单开始添加第一个技能目标吧！
+                        </p>
+                        <div class="space-y-3 max-w-sm mx-auto">
+                            <div class="text-left p-4 bg-gray-50 rounded-lg">
+                                <h4 class="font-medium text-gray-700 mb-1">💡 技能目标建议</h4>
+                                <p class="text-sm text-gray-600">• 编程语言：Python、JavaScript、Go</p>
+                                <p class="text-sm text-gray-600">• 软技能：演讲技巧、时间管理、团队协作</p>
+                                <p class="text-sm text-gray-600">• 兴趣爱好：摄影、烹饪、乐器演奏</p>
+                            </div>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
     </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content max-w-md">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">确认删除</h3>
+                <button type="button" class="modal-close p-2 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-lg"></i>
+                </div>
+                <p class="text-gray-700 text-center">确定要删除这个技能目标吗？所有相关记录也将被删除。</p>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" class="modal-close btn btn-secondary flex-1">取消</button>
+                <button type="button" id="confirmDelete" class="btn btn-danger flex-1">
+                    <i class="fas fa-trash-alt mr-2"></i>
+                    确认删除
+                </button>
+            </div>
+        </div>
     </div>
+
+    <style>
+        /* 进度条样式 */
+        .progress {
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 模态框样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626, var(--danger-color));
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .goal-item {
+            transition: all 0.2s ease;
+        }
+
+        .goal-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模态框功能
+            const deleteModal = document.getElementById('deleteModal');
+            const modalCloseButtons = document.querySelectorAll('.modal-close');
+            let currentGoalId = null;
+
+            // 打开模态框
+            function openModal(goalId) {
+                currentGoalId = goalId;
+                deleteModal.classList.add('show');
+            }
+
+            // 关闭模态框
+            function closeModal() {
+                deleteModal.classList.remove('show');
+                currentGoalId = null;
+            }
+
+            // 绑定关闭按钮事件
+            modalCloseButtons.forEach(button => {
+                button.addEventListener('click', closeModal);
+            });
+
+            // 点击模态框背景关闭
+            deleteModal.addEventListener('click', function(e) {
+                if (e.target === deleteModal) {
+                    closeModal();
+                }
+            });
+
+            // ESC键关闭模态框
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && deleteModal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+
+            // 删除目标功能
+            document.addEventListener('click', function(e) {
+                const deleteBtn = e.target.closest('.delete-goal');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    const goalId = deleteBtn.getAttribute('data-goal-id');
+                    openModal(goalId);
+                }
+            });
+
+            // 确认删除
+            document.getElementById('confirmDelete').addEventListener('click', function() {
+                if (!currentGoalId) return;
+
+                const token = "{{ csrf_token() }}";
+                const button = this;
+                const originalHtml = button.innerHTML;
+
+                // 显示加载状态
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>删除中...';
+
+                $.ajax({
+                    url: "{{ url('goal') }}/" + currentGoalId,
+                    type: 'DELETE',
+                    data: {
+                        "_token": token,
+                        "_method": "DELETE"
+                    },
+                    success: function(response) {
+                        if (response.code === 9999) {
+                            // 从DOM中移除元素
+                            const goalElement = document.getElementById(currentGoalId);
+                            if (goalElement) {
+                                goalElement.style.opacity = '0';
+                                setTimeout(() => {
+                                    if (goalElement.parentNode) {
+                                        goalElement.parentNode.removeChild(goalElement);
+                                    }
+                                }, 300);
+                            }
+
+                            // 显示成功消息
+                            showNotification('success', response.msg || '技能目标已删除');
+
+                            // 更新计数
+                            updateGoalCount();
+                        } else {
+                            showNotification('error', response.msg || '删除失败');
+                        }
+                        closeModal();
+                    },
+                    error: function() {
+                        showNotification('error', '网络错误，请稍后重试');
+                        closeModal();
+                    },
+                    complete: function() {
+                        button.disabled = false;
+                        button.innerHTML = originalHtml;
+                    }
+                });
+            });
+
+            // 表单提交优化
+            const goalForm = document.querySelector('form[action="{{ url('goal') }}"]');
+            if (goalForm) {
+                const nameInput = goalForm.querySelector('#goal-name');
+                const submitBtn = goalForm.querySelector('button[type="submit"]');
+
+                goalForm.addEventListener('submit', function(e) {
+                    if (!nameInput.value.trim()) {
+                        e.preventDefault();
+                        nameInput.focus();
+                        showNotification('warning', '请输入技能名称');
+                        return false;
+                    }
+
+                    // 显示加载状态
+                    const originalBtnText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>添加中...';
+
+                    // 3秒后恢复（防止无限加载）
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                    }, 3000);
+                });
+            }
+
+            // 辅助函数
+            function updateGoalCount() {
+                const goalCount = document.querySelectorAll('.goal-item').length;
+                const countElement = document.querySelector('.text-sm.text-gray-500.mt-1');
+                if (countElement) {
+                    countElement.textContent = `共 ${goalCount} 个技能目标`;
+                }
+
+                // 更新徽章
+                const badgeElement = document.querySelector('.text-xs.px-3.py-1');
+                if (badgeElement && goalCount > 0) {
+                    badgeElement.textContent = `${goalCount} 个目标`;
+                } else if (badgeElement && goalCount === 0) {
+                    badgeElement.remove();
+                }
+            }
+
+            function showNotification(type, message) {
+                // 移除已有的通知
+                document.querySelectorAll('.notification-item').forEach(el => el.remove());
+
+                const notification = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' : 'bg-yellow-500';
+                const icon = type === 'success' ? 'fa-check-circle' :
+                    type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+
+                notification.className = `notification-item fixed top-4 right-4 z-50 fade-in max-w-sm`;
+                notification.innerHTML = `
+                <div class="card ${bgColor} text-white shadow-xl">
+                    <div class="p-4 flex items-center gap-3">
+                        <i class="fas ${icon} text-lg"></i>
+                        <div class="flex-1">${message}</div>
+                        <button class="text-white hover:text-gray-200 close-notification">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+                document.body.appendChild(notification);
+
+                // 点击关闭
+                notification.querySelector('.close-notification').addEventListener('click', () => {
+                    notification.remove();
+                });
+
+                // 5秒后自动关闭
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.style.opacity = '0';
+                        setTimeout(() => {
+                            notification.parentNode.removeChild(notification);
+                        }, 300);
+                    }
+                }, 5000);
+            }
+        });
+    </script>
 @endsection

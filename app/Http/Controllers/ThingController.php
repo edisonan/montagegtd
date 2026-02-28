@@ -38,11 +38,13 @@ class ThingController extends Controller {
 	/**
 	 * 首页
 	 *
-	 * @param Request $request        	
+	 * @param Request $request         
 	 */
 	public function index(Request $request) {
+		$pageSize = $request->get('page_size', 10);
+			
 		return view ( 'things.index', [ 
-				'things' => $this->thingService->getList () 
+				'things' => $this->thingService->getList($pageSize)
 		] );
 	}
 	

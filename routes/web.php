@@ -246,16 +246,16 @@ Route::group([
     });
     
     // 智能体管理页面 - 必须在API路由之后定义，以避免冲突
-    Route::get('/llm/agents', function () {
-        return view('llm.agents');
-    })->name('llm.agents.index');
+    Route::get('/llm/agentmanagement', function () {
+        return view('llm.agentmanagement');
+    });
     
     // 智能体草稿编辑页面
     Route::get('/llm/agents/{id}/draft', 'LlmAgentController@showDraftEditor');
 
     // 用户端LLM管理页面
-    Route::get('/llm/management', function () {
-        return view('llm.management');
+    Route::get('/llm/llmmanagement', function () {
+        return view('llm.llmmanagement');
     });
     
     // 课程管理相关路由
@@ -273,9 +273,8 @@ Route::group([
     Route::post('/courses/{courseId}/discussions', 'DiscussionController@store');
     Route::get('/courses/{courseId}/discussions/{id}', 'DiscussionController@show');
     Route::post('/courses/{courseId}/discussions/{id}/reply', 'DiscussionController@reply');
-    
-    // 课程管理首页
-    Route::get('/mycourse', 'CourseController@myCourse');
+
+    Route::get('/course/management', 'CourseController@management');
     
     // 课程项目管理相关路由
     Route::get('/courses/{courseId}/items', 'CourseItemController@index');

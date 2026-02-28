@@ -1,471 +1,2141 @@
 @extends('layouts.app')
+
+@section('title', '去阅读 - 蒙太奇')
+@section('description', '阅读您订阅的文章，支持收藏、稍后阅读、标记已读等功能')
+
 @section('content')
-    @include('components.ai-ask-modal')
     <style>
-        .lazy {
-            width: 100%;
-            height: 0;
-            background-size: 100%;
+        /* 阅读页面专用样式 - 基于设计规范 */
+        .reading-page {
+            background: #f8fafc;
+            min-height: calc(100vh - 200px);
         }
 
-        .product-container {
-            width: 260px;
-            margin: 5px auto;
-            border-radius: 10px;
-            background: #f6f8f7;
-        }
-
-        .name {
-            border-bottom: 1px solid @gray-light;
-            font-size: 20px;
-            padding: 2px;
-        }
-
-        .interest {
-            color: #1da427;
-            font-size: 70px;
-            font-weight: bold;
-            padding: 0px;
-            margin-bottom: -30px;
-        }
-
-        .percent {
-            font-size: 31px;
-        }
-
-        .intro {
-            padding: 5px;
-        }
-
-        .strong {
-            padding: 3px;
-            font-size: 17px;
-            color: @white;
-            background: #326c84;
-            border-radius: 0 0 10px 10px;
-        }
-
-        .active {
-            color: red;
-        }
-
-        .rowone {
+        /* 通用工具类 */
+        .text-truncate-2 {
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            -webkit-line-clamp: 1;
+            line-height: 1.4;
         }
 
-        .post-text {
-            padding: 10px;
-            line-height: 1.8;
-        / / font-size: 20 px;
+        .text-truncate-1 {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        img {
-            max-width: 85%;
+        /* 导航侧边栏 */
+        .reading-sidebar {
+            position: sticky;
+            top: 100px;
+            height: calc(100vh - 140px);
+            overflow-y: auto;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
 
-        .h1, h1, .h2, h2, .h3, h3 {
+        .reading-sidebar:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, #f4f7fb, #c0bec8);
+            padding: 20px;
+            color: black;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .sidebar-action-btn {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .sidebar-body {
+            padding: 20px;
+        }
+
+        /* 分类导航 */
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .category-item {
+            margin-bottom: 12px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .category-header:hover {
+            background: #f1f5f9;
+            border-color: #4a90e2;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-count {
+            background: #4a90e2;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .category-toggle {
+            color: #94a3b8;
+            transition: transform 0.3s ease;
+        }
+
+        .category-toggle.expanded {
+            transform: rotate(90deg);
+        }
+
+        .feed-list {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0 0 0;
+            padding-left: 24px;
+            display: none;
+        }
+
+        .feed-list.expanded {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feed-item {
+            margin-bottom: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .feed-item:hover {
+            background: #f1f5f9;
+        }
+
+        .feed-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #4a90e2;
+        }
+
+        .feed-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .feed-link:hover {
+            color: #4a90e2;
+        }
+
+        .feed-count {
+            background: #cbd5e1;
+            color: #475569;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* 文章内容区域 */
+        .reading-content {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .content-header {
+            background: #f8fafc;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .status-title {
             font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            background: #4a90e2;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-tabs {
+            display: flex;
+            gap: 8px;
+            background: white;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-tab {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-tab:hover {
+            background: #f1f5f9;
+            color: #4a90e2;
+        }
+
+        .status-tab.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .content-tools {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .tool-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .tool-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .tool-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .tool-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .tool-slider {
+            background-color: #4a90e2;
+        }
+
+        input:checked + .tool-slider:before {
+            transform: translateX(20px);
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .tool-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tool-btn:hover {
+            background: #f1f5f9;
+            border-color: #4a90e2;
+            color: #4a90e2;
+            transform: translateY(-2px);
+        }
+
+        /* 文章卡片 */
+        .article-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .article-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .article-header {
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            background: #f8fafc;
+        }
+
+        .article-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .meta-item i {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+
+        .source-link {
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .quick-btn {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-btn:hover {
+            background: #f1f5f9;
+            border-color: #4a90e2;
+            color: #4a90e2;
+        }
+
+        .article-content {
+            padding: 20px;
+            position: relative;
+        }
+
+        .content-preview {
+            color: #475569;
+            line-height: 1.75;
+            font-size: 1.05rem;
+            letter-spacing: -0.01em;
+            max-height: 360px;
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.5s ease;
+        }
+
+        .content-preview.expanded {
+            max-height: 5000px !important;
+        }
+
+        /* 段落优化 - 增强阅读节奏 */
+        .content-preview p {
+            margin-bottom: 1.25em;
+            text-align: justify;
+            text-justify: inter-ideograph;
+        }
+
+        /* 标题层级优化 */
+        .content-preview h1,
+        .content-preview h2,
+        .content-preview h3,
+        .content-preview h4 {
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
+            line-height: 1.4;
+            color: #1e293b;
+        }
+
+        .content-preview h1 { font-size: 1.6rem; margin-top: 2em; }
+        .content-preview h2 { font-size: 1.4rem; }
+        .content-preview h3 { font-size: 1.25rem; }
+        .content-preview h4 { font-size: 1.15rem; }
+
+        /* 列表优化 */
+        .content-preview ul,
+        .content-preview ol {
+            padding-left: 1.5em;
+            margin: 1.25em 0;
+            line-height: 1.8;
+        }
+
+        .content-preview li {
+            margin-bottom: 0.5em;
+        }
+
+        /* 引用块优化 */
+        .content-preview blockquote {
+            border-left: 4px solid #4a90e2;
+            padding: 1em 1.5em;
+            background-color: #f8fafc;
+            margin: 1.5em 0;
+            font-style: italic;
+            color: #475569;
+        }
+
+        /* 代码块优化 */
+        .content-preview code {
+            background-color: #f1f5f9;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.95em;
+        }
+
+        .content-preview pre {
+            background-color: #f8fafc;
+            padding: 1.2em;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5em 0;
+        }
+
+        /* 图片优化 */
+        .content-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1.5em auto;
+            display: block;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-preview img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-fade {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), white);
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            opacity: 1;
+        }
+
+        .content-preview.expanded .content-fade {
+            opacity: 0;
+        }
+
+        .read-more {
+            text-align: center;
+            padding-top: 16px;
+            margin-top: 16px;
+            border-top: 1px solid #f1f5f9;
+            display: block !important;
+        }
+
+        .read-more-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            color: #475569;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .read-more-btn:hover {
+            background: #e2e8f0;
+            color: #4a90e2;
+            border-color: #4a90e2;
+        }
+
+        .article-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: flex-end; /* 修改为靠右对齐 */
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-left: auto; /* 确保靠右对齐 */
+            justify-content: flex-end; /* 确保内容右对齐 */
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .action-btn:hover {
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #4a90e2;
+            color: #4a90e2;
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .action-btn i {
+            font-size: 1.1rem;
+        }
+
+        .action-label {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #334155;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover .action-label {
+            opacity: 1;
+            visibility: visible;
+            top: -32px;
+        }
+
+        /* 修复分享菜单 - 按钮靠右 */
+        .share-container {
+            position: relative;
+        }
+
+        .share-menu {
+            position: absolute;
+            bottom: 120%;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            z-index: 100;
+            display: none;
+            min-width: 200px;
+            text-align: left;
+        }
+
+        .share-menu.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .share-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            color: #475569;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .share-option:hover {
+            background: #f1f5f9;
+            color: #4a90e2;
+        }
+
+        .share-option i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 24px;
+            opacity: 0.8;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .empty-state-text {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .empty-state-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .empty-state-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background: white;
+            color: #4a90e2;
+            border: 1px solid #4a90e2;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state-btn:hover {
+            background: #4a90e2;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .empty-state-btn.primary {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .empty-state-btn.primary:hover {
+            background: #2563eb;
+        }
+
+        /* 分页 */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* 音频播放器 */
+        .audio-player {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .audio-player.active {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 1024px) {
+            .reading-sidebar {
+                position: static;
+                height: auto;
+                margin-bottom: 24px;
+            }
+
+            .sidebar-body {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 16px;
+            }
+
+            .status-tabs {
+                order: 1;
+            }
+
+            .content-tools {
+                order: 2;
+                flex-wrap: wrap;
+            }
+
+            .tool-actions {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                margin-top: 12px;
+            }
+
+            .article-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .quick-actions {
+                margin-left: 0;
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .article-footer {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+
+            .action-buttons {
+                justify-content: center;
+                margin-left: 0;
+            }
+
+            .empty-state-actions {
+                flex-direction: column;
+            }
+
+            .empty-state-btn {
+                width: 100%;
+            }
+
+            .share-menu {
+                right: -50px;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* 图片屏蔽样式 */
+        .image-disabled {
+            background: #f1f5f9;
+            padding: 40px 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .image-disabled:hover {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        .image-disabled i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* 修复AI助手模态框闪动问题 */
+        .ai-ask-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-ask-modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* 分页样式修复 */
+        .pagination {
+            justify-content: center !important;
+            margin: 20px 0 !important;
+        }
+
+        .pagination > li > a,
+        .pagination > li > span {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            margin: 0 4px !important;
+            padding: 8px 12px !important;
+            color: #64748b !important;
+            background: white !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .pagination > li > a:hover {
+            background: #f1f5f9 !important;
+            color: #4a90e2 !important;
+            border-color: #4a90e2 !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .pagination > .active > span {
+            background: linear-gradient(135deg, #4a90e2, #8a6cff) !important;
+            color: white !important;
+            border-color: transparent !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .playaudio {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .playaudio.playing {
+            color: var(--primary-color);
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+        }
+
+        .playaudio:hover {
+            transform: scale(1.05);
+        }
+
+        /* 语音控制面板 */
+        .speech-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .speech-controls button {
+            padding: 6px 12px;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .speech-controls button:hover {
+            background: var(--gray-100);
+        }
+
+        .speech-controls button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }
     </style>
-    <link rel="stylesheet" href="/css/share.min.css">
 
-    <script src="/js/jquery.cookie.js"></script>
-    <script src="/js/lazyload.min.js"></script>
-    <script type="text/javascript" charset="utf-8">
-        $(function () {
-            //lazy img
-            $("img.lazy").lazyload();
-        });
-    </script>
-    <script type="text/javascript">
-        var status = '{{$status}}';
-        var processNavFlag = false
-
-        function processNav(status) {
-            $('#nav').html('<li>加载中...</li>');
-            $.ajax({
-                url: "{{ url('article/navinfo') }}",
-                type: 'GET',
-                data: {"_token": "{{ csrf_token() }}", "status": status},
-                success: function (result_arr) {
-                    if (result_arr.code != 9999) {
-                        alert('处理失败，请稍后再试');
-                    } else {
-                        processFlag = true;
-                        $('#nav').html('');
-                        $.each(result_arr.result.nav_infos, function (navId, navInfo) {
-                            var li = '<li role="presentation"><span class="category_items"><img src="/img/icon/unfold.png" width="25px" class="unfold_category_item"/><a href="' + "{{ url('articles') }}?category_id=" + navId + "&status=" + status + '">' + navInfo.category_info.category_name + '[' + Object.getOwnPropertyNames(navInfo.list).length + ']</a></span>';
-                            if (Object.getOwnPropertyNames(navInfo.list).length > 0) {
-                                li += '<ul class="category_item">';
-                                $.each(navInfo.list, function (index, item) {
-                                    var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
-                                    li += '<li class="rowone">';
-                                    li += '<a href="' + "{{ url('articles') }}?feed_id=" + item.feed_id + "&status=" + status + '">';
-                                    li += '<span>[' + countInfo + ']' + item.feed_name + '</span>';
-                                });
-                                li += '</ul>';
-                            }
-                            li += '</li>'
-                            $("#nav").append(li);
-                        });
-                    }
-                }
-            });
-        }
-
-        $(document).ready(function () {
-
-            $(".set_star,.set_read,.set_read_later,.set_read_later_another").on('click', function () {
-                article_sub_id = $(this).attr('article_sub_id');
-                active = $(this).hasClass("active");
-
-                if ($(this).hasClass("set_star")) {
-                    status = active ? "read" : "star";
-                } else if ($(this).hasClass("set_read")) {
-                    status = active ? "unread" : "star";
-                } else if ($(this).hasClass("set_read_later")) {
-                    status = active ? "unread" : "read_later";
-                } else if ($(this).hasClass("set_read_later_another")) {
-                    status = active ? "unread" : "read_later";
-                } else {
-                    return '';
-                }
-
-                item = $(this);
-                $.get("{{ url('/articles/status') }}" + "/" + article_sub_id, {"status": status}, function (result_arr) {
-                    if (result_arr.code != 9999) {
-                        alert("设置失败");
-                    } else {
-                        if (active) {
-                            item.removeClass("active");
-                        } else {
-                            item.siblings().removeClass("active");
-                            item.addClass("active");
-                        }
-                    }
-                });
-            });
-
-            $("#marked_all_read").on('click', function () {
-                var ids = $(this).attr('ids');
-                $(this).attr("disabled", true);
-                $(this).text('Submit Article As Reading');
-                $.get("{{ url('/articles/allstatus') }}", {"ids": ids, "status": "read"}, function (result_arr) {
-                    if (result_arr.code != 9999) {
-                        $("#marked_all_read").attr("disabled", false);
-                        $("#marked_all_read").text("Marked All Read");
-                        alert("设置失败");
-                    } else {
-                        location.href = "";
-                    }
-                });
-            });
-
-            $(".post-text").each(function () {
-                height = $(this).height();
-                if (height > 1000) {
-                    $(this).css("height", "360");
-                    $(this).css("overflow", "hidden");
-                    $(this).after("<p class=\"morecon\" style=\"align-text: right;text-align: right; color: #337ab7; cursor:pointer; font-size: 1.5em; \">阅读更多...</p>");
-                    $(this).parent().find(".view-all").css("display", "");
-                }
-            });
-
-            $(".view-all").on('click', function () {
-                $(this).parent().parent().children("div.post-text").css("height", "auto");
-                $(this).css("display", "none");
-                $(this).parent().parent().find(".morecon").css("display", "none");
-            });
-
-            $(".morecon").on('click', function () {
-                $(this).parent().children("div.post-text").css("height", "auto");
-                $(this).css("display", "none");
-                $(this).parent().parent().find(".view-all").css("display", "none");
-            });
-
-            //处理屏蔽图片
-            $("#unable_img").on('click', function () {
-                if ($("#unable_img").is(':checked')) {
-                    $.cookie('unable_img', true);
-                } else {
-                    $.cookie('unable_img', false);
-                }
-                location.href = "";
-            });
-
-            $(".post-text img").on('click', function () {
-                if ($(this).attr("orignal_src") != null) {
-                    $(this).attr("src", $(this).attr("orignal_src"));//修改图片路径
-                }
-            });
-            if ($.cookie("unable_img") != null && $.cookie("unable_img") == "true") {
-                $("#unable_img").prop('checked', true);
-
-                $(".post img").each(function () {
-                    if ($(this).attr("src") != null && $(this).attr("src") != "" && $(this).attr("src") != "/img/unable_img.png") {
-                        $(this).attr("orignal_src", $(this).attr("src"));//修改图片路径
-                        $(this).attr("src", "/img/unable_img.png");//修改图片路径
-                    }
-
-                    $(this).parent("a").attr("orignal_href", $(this).parent("a").attr("href"));//修改链接路径
-                    $(this).parent("a").attr("href", "javascript:void(0)");//修改链接路径
-                });
-            }
-
-            //处理一目十行
-            $("#unable_desc").on('click', function () {
-                if ($("#unable_desc").is(':checked')) {
-                    $.cookie('unable_desc', true);
-                } else {
-                    $.cookie('unable_desc', false);
-                }
-                location.href = "";
-            });
-
-            if ($.cookie("unable_desc") != null && $.cookie("unable_desc") == "true") {
-                $("#unable_desc").prop('checked', true);
-            }
-
-            var ua = navigator.userAgent;
-            isAndroid = /Android/i.test(ua);
-            isBlackBerry = /BlackBerry/i.test(ua);
-            isWindowPhone = /IEMobile/i.test(ua);
-            isIOS = /iPhone|iPad|iPod/i.test(ua);
-            isMobile = isAndroid || isBlackBerry || isWindowPhone || isIOS;
-            if (isMobile) {
-                $("#navBody").css("display", "none");
-
-                $(".category_item").each(function () {
-                    $(this).css("display", "none");
-                });
-            } else {
-                processNav(status);
-            }
-
-            $("#navHeader").on('click', function () {
-                $("#navBody").toggle();
-                if (processNavFlag == false) {
-                    processNav(status);
-                }
-            });
-
-            $(".unfold_category_item").on('click', '.unfold_category_item', function () {
-                $(this).parent().parent().find(".category_item").toggle();
-            });
-
-            $(".share_btn").on('click', function () {
-                $(this).parent().find(".social-share").toggle();
-            });
-
-            $(".feed_quick_sub").on('click', function () {
-                var feed_id = $(this).attr('feed_id');
-                $.get("{{ url('/feeds/quickstore') }}", {"feed_id": feed_id}, function (result_arr) {
-                    if (result_arr.code != 9999) {
-                        alert(result_arr.msg);
-                    } else {
-                        alert(result_arr.msg);
-                    }
-                });
-            });
-
-            $(".expand").on('click', function () {
-                var article_sub_id = $(this).attr('article_sub_id');
-                $("#desc" + article_sub_id).toggle();
-            });
-		
-            // $(".descdivclass").on('dblclick', function () {
-            //     var article_sub_id = $(this).attr('article_sub_id');
-            //     $("#desc" + article_sub_id).toggle();
-            // });
-
-            //play audio
-            $(".playaudio").on('click', function () {
-                var article_sub_id = $(this).attr('article_sub_id');
-                $("#audio").attr("src", "/article/record/" + article_sub_id);
-            });
-
-            $(".icon-heart").on('click', function () {
-                var title = $(this).attr('data-title');
-                var id = $(this).attr('data-id');
-                var url = $(this).attr('data-url');
-                window.open('/notes?&source_type=2&source_id=' + id);
-            });
-        });
-    </script>
-    <div class="container">
-        <div class="row">
-            <div class=" col-md-4">
-                @include('common.success')
-                <div class="card card-default">
-                    <div class="card-header" id="navHeader">
-                        订阅分类
-                        <div style="float: right">
-                            <a href="{{ url('kindles') }}">[SendKindle]</a> <a
-                                    href="{{'/feeds/setting'}}">[管理]</a>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reading-page">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- 侧边栏导航 -->
+            <div class="lg:col-span-1">
+                <div class="reading-sidebar">
+                    <div class="sidebar-header">
+                        <h3 class="sidebar-title">
+                            <i class="fas fa-list-alt"></i>
+                            订阅分类
+                        </h3>
+                        <div class="sidebar-actions">
+                            <a href="{{ url('kindles') }}" class="sidebar-action-btn" title="发送到Kindle">
+                                <i class="fas fa-tablet-alt"></i>
+                            </a>
+                            <a href="{{ url('feeds/setting') }}" class="sidebar-action-btn" title="管理订阅">
+                                <i class="fas fa-cog"></i>
+                            </a>
                         </div>
                     </div>
 
-                    <div class="card-body" id="navBody">
-                        <ul class="nav nav-pills nav-stacked" id="nav">
-
+                    <div class="sidebar-body" id="navBody">
+                        <ul class="category-list" id="nav">
+                            <!-- 动态加载分类 -->
+                            <li class="text-center py-4 text-gray-500">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>
+                                加载中...
+                            </li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <div class=" col-md-8">
-                <div class="card card-default">
-                    <div class="card-header">
-                        @if($status == 'unread') 未读
-                        @elseif($status == 'read') 已读
-                        @elseif($status == 'star') 收藏
-                        @elseif($status == 'read_later') 稍后阅读
-                        @endif 文章
-                        [<a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}">未读</a>]
-                        [<a href="{{ url('articles?status=read&feed_id='.$feed_id) }}">已读</a>]
-                        [<a href="{{ url('articles?status=star&feed_id='.$feed_id) }}">加星</a>]
-                        [<a href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}">稍后阅读</a>]
+            <!-- 文章内容区域 -->
+            <div class="lg:col-span-3">
+                <!-- 成功消息 -->
+                @include('common.success')
 
-                        <div style="float: right">
-                            <input type="checkbox" value="" id="unable_desc"/>一目十行
-                            <input type="checkbox" value="" id="unable_img"/>屏图
-                        @if(!empty($feed_id))
-                            <!--
-    						<a href="{{ url('feed/checkNewFeed/'.$feed_id)}}">
-    							<img alt="" src="/img/icon/refresh.png" style="width: 15px; margin-right: 10px;">
-    						</a> 
--->
-                            @endif
-                            <a href="{{ url('feeds/explorer')}}">
-                                [发现 <sup style="color: red;"> 推荐</sup>]
-                            </a>
-
-                            <a href="{{ url('feeds')}}">[添加订阅]</a>
-                        </div>
-                    </div>
-                </div>
-                <!--<div class="card-body">-->
-                <!-- Display Validation Errors -->
+                <!-- 错误消息 -->
                 @include('common.errors')
 
-                @if (count($article_subs) > 0)
-                    <?php $article_sub_ids = array();?>
-                    @foreach ($article_subs as $articleSub)
-                        <?php $article = $articleSub->article;if (empty($article)) {continue;}$article_sub_ids[] = $articleSub->id;?>
-                        <div class="card" style="margin-bottom: 10px">
-                            <div class="card-block" style="padding: 10px;">
-
-                                @if(!empty($article->subject))
-                                    <h5 class="card-title">
-                                        <img class="playaudio" article_sub_id="{{$articleSub->id}}" alt=""
-                                             src="/img/icon/music.png" width="30px"> <a
-                                                href="{{ str_replace('www.v2ex.com', 'pretask.congcong.us/article/proxyview?type=v2ex&url=',$article->url) }}">[原文]</a>
-                                        <a
-                                                href="{{ url('article/view/'.$article->id) }}">{{
-							$article->subject }}</a>
-                                    </h5>
-                                @endif
-
-                                <p class="card-text">
-                                    <small class="text-muted">来源：<a
-                                                href="{{ url('articles?status=unread&feed_id='.$article->feed->id) }}"
-                                                target="_blank">{{ $article->feed->feed_name}}</a> *
-                                        {{$article->published}}
-                                        @if($unable_desc == "true")
-                                            <a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-                                               class="set_read_later_another @if($articleSub->status == 'read_later') active @endif">&nbsp;稍后阅读</a>
-                                            <a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-                                               class="expand">&nbsp;展开/收起</a>
-                                        @endif
-                                    </small>
-                                </p>
-
-
-                                <div id="desc{{$articleSub->id}}" class="descdivclass" article_sub_id="{{$articleSub->id}}"  
-                                     @if($unable_desc == "true") style="display:none" @endif>
-                                    <div class="card-text post-text" id="content{{$articleSub->id}}">
-                                        <?php
-                                        $content = $article->content;
-                                        if ($unable_img == "true") {
-                                            $content = str_replace('src="', 'src="/img/unable_img.png" orignal_src="', $content);
-                                            $content = str_replace("src='", "src='/img/unable_img.png' orignal_src='", $content);
-                                        }
-                                        echo App\Http\Utils\CommonUtil::formatContentHtml($content);
-                                        ?>
-                                    </div>
-                                    <div class="card-text text-right">
-                                        <!-- share start -->
-                                        <p class="social-share" style="display: none" data-mode="prepend"
-                                           data-weibo-title="{{ $article->subject }}"
-                                           data-weibo-appKey="567683707" data-weibo-ralateUid="1671353227"
-                                           data-title="{{ $article->subject }}"
-                                           data-id="{{$article->id}}"
-                                           data-url="{{ url('article/view/') }}{{$article->id}}"
-                                           data-image="{{ $article->image_url }}"
-                                           data-sites="facebook,twitter,google,weibo"
-                                           data-mobile-sites="facebook,twitter,google,weibo"
-                                           data-wechat-qrcode-title="请打开微信扫一扫">
-                                            <a href="javascript:void(0);"
-                                               class="social-share-icon icon-heart" class=""
-                                               data-title="{{ $article->subject }} From:{{url('/article/view/')}}{{$article->id}}"
-                                               data-url="{{ url('article/view/') }}{{$article->id}}" data-id="{{ $article->id }}"></a>
-                                        </p>
-                                        <!-- share end -->
-                                        <a href="javascript:void(0);" onclick="openAskAIModal('content{{$articleSub->id}}')" article_sub_id="{{$articleSub->id}}"
-                                           class="btn btn-outline-secondary btn-sm set_read_later"
-                                           title="AI助手">AI助手</a>
-                                        <a href="javascript:void(0);"
-                                           class="btn btn-outline-secondary btn-sm share_btn" title="分享"><img
-                                                    src="/img/icon/share.png" width="20px"/>Share</a> <a
-                                                href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-                                                class="btn btn-outline-secondary btn-sm set_read @if($articleSub->status == 'read') active @endif"
-                                                title="已读"><img src="/img/icon/read_already.png" width="20px"/>Read</a>
-                                        <a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-                                           class="btn btn-outline-secondary btn-sm set_read_later @if($articleSub->status == 'read_later') active @endif"
-                                           title="稍后阅读"><img src="/img/icon/read_later.png" width="20px"/>Later</a>
-                                        <a href="javascript:void(0);" article_sub_id="{{$articleSub->id}}"
-                                           class="btn btn-outline-secondary btn-sm set_star @if($articleSub->status == 'star') active @endif"
-                                           title="加星"><img src="/img/icon/read_star.png" width="20px"/>Star</a>
-                                        <a href="javascript:void(0);" style="display: none"
-                                           class="btn btn-outline-warning btn-sm view-all"><img
-                                                    src="/img/icon/read_more.png" width="30px"/>View All</a>
-                                    </div>
-                                </div>
-
+                <div class="reading-content">
+                    <!-- 内容头部 -->
+                    <div class="content-header">
+                        <div>
+                            <div class="status-tabs">
+                                <a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}"
+                                   class="status-tab @if($status == 'unread') active @endif">
+                                    未读
+                                </a>
+                                <a href="{{ url('articles?status=read&feed_id='.$feed_id) }}"
+                                   class="status-tab @if($status == 'read') active @endif">
+                                    已读
+                                </a>
+                                <a href="{{ url('articles?status=star&feed_id='.$feed_id) }}"
+                                   class="status-tab @if($status == 'star') active @endif">
+                                    加星
+                                </a>
+                                <a href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}"
+                                   class="status-tab @if($status == 'read_later') active @endif">
+                                    稍后阅读
+                                </a>
                             </div>
                         </div>
 
-                    @endforeach
-                    <audio style="position: fixed; float: right"></audio>
-                    {!! $article_subs->appends($page_params)->links() !!}
+                        <div class="content-tools">
+                            <div class="tool-item">
+                                <span class="tool-label">一目十行</span>
+                                <label class="tool-switch">
+                                    <input type="checkbox" id="unable_desc" {{ $unable_desc == "true" ? 'checked' : '' }}>
+                                    <span class="tool-slider"></span>
+                                </label>
+                            </div>
 
-                    @if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                        <button class="col-md-12 btn btn-outline-info" id="marked_all_read"
-                                ids="{{ implode(',', $article_sub_ids) }}">Marked All Read
-                        </button>
-                    @endif
+                            <div class="tool-item">
+                                <span class="tool-label">屏蔽图片</span>
+                                <label class="tool-switch">
+                                    <input type="checkbox" id="unable_img" {{ $unable_img == "true" ? 'checked' : '' }}>
+                                    <span class="tool-slider"></span>
+                                </label>
+                            </div>
 
-                @else
-                    <div>
-                        <img src="/img/new/love.png" width="200px">
-                        好像没有更多了，阅读一下<a href="/articles" style="color:green;">其他的文章</a>或者<a href="/feeds/explorer"
-                                                                                           style="color:green">开始新的订阅</a>吧~
+                            <div class="tool-actions">
+                                @if(!empty($feed_id))
+                                    <a href="{{ url('feeds/explorer') }}" class="tool-btn">
+                                        <i class="fas fa-compass"></i>
+                                        发现
+                                        <sup style="color: #ef4444; margin-left: 2px;">推荐</sup>
+                                    </a>
+                                @endif
+                                <a href="{{ url('feeds') }}" class="tool-btn">
+                                    <i class="fas fa-plus"></i>
+                                    添加订阅
+                                </a>
+                            </div>
+                        </div>
                     </div>
-            @endif
-            <!--</div>-->
+
+                    <!-- 文章列表 -->
+                    <div class="p-6">
+                        @if (count($article_subs) > 0)
+                                <?php $article_sub_ids = []; ?>
+                            <div id="articleList">
+                                @foreach ($article_subs as $articleSub)
+                                        <?php
+                                        $article = $articleSub->article;
+                                        if (empty($article)) { continue; }
+                                        $article_sub_ids[] = $articleSub->id;
+
+                                        // 处理内容
+                                        $content = $article->content;
+                                        if ($unable_img == "true") {
+                                            $content = str_replace('src="', 'src="/img/unable_img.png" data-original="', $content);
+                                            $content = str_replace("src='", "src='/img/unable_img.png' data-original='", $content);
+                                        }
+                                        $formattedContent = App\Http\Utils\CommonUtil::formatContentHtml($content);
+
+                                        $contentText = strip_tags($formattedContent);
+                                        $needsCollapse = $unable_desc == "true" && (strlen($contentText) > 500 || substr_count($contentText, "\n") > 5);
+                                        ?>
+
+                                    <div class="article-card" id="article-{{ $articleSub->id }}">
+                                        <!-- 文章头部 -->
+                                        <div class="article-header">
+                                            @if(!empty($article->subject))
+                                                <h3 class="article-title">
+                                                    <a href="{{ url('article/view/'.$article->id) }}" class="text-gray-900 hover:text-blue-600 transition-colors">
+                                                        {{ $article->subject }}
+                                                    </a>
+                                                </h3>
+                                            @endif
+
+                                            <div class="article-meta">
+                                                <div class="meta-item">
+                                                    <i class="fas fa-rss"></i>
+                                                    来源：
+                                                    <a href="{{ url('articles?status=unread&feed_id='.$article->feed->id) }}"
+                                                       class="source-link" target="_blank">
+                                                        {{ $article->feed->feed_name }}
+                                                    </a>
+                                                </div>
+
+                                                <div class="meta-item">
+                                                    <i class="far fa-clock"></i>
+                                                    {{ $article->published }}
+                                                </div>
+
+                                                <div class="meta-item">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                    <a href="{{ str_replace('www.v2ex.com', 'pretask.congcong.us/article/proxyview?type=v2ex&url=',$article->url) }}"
+                                                       class="source-link" target="_blank">
+                                                        原文
+                                                    </a>
+                                                </div>
+
+                                                @if($unable_desc == "true")
+                                                    <div class="quick-actions">
+                                                        <button type="button"
+                                                                class="quick-btn set_read_later_another {{ $articleSub->status == 'read_later' ? 'active' : '' }}"
+                                                                data-article-id="{{ $articleSub->id }}">
+                                                            稍后阅读
+                                                        </button>
+                                                        <button type="button"
+                                                                class="quick-btn expand-btn"
+                                                                data-article-id="{{ $articleSub->id }}">
+                                                            展开/收起
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <!-- 文章内容 -->
+                                        <div class="article-content" id="content{{ $articleSub->id }}" @if($unable_desc == "true") style="display:none" @endif>
+                                            <div id="desc{{ $articleSub->id }}"
+                                                 class="content-preview {{ $unable_desc == "true" && $needsCollapse ? '' : 'expanded' }}"
+                                                 data-article-id="{{ $articleSub->id }}">
+                                                {!! $formattedContent !!}
+
+                                                @if($unable_desc == "true" && $needsCollapse)
+                                                    <div class="content-fade" style="opacity: 1;"></div>
+                                                @endif
+                                            </div>
+
+                                            {{-- 只在需要时显示阅读更多按钮 --}}
+                                            @if($unable_desc == "true" && $needsCollapse)
+                                                <div class="read-more" style="display: block;">
+                                                    <button type="button"
+                                                            class="read-more-btn"
+                                                            data-article-id="{{ $articleSub->id }}">
+                                                        <i class="fas fa-chevron-down"></i>
+                                                        阅读更多
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <!-- 文章操作 -->
+                                        <div class="article-footer">
+                                            <div class="action-buttons" style="margin-left: auto;">
+                                                <button type="button"
+                                                        class="action-btn ai-assist-btn"
+                                                        data-content-id="desc{{ $articleSub->id }}"
+                                                        data-title="{{ $article->subject }}"
+                                                        title="AI助手">
+                                                    <i class="fas fa-robot"></i>
+                                                    <span class="action-label">AI助手</span>
+                                                </button>
+
+                                                <div class="share-container">
+                                                    <button type="button" class="action-btn share-btn" title="分享">
+                                                        <i class="fas fa-share-alt"></i>
+                                                        <span class="action-label">分享</span>
+                                                    </button>
+
+                                                    <div class="share-menu">
+                                                        <a href="javascript:void(0);"
+                                                           class="share-option icon-heart"
+                                                           data-title="{{ $article->subject }} From:{{url('/article/view/')}}{{$article->id}}"
+                                                           data-url="{{ url('article/view/') }}{{$article->id}}"
+                                                           data-id="{{ $article->id }}">
+                                                            <i class="fas fa-heart"></i>
+                                                            <span>记录想法</span>
+                                                        </a>
+                                                        <!-- 其他分享选项可以在这里添加 -->
+                                                    </div>
+                                                </div>
+
+                                                <button type="button"
+                                                        class="action-btn set_read {{ $articleSub->status == 'read' ? 'active' : '' }}"
+                                                        data-article-id="{{ $articleSub->id }}"
+                                                        title="标记已读">
+                                                    <i class="fas fa-check"></i>
+                                                    <span class="action-label">已读</span>
+                                                </button>
+
+                                                <button type="button"
+                                                        class="action-btn set_read_later {{ $articleSub->status == 'read_later' ? 'active' : '' }}"
+                                                        data-article-id="{{ $articleSub->id }}"
+                                                        title="稍后阅读">
+                                                    <i class="far fa-clock"></i>
+                                                    <span class="action-label">稍后</span>
+                                                </button>
+
+                                                <button type="button"
+                                                        class="action-btn set_star {{ $articleSub->status == 'star' ? 'active' : '' }}"
+                                                        data-article-id="{{ $articleSub->id }}"
+                                                        title="收藏">
+                                                    <i class="far fa-star"></i>
+                                                    <span class="action-label">收藏</span>
+                                                </button>
+
+                                                <button type="button"
+                                                        class="action-btn playaudio"
+                                                        data-article-id="{{ $articleSub->id }}"
+                                                        title="语音播放">
+                                                    <i class="fas fa-volume-up"></i>
+                                                    <span class="action-label">语音</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- 分页 -->
+                            <div class="pagination-wrapper">
+                                {!! $article_subs->appends($page_params)->links() !!}
+                            </div>
+
+                            <!-- 一键标记已读 -->
+                            @if(!isset($_GET['status']) || $_GET['status'] == 'unread')
+                                <div class="mt-6 text-center">
+                                    <button type="button"
+                                            class="btn btn-primary px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+                                            id="marked_all_read"
+                                            data-ids="{{ implode(',', $article_sub_ids) }}">
+                                        <i class="fas fa-check-double mr-2"></i>
+                                        标记全部已读
+                                    </button>
+                                </div>
+                            @endif
+
+                        @else
+                            <!-- 空状态 -->
+                            <div class="empty-state">
+                                <img src="/img/new/love.png" alt="暂无文章" class="mx-auto">
+                                <h3 class="empty-state-title">好像没有更多文章了</h3>
+                                <p class="empty-state-text">
+                                    您可以阅读一下其他的文章，或者开始新的订阅来获取更多精彩内容。
+                                </p>
+                                <div class="empty-state-actions">
+                                    <a href="/articles" class="empty-state-btn">
+                                        <i class="fas fa-newspaper mr-2"></i>
+                                        浏览其他文章
+                                    </a>
+                                    <a href="/feeds/explorer" class="empty-state-btn primary">
+                                        <i class="fas fa-compass mr-2"></i>
+                                        发现新订阅
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
-
-            <!-- audio -->
-            <audio id="audio" style="position: fixed; float: right" autoplay src=""></audio>
-
         </div>
     </div>
 
+    <!-- 音频播放器 -->
+    <div class="audio-player" id="audioPlayer">
+        <div class="flex items-center gap-4">
+            <button type="button" class="action-btn" id="audioClose" title="关闭">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="flex-1">
+                <div class="text-sm font-medium text-gray-800 mb-1" id="audioTitle">正在播放</div>
+                <audio id="audio" controls class="w-full">
+                    <source src="" type="audio/mpeg">
+                </audio>
+            </div>
+        </div>
+    </div>
+
+    <!-- 外部脚本 -->
+    <link rel="stylesheet" href="/css/share.min.css">
+    <script src="/js/jquery.cookie.js"></script>
+    <script src="/js/lazyload.min.js"></script>
     <script src="/js/social-share.js"></script>
     <script src="/js/qrcode.js"></script>
-@endsection
 
+    @include('components.ai-ask-modal')
+
+    <script type="text/javascript">
+        // 修复AI助手模态框闪动问题
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保AI助手模态框初始隐藏
+            $('.ai-ask-modal').hide();
+
+            if (localStorage.getItem('scrollToTopAfterMarkAllRead') === 'true') {
+                // 延迟确保DOM渲染完成
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'  // 添加平滑滚动效果
+                    });
+                    localStorage.removeItem('scrollToTopAfterMarkAllRead');
+                    console.log('已滚动到顶部');
+                }, 300);  // 增加延迟时间确保页面完全加载
+            }
+        });
+
+        $(document).ready(function () {
+            var status = '{{$status}}';
+            var processNavFlag = false;
+            var unableDesc = {{ $unable_desc == "true" ? 'true' : 'false' }};
+
+            // 存储的键名
+            const NAV_STORAGE_KEY = 'nav_storage_data';
+            const NAV_STORAGE_TIMESTAMP_KEY = 'nav_storage_timestamp';
+            const STORAGE_EXPIRY_HOURS = 2; // 存储过期时间（小时）
+
+            // 主处理函数 - 优先从localStorage加载，没有则请求远程
+            function processNav(status) {
+                $('#nav').html('<li class="text-center py-4 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</li>');
+
+                // 尝试从localStorage获取缓存数据
+                const cachedData = getNavFromStorage(status);
+
+                if (cachedData) {
+                    // 使用缓存数据渲染导航
+                    renderNav(cachedData, status);
+                    // 可选：后台静默更新（不阻塞界面）
+                    // setTimeout(() => fetchNavFromRemote(status, true), 100);
+                } else {
+                    // 没有缓存或已过期，请求远程数据
+                    fetchNavFromRemote(status, false);
+                }
+            }
+
+            // 从localStorage获取缓存的导航数据
+            function getNavFromStorage(status) {
+                try {
+                    // 获取缓存数据和时间戳
+                    const cacheDataStr = localStorage.getItem(NAV_STORAGE_KEY);
+                    const timestampStr = localStorage.getItem(NAV_STORAGE_TIMESTAMP_KEY);
+
+                    if (!cacheDataStr || !timestampStr) {
+                        return null;
+                    }
+
+                    // 解析缓存数据
+                    const cacheData = JSON.parse(cacheDataStr);
+                    const cacheTimestamp = parseInt(timestampStr);
+                    const currentTime = new Date().getTime();
+
+                    // 检查缓存是否过期
+                    const expiryTime = STORAGE_EXPIRY_HOURS * 60 * 60 * 1000;
+                    if (currentTime - cacheTimestamp > expiryTime) {
+                        // 缓存过期，清除旧数据
+                        clearNavStorage();
+                        return null;
+                    }
+
+                    // 返回对应状态的数据
+                    return cacheData[status] || null;
+
+                } catch (error) {
+                    console.error('读取localStorage缓存失败:', error);
+                    clearNavStorage(); // 解析失败时清除可能损坏的缓存
+                    return null;
+                }
+            }
+
+            // 将导航数据保存到localStorage
+            function saveNavToStorage(status, data) {
+                try {
+                    let storageData = {};
+                    const existingStorageStr = localStorage.getItem(NAV_STORAGE_KEY);
+
+                    // 合并现有缓存（如果有）
+                    if (existingStorageStr) {
+                        storageData = JSON.parse(existingStorageStr);
+                    }
+
+                    // 更新对应状态的数据
+                    storageData[status] = data;
+
+                    // 保存到localStorage
+                    localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify(storageData));
+                    localStorage.setItem(NAV_STORAGE_TIMESTAMP_KEY, new Date().getTime().toString());
+
+                    // 触发自定义事件，通知其他组件缓存已更新
+                    window.dispatchEvent(new CustomEvent('navStorageUpdated', {
+                        detail: { status, timestamp: new Date().getTime() }
+                    }));
+
+                    return true;
+                } catch (error) {
+                    console.error('保存到localStorage失败:', error);
+
+                    // 如果存储失败，可能是存储空间满了，尝试清理
+                    if (error.name === 'QuotaExceededError') {
+                        console.warn('localStorage存储空间不足，尝试清理...');
+                        clearOldStorageData();
+                        // 重试一次
+                        try {
+                            localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify({ [status]: data }));
+                            localStorage.setItem(NAV_STORAGE_TIMESTAMP_KEY, new Date().getTime().toString());
+                            return true;
+                        } catch (retryError) {
+                            console.error('重试保存到localStorage也失败:', retryError);
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            // 清理旧的存储数据（当存储空间不足时）
+            function clearOldStorageData() {
+                // 保留最近3种状态的缓存
+                try {
+                    const storageDataStr = localStorage.getItem(NAV_STORAGE_KEY);
+                    if (storageDataStr) {
+                        const storageData = JSON.parse(storageDataStr);
+                        const keys = Object.keys(storageData);
+
+                        // 如果状态超过3个，只保留最新的3个
+                        if (keys.length > 3) {
+                            // 这里可以根据实际需要修改清理策略
+                            // 例如：只保留当前状态和另外两个最常用的状态
+                            const newStorageData = {};
+
+                            // 假设我们保留 'unread', 'read', 'star' 这三种状态
+                            const keepStatuses = ['unread', 'read', 'star'];
+                            keepStatuses.forEach(status => {
+                                if (storageData[status]) {
+                                    newStorageData[status] = storageData[status];
+                                }
+                            });
+
+                            localStorage.setItem(NAV_STORAGE_KEY, JSON.stringify(newStorageData));
+                        }
+                    }
+                } catch (error) {
+                    console.error('清理旧存储数据失败:', error);
+                }
+            }
+
+            // 清空导航缓存
+            function clearNavStorage() {
+                localStorage.removeItem(NAV_STORAGE_KEY);
+                localStorage.removeItem(NAV_STORAGE_TIMESTAMP_KEY);
+
+                // 触发自定义事件
+                window.dispatchEvent(new CustomEvent('navStorageCleared'));
+            }
+
+            // 从远程获取导航数据
+            function fetchNavFromRemote(status, isSilentUpdate = false) {
+                // 如果是静默更新，不显示加载动画
+                if (!isSilentUpdate) {
+                    $('#nav').html('<li class="text-center py-4 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</li>');
+                }
+
+                $.ajax({
+                    url: "{{ url('article/navinfo') }}",
+                    type: 'GET',
+                    data: {"_token": "{{ csrf_token() }}", "status": status},
+                    success: function (result_arr) {
+                        if (result_arr.code != 9999) {
+                            if (!isSilentUpdate) {
+                                $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败</li>');
+                            }
+                        } else {
+                            // 保存到localStorage
+                            saveNavToStorage(status, result_arr.result);
+
+                            // 如果不是静默更新，才更新界面
+                            if (!isSilentUpdate) {
+                                renderNav(result_arr.result, status);
+                            } else {
+                                // 静默更新时，可以更新页面上的某些提示
+                                updateLastUpdateTime();
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        if (!isSilentUpdate) {
+                            $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>网络错误，请刷新重试</li>');
+                        }
+
+                        // 如果是静默更新失败，可以记录日志
+                        if (isSilentUpdate) {
+                            console.warn('静默更新导航数据失败:', error);
+                        }
+                    },
+                    complete: function() {
+                        // 如果是静默更新，可以在这里做一些清理工作
+                        if (isSilentUpdate) {
+                            console.log('导航数据静默更新完成');
+                        }
+                    }
+                });
+            }
+
+            // 渲染导航的通用函数
+            function renderNav(data, status) {
+                processNavFlag = true;
+                $('#nav').html('');
+
+                // 添加最后更新时间提示
+                const updateTime = new Date().toLocaleTimeString();
+                $('#nav').append(`
+                <li class="text-xs text-gray-400 text-center py-2 border-b">
+                    <i class="fas fa-clock mr-1"></i>最后更新: ${updateTime}
+                    <button class="ml-2 text-blue-500 hover:text-blue-700" onclick="refreshNav('${status}')">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </li>
+            `);
+
+                $.each(data.nav_infos, function (navId, navInfo) {
+                    var itemCount = Object.getOwnPropertyNames(navInfo.list).length;
+                    var li = `
+                    <li class="category-item">
+                        <div class="category-header" data-category-id="${navId}">
+                            <div class="category-name">
+                                <i class="fas fa-folder"></i>
+                                ${navInfo.category_info.category_name}
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <!--<span class="category-count"></span>-->
+                                <i class="fas fa-chevron-right category-toggle"></i>
+                            </div>
+                        </div>
+                        <ul class="feed-list" id="category-${navId}">
+                `;
+
+                    if (itemCount > 0) {
+                        $.each(navInfo.list, function (index, item) {
+                            var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
+                            var isActive = '{{ $feed_id }}' == item.feed_id ? 'active' : '';
+
+                            li += `
+                            <li class="feed-item ${isActive}">
+                                <a href="{{ url('articles') }}?feed_id=${item.feed_id}&status=${status}" class="feed-link">
+                                    <i class="fas fa-rss"></i>
+                                    <span class="flex-1 text-truncate-1">${item.feed_name}</span>
+                                    <span class="feed-count">${countInfo}</span>
+                                </a>
+                            </li>
+                        `;
+                        });
+                    }
+
+                    li += '</ul></li>';
+                    $("#nav").append(li);
+                });
+
+                // 如果没有数据
+                if ($.isEmptyObject(data.nav_infos)) {
+                    $('#nav').append(`
+                    <li class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-3xl mb-2"></i>
+                        <div>暂无订阅源</div>
+                    </li>
+                `);
+                }
+
+                // 初始化分类切换
+                initCategoryToggle();
+            }
+
+            // 更新最后更新时间显示
+            function updateLastUpdateTime() {
+                const updateTime = new Date().toLocaleTimeString();
+                const timeElement = $('#nav').find('.text-xs.text-gray-400');
+                if (timeElement.length) {
+                    timeElement.html(`
+                    <i class="fas fa-clock mr-1"></i>最后更新: ${updateTime}
+                    <button class="ml-2 text-blue-500 hover:text-blue-700" onclick="refreshNav('${getCurrentStatus()}')">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                `);
+                }
+            }
+
+            // 获取当前状态
+            function getCurrentStatus() {
+                return '{{ $status }}' || 'unread';
+            }
+
+            // 清空并重新加载的方法
+            function refreshNav(status) {
+                // 显示加载状态，添加刷新动画
+                const refreshBtn = $('#nav').find('.fa-sync-alt');
+                if (refreshBtn.length) {
+                    refreshBtn.addClass('fa-spin');
+                }
+
+                // 清空缓存
+                clearNavStorage();
+
+                // 显示重新加载提示
+                $('#nav').html(`
+                <li class="text-center py-4 text-blue-500">
+                    <i class="fas fa-sync-alt fa-spin mr-2"></i>重新加载中...
+                </li>
+            `);
+
+                // 强制从远程获取最新数据
+                fetchNavFromRemote(status, false);
+            }
+
+            // 检查存储是否可用
+            function isStorageAvailable() {
+                try {
+                    const testKey = '__storage_test__';
+                    localStorage.setItem(testKey, testKey);
+                    localStorage.removeItem(testKey);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            // 分类切换功能
+            function initCategoryToggle() {
+                $('.category-header').click(function() {
+                    var $categoryItem = $(this);
+                    var $feedList = $categoryItem.next('.feed-list');
+                    var $toggleIcon = $categoryItem.find('.category-toggle');
+
+                    $feedList.toggleClass('expanded');
+                    $toggleIcon.toggleClass('expanded');
+                });
+            }
+
+            // 状态切换功能
+            $(".set_star, .set_read, .set_read_later, .set_read_later_another").on('click', function() {
+                var article_sub_id = $(this).data('article-id');
+                var active = $(this).hasClass("active");
+                var button = $(this);
+
+                if ($(this).hasClass("set_star")) {
+                    status = active ? "read" : "star";
+                } else if ($(this).hasClass("set_read")) {
+                    status = active ? "unread" : "star";
+                } else if ($(this).hasClass("set_read_later") || $(this).hasClass("set_read_later_another")) {
+                    status = active ? "unread" : "read_later";
+                } else {
+                    return '';
+                }
+
+                $.get("{{ url('/articles/status') }}/" + article_sub_id, {"status": status}, function(result_arr) {
+                    if (result_arr.code != 9999) {
+                        showNotification('设置失败，请重试', 'error');
+                    } else {
+                        if (active) {
+                            button.removeClass("active");
+                            showNotification('已取消状态', 'success');
+                        } else {
+                            button.siblings().removeClass("active");
+                            button.addClass("active");
+                            showNotification('设置成功', 'success');
+                        }
+                    }
+                });
+            });
+
+            // 一键标记已读
+            $("#marked_all_read").on('click', function() {
+                var ids = $(this).data('ids');
+                var button = $(this);
+                var originalText = button.html();
+
+                button.prop('disabled', true);
+                button.html('<i class="fas fa-spinner fa-spin mr-2"></i>处理中...');
+
+                $.get("{{ url('/articles/allstatus') }}", {"ids": ids, "status": "read"}, function(result_arr) {
+                    if (result_arr.code != 9999) {
+                        button.prop('disabled', false);
+                        button.html(originalText);
+                        showNotification('设置失败，请重试', 'error');
+                    } else {
+                        showNotification('全部标记为已读成功', 'success');
+                        location.href="";
+                        // localStorage.setItem('scrollToTopAfterMarkAllRead', 'true');
+                        // setTimeout(function() {
+                        //     location.reload();
+                        // }, 1000);
+                    }
+                });
+            });
+
+            // 修复展开收起功能
+            function initExpandButtons() {
+                $(".expand-btn").off('click').on('click', function(e) {
+                    e.stopPropagation();
+
+                    var $button = $(this);
+                    var articleId = $button.data('article-id');
+                    var $content = $("#content" + articleId);
+
+                    // 切换显示/隐藏
+                    $content.toggle();
+                });
+                $(".read-more-btn").off('click').on('click', function(e) {
+                    e.stopPropagation();
+                    var $button = $(this);
+                    var articleId = $button.data('article-id');
+
+                    if (!articleId) {
+                        var $card = $button.closest('.article-card');
+                        if ($card.length) {
+                            articleId = $card.attr('id').replace('article-', '');
+                        }
+                    }
+
+                    if (articleId) {
+                        var $content = $("#desc" + articleId);
+                        if ($content.length === 0) {
+                            $content = $button.closest('.article-content').find('.content-preview');
+                        }
+
+                        $content.toggleClass('expanded');
+
+                        if ($content.hasClass('expanded')) {
+                            $content.css('max-height', $content[0].scrollHeight + 'px');
+                            $button.html('<i class="fas fa-chevron-up"></i> 收起内容');
+
+                            // 隐藏渐变遮罩
+                            $content.find('.content-fade').css('opacity', '0');
+
+                            // 触发图片懒加载
+                            setTimeout(function() {
+                                $content.find('img[data-original]').each(function() {
+                                    var $img = $(this);
+                                    if ($img.attr('src') === '/img/unable_img.png') {
+                                        $img.attr('src', $img.data('original'));
+                                    }
+                                });
+                            }, 100);
+                        } else {
+                            $content.css('max-height', '360px');
+                            $button.html('<i class="fas fa-chevron-down"></i> 阅读更多');
+
+                            // 显示渐变遮罩
+                            $content.find('.content-fade').css('opacity', '1');
+                        }
+                    }
+                });
+            }
+
+            // 图片屏蔽功能
+            $("#unable_img").on('change', function() {
+                var isChecked = $(this).is(':checked');
+                $.cookie('unable_img', isChecked, { expires: 365, path: '/' });
+
+                showNotification(isChecked ? '已屏蔽图片' : '已显示图片', 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 500);
+            });
+
+            // 一目十行功能
+            $("#unable_desc").on('change', function() {
+                var isChecked = $(this).is(':checked');
+                $.cookie('unable_desc', isChecked, { expires: 365, path: '/' });
+
+                if (isChecked) {
+                    showNotification('已开启一目十行', 'success');
+                    // 立即应用一目十行效果
+                    applyScanReadingMode();
+                } else {
+                    showNotification('已关闭一目十行', 'success');
+                    removeScanReadingMode();
+                }
+
+                // 重新初始化展开按钮
+                initExpandButtons();
+            });
+
+            // 添加一目十行模式应用函数
+            function applyScanReadingMode() {
+                $('.article-card').each(function() {
+                    var $card = $(this);
+                    var $content = $card.find('.content-preview');
+                    var $readMoreBtn = $card.find('.read-more-btn');
+
+                    // 获取文章内容文本
+                    var contentText = $content.text().trim();
+
+                    // 判断是否需要折叠（根据内容长度或段落数量）
+                    var needsCollapse = contentText.length > 500 || (contentText.split('\n').length > 5);
+
+                    if (needsCollapse) {
+                        // 如果不是展开状态，则收起内容
+                        if (!$content.hasClass('expanded')) {
+                            // 添加折叠效果
+                            $content.css('max-height', '360px');
+                            $content.removeClass('expanded');
+
+                            // 确保渐变遮罩显示
+                            $card.find('.content-fade').css('opacity', '1');
+
+                            // 显示阅读更多按钮（如果不存在则创建）
+                            if ($readMoreBtn.length === 0) {
+                                var $readMoreDiv = $('<div class="read-more"><button type="button" class="read-more-btn"><i class="fas fa-chevron-down"></i>阅读更多</button></div>');
+                                $content.after($readMoreDiv);
+                                $readMoreBtn = $readMoreDiv.find('.read-more-btn');
+                                $readMoreBtn.data('article-id', $card.attr('id').replace('article-', ''));
+                            } else {
+                                $card.find('.read-more').show();
+                            }
+                        }
+                    } else {
+                        // 短内容保持展开
+                        $content.addClass('expanded');
+                        $content.css('max-height', 'none');
+                        $card.find('.read-more').hide();
+                    }
+                });
+
+                // 重新绑定展开按钮事件
+                initExpandButtons();
+            }
+
+            // 移除一目十行模式
+            function removeScanReadingMode() {
+                $('.content-preview').each(function() {
+                    var $content = $(this);
+                    $content.addClass('expanded');
+                    $content.css('max-height', 'none');
+                    $content.siblings('.read-more').hide();
+                });
+            }
+
+            // 图片点击恢复功能
+            $(document).on('click', '.content-preview img[data-original]', function() {
+                var $img = $(this);
+                if ($img.attr('src') === '/img/unable_img.png') {
+                    $img.attr('src', $img.data('original'));
+                    showNotification('已显示原图', 'success');
+                }
+            });
+
+            // 移动端检测
+            function checkMobile() {
+                var ua = navigator.userAgent;
+                var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+
+                if (isMobile) {
+                    $("#navBody").hide();
+                    $(".feed-list").hide();
+                } else {
+                    processNav(status);
+                }
+
+                return isMobile;
+            }
+
+            // 快速订阅
+            $(".feed_quick_sub").on('click', function() {
+                var feed_id = $(this).data('feed-id');
+                $.get("{{ url('/feeds/quickstore') }}", {"feed_id": feed_id}, function(result_arr) {
+                    if (result_arr.code != 9999) {
+                        showNotification(result_arr.msg, 'error');
+                    } else {
+                        showNotification(result_arr.msg, 'success');
+                    }
+                });
+            });
+
+            // 语音播放
+            // 全局语音控制
+            var speechControl = {
+                currentUtterance: null,
+                currentButton: null,
+
+                speak: function(text, button) {
+                    // 如果正在播放同一个内容，则停止
+                    if (this.currentButton && this.currentButton[0] === button[0]) {
+                        this.stop();
+                        return;
+                    }
+
+                    // 停止之前的播放
+                    this.stop();
+
+                    // 创建新的语音实例
+                    var utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 1;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+
+                    // 保存当前状态
+                    this.currentUtterance = utterance;
+                    this.currentButton = button;
+
+                    // 更新按钮状态
+                    button.addClass('playing').find('i')
+                        .removeClass('fa-play fa-pause')
+                        .addClass('fa-stop');
+
+                    // 事件监听
+                    utterance.onend = utterance.onerror = () => this.reset();
+
+                    // 开始播放
+                    speechSynthesis.speak(utterance);
+                },
+
+                stop: function() {
+                    if (this.currentUtterance) {
+                        speechSynthesis.cancel();
+                        this.reset();
+                    }
+                },
+
+                pause: function() {
+                    if (this.currentUtterance) {
+                        speechSynthesis.pause();
+                        this.currentButton.find('i')
+                            .removeClass('fa-stop')
+                            .addClass('fa-pause');
+                    }
+                },
+
+                resume: function() {
+                    if (this.currentUtterance) {
+                        speechSynthesis.resume();
+                        this.currentButton.find('i')
+                            .removeClass('fa-pause')
+                            .addClass('fa-stop');
+                    }
+                },
+
+                reset: function() {
+                    if (this.currentButton) {
+                        this.currentButton.removeClass('playing').find('i')
+                            .removeClass('fa-stop fa-pause')
+                            .addClass('fa-play');
+                    }
+                    this.currentUtterance = null;
+                    this.currentButton = null;
+                },
+
+                setVoice: function(voiceName) {
+                    var voices = speechSynthesis.getVoices();
+                    var voice = voices.find(v => v.name === voiceName);
+                    if (voice && this.currentUtterance) {
+                        this.currentUtterance.voice = voice;
+                    }
+                }
+            };
+
+            $(".playaudio").on('click', function() {
+                var $button = $(this);
+                var articleId = $button.data('article-id');
+                var $content = $("#content" + articleId);
+
+                var textToSpeak = $content.text().trim();
+                if (!textToSpeak) {
+                    showNotification('没有内容可朗读', 'warning');
+                    return;
+                }
+
+                // 清理文本
+                textToSpeak = textToSpeak
+                    .substring(0, 10000) // 限制长度
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                if (!textToSpeak) return;
+
+                speechControl.speak(textToSpeak, $button);
+            });
+
+            // 关闭音频播放器
+            $("#audioClose").on('click', function() {
+                $("#audioPlayer").removeClass('active');
+                $("#audio")[0].pause();
+            });
+
+            // 分享功能 - 修复显示和位置问题
+            function initShareButtons() {
+                $(".share-btn").off('click').on('click', function(e) {
+                    e.stopPropagation();
+                    var $shareMenu = $(this).siblings('.share-menu');
+
+                    // 关闭其他分享菜单
+                    $('.share-menu').not($shareMenu).removeClass('active');
+
+                    // 切换当前分享菜单
+                    $shareMenu.toggleClass('active');
+                });
+            }
+
+            // 点击外部关闭分享菜单
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.share-container').length) {
+                    $('.share-menu').removeClass('active');
+                }
+            });
+
+            // 记录想法
+            $(document).on('click', '.icon-heart', function() {
+                var title = $(this).data('title');
+                var id = $(this).data('id');
+                var url = $(this).data('url');
+                window.open('/notes?&source_type=2&source_id=' + id);
+            });
+
+            // AI助手 - 修复refer_text参数
+            $(".ai-assist-btn").on('click', function() {
+                console.log('AI助手 - 获取内容ID')
+                var contentId = $(this).data('content-id');
+
+                // 调用全局函数，传递refer_text
+                openAskAIModal(contentId);
+            });
+
+            // 通知函数
+            function showNotification(message, type = 'success') {
+                var bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+                var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+                var notification = $(
+                    '<div class="fixed top-4 right-4 z-50 max-w-sm w-full animate-fadeIn">' +
+                    '<div class="' + bgColor + ' text-white p-4 rounded-lg shadow-lg flex items-center justify-between transform translate-x-full transition-transform duration-300">' +
+                    '<div class="flex items-center">' +
+                    '<i class="fas ' + icon + ' mr-3"></i>' +
+                    '<span class="text-sm">' + message + '</span>' +
+                    '</div>' +
+                    '<button class="text-white hover:text-gray-200 ml-4" onclick="$(this).closest(\'.fixed\').remove()">' +
+                    '<i class="fas fa-times"></i>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                $('body').append(notification);
+
+                // 显示通知
+                setTimeout(function() {
+                    notification.find('div:first').removeClass('translate-x-full');
+                }, 10);
+
+                // 3秒后自动隐藏
+                setTimeout(function() {
+                    notification.find('div:first').addClass('translate-x-full');
+                    setTimeout(function() {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+
+            // 初始化
+            checkMobile();
+
+            // 检查是否启用了一目十行
+            if (unableDesc) {
+                // 延迟执行以确保DOM完全加载
+                setTimeout(function() {
+                    applyScanReadingMode();
+                }, 100);
+            }
+
+            initExpandButtons();
+            initShareButtons();
+
+            // 图片懒加载初始化
+            if (typeof $.fn.lazyload === 'function') {
+                $("img.lazy").lazyload({
+                    effect: "fadeIn",
+                    threshold: 200
+                });
+            }
+        });
+    </script>
+@endsection

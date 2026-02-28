@@ -18,9 +18,9 @@ class CourseController extends Controller
     }
 
     /**
-     * 课程列表页
+     * 课程管理
      */
-    public function index(Request $request)
+    public function management(Request $request)
     {
         $userId = auth()->id();
         
@@ -41,7 +41,7 @@ class CourseController extends Controller
             'user_created_courses' => $userCreatedCourses,
             'public_courses' => $publicCourses,
             'user_course_ids' => $userCourseIds
-        ]), 'courses.index');
+        ]), 'courses.management');
     }
 
     /**
@@ -203,7 +203,7 @@ class CourseController extends Controller
     /**
      * 我的课程
      */
-    public function myCourse(Request $request)
+    public function index(Request $request)
     {
         $userId = auth()->id();
         
@@ -212,6 +212,6 @@ class CourseController extends Controller
         
         return $this->jsonAndViewAutoResponse($request, ResponseDataUtil::genSimpleSucc([
             'user_courses' => $userCourses
-        ]), 'courses.mycourse');
+        ]), 'courses.index');
     }
 }

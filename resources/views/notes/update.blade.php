@@ -1,277 +1,944 @@
 @extends('layouts.app')
 
-<style>
-    audio {
-        display: block;
-        margin-bottom: 10px;
-    }
-
-    #audio-container {
-        padding: 20px 0;
-    }
-
-    .ui-btn {
-        display: inline-block;
-        padding: 5px 20px;
-        font-size: 14px;
-        line-height: 1.428571429;
-        box-sizing: content-box;
-        text-align: center;
-        border: 1px solid #e8e8e8;
-        border-radius: 3px;
-        color: #555;
-        background-color: #fff;
-        border-color: #e8e8e8;
-        white-space: nowrap;
-        cursor: pointer;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
-    .ui-btn:hover, .ui-btn.hover {
-        color: #333;
-        text-decoration: none;
-        background-color: #f8f8f8;
-        border: 1px solid #ddd;
-    }
-
-    .ui-btn:focus, .ui-btn:active {
-        color: #333;
-        outline: 0;
-    }
-
-    .ui-btn.disabled, .ui-btn.disabled:hover, .ui-btn.disabled:active, .ui-btn[disabled], .ui-btn[disabled]:hover, .ui-state-disabled .ui-btn {
-        cursor: not-allowed;
-        background-color: #eee;
-        border-color: #eee;
-        color: #aaa;
-    }
-
-    .ui-btn-primary {
-        color: #fff;
-        background-color: #39b54a;
-        border-color: #39b54a;
-    }
-
-    .ui-btn-primary:hover, .ui-btn-primary.hover {
-        color: #fff;
-        background-color: #16a329;
-        border-color: #16a329;
-    }
-
-    .ui-btn-primary:focus, .ui-btn-primary:active {
-        color: #fff;
-    }
-
-    .ui-btn-primary.disabled:focus {
-        color: #aaa;
-    }
-
-    .post-text {
-        padding: 10px;
-        font-size: 18px;
-        line-height: 1.6;
-    }
-    code {
-        display: inline-block;
-        padding: 2px 4px;
-        font-size: 90%;
-        color: #c7254e;
-        background-color: #f9f2f4;
-        border-radius: 4px;
-        font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-    }
-</style>
-
-<script>
-    function submitProcess($status) {
-        document.getElementById('status_id').value = $status;
-        document.getElementById('update_note_form').submit();
-    }
-
-    function addContent($content) {
-        note_name = document.getElementById('note-name');
-        if ($content == 'code') {
-            note_name.value = note_name.value + "\n<code>\n</code>";
-        } else {
-            note_name.value = note_name.value + $content;
-        }
-    }
-
-</script>
-
-<script src="js/recorder/recorder.js"></script>
-
-<script>
-    window.onload = function () {
-
-        var start = document.querySelector('#start');
-        var stop = document.querySelector('#stop');
-        var container = document.querySelector('#audio-container');
-        var recorder = new Recorder({
-            sampleRate: 44100, //采样频率，默认为44100Hz(标准MP3采样率)
-            bitRate: 128, //比特率，默认为128kbps(标准MP3质量)
-            success: function () { //成功回调函数
-                start.disabled = false;
-            },
-            error: function (msg) { //失败回调函数
-                start.value = '录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
-            },
-            fix: function (msg) { //不支持H5录音回调函数
-                start.value = '录音(该浏览器暂不支持,请使用chrome/360/firefox等)';
-            }
-        });
-
-        //开始录音
-        //recorder.start();
-
-        //停止录音
-        //recorder.stop();
-
-        //获取MP3编码的Blob格式音频文件
-        //recorder.getBlob(function(blob){ 获取成功回调函数，blob即为音频文件
-        //    ...
-        //},function(msg){ 获取失败回调函数，msg为错误信息
-        //    ...
-        //});
-
-        //getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS.
-
-        start.addEventListener('click', function () {
-            this.disabled = true;
-            stop.disabled = false;
-            var audio = document.querySelectorAll('audio');
-            for (var i = 0; i < audio.length; i++) {
-                if (!audio[i].paused) {
-                    audio[i].pause();
-                }
-            }
-            recorder.start();
-        });
-        stop.addEventListener('click', function () {
-            this.disabled = true;
-            start.disabled = false;
-            recorder.stop();
-            recorder.getBlob(function (blob) {
-                if ($("#note-name").val().indexOf("#分享语音#") == -1) {
-                    $("#note-name").val("#分享语音#");
-                }
-
-                var childs = container.childNodes;
-                for (var i = 0; i < childs.length; i++) {
-                    container.removeChild(childs[i]);
-                }
-
-                var audio = document.createElement('audio');
-                audio.src = URL.createObjectURL(blob);
-                audio.controls = true;
-                container.appendChild(audio);
-
-                //upload
-                var fd = new FormData();
-                fname = '{{ md5(date('YmdHis').rand(0,99)) }}';
-                fd.append('fname', fname);
-                fd.append('file', blob);
-                fd.append('_token', "{{ csrf_token() }}");
-
-                $.ajax({
-                    type: 'POST',
-                    url: '{{ url("notes/upload") }}',
-                    data: fd,
-                    processData: false,
-                    contentType: false
-                }).done(function (data) {
-                    data_arr = JSON.parse(data);
-                    if (data_arr.code == 9999) {
-                        $("#fname").val(fname);
-                    }
-                });
-            });
-        });
-    };
-</script>
+@section('title', '编辑笔记 - 蒙太奇')
+@section('description', '编辑您的笔记内容')
 
 @section('content')
-    <script type="text/javascript">
-        $(document).ready(function () {
+    <!-- 引入Markdown编辑器 -->
+    <link href="https://unpkg.com/easymde/dist/easymde.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
 
+    <style>
+        /* 整体布局优化 */
+        .edit-note-container {
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        /* 卡片样式优化 */
+        .edit-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid var(--gray-100);
+        }
+
+        /* 页面头部与卡片融合 */
+        .edit-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--gray-100);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .header-icon i {
+            font-size: 20px;
+            color: white;
+        }
+
+        .title-text h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .title-text p {
+            font-size: 14px;
+            color: var(--gray-500);
+        }
+
+        /* 状态标签优化 */
+        .status-badge-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid transparent;
+        }
+
+        .status-private {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .status-public {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            color: #16a34a;
+            border-color: #bbf7d0;
+        }
+
+        /* Markdown编辑器样式优化 */
+        .editor-section {
+            padding: 28px;
+        }
+
+        .section-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-label i {
+            color: var(--primary-color);
+        }
+
+        .editor-toolbar {
+            border: 1px solid var(--gray-200) !important;
+            border-bottom: none !important;
+            border-radius: 8px 8px 0 0;
+            background: linear-gradient(to bottom, #ffffff, #f8fafc) !important;
+            padding: 12px !important;
+        }
+
+        .editor-toolbar button {
+            color: var(--gray-600) !important;
+            border: 1px solid var(--gray-200) !important;
+            background: white !important;
+            border-radius: 6px !important;
+            margin: 2px !important;
+            padding: 8px !important;
+        }
+
+        .editor-toolbar button:hover {
+            color: var(--primary-color) !important;
+            background: #eff6ff !important;
+            border-color: var(--primary-color) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+        }
+
+        .editor-toolbar button.active {
+            color: var(--primary-color) !important;
+            background: #dbeafe !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .CodeMirror {
+            border: 1px solid var(--gray-200) !important;
+            border-radius: 0 0 8px 8px;
+            font-family: 'Inter', 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 320px;
+            background: white !important;
+            transition: all 0.2s ease;
+        }
+
+        .CodeMirror-focused {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        /* 快捷标签优化 */
+        .quick-tags-container {
+            margin: 20px 0;
+        }
+
+        .tags-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .quick-tag {
+            padding: 10px 14px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .quick-tag:hover {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        /* 录音功能优化 */
+        .recording-section {
+            padding: 24px 28px;
+            background: linear-gradient(135deg, #fef2f2, #fecaca, 0.05);
+            border-top: 1px solid var(--gray-100);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .record-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .record-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        #start-record {
+            background: linear-gradient(135deg, var(--primary-color), #2563eb);
+            color: white;
+        }
+
+        #start-record:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 6px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        #stop-record {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        #stop-record:hover:not(:disabled) {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 6px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        /* 音频播放器优化 */
+        .audio-player-card {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+
+        .audio-player {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .audio-player-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #2563eb);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .audio-player-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        /* 操作按钮区域 */
+        .action-section {
+            padding: 24px 28px;
+            background: #f8fafc;
+            border-top: 1px solid var(--gray-100);
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .action-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* 按钮样式优化 */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        .btn-outline:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #2563eb);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+            color: var(--gray-700);
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, var(--gray-200), var(--gray-300));
+            transform: translateY(-1px);
+        }
+
+        .ai-assist-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .ai-assist-btn:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
+        }
+
+        /* 操作提示卡片 */
+        .tips-card {
+            margin-top: 24px;
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1px solid #fcd34d;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .tips-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .tips-header i {
+            color: #f59e0b;
+            font-size: 18px;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .tip-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid rgba(245, 158, 11, 0.1);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .edit-header {
+                padding: 20px;
+            }
+
+            .editor-section,
+            .recording-section,
+            .action-section {
+                padding: 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .action-left,
+            .action-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .tags-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    @include('components.ai-ask-modal')
+
+    <script src="/js/recorder/recorder.js"></script>
+    <script>
+        // 全局变量
+        let recorder = null;
+        let easymde = null;
+        let isRecording = false;
+        let timerInterval = null;
+        let startTime = null;
+
+        // 初始化Markdown编辑器
+        function initMarkdownEditor() {
+            easymde = new EasyMDE({
+                element: document.getElementById('markdown-editor'),
+                spellChecker: false,
+                status: false,
+                autosave: {
+                    enabled: false
+                },
+                placeholder: '开始编辑您的笔记...',
+                renderingConfig: {
+                    singleLineBreaks: false,
+                    codeSyntaxHighlighting: true,
+                },
+                previewClass: ['editor-preview', 'markdown-content'],
+                toolbar: [
+                    'heading', 'bold', 'italic', 'strikethrough', '|',
+                    'quote', 'unordered-list', 'ordered-list', '|',
+                    'link', 'image', 'code', 'table', '|',
+                    'preview', 'side-by-side', 'fullscreen', '|',
+                    {
+                        name: "ai-assist",
+                        action: function() {
+                            openAskAIModal('markdown-editor', 'markdown-editor', '请帮我优化这段Markdown内容');
+                        },
+                        className: "fas fa-robot",
+                        title: "AI助手"
+                    }
+                ],
+                sideBySideFullscreen: false,
+                minHeight: '320px',
+                forceSync: true
+            });
+
+            // 加载现有内容
+            const noteContent = document.getElementById('note-content').value;
+            if (noteContent) {
+                easymde.value(noteContent);
+            }
+        }
+
+        // 添加快捷内容
+        function addContent(type, content) {
+            if (!easymde) return;
+
+            switch(type) {
+                case 'tag':
+                    easymde.codemirror.replaceSelection(`#${content}# `);
+                    break;
+                case 'code':
+                    easymde.codemirror.replaceSelection('\n```\n// 在这里输入代码\n```\n');
+                    break;
+                case 'heading':
+                    easymde.codemirror.replaceSelection(`${content} `);
+                    break;
+                case 'list':
+                    easymde.codemirror.replaceSelection(`- ${content}\n`);
+                    break;
+            }
+
+            easymde.codemirror.focus();
+        }
+
+        // 提交表单
+        function submitProcess(status) {
+            // 同步编辑器内容到textarea
+            if (easymde) {
+                document.getElementById('note-content').value = easymde.value();
+            }
+
+            // 设置状态并提交
+            document.getElementById('status_id').value = status;
+            document.getElementById('update_note_form').submit();
+        }
+
+        // 录音功能
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function startRecording() {
+            if (!recorder) {
+                alert('录音功能初始化失败，请刷新页面重试');
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    recorder.start();
+
+                    document.getElementById('start-record').disabled = true;
+                    document.getElementById('stop-record').disabled = false;
+
+                    startTime = new Date();
+                    timerInterval = setInterval(function() {
+                        const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
+                        document.getElementById('record-timer').textContent = formatTime(elapsedSeconds);
+                    }, 1000);
+
+                    isRecording = true;
+
+                    // 显示录音状态
+                    document.getElementById('record-status').innerHTML = `
+                    <div style="margin-top: 12px; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+                        <span style="color: #dc2626; font-weight: 500;">正在录音中...</span>
+                        <span id="audio-timer" style="margin-left: auto; color: #dc2626; font-family: monospace;">00:00</span>
+                    </div>
+                `;
+                })
+                .catch(function(err) {
+                    console.error('麦克风权限被拒绝:', err);
+                    alert('需要麦克风权限才能录音。请在浏览器设置中允许麦克风访问。');
+                });
+        }
+
+        function stopRecording() {
+            if (!recorder || !isRecording) return;
+
+            recorder.stop();
+            isRecording = false;
+
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            recorder.getBlob(function(blob) {
+                // 添加录音标记到编辑器
+                if (easymde) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    easymde.codemirror.replaceSelection(`\n\n🎤 录音记录 ${timestamp}\n`);
+                }
+
+                // 上传音频
+                uploadAudioFile(blob);
+            });
+
+            document.getElementById('start-record').disabled = false;
+            document.getElementById('stop-record').disabled = true;
+            document.getElementById('record-status').innerHTML = '';
+        }
+
+        function uploadAudioFile(blob) {
+            const formData = new FormData();
+            const filename = '{{ md5(date("YmdHis").rand(0,99)) }}.mp3';
+
+            formData.append('file', blob, filename);
+            formData.append('_token', "{{ csrf_token() }}");
+
+            $.ajax({
+                url: '{{ url("notes/upload") }}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    try {
+                        const data = JSON.parse(response);
+                        if (data.code == 9999) {
+                            document.getElementById('fname').value = filename;
+                            showToast('🎤 录音已保存并添加到笔记', 'success');
+                        }
+                    } catch (e) {
+                        console.error('上传失败:', e);
+                        showToast('录音上传失败，请重试', 'error');
+                    }
+                },
+                error: function() {
+                    showToast('录音上传失败，请检查网络连接', 'error');
+                }
+            });
+        }
+
+        // 显示提示
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white animate-fade-in ${
+                type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' :
+                        type === 'info' ? 'bg-blue-500' : 'bg-gray-500'
+            }`;
+            toast.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' :
+                type === 'error' ? 'exclamation-circle' :
+                    type === 'info' ? 'info-circle' : 'bell'} mr-3"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 hover:opacity-80">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Markdown编辑器
+            initMarkdownEditor();
+
+            // 初始化录音器
+            try {
+                recorder = new Recorder({
+                    sampleRate: 44100,
+                    bitRate: 128,
+                    success: function() {
+                        document.getElementById('start-record').disabled = false;
+                        document.getElementById('start-record').innerHTML = '<i class="fas fa-microphone"></i>';
+                    },
+                    error: function(msg) {
+                        console.error('录音器初始化失败:', msg);
+                        document.getElementById('start-record').disabled = true;
+                        document.getElementById('start-record').innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                        document.getElementById('start-record').title = '录音功能不可用';
+                    }
+                });
+            } catch (error) {
+                console.error('录音器初始化失败:', error);
+            }
+
+            // 如果有现有录音，初始化播放器
+            @if(!empty($note->record_path))
+            initExistingAudioPlayer();
+            @endif
         });
+
+        // 初始化现有音频播放器
+        function initExistingAudioPlayer() {
+            const audioUrl = '{{ url("note/getRecord/".$note->id) }}';
+            const container = document.getElementById('existing-audio-container');
+
+            if (container) {
+                container.innerHTML = `
+                <div class="audio-player-card">
+                    <div class="text-sm font-medium text-gray-700 mb-3">📼 已保存的录音</div>
+                    <div class="audio-player">
+                        <button class="audio-player-btn" onclick="playAudio(this)">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <div style="flex: 1">
+                            <div style="font-weight: 500; color: var(--gray-700);">原有录音</div>
+                            <div style="font-size: 13px; color: var(--gray-500);">点击播放按钮试听</div>
+                        </div>
+                        <audio id="existing-audio" src="${audioUrl}" preload="metadata"></audio>
+                    </div>
+                </div>
+            `;
+            }
+        }
+
+        function playAudio(button) {
+            const audio = document.getElementById('existing-audio');
+            const icon = button.querySelector('i');
+
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fas fa-pause';
+                button.onclick = function() { pauseAudio(button); };
+
+                // 监听播放结束
+                audio.onended = function() {
+                    icon.className = 'fas fa-play';
+                    button.onclick = function() { playAudio(button); };
+                };
+            } else {
+                audio.pause();
+                icon.className = 'fas fa-play';
+                button.onclick = function() { playAudio(button); };
+            }
+        }
+
+        function pauseAudio(button) {
+            const audio = document.getElementById('existing-audio');
+            const icon = button.querySelector('i');
+
+            audio.pause();
+            icon.className = 'fas fa-play';
+            button.onclick = function() { playAudio(button); };
+        }
     </script>
-    <div class="container">
-        <div class=" col-md-12">
-            @include('common.success')
-            <div class="card">
-                <div class="card-header">
-                    修改笔记
-                    <div class="form-inline" style="float:right">
-                        <form action="{{url('notes')}}" method="get">
-                            <input type="text" name="keyword" class="" placeholder="搜索笔记"/>
-                            <input type="submit" value="搜 索"/>
-                        </form>
+
+    <div class="edit-note-container">
+        <!-- 成功消息 -->
+        @include('common.success')
+
+        <!-- 主要编辑卡片 -->
+        <div class="edit-card">
+            <!-- 页面头部（融合到卡片内） -->
+            <div class="edit-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <div class="header-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="title-text">
+                            <h1>编辑笔记</h1>
+                            <p>修改您的笔记内容，支持Markdown格式和录音功能</p>
+                        </div>
+                    </div>
+                    <div class="status-badge-container">
+                    <span class="status-badge {{ $note->status == 2 ? 'status-public' : 'status-private' }}">
+                        <i class="fas fa-{{ $note->status == 2 ? 'globe' : 'lock' }} mr-2"></i>
+                        {{ $note->status == 2 ? '公开' : '私密' }}
+                    </span>
                     </div>
                 </div>
 
-                <div class="card-body">
-                    <!-- Display Validation Errors -->
-                @include('common.errors')
-
-                <!-- New note Form -->
-                    <form action="{{ url('noteupdate/'.$note->id) }}" method="POST" class="form-horizontal"
-                          id="update_note_form">
-                    {{ csrf_field() }}
-
-                    <!-- note Name -->
-                        <div class="form-group row">
-                            <label for="note-name" class="col-md-2 control-label">你在想什么呢</label>
-
-                            <div class="col-md-10">
-                                <textarea class="form-control" rows="4" name="name"
-                                          id="note-name">{{ $note->name }}</textarea>
-
-                                <br/>
-                                <span>推荐话题:</span>
-                                <a href="javascript:void(0)" onclick="addContent('#每日小目标#')">#每日小目标#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#每日总结#')">#每日总结#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#读书笔记#')">#读书笔记#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#分享#')">#分享#</a>
-                                <a href="javascript:void(0)" onclick="addContent('#碎碎念#')">#碎碎念#</a>
-                                <a href="javascript:void(0)" onclick='addContent("code")'>[代码片段]</a>
-                            </div>
-                        </div>
-
-                        <!-- Add note Button -->
-                        <div class="form-group row">
-                            <div class="col-md-offset-3 col-md-6">
-                                <input type="hidden" name="status" value="{{ $note->status }}" id="status_id">
-
-                                @if($note->status == 1)
-                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(2)">
-                                        <i class="fa fa-btn fa-plus"></i>公开发布
-                                    </button>
-
-                                    <button type="button" class="btn btn-primary" onclick="submitProcess(1)">
-                                        <i class="fa fa-btn fa-plus"></i>私密发布
-                                    </button>
-                                @else
-                                    <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
-                                        <i class="fa fa-btn fa-plus"></i>私密发布
-                                    </button>
-
-                                    <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
-                                        <i class="fa fa-btn fa-plus"></i>公开发布
-                                    </button>
-                                @endif
-
-
-                            </div>
-                        </div>
-                    </form>
+                <!-- 快速操作 -->
+                <div class="flex items-center gap-2 mt-4">
+                    <a href="{{ url('/notes') }}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        返回列表
+                    </a>
+                    <div class="text-sm text-gray-500 ml-4">
+                        <i class="fas fa-clock mr-1"></i>
+                        最后更新: {{ $note->updated_at->diffForHumans() }}
+                    </div>
                 </div>
             </div>
 
+            <!-- 错误提示 -->
+            @include('common.errors')
+
+            <!-- 编辑表单 -->
+            <form action="{{ url('noteupdate/'.$note->id) }}" method="POST" id="update_note_form">
+                {!! csrf_field() !!}
+                <input type="hidden" name="_method" value="PUT">
+
+                <!-- 笔记内容编辑区域 -->
+                <div class="editor-section">
+                    <div class="section-label">
+                        <i class="fas fa-edit"></i>
+                        笔记内容
+                    </div>
+
+                    <!-- Markdown编辑器 -->
+                    <textarea id="markdown-editor" name="name" style="display: none;"></textarea>
+                    <input type="hidden" id="note-content" value="{{ $note->name }}">
+
+                    <!-- 快捷标签 -->
+                    <div class="quick-tags-container">
+                        <div class="text-sm font-medium text-gray-700 mb-2">快速插入</div>
+                        <div class="tags-grid">
+                            <div class="quick-tag" onclick="addContent('tag', '每日总结')">
+                                <i class="fas fa-tag"></i>
+                                每日总结
+                            </div>
+                            <div class="quick-tag" onclick="addContent('tag', '读书笔记')">
+                                <i class="fas fa-book"></i>
+                                读书笔记
+                            </div>
+                            <div class="quick-tag" onclick="addContent('tag', '工作思考')">
+                                <i class="fas fa-briefcase"></i>
+                                工作思考
+                            </div>
+                            <div class="quick-tag" onclick="addContent('tag', '灵感闪现')">
+                                <i class="fas fa-lightbulb"></i>
+                                灵感闪现
+                            </div>
+                            <div class="quick-tag" onclick="addContent('code', '')">
+                                <i class="fas fa-code"></i>
+                                代码块
+                            </div>
+                            <div class="quick-tag" onclick="addContent('heading', '##')">
+                                <i class="fas fa-heading"></i>
+                                二级标题
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 现有录音 -->
+                @if(!empty($note->record_path))
+                    <div class="recording-section">
+                        <div id="existing-audio-container"></div>
+                    </div>
+                @endif
+
+                <!-- 录音功能 -->
+                <div class="recording-section">
+                    <div class="section-label">
+                        <i class="fas fa-microphone"></i>
+                        添加新录音
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">录制音频并自动插入到笔记中</p>
+
+                    <div class="audio-controls">
+                        <button type="button" id="start-record" class="record-btn" onclick="startRecording()" disabled>
+                            <i class="fas fa-microphone-slash"></i>
+                        </button>
+                        <button type="button" id="stop-record" class="record-btn" onclick="stopRecording()" disabled>
+                            <i class="fas fa-stop"></i>
+                        </button>
+                        <div class="text-sm text-gray-500">
+                            确保麦克风权限已开启
+                        </div>
+                    </div>
+                    <div id="record-status"></div>
+                </div>
+
+                <!-- 隐藏字段 -->
+                <input type="hidden" name="status" id="status_id" value="{{ $note->status }}">
+                <input type="hidden" name="fname" id="fname" value="">
+
+                <!-- 表单操作 -->
+                <div class="action-section">
+                    <div class="action-buttons">
+                        <div class="action-left">
+                            <button type="button" class="btn ai-assist-btn" onclick="openAskAIModal('markdown-editor', 'markdown-editor', '请帮我优化这段Markdown内容')">
+                                <i class="fas fa-robot"></i>
+                                AI润色
+                            </button>
+                        </div>
+
+                        <div class="action-right">
+                            @if($note->status == 2)
+                                <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
+                                    <i class="fas fa-lock"></i>
+                                    设为私密
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
+                                    <i class="fas fa-globe"></i>
+                                    保持公开
+                                </button>
+                            @else
+                                <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
+                                    <i class="fas fa-lock"></i>
+                                    保持私密
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
+                                    <i class="fas fa-globe"></i>
+                                    设为公开
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- 操作提示 -->
+        <div class="tips-card">
+            <div class="tips-header">
+                <i class="fas fa-lightbulb"></i>
+                <h3 class="text-sm font-medium text-gray-900">使用提示</h3>
+            </div>
+            <div class="tips-grid">
+                <div class="tip-item">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-edit text-blue-600 text-xs"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900">Markdown编辑</span>
+                    </div>
+                    <p class="text-xs text-gray-600">支持标题、列表、代码块等格式，提升可读性</p>
+                </div>
+                <div class="tip-item">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-robot text-purple-600 text-xs"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900">AI助手</span>
+                    </div>
+                    <p class="text-xs text-gray-600">使用AI润色功能优化您的笔记内容</p>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
-

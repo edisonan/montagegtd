@@ -115,7 +115,15 @@ class LlmConversationService
             throw new ValidationException($validator);
         }
 
-        return $this->repository->update($id, $validator->validated());
+        // Laravel 5.5 兼容性处理：使用验证后的数据
+        $validatedData = [];
+        foreach ($validator->getData() as $key => $value) {
+            if ($validator->hasRule($key, ['sometimes', 'required', 'nullable', 'exists', 'string', 'array', 'integer', 'numeric', 'date'])) {
+                $validatedData[$key] = $value;
+            }
+        }
+
+        return $this->repository->update($id, $validatedData);
     }
 
     /**
