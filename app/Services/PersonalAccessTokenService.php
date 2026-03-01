@@ -19,13 +19,14 @@ class PersonalAccessTokenService
      */
     public function createToken(array $data): array
     {
-        $token = $this->repository->createToken($data);
-        
+        $tokenPayload = $this->repository->createToken($data);
+        $token = $tokenPayload['token'];
+
         // 返回令牌信息，但不包含哈希值
         return [
             'id' => $token->id,
             'name' => $token->name,
-            'token' => $token->token, // 实际的令牌值，只在创建时返回
+            'token' => $tokenPayload['plain_text_token'], // 实际的令牌值，只在创建时返回
             'scopes' => $token->scopes,
             'expires_at' => $token->expires_at,
             'created_at' => $token->created_at,
@@ -49,9 +50,17 @@ class PersonalAccessTokenService
     }
 
     /**
+     * 撤销令牌（保留记录）
+     */
+    public function revokeToken(int $id, int $userId): bool
+    {
+        return $this->repository->revokeToken($id, $userId);
+    }
+
+    /**
      * 验证令牌并返回令牌对象
      */
-    public function validateToken(string $token): ?PersonalAccessToken
+    public function validateToken(string $token)
     {
         return $this->repository->validateToken($token);
     }
@@ -67,7 +76,7 @@ class PersonalAccessTokenService
     /**
      * 记录令牌使用日志
      */
-    public function logTokenUsage(PersonalAccessToken $token, string $endpoint, ?string $ip = null, ?string $userAgent = null): void
+    public function logTokenUsage(PersonalAccessToken $token, string $endpoint, $ip = null, $userAgent = null)
     {
         $this->repository->logTokenUsage($token, $endpoint, $ip, $userAgent);
     }

@@ -21,6 +21,27 @@ https://gitee.com/accacc/task
 - laravel: 5.5.*
 - mysql:>=5.5.*
 
+## Personal Access Token API
+
+项目已提供基于 PAT 的 API 路由（前缀：`/api/v1`），认证头格式：
+
+```bash
+Authorization: Bearer {personal_access_token}
+```
+
+scope 分层约定：
+
+- `read`：查询接口（如 `GET /api/v1/auth/me`、会话/模型查询）
+- `write`：写接口（如会话创建、聊天、智能体增删改）
+- `admin`：高权限配置接口（如 provider/model/credential 管理）
+
+示例：
+
+```bash
+curl -H "Authorization: Bearer <TOKEN>" \
+  https://your-domain/api/v1/auth/me
+```
+
 ## 功能特性
 
 1. 番茄工作法+任务列表

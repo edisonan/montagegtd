@@ -13,7 +13,7 @@ class PersonalAccessTokenController extends Controller
 
     public function __construct(PersonalAccessTokenService $tokenService)
     {
-        $this->middleware('auth'); // 需要用户登录
+        $this->middleware('auth')->except(['verify']); // PAT校验接口由personal.token中间件负责
         $this->tokenService = $tokenService;
     }
 
@@ -74,10 +74,15 @@ class PersonalAccessTokenController extends Controller
     public function destroy(Request $request, $id)
     {
         $userId = Auth::id();
-        
-        if ($this->tokenService->deleteToken($id, $userId)) {
+        $forceDelete = (bool)$request->input('force_delete', false);
+
+        $success = $forceDelete
+            ? $this->tokenService->deleteToken($id, $userId)
+            : $this->tokenService->revokeToken($id, $userId);
+
+        if ($success) {
             return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc([
-                'msg' => 'Token deleted successfully'
+                'msg' => $forceDelete ? 'Token deleted successfully' : 'Token revoked successfully'
             ]));
         }
 
@@ -92,13 +97,25 @@ class PersonalAccessTokenController extends Controller
      */
     public function verify(Request $request)
     {
-        $token = $request->user(); // 通过中间件获取用户
+        $user = $request->user(); // 通过中间件获取用户
+        $personalAccessToken = $request->attributes->get('personal_access_token');
+
         return response()->json([
             'code' => 9999,
             'msg' => 'Token is valid',
             'result' => [
-                'user' => $token,
-                'token_scopes' => $request->attributes->get('personal_access_token')->scopes
+                'user' => [
+                    'id' => $user->id ?? null,
+                    'name' => $user->name ?? null,
+                    'email' => $user->email ?? null,
+                ],
+                'token' => [
+                    'id' => $personalAccessToken->id ?? null,
+                    'name' => $personalAccessToken->name ?? null,
+                    'scopes' => $personalAccessToken->scopes ?? [],
+                    'last_used_at' => $personalAccessToken->last_used_at ?? null,
+                    'expires_at' => $personalAccessToken->expires_at ?? null,
+                ],
             ]
         ]);
     }

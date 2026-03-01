@@ -14,14 +14,21 @@ class PersonalAccessToken extends Model
         'token',
         'token_hash',
         'scopes',
+        'revoked_at',
         'last_used_at',
         'expires_at',
     ];
 
     protected $casts = [
         'scopes' => 'array',
+        'revoked_at' => 'datetime',
         'expires_at' => 'datetime',
         'last_used_at' => 'datetime',
+    ];
+
+    protected $hidden = [
+        'token',
+        'token_hash',
     ];
 
     /**
@@ -56,7 +63,15 @@ class PersonalAccessToken extends Model
      */
     public function isValid(): bool
     {
-        return !$this->isExpired();
+        return !$this->isExpired() && !$this->isRevoked();
+    }
+
+    /**
+     * 检查令牌是否已撤销
+     */
+    public function isRevoked(): bool
+    {
+        return !empty($this->revoked_at);
     }
 
     /**
@@ -64,7 +79,7 @@ class PersonalAccessToken extends Model
      */
     public function can(string $scope): bool
     {
-        $scopes = $this->scopes;
+        $scopes = is_array($this->scopes) ? $this->scopes : [];
         if (in_array('*', $scopes)) {
             return true;
         }
@@ -74,8 +89,16 @@ class PersonalAccessToken extends Model
     /**
      * 更新最后使用时间
      */
-    public function updateLastUsedAt(): void
+    public function updateLastUsedAt()
     {
         $this->update(['last_used_at' => now()]);
+    }
+
+    /**
+     * 撤销令牌
+     */
+    public function revoke()
+    {
+        $this->update(['revoked_at' => now()]);
     }
 }
