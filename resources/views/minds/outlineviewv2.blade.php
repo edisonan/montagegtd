@@ -289,6 +289,10 @@
     </div>
 
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         $(document).ready(function(){
             let mindData = null;
             let allRemarksVisible = true;
@@ -299,23 +303,21 @@
 
             // 加载思维导图数据
             function loadMindData() {
-                $.ajax({
-                    url: "{{ url('/mindajaxget') }}/{{$mind->id}}",
-                    type: 'GET',
-                    data: {_token: "{{ csrf_token() }}"},
-                    success: function(res) {
-                        if(res.code != 9999){
-                            showError('加载失败，请稍后再试');
-                        } else {
-                            mindData = JSON.parse(res.result.jsmind_datas);
-                            hideLoading();
-                            renderMindList(mindData);
-                            updateStats();
-                        }
-                    },
-                    error: function() {
-                        showError('网络错误，请检查连接后重试');
+                if (!apiRequest) {
+                    showError('API客户端未初始化');
+                    return;
+                }
+                apiRequest('GET', '/minds/{{ $mind->id }}/jsmind', {}).then(function(res) {
+                    if(res.code != 9999){
+                        showError('加载失败，请稍后再试');
+                    } else {
+                        mindData = JSON.parse(res.result.jsmind_datas);
+                        hideLoading();
+                        renderMindList(mindData);
+                        updateStats();
                     }
+                }).catch(function() {
+                    showError('网络错误，请检查连接后重试');
                 });
             }
 

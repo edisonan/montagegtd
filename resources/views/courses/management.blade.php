@@ -223,7 +223,7 @@
 
                                                 <div class="flex items-center gap-2">
                                                     @if(!auth()->guest() && !in_array($course->id, $user_course_ids ?? []))
-                                                        <form action="{{ url('/courses/' . $course->id . '/join') }}"
+                                                        <form action="{{ url('/api/v2/courses/' . $course->id . '/join') }}"
                                                               method="POST"
                                                               class="inline">
                                                             {!! csrf_field() !!}
@@ -562,6 +562,10 @@
 
 @section('scripts')
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         $(document).ready(function() {
             // 初始化标签页切换
             initTabSwitching();
@@ -574,6 +578,37 @@
 
             // 初始化排序功能
             initSorting();
+
+            // 加入课程走v2接口
+            $('form[action*="/courses/"][action$="/join"]').on('submit', function(e) {
+                e.preventDefault();
+                if (!apiRequest) {
+                    showNotification('API客户端未初始化', 'error');
+                    return;
+                }
+                var action = $(this).attr('action');
+                var match = action.match(/\/courses\/(\d+)\/join$/);
+                if (!match) {
+                    this.submit();
+                    return;
+                }
+                var courseId = match[1];
+                var $btn = $(this).find('button[type="submit"]');
+                var original = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>加入中...');
+
+                apiRequest('POST', '/courses/' + courseId + '/join', {}).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        window.location.reload();
+                        return;
+                    }
+                    showNotification((resp && resp.msg) ? resp.msg : '加入课程失败', 'error');
+                }).catch(function() {
+                    showNotification('网络错误，请稍后重试', 'error');
+                }).finally(function() {
+                    $btn.prop('disabled', false).html(original);
+                });
+            });
         });
 
         // 初始化标签页切换

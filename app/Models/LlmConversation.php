@@ -10,6 +10,7 @@ class LlmConversation extends Model
 
     protected $fillable = [
         'user_id',
+        'session_id',
         'model_id', 
         'credential_id',
         'question',

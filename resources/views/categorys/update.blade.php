@@ -94,7 +94,7 @@
                 </div>
 
                 <!-- 修改分类表单 -->
-                <form action="{{ url('category/'.$category->id) }}" method="POST" class="space-y-6" id="editCategoryForm">
+                <form action="{{ url('/api/v2/categories/'.$category->id) }}" method="POST" class="space-y-6" id="editCategoryForm">
                     {!! csrf_field() !!}
                     <input type="hidden" name="_method" value="PUT">
 
@@ -303,6 +303,10 @@
     </div>
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 字符计数
             document.addEventListener('DOMContentLoaded', function() {
                 const nameInput = document.getElementById('name');
@@ -390,19 +394,10 @@
                     reverseButtons: true,
                     showLoaderOnConfirm: true,
                     preConfirm: () => {
-                        return fetch(`{{ url('category/'.$category->id) }}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Content-Type': 'application/json',
-                            },
-                        })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('删除失败');
-                                }
-                                return response.json();
-                            })
+                        if (!apiRequest) {
+                            return Promise.reject(new Error('API客户端未初始化'));
+                        }
+                        return apiRequest('DELETE', '/categories/{{ $category->id }}', {})
                             .catch(error => {
                                 Swal.showValidationMessage(`请求失败: ${error}`);
                             });
@@ -433,20 +428,24 @@
 
             // 表单提交验证
             document.getElementById('editCategoryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
                 const nameInput = document.getElementById('name');
                 const name = nameInput.value.trim();
 
                 if (!name) {
-                    e.preventDefault();
                     nameInput.focus();
                     showToast('error', '请输入分类名称');
                     return;
                 }
 
                 if (name.length > 50) {
-                    e.preventDefault();
                     nameInput.focus();
                     showToast('error', '分类名称不能超过50个字符');
+                    return;
+                }
+                if (!apiRequest) {
+                    showToast('error', 'API客户端未初始化');
                     return;
                 }
 
@@ -459,11 +458,23 @@
         `;
                 submitBtn.disabled = true;
 
-                // 2秒后恢复按钮状态（防止重复提交）
-                setTimeout(() => {
+                apiRequest('PUT', '/categories/{{ $category->id }}', {
+                    name: name
+                }).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        showToast('success', '分类更新成功');
+                        setTimeout(function() {
+                            window.location.href = "{{ url('categorys') }}";
+                        }, 300);
+                        return;
+                    }
+                    showToast('error', (resp && resp.msg) ? resp.msg : '保存失败');
+                }).catch(function() {
+                    showToast('error', '保存失败，请稍后重试');
+                }).finally(function() {
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
-                }, 2000);
+                });
             });
 
             // 显示提示消息

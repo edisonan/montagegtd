@@ -106,7 +106,7 @@
                         @endif
 
                         <!-- 日报表单 -->
-                        <form action="{{ url('/dailysummary') }}" method="POST" class="space-y-6" id="dailySummaryForm">
+                        <form action="{{ url('/api/v2/daily-summaries') }}" method="POST" class="space-y-6" id="dailySummaryForm">
                             {!! csrf_field() !!}
 
                             <div class="space-y-6">
@@ -387,6 +387,10 @@
     </div>
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 初始化函数
             document.addEventListener('DOMContentLoaded', function() {
                 // 设置默认日期
@@ -465,26 +469,23 @@
                 document.getElementById('tipEmpty').classList.add('hidden');
                 document.getElementById('tipError').classList.add('hidden');
 
-                $.ajax({
-                    url: "{{ url('dailytips') }}",
-                    type: 'GET',
-                    data: {
-                        "_token": "{{ csrf_token() }}",
-                        "summary_date": summaryDate
-                    },
-                    success: function(response) {
-                        if (response.code === 9999) {
-                            displayTips(response.result.infos);
-                        } else {
-                            showTipError();
-                        }
-                    },
-                    error: function() {
-                        showTipError();
-                    },
-                    complete: function() {
-                        document.getElementById('tipLoading').classList.add('hidden');
+                if (!apiRequest) {
+                    showTipError();
+                    document.getElementById('tipLoading').classList.add('hidden');
+                    return;
+                }
+                apiRequest('GET', '/daily-summaries/tips', {
+                    summary_date: summaryDate
+                }).then(function(response) {
+                    if (response && response.code === 9999) {
+                        displayTips(response.result.infos);
+                        return;
                     }
+                    showTipError();
+                }).catch(function() {
+                    showTipError();
+                }).finally(function() {
+                    document.getElementById('tipLoading').classList.add('hidden');
                 });
             }
 
@@ -707,12 +708,12 @@
 
             // 表单提交验证
             document.getElementById('dailySummaryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
                 const dateInput = document.getElementById('dailysummary-summarydate');
                 const workContent = document.getElementById('dailysummary-workcontent');
                 const lifeContent = document.getElementById('dailysummary-lifecontent');
 
                 if (!dateInput.value) {
-                    e.preventDefault();
                     dateInput.focus();
                     showToast('error', '请选择总结日期');
                     return;
@@ -723,8 +724,11 @@
                 today.setHours(0, 0, 0, 0);
 
                 if (selectedDate > today) {
-                    e.preventDefault();
                     showToast('error', '总结日期不能晚于今天');
+                    return;
+                }
+                if (!apiRequest) {
+                    showToast('error', 'API客户端未初始化');
                     return;
                 }
 
@@ -734,11 +738,25 @@
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>提交中...';
                 submitBtn.disabled = true;
 
-                // 3秒后恢复按钮状态
-                setTimeout(() => {
+                apiRequest('POST', '/daily-summaries', {
+                    summary_date: dateInput.value,
+                    work_content: workContent.value || '',
+                    life_content: lifeContent.value || ''
+                }).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        showToast('success', '日报提交成功');
+                        setTimeout(function() {
+                            window.location.href = '{{ url('/dailysummarys') }}';
+                        }, 300);
+                        return;
+                    }
+                    showToast('error', (resp && resp.msg) ? resp.msg : '提交失败');
+                }).catch(function() {
+                    showToast('error', '提交失败，请稍后重试');
+                }).finally(function() {
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
-                }, 3000);
+                });
             });
 
             // 显示提示消息

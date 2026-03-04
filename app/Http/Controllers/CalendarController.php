@@ -75,13 +75,18 @@ class CalendarController extends Controller
     public function ics(Request $request, string $theme)
     {
         $icsInfo = $this->calendarService->getIcsByTheme($theme);
+        $icsFilePath = rtrim(config("app.storage_path"), '/') . '/' . $icsInfo ['file_name'];
 
         header("Content-type:application/octet-stream");
         header("Content-Disposition:attachment;filename = " . $icsInfo ['file_name'] . '.ics');
         header("Accept-ranges:bytes");
         header("Accept-length:" . strlen($icsInfo ['file_content']));
 
-        readfile(config("app.storage_path") . '/' . $icsInfo ['file_name']);
+        if (file_exists($icsFilePath)) {
+            readfile($icsFilePath);
+        } else {
+            echo $icsInfo ['file_content'];
+        }
     }
 
     /**
@@ -93,12 +98,17 @@ class CalendarController extends Controller
     public function taskics(Request $request, string $cal_token)
     {
         $icsInfo = $this->calendarService->getIcsByCalToken($cal_token);
+        $icsFilePath = rtrim(config("app.storage_path"), '/') . '/' . $icsInfo ['file_name'];
 
         header("Content-type:application/octet-stream");
         header("Content-Disposition:attachment;filename = " . $icsInfo ['file_name'] . '.ics');
         header("Accept-ranges:bytes");
         header("Accept-length:" . strlen($icsInfo ['file_content']));
 
-        readfile(config("app.storage_path") . '/' . $icsInfo ['file_name']);
+        if (file_exists($icsFilePath)) {
+            readfile($icsFilePath);
+        } else {
+            echo $icsInfo ['file_content'];
+        }
     }
 }

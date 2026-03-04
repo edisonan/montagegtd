@@ -151,7 +151,7 @@
                 <!-- 错误消息 -->
                 @include('common.errors')
 
-                <form action="{{ url('setting/'.$setting->id) }}" method="POST" class="space-y-6">
+                <form action="{{ url('/api/v2/settings/'.$setting->id) }}" method="POST" class="space-y-6">
                     {!! csrf_field() !!}
                     <input type="hidden" name="_method" value="PUT">
                     <input type="hidden" name="page_info" value="kindle_page">
@@ -448,6 +448,9 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
             // 邮箱格式验证
             const emailInput = document.getElementById('kindle_email');
             const testButton = document.querySelector('a[href="{{ url("kindle/test") }}"]');
@@ -499,16 +502,36 @@
                             return false;
                         }
 
+                        if (!apiRequest) {
+                            e.preventDefault();
+                            showNotification('error', 'API客户端未初始化');
+                            return false;
+                        }
+
+                        e.preventDefault();
+
                         // 显示加载状态
                         const originalBtnText = submitBtn.innerHTML;
                         submitBtn.disabled = true;
                         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
 
-                        // 3秒后恢复（防止无限加载）
-                        setTimeout(() => {
+                        apiRequest('POST', '/settings/{{ $setting->id }}', {
+                            kindle_email: emailInput.value.trim(),
+                            is_start_kindle: document.querySelector('input[name="is_start_kindle"]:checked') ? document.querySelector('input[name="is_start_kindle"]:checked').value : 0,
+                            with_image_push: document.querySelector('input[name="with_image_push"]:checked') ? document.querySelector('input[name="with_image_push"]:checked').value : 0,
+                            page_info: 'kindle_page'
+                        }).then(function(response) {
+                            if (response && response.code === 9999) {
+                                showNotification('success', response.msg || '保存成功');
+                                return;
+                            }
+                            showNotification('error', (response && response.msg) ? response.msg : '保存失败');
+                        }).catch(function() {
+                            showNotification('error', '网络错误，请稍后重试');
+                        }).finally(function() {
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = originalBtnText;
-                        }, 3000);
+                        });
                     });
                 }
             }
@@ -525,15 +548,19 @@
             // 测试推送按钮点击
             if (testButton) {
                 testButton.addEventListener('click', function(e) {
+                    e.preventDefault();
                     if (this.hasAttribute('disabled')) {
-                        e.preventDefault();
                         showNotification('warning', '请先填写有效的Kindle邮箱地址');
+                        return false;
+                    }
+
+                    if (!apiRequest) {
+                        showNotification('error', 'API客户端未初始化');
                         return false;
                     }
 
                     // 确认对话框
                     if (!confirm('即将发送测试文件到您的Kindle，确认继续吗？')) {
-                        e.preventDefault();
                         return false;
                     }
 
@@ -541,12 +568,19 @@
                     const originalText = this.innerHTML;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>发送中...';
                     this.classList.add('opacity-50', 'cursor-not-allowed');
-
-                    // 5秒后恢复
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                        this.classList.remove('opacity-50', 'cursor-not-allowed');
-                    }, 5000);
+                    const button = this;
+                    apiRequest('POST', '/kindles/test', {}).then(function(response) {
+                        if (response && response.code === 9999) {
+                            showNotification('success', response.msg || '测试推送已发送');
+                            return;
+                        }
+                        showNotification('error', (response && response.msg) ? response.msg : '测试推送失败');
+                    }).catch(function() {
+                        showNotification('error', '网络错误，请稍后重试');
+                    }).finally(function() {
+                        button.innerHTML = originalText;
+                        button.classList.remove('opacity-50', 'cursor-not-allowed');
+                    });
                 });
             }
 

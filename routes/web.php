@@ -1,14 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\NotesController;
-use App\Http\Controllers\LlmController;  // 引入LlmController
 
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::resource('notes', NotesController::class);
 /*
  * |--------------------------------------------------------------------------
  * | Web Routes
@@ -168,12 +164,9 @@ Route::group([
     Route::get('/thing/{thing}', 'ThingController@update');
 
     Auth::routes();
-
-//    Route::post('/register', 'AuthController@register');
-//    Route::post('/login', 'AuthController@login');
-//    Route::post('/logout', 'AuthController@logout');
-//    Route::post('/refresh', 'AuthController@refresh');
-//    Route::get('/user', 'AuthController@userProfile')->middleware('auth:api');
+    Route::post('/auth/token/bootstrap', 'Api\\V2\\AuthController@bootstrapSession')->middleware('auth');
+    Route::post('/api/v2/auth/bootstrap-session', 'Api\\V2\\AuthController@bootstrapSession')->middleware('auth');
+    Route::post('/api/v2/auth/session-from-token', 'Api\\V2\\AuthController@establishWebSession')->middleware('hybrid.token:read');
 
     Route::get('login/third/{driver}', 'Auth\LoginController@thirdRedirect');
     Route::get('login/third/{driver}/callback', 'Auth\LoginController@thirdCallback');
@@ -181,22 +174,8 @@ Route::group([
     Route::get('/logout', 'Auth\LoginController@logout');
 
 
-    Route::get('/api/wechat/login', 'Wechat\WechatController@wechatlogin');
-    Route::get('/api/wechat/articles', 'Wechat\WechatController@articles');
-    Route::get('/api/wechat/articleview', 'Wechat\WechatController@articleview');
-    Route::get('/api/wechat/explorer', 'Wechat\WechatController@explorer');
-    Route::get('/api/wechat/notes', 'Wechat\WechatController@notes');
-    Route::get('/api/wechat/addNote', 'Wechat\WechatController@addNote');
-    Route::get('/api/wechat/articleSubStatus', 'Wechat\WechatController@articleSubStatus');
-    Route::get('/api/wechat/articleSubStatus/{articleSub}', 'Wechat\WechatController@articleSubStatus');
-
-    Route::get('/api/pomos', 'Wechat\TestController@index');
-    Route::get('/api/pomo/info', 'Wechat\TestController@info');
-    Route::get('/api/pomo/start', 'Wechat\TestController@start');
-    Route::get('/api/pomo/discard/{pomo}', 'Wechat\TestController@discard');
-    Route::get('/api/pomo/discard/', 'Wechat\TestController@discard');
-    Route::post('/api/pomos/{pomo}', 'Wechat\TestController@store');
-    Route::delete('/api/pomos/{pomo}', 'PomoController@destroy');
+    // Legacy wechat mini and old /api/pomo routes are migrated to /api/v2/wechat/*
+    // and /api/v2/pomos* token routes.
 
     Route::any('/code/{codeInfo}', 'CodeController@view');
     
@@ -204,7 +183,7 @@ Route::group([
     Route::get('/app/{appSlug}/{codePath}', 'ApplicationController@show')->where('codePath', '.*');
     
     // LLM管理相关路由
-    Route::prefix('llm')->group(function () {
+    Route::prefix('llm')->middleware('auth')->group(function () {
         Route::get('/providers', 'LlmController@getProviders');
         Route::get('/providers/{id}', 'LlmController@getProvider');
         Route::post('/providers', 'LlmController@saveProvider');
@@ -248,15 +227,15 @@ Route::group([
     // 智能体管理页面 - 必须在API路由之后定义，以避免冲突
     Route::get('/llm/agentmanagement', function () {
         return view('llm.agentmanagement');
-    });
+    })->middleware('auth');
     
     // 智能体草稿编辑页面
-    Route::get('/llm/agents/{id}/draft', 'LlmAgentController@showDraftEditor');
+    Route::get('/llm/agents/{id}/draft', 'LlmAgentController@showDraftEditor')->middleware('auth');
 
     // 用户端LLM管理页面
     Route::get('/llm/llmmanagement', function () {
         return view('llm.llmmanagement');
-    });
+    })->middleware('auth');
     
     // 课程管理相关路由
     Route::resource('courses', 'CourseController')->except(['edit', 'update', 'destroy']);
@@ -294,7 +273,7 @@ Route::group([
     });
 
     // LLM会话相关路由
-    Route::prefix('llm')->group(function () {
+    Route::prefix('llm')->middleware('auth')->group(function () {
         Route::get('/sessions', 'LlmSessionController@getSessions');
         Route::post('/sessions', 'LlmSessionController@createSession');
         Route::get('/sessions/{id}', 'LlmSessionController@getSession');
@@ -306,7 +285,7 @@ Route::group([
     });
 
     // AI助手页面路由
-    Route::get('/llm/index', 'LlmSessionController@index')->name('llm.index');
+    Route::get('/llm/index', 'LlmSessionController@index')->name('llm.index')->middleware('auth');
 
 
 

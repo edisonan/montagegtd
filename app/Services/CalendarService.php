@@ -100,7 +100,7 @@ class CalendarService {
 		
 		// TODO 换用封装方式存储 方便后续更换为S3等地方
 		$file_name = 'task_ics_' . md5 ( $theme );
-		file_put_contents ( config ( "app.storage_path" ) . '/' . $file_name, $ics_file_contents );
+		$this->tryWriteIcsFile($file_name, $ics_file_contents);
 		
 		return array (
 				'file_name' => $file_name,
@@ -147,11 +147,32 @@ class CalendarService {
 		$ics_file_contents = $ics->to_string ();
 		
 		// TODO 换用封装方式存储 方便后续更换为S3等地方
-		file_put_contents ( config ( "app.storage_path" ) . '/task_ics_' . $userId, $ics_file_contents );
+		$this->tryWriteIcsFile('task_ics_' . $userId, $ics_file_contents);
 		
 		return array (
 				'file_name' => "task_ics_" . $userId,
 				'file_content' => $ics_file_contents 
 		);
+	}
+
+	/**
+	 * 尝试将ics文件写入本地，失败时仅忽略（API仍可直接返回file_content）
+	 *
+	 * @param string $fileName
+	 * @param string $content
+	 */
+	private function tryWriteIcsFile($fileName, $content) {
+		$storagePath = rtrim(config("app.storage_path"), '/');
+		if (empty($storagePath)) {
+			return;
+		}
+
+		$fullPath = $storagePath . '/' . $fileName;
+		$dir = dirname($fullPath);
+		if (!is_dir($dir)) {
+			@mkdir($dir, 0777, true);
+		}
+
+		@file_put_contents($fullPath, $content);
 	}
 }

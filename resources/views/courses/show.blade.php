@@ -611,7 +611,7 @@
                         返回课程列表
                     </a>
                 @elseif(!auth()->guest() && !$is_joined)
-                    <form action="{{ url('/courses/' . $course->id . '/join') }}" method="POST" class="d-inline">
+                    <form action="{{ url('/api/v2/courses/' . $course->id . '/join') }}" method="POST" class="d-inline">
                         {{ csrf_field() }}
                         <button type="submit" class="btn btn-course btn-course-success">
                             <i class="fas fa-user-plus mr-2"></i>
@@ -852,6 +852,10 @@
     </div>
 
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         $(document).ready(function() {
             // 卡片折叠功能
             $('.toggle-btn').click(function() {
@@ -893,6 +897,37 @@
                     $(this).css('transform', 'translateY(0)');
                 }
             );
+
+            // 加入课程走v2接口
+            $('form[action*="/courses/"][action$="/join"]').on('submit', function(e) {
+                e.preventDefault();
+                if (!apiRequest) {
+                    alert('API客户端未初始化');
+                    return;
+                }
+                var action = $(this).attr('action');
+                var match = action.match(/\/courses\/(\d+)\/join$/);
+                if (!match) {
+                    this.submit();
+                    return;
+                }
+                var courseId = match[1];
+                var $btn = $(this).find('button[type="submit"]');
+                var original = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>加入中...');
+
+                apiRequest('POST', '/courses/' + courseId + '/join', {}).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        window.location.reload();
+                        return;
+                    }
+                    alert((resp && resp.msg) ? resp.msg : '加入课程失败');
+                }).catch(function() {
+                    alert('网络错误，请稍后重试');
+                }).finally(function() {
+                    $btn.prop('disabled', false).html(original);
+                });
+            });
         });
 
         // 章节展开/收起功能

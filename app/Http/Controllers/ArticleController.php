@@ -90,6 +90,14 @@ class ArticleController extends Controller
     }
 
     /**
+     * Legacy route compatibility. Article creation is not supported in web flow.
+     */
+    public function store(Request $request)
+    {
+        return $this->jsonResponse($request, ResponseDataUtil::genCommonFail('legacy article store endpoint is deprecated, please use /api/v2/articles*'));
+    }
+
+    /**
      * 分类信息
      *
      * @param Request $request

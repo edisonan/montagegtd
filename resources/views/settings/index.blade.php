@@ -39,7 +39,7 @@
                         <!-- 显示验证错误 -->
                         @include('common.errors')
 
-                        <form action="{{ url('setting/'.$setting->id) }}" method="POST" class="space-y-8" id="settings-form">
+                        <form action="{{ url('/api/v2/settings/'.$setting->id) }}" method="POST" class="space-y-8" id="settings-form">
                             {{ csrf_field() }}
                             {{ method_field('PUT') }}
 
@@ -400,10 +400,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
             // 表单提交处理
             const form = document.getElementById('settings-form');
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    return;
+                }
 
                 // 验证番茄时间范围
                 const pomoTime = parseInt(document.getElementById('pomo_time').value);
@@ -428,17 +435,11 @@
 
                 try {
                     const formData = new FormData(this);
-
-                    const response = await fetch(this.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
+                    const payload = {};
+                    formData.forEach((value, key) => {
+                        payload[key] = value;
                     });
-
-                    const data = await response.json();
+                    const data = await apiRequest('POST', '/settings/{{ $setting->id }}', payload);
 
                     if (data.success || (data.code && data.code === 9999)) {
                         showToast('设置保存成功！', 'success');
@@ -509,6 +510,10 @@
 
         // 测试Kindle推送
         async function testKindlePush() {
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
             const kindleEmail = document.getElementById('kindle_email').value;
 
             if (!kindleEmail) {
@@ -523,17 +528,9 @@
             showToast('正在发送测试文章...', 'info');
 
             try {
-                const response = await fetch('{{ url("settings/test-kindle") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ email: kindleEmail })
+                const data = await apiRequest('POST', '/settings/test-kindle', {
+                    email: kindleEmail
                 });
-
-                const data = await response.json();
 
                 if (data.success || data.code === 9999) {
                     showToast('测试文章已发送，请检查您的Kindle设备', 'success');
@@ -548,6 +545,10 @@
 
         // 测试IFTTT通知
         async function testIFTTT() {
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
             const iftttKey = document.getElementById('ifttt_notify').value;
 
             if (!iftttKey) {
@@ -562,17 +563,9 @@
             showToast('正在发送测试通知...', 'info');
 
             try {
-                const response = await fetch('{{ url("settings/test-ifttt") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ key: iftttKey })
+                const data = await apiRequest('POST', '/settings/test-ifttt', {
+                    key: iftttKey
                 });
-
-                const data = await response.json();
 
                 if (data.success || data.code === 9999) {
                     showToast('测试通知已发送，请检查您的设备', 'success');
@@ -587,22 +580,19 @@
 
         // 导出设置备份
         async function exportSettings() {
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
             showToast('正在生成设置备份...', 'info');
 
             try {
-                const response = await fetch('{{ url("settings/export") }}', {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
+                const data = await apiRequest('GET', '/settings/export', {});
 
                 if (data.success || data.code === 9999) {
                     // 创建下载链接
-                    const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+                    const exportData = data.result && data.result.data ? data.result.data : {};
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;

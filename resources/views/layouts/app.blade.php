@@ -25,6 +25,8 @@
 
     <!-- 引入jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 提前加载API客户端，避免内容区内联脚本执行时未初始化 -->
+    <script src="{{ asset('js/hybrid-api-client.js') }}"></script>
 
     <!-- 引入ECharts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js" defer></script>
@@ -198,7 +200,7 @@
 
                                 <div class="border-t border-gray-200 my-1"></div>
 
-                                <a href="{{ url('/logout') }}" class="dropdown-item text-red-600">
+                                <a href="{{ url('/logout') }}" class="dropdown-item text-red-600" id="logoutLink">
                                     <i class="fas fa-sign-out-alt"></i>
                                     <span>登出</span>
                                 </a>
@@ -289,6 +291,232 @@
 
 <!-- 引入自定义JavaScript -->
 <script src="{{ asset('js/app.js') }}"></script>
+@if(!Auth::guest())
+<script>
+    window.__TASK_ALLOW_LEGACY_FALLBACK__ = false;
+    window.__TASK_FORCE_API__ = true;
+    window.__taskBootstrapAccessToken = function() {
+        var tokenNode = document.head.querySelector('meta[name="csrf-token"]');
+        var csrfToken = tokenNode ? tokenNode.content : '';
+
+        return fetch('/api/v2/auth/bootstrap-session', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        }).then(function(resp) {
+            return resp.json().then(function(data) {
+                if (!resp.ok || !data || !data.result || !data.result.access_token || !data.result.refresh_token) {
+                    throw new Error('token bootstrap failed');
+                }
+                if (window.TaskApiClient && typeof window.TaskApiClient.setTokenPair === 'function') {
+                    window.TaskApiClient.setTokenPair(data.result);
+                }
+                return data.result;
+            });
+        }).catch(function(err) {
+            console.error('token bootstrap error', err);
+            window.__TASK_FORCE_API__ = false;
+            return null;
+        });
+    };
+
+    window.__taskTokenBootstrapPromise = window.__taskBootstrapAccessToken();
+
+    window.taskApiFetch = function(url, options) {
+        var opts = options ? Object.assign({}, options) : {};
+        var originalHeaders = (opts.headers && typeof opts.headers === 'object') ? opts.headers : {};
+        var baseHeaders = Object.assign({}, originalHeaders);
+
+        if (!baseHeaders['X-Requested-With']) {
+            baseHeaders['X-Requested-With'] = 'XMLHttpRequest';
+        }
+        if (!baseHeaders['Accept']) {
+            baseHeaders['Accept'] = 'application/json';
+        }
+
+        var csrfNode = document.head.querySelector('meta[name="csrf-token"]');
+        var csrfToken = csrfNode ? csrfNode.content : '';
+        if (csrfToken && !baseHeaders['X-CSRF-TOKEN']) {
+            baseHeaders['X-CSRF-TOKEN'] = csrfToken;
+        }
+
+        if (!opts.credentials) {
+            opts.credentials = 'same-origin';
+        }
+
+        function getAccessToken() {
+            try {
+                if (window.TaskApiClient && typeof window.TaskApiClient.getAccessToken === 'function') {
+                    return window.TaskApiClient.getAccessToken() || '';
+                }
+            } catch (e) {}
+            return '';
+        }
+
+        function getRefreshToken() {
+            try {
+                if (window.TaskApiClient && typeof window.TaskApiClient.getRefreshToken === 'function') {
+                    return window.TaskApiClient.getRefreshToken() || '';
+                }
+            } catch (e) {}
+            return '';
+        }
+
+        function buildRequestHeaders() {
+            var headers = Object.assign({}, baseHeaders);
+            var accessToken = getAccessToken();
+            if (accessToken && !headers['Authorization']) {
+                headers['Authorization'] = 'Bearer ' + accessToken;
+            }
+            return headers;
+        }
+
+        function doFetch() {
+            var fetchOpts = Object.assign({}, opts);
+            fetchOpts.headers = buildRequestHeaders();
+            return fetch(url, fetchOpts);
+        }
+
+        function refreshAccessToken() {
+            var refreshToken = getRefreshToken();
+            if (!refreshToken) {
+                return Promise.resolve(false);
+            }
+
+            return fetch('/api/v2/auth/refresh', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ refresh_token: refreshToken })
+            }).then(function(resp) {
+                return resp.json().then(function(data) {
+                    if (!resp.ok || !data || !data.result || !data.result.access_token || !data.result.refresh_token) {
+                        return false;
+                    }
+                    if (window.TaskApiClient && typeof window.TaskApiClient.setTokenPair === 'function') {
+                        window.TaskApiClient.setTokenPair(data.result);
+                    }
+                    return true;
+                }).catch(function() {
+                    return false;
+                });
+            }).catch(function() {
+                return false;
+            });
+        }
+
+        var bootstrapPromise = (window.__taskTokenBootstrapPromise && typeof window.__taskTokenBootstrapPromise.then === 'function')
+            ? window.__taskTokenBootstrapPromise
+            : Promise.resolve();
+
+        return bootstrapPromise
+            .catch(function() {})
+            .then(function() {
+                if (getAccessToken()) {
+                    return true;
+                }
+                if (typeof window.__taskBootstrapAccessToken === 'function') {
+                    return window.__taskBootstrapAccessToken().then(function(result) {
+                        return !!result;
+                    }).catch(function() {
+                        return false;
+                    });
+                }
+                return false;
+            })
+            .then(function() {
+                return doFetch();
+            })
+            .then(function(resp) {
+                var needTokenRetry = resp && resp.status === 401 && /^\/api\/v2\//.test(url || '');
+                if (!needTokenRetry) {
+                    return resp;
+                }
+
+                return refreshAccessToken().then(function(refreshed) {
+                    if (refreshed) {
+                        return doFetch();
+                    }
+                    if (typeof window.__taskBootstrapAccessToken === 'function') {
+                        return window.__taskBootstrapAccessToken().then(function(result) {
+                            if (result) {
+                                return doFetch();
+                            }
+                            return resp;
+                        }).catch(function() {
+                            return resp;
+                        });
+                    }
+                    return resp;
+                });
+            })
+            .catch(function(err) {
+                if (err && err.message) {
+                    console.error('taskApiFetch error:', err.message);
+                } else {
+                    console.error('taskApiFetch error:', err);
+                }
+                throw err;
+            });
+    };
+
+    (function() {
+        window.addEventListener('focus', function() {
+            var accessToken = '';
+            try {
+                accessToken = (window.TaskApiClient && typeof window.TaskApiClient.getAccessToken === 'function')
+                    ? (window.TaskApiClient.getAccessToken() || '')
+                    : '';
+            } catch (e) {
+                accessToken = '';
+            }
+            if (!accessToken && typeof window.__taskBootstrapAccessToken === 'function') {
+                window.__taskTokenBootstrapPromise = window.__taskBootstrapAccessToken();
+            }
+        });
+    })();
+
+    (function() {
+        var logoutLink = document.getElementById('logoutLink');
+        if (!logoutLink) {
+            return;
+        }
+
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            var webLogoutUrl = logoutLink.getAttribute('href') || '/logout';
+
+            var doWebLogout = function() {
+                window.location.href = webLogoutUrl;
+            };
+
+            if (!window.TaskApiClient || typeof window.TaskApiClient.logout !== 'function') {
+                doWebLogout();
+                return;
+            }
+
+            window.TaskApiClient.logout()
+                .catch(function() {
+                    if (typeof window.TaskApiClient.clearTokenPair === 'function') {
+                        window.TaskApiClient.clearTokenPair();
+                    }
+                })
+                .finally(function() {
+                    doWebLogout();
+                });
+        });
+    })();
+</script>
+@endif
 
 <!-- 百度统计 -->
 <script>

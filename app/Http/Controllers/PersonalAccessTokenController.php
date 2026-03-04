@@ -13,7 +13,7 @@ class PersonalAccessTokenController extends Controller
 
     public function __construct(PersonalAccessTokenService $tokenService)
     {
-        $this->middleware('auth')->except(['verify']); // PAT校验接口由personal.token中间件负责
+        $this->middleware('auth')->except(['verify']); // PAT校验接口由hybrid.token中间件负责
         $this->tokenService = $tokenService;
     }
 

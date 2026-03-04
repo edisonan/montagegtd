@@ -588,6 +588,26 @@
 
     <script src="/js/recorder/recorder.js"></script>
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
+        function waitTokenReady() {
+            if (window.__taskTokenBootstrapPromise && typeof window.__taskTokenBootstrapPromise.then === 'function') {
+                return window.__taskTokenBootstrapPromise;
+            }
+            return Promise.resolve();
+        }
+
+        function getAccessToken() {
+            try {
+                if (window.TaskApiClient && typeof window.TaskApiClient.getAccessToken === 'function') {
+                    return window.TaskApiClient.getAccessToken() || '';
+                }
+            } catch (e) {}
+            return '';
+        }
+
         // 全局变量 - 恢复以前的录音变量
         let recorder = null;
         let timerInterval = null;
@@ -853,30 +873,32 @@
             const filename = '{{ md5(date('YmdHis').rand(0,99)) }}.mp3';
 
             formData.append('file', blob, filename);
-            formData.append('_token', "{{ csrf_token() }}");
+            formData.append('fname', filename.replace('.mp3', ''));
 
-            $.ajax({
-                url: '{{ url("notes/upload") }}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                beforeSend: function() {
-                    // 可以在这里显示上传进度
+            waitTokenReady().then(function() {
+                const headers = {
+                    'Accept': 'application/json'
+                };
+                const accessToken = getAccessToken();
+                if (accessToken) {
+                    headers['Authorization'] = 'Bearer ' + accessToken;
                 }
-            }).done(function(response) {
-                try {
-                    const data = JSON.parse(response);
-                    if (data.code == 9999) {
-                        document.getElementById('fname').value = filename;
-                        showToast('音频上传成功', 'success');
-                    } else {
-                        showToast('音频上传失败: ' + (data.msg || '未知错误'), 'error');
+
+                return fetch('/api/v2/notes/upload', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: headers,
+                    body: formData
+                });
+            }).then(function(resp) {
+                return resp.json().then(function(data) {
+                    if (!resp.ok || !data || data.code != 9999) {
+                        throw new Error((data && data.msg) ? data.msg : 'upload failed');
                     }
-                } catch (e) {
-                    showToast('音频上传失败: 响应格式错误', 'error');
-                }
-            }).fail(function() {
+                    document.getElementById('fname').value = filename.replace('.mp3', '');
+                    showToast('音频上传成功', 'success');
+                });
+            }).catch(function() {
                 showToast('音频上传失败: 网络错误', 'error');
             });
         }
@@ -932,6 +954,15 @@
 
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
+            const addNoteForm = document.getElementById('add_note_form');
+            if (addNoteForm) {
+                addNoteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const statusVal = parseInt((document.getElementById('status_id') || {}).value || '1', 10);
+                    submitProcess(isNaN(statusVal) ? 1 : statusVal);
+                });
+            }
+
             // 初始化Markdown编辑器
             initMarkdownEditor();
             updateCharCount();
@@ -1006,11 +1037,55 @@
         // 复制笔记内容
         function copyNoteContent(noteId) {
             const content = document.getElementById('note-content-' + noteId);
-            const text = content.innerText || content.textContent;
+            if (!content) {
+                showToast('未找到笔记内容', 'error');
+                return;
+            }
 
-            navigator.clipboard.writeText(text).then(() => {
+            const text = (content.innerText || content.textContent || '').trim();
+            if (!text) {
+                showToast('笔记内容为空，无法复制', 'warning');
+                return;
+            }
+
+            function fallbackCopy(value) {
+                const textArea = document.createElement('textarea');
+                textArea.value = value;
+                textArea.setAttribute('readonly', 'readonly');
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                let copied = false;
+                try {
+                    copied = document.execCommand('copy');
+                } catch (e) {
+                    copied = false;
+                }
+                document.body.removeChild(textArea);
+                return copied;
+            }
+
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('笔记内容已复制到剪贴板', 'success');
+                }).catch(() => {
+                    if (fallbackCopy(text)) {
+                        showToast('笔记内容已复制到剪贴板', 'success');
+                    } else {
+                        showToast('复制失败，请手动复制', 'error');
+                    }
+                });
+                return;
+            }
+
+            if (fallbackCopy(text)) {
                 showToast('笔记内容已复制到剪贴板', 'success');
-            });
+            } else {
+                showToast('复制失败，请手动复制', 'error');
+            }
         }
 
         // 标签过滤
@@ -1050,7 +1125,7 @@
 
         <!-- 新建笔记卡片 -->
         <div class="card card-elevated mb-8">
-            <form id="add_note_form" action="{{ url('note') }}" method="POST">
+            <form id="add_note_form" action="{{ url('/api/v2/notes') }}" method="POST">
                 {!! csrf_field() !!}
 
                 <div class="p-6">
@@ -1239,7 +1314,7 @@
                                             <div style="font-size: 13px; color: var(--gray-500);">点击播放收听</div>
                                         </div>
                                         <audio id="audio-{{ $note->id }}"
-                                               src="{{ url('note/getRecord/'.$note->id) }}"
+                                               data-api-url="/api/v2/notes/{{ $note->id }}/record"
                                                preload="metadata"></audio>
                                     </div>
                                 </div>
@@ -1307,7 +1382,33 @@
                 document.querySelector('#markdown-editor').value = easymde.value();
             }
             document.getElementById('status_id').value = status;
-            document.getElementById('add_note_form').submit();
+
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
+
+            const payload = {
+                name: document.querySelector('#markdown-editor').value || '',
+                status: status,
+                source_type: document.querySelector('input[name="source_type"]') ? document.querySelector('input[name="source_type"]').value : 0,
+                source_id: document.querySelector('input[name="source_id"]') ? document.querySelector('input[name="source_id"]').value : 0,
+                fname: document.getElementById('fname') ? document.getElementById('fname').value : '',
+                add_image: document.querySelector('input[name="add_image"]') ? document.querySelector('input[name="add_image"]').value : ''
+            };
+
+            apiRequest('POST', '/notes', payload).then(function(response) {
+                if (response.code == 9999) {
+                    showToast('笔记保存成功', 'success');
+                    setTimeout(function() {
+                        window.location.href = "{{ url('/notes') }}";
+                    }, 300);
+                } else {
+                    showToast('保存失败: ' + (response.msg || '未知错误'), 'error');
+                }
+            }).catch(function() {
+                showToast('保存失败: 网络错误', 'error');
+            });
         }
 
         // 播放笔记音频
@@ -1315,15 +1416,46 @@
             const audio = document.getElementById('audio-' + noteId);
             const icon = button.querySelector('i');
 
-            if (audio.paused) {
-                audio.play();
-                icon.className = 'fas fa-pause';
-                button.onclick = function() { pauseNoteAudio(noteId, button); };
-            } else {
-                audio.pause();
-                icon.className = 'fas fa-play';
-                button.onclick = function() { playNoteAudio(noteId, button); };
+            const startPlay = function() {
+                if (audio.paused) {
+                    audio.play();
+                    icon.className = 'fas fa-pause';
+                    button.onclick = function() { pauseNoteAudio(noteId, button); };
+                } else {
+                    audio.pause();
+                    icon.className = 'fas fa-play';
+                    button.onclick = function() { playNoteAudio(noteId, button); };
+                }
+            };
+
+            if (!audio.dataset.loaded && audio.dataset.apiUrl) {
+                waitTokenReady().then(function() {
+                    const headers = {};
+                    const accessToken = getAccessToken();
+                    if (accessToken) {
+                        headers['Authorization'] = 'Bearer ' + accessToken;
+                    }
+                    return fetch(audio.dataset.apiUrl, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: headers
+                    });
+                }).then(function(resp) {
+                    if (!resp.ok) {
+                        throw new Error('audio fetch failed');
+                    }
+                    return resp.blob();
+                }).then(function(blob) {
+                    audio.src = URL.createObjectURL(blob);
+                    audio.dataset.loaded = '1';
+                    startPlay();
+                }).catch(function() {
+                    showToast('语音加载失败', 'error');
+                });
+                return;
             }
+
+            startPlay();
         }
 
         function pauseNoteAudio(noteId, button) {
@@ -1348,46 +1480,42 @@
 
         // 删除笔记
         $(document).ready(function(){
+            $(document).off('click', '.delete_note');
             $(document).on('click', '.delete_note', function(){
                 if(!confirm('确认要删除此笔记吗？删除后无法恢复。')) return;
 
                 const noteId = $(this).attr('note_value');
-                const token = $(this).attr('note_token');
 
-                $.ajax({
-                    url: "{{ url('note') }}/" + noteId,
-                    type: 'DELETE',
-                    data: {_token: token, type: 'delete'},
-                    success: function(response) {
-                        if (response.code == 9999) {
-                            $('#note-' + noteId).fadeOut(300, function() {
-                                $(this).remove();
-                                showToast('笔记删除成功', 'success');
-                            });
-                        } else {
-                            showToast('删除失败: ' + (response.msg || '未知错误'), 'error');
-                        }
-                    },
-                    error: function() {
-                        showToast('网络错误，请稍后重试', 'error');
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    return;
+                }
+
+                apiRequest('DELETE', '/notes/' + noteId, {}).then(function(response) {
+                    if (response.code == 9999) {
+                        $('#note-' + noteId).fadeOut(300, function() {
+                            $(this).remove();
+                            showToast('笔记删除成功', 'success');
+                        });
+                    } else {
+                        showToast('删除失败: ' + (response.msg || '未知错误'), 'error');
                     }
+                }).catch(function() {
+                    showToast('网络错误，请稍后重试', 'error');
                 });
             });
 
             // 点赞笔记
             $(document).on('click', '.like_note', function(){
                 const noteId = $(this).attr('note_value');
-                const token = $(this).attr('note_token');
                 const button = $(this);
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    return;
+                }
 
-                $.ajax({
-                    url: "{{ url('note') }}/" + noteId + "/like",
-                    type: 'POST',
-                    data: {_token: token},
-                    beforeSend: function() {
-                        button.prop('disabled', true);
-                    },
-                    success: function(response) {
+                button.prop('disabled', true);
+                apiRequest('POST', '/notes/' + noteId + '/like', {}).then(function(response) {
                         if (response.code == 9999) {
                             button.html('<i class="fas fa-thumbs-up"></i>');
                             button.attr('title', '已点赞');
@@ -1396,11 +1524,11 @@
                         } else {
                             showToast('操作失败: ' + (response.msg || '未知错误'), 'error');
                         }
-                    },
-                    complete: function() {
+                    }).catch(function() {
+                        showToast('网络错误，请稍后重试', 'error');
+                    }).finally(function() {
                         button.prop('disabled', false);
-                    }
-                });
+                    });
             });
         });
     </script>

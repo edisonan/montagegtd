@@ -631,6 +631,10 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : function() { return Promise.reject(new Error("API客户端未初始化")); };
+
             // 图片懒加载
             if (typeof $.fn.lazyload === 'function') {
                 $("img.lazy").lazyload({
@@ -648,7 +652,7 @@
                 button.prop('disabled', true);
                 button.html('<i class="fas fa-spinner fa-spin"></i> 处理中...');
 
-                $.get("{{ url('/feeds/quickstore') }}", {"feed_id": feed_id}, function(result_arr) {
+                apiRequest('POST', '/feeds/quickstore', {"feed_id": feed_id}).then(function(result_arr) {
                     if (result_arr.code != 9999) {
                         button.prop('disabled', false);
                         button.html(originalText);
@@ -663,6 +667,10 @@
                             button.html(originalText);
                         }, 3000);
                     }
+                }).catch(function() {
+                    button.prop('disabled', false);
+                    button.html(originalText);
+                    showNotification('订阅失败，请重试', 'error');
                 });
             });
 
@@ -720,11 +728,10 @@
                 var selectedText = selection.toString().trim();
 
                 if (selectedText.length >= 10) {
-                    $.post("{{ url('/article/mark') }}", {
+                    apiRequest('POST', '/articles/mark', {
                         "article_id": {{ $article->id }},
-                        "content": selectedText,
-                        "_token": "{{ csrf_token() }}"
-                    }, function(result_arr) {
+                        "content": selectedText
+                    }).then(function(result_arr) {
                         if (result_arr.code != 9999) {
                             showNotification(result_arr.msg, 'error');
                         } else {
@@ -734,6 +741,8 @@
                             // 清除选择
                             window.getSelection().removeAllRanges();
                         }
+                    }).catch(function() {
+                        showNotification('标注失败，请重试', 'error');
                     });
                 } else {
                     showNotification('请选择至少10个字符', 'error');

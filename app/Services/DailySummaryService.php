@@ -106,9 +106,17 @@ class DailySummaryService {
 			);
 		}
 		foreach ( $articleSubs as $articleSub ) {
+			if (empty($articleSub) || empty($articleSub->article)) {
+				continue;
+			}
+			$subject = isset($articleSub->article->subject) ? $articleSub->article->subject : '';
+			$articleId = isset($articleSub->article_id) ? $articleSub->article_id : '';
+			if ($subject === '' || $articleId === '') {
+				continue;
+			}
 			$infos ['article'] ['list'] [] = array (
-					'content' => '[' . $articleSub->status . ']' . $articleSub->article->subject,
-					'url' => '/article/view/' . $articleSub->article_id 
+					'content' => '[' . $articleSub->status . ']' . $subject,
+					'url' => '/article/view/' . $articleId
 			);
 		}
 		foreach ( $minds as $mind ) {

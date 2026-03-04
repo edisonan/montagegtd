@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
+use App\Support\AuthContext;
 
 
 /**
@@ -49,6 +50,11 @@ class Controller extends BaseController
      */
     protected function getAuthUser(Request $request = null)
     {
+        $context = $this->getAuthContext($request);
+        if ($context && $context->user) {
+            return $context->user;
+        }
+
         if ($request && $request->user()) {
             return $request->user();
         }
@@ -62,6 +68,28 @@ class Controller extends BaseController
     {
         $user = $this->getAuthUser($request);
         return $user ? $user->id : null;
+    }
+
+    /**
+     * 统一获取认证上下文
+     */
+    protected function getAuthContext(Request $request = null)
+    {
+        if (!$request) {
+            return null;
+        }
+
+        $context = $request->attributes->get('auth_context');
+        if ($context) {
+            return $context;
+        }
+
+        $user = $request->user();
+        if ($user) {
+            return new AuthContext(AuthContext::TYPE_SESSION, $user, null, array('*'));
+        }
+
+        return AuthContext::guest();
     }
 
     /**

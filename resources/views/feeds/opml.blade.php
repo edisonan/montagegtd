@@ -72,7 +72,7 @@
                     </div>
 
                     <!-- 上传表单 -->
-                    <form action="/feeds/importOpml" method="post" enctype="multipart/form-data" class="space-y-6">
+                    <form action="/api/v2/feeds/import-opml" method="post" enctype="multipart/form-data" class="space-y-6" id="opmlImportForm">
                         {!! csrf_field() !!}
 
                         <div class="space-y-4">
@@ -272,12 +272,12 @@
         }
 
         // 表单提交处理
-        document.querySelector('form')?.addEventListener('submit', function(e) {
+        document.querySelector('#opmlImportForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
             const fileInput = document.getElementById('opml_file');
             const submitBtn = this.querySelector('button[type="submit"]');
 
             if (fileInput.files.length === 0) {
-                e.preventDefault();
                 alert('请先选择要导入的OPML文件');
                 return false;
             }
@@ -287,12 +287,27 @@
                 const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>正在导入...';
                 submitBtn.disabled = true;
-
-                // 恢复按钮状态（防止页面跳转）
-                setTimeout(() => {
+                const formData = new FormData(this);
+                window.taskApiFetch('/api/v2/feeds/import-opml', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                }).then(function(resp) {
+                    return resp.json().then(function(data) {
+                        if (!resp.ok || !data || data.code !== 9999) {
+                            throw new Error((data && data.msg) ? data.msg : '导入失败');
+                        }
+                        alert('导入成功');
+                        window.location.href = '/feeds';
+                    });
+                }).catch(function(error) {
+                    alert(error && error.message ? error.message : '导入失败，请稍后重试');
+                }).finally(function() {
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
-                }, 5000);
+                });
             }
         });
     </script>

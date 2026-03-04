@@ -18,7 +18,7 @@
 - `read + write + admin`
 - `*`（全权限）
 
-路由按 `personal.token:scope` 校验，只要该 token 包含对应 scope 即可访问。
+路由按 `hybrid.token:scope` 校验，只要该 token 包含对应 scope 即可访问。
 
 ## 3. 数据模型
 
@@ -51,7 +51,7 @@
 
 1. 用户在页面填写 `name`、`scopes`、`expires_at`。
 2. 系统生成明文 token（仅创建响应返回一次）。
-3. 系统持久化 `token_hash`，不以明文作为认证主依据。
+3. 系统持久化 `token_hash`，不以明文作为认证主依据；明文 token 统一使用 `pat_` 前缀。
 
 ### 4.2 使用
 
@@ -98,7 +98,7 @@ Authorization: Bearer {token}
 
 ### 6.1 read
 
-中间件：`personal.token:read`
+中间件：`hybrid.token:read`
 
 示例：
 
@@ -110,7 +110,7 @@ Authorization: Bearer {token}
 
 ### 6.2 write
 
-中间件：`personal.token:write`
+中间件：`hybrid.token:write`
 
 示例：
 
@@ -122,7 +122,7 @@ Authorization: Bearer {token}
 
 ### 6.3 admin
 
-中间件：`personal.token:admin`
+中间件：`hybrid.token:admin`
 
 示例：
 

@@ -34,7 +34,7 @@
                 <!-- 错误消息 -->
                 @include('common.errors')
 
-                <form action="{{ url('goal') }}" method="POST" class="space-y-5">
+                <form action="{{ url('/api/v2/goals') }}" method="POST" class="space-y-5" id="goalCreateForm">
                     {!! csrf_field() !!}
 
                     <!-- 技能名称输入 -->
@@ -325,6 +325,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
             // 模态框功能
             const deleteModal = document.getElementById('deleteModal');
             const modalCloseButtons = document.querySelectorAll('.modal-close');
@@ -374,8 +377,11 @@
             // 确认删除
             document.getElementById('confirmDelete').addEventListener('click', function() {
                 if (!currentGoalId) return;
+                if (!apiRequest) {
+                    showNotification('error', 'API客户端未初始化');
+                    return;
+                }
 
-                const token = "{{ csrf_token() }}";
                 const button = this;
                 const originalHtml = button.innerHTML;
 
@@ -383,49 +389,34 @@
                 button.disabled = true;
                 button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>删除中...';
 
-                $.ajax({
-                    url: "{{ url('goal') }}/" + currentGoalId,
-                    type: 'DELETE',
-                    data: {
-                        "_token": token,
-                        "_method": "DELETE"
-                    },
-                    success: function(response) {
-                        if (response.code === 9999) {
-                            // 从DOM中移除元素
-                            const goalElement = document.getElementById(currentGoalId);
-                            if (goalElement) {
-                                goalElement.style.opacity = '0';
-                                setTimeout(() => {
-                                    if (goalElement.parentNode) {
-                                        goalElement.parentNode.removeChild(goalElement);
-                                    }
-                                }, 300);
-                            }
-
-                            // 显示成功消息
-                            showNotification('success', response.msg || '技能目标已删除');
-
-                            // 更新计数
-                            updateGoalCount();
-                        } else {
-                            showNotification('error', response.msg || '删除失败');
+                apiRequest('DELETE', '/goals/' + currentGoalId, {}).then(function(response) {
+                    if (response.code === 9999) {
+                        const goalElement = document.getElementById(currentGoalId);
+                        if (goalElement) {
+                            goalElement.style.opacity = '0';
+                            setTimeout(() => {
+                                if (goalElement.parentNode) {
+                                    goalElement.parentNode.removeChild(goalElement);
+                                }
+                            }, 300);
                         }
-                        closeModal();
-                    },
-                    error: function() {
-                        showNotification('error', '网络错误，请稍后重试');
-                        closeModal();
-                    },
-                    complete: function() {
-                        button.disabled = false;
-                        button.innerHTML = originalHtml;
+                        showNotification('success', response.msg || '技能目标已删除');
+                        updateGoalCount();
+                    } else {
+                        showNotification('error', response.msg || '删除失败');
                     }
+                    closeModal();
+                }).catch(function() {
+                    showNotification('error', '网络错误，请稍后重试');
+                    closeModal();
+                }).finally(function() {
+                    button.disabled = false;
+                    button.innerHTML = originalHtml;
                 });
             });
 
             // 表单提交优化
-            const goalForm = document.querySelector('form[action="{{ url('goal') }}"]');
+            const goalForm = document.getElementById('goalCreateForm');
             if (goalForm) {
                 const nameInput = goalForm.querySelector('#goal-name');
                 const submitBtn = goalForm.querySelector('button[type="submit"]');
@@ -437,17 +428,33 @@
                         showNotification('warning', '请输入技能名称');
                         return false;
                     }
+                    if (!apiRequest) {
+                        e.preventDefault();
+                        showNotification('error', 'API客户端未初始化');
+                        return false;
+                    }
+
+                    e.preventDefault();
 
                     // 显示加载状态
                     const originalBtnText = submitBtn.innerHTML;
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>添加中...';
 
-                    // 3秒后恢复（防止无限加载）
-                    setTimeout(() => {
+                    apiRequest('POST', '/goals', {
+                        name: nameInput.value.trim()
+                    }).then(function(response) {
+                        if (response && response.code === 9999) {
+                            window.location.reload();
+                            return;
+                        }
+                        showNotification('error', (response && response.msg) ? response.msg : '添加失败');
+                    }).catch(function() {
+                        showNotification('error', '网络错误，请稍后重试');
+                    }).finally(function() {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
-                    }, 3000);
+                    });
                 });
             }
 

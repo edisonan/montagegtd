@@ -435,6 +435,9 @@
 @section('scripts')
     <script>
         // 初始化变量
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
         let timer;
         let calibrationTimer;
         let mode = 1;
@@ -448,6 +451,9 @@
 
         // 添加纯净模式状态
         let pureMode = false;
+        let isCreatingTask = false;
+        let lastCreatedTaskName = '';
+        let lastCreatedTaskAt = 0;
 
         // 设置cookie
         function setCookie(c_name, value, expiredays) {
@@ -699,17 +705,28 @@
         function discard() {
             if (confirm("确认要放弃当前番茄/休息吗？")) {
                 const pomoId = document.getElementById('pomo_id').value;
-                window.location.href = '{{ url("pomos/discard/") }}/' + pomoId;
+                if (!apiRequest) {
+                    showNotification('error', 'API客户端未初始化');
+                    return;
+                }
+                apiRequest('POST', '/pomos/discard/' + pomoId, {}).then(function(response) {
+                    if (response.code == 9999) {
+                        window.location.reload();
+                    } else {
+                        showNotification('error', response.msg || '放弃失败');
+                    }
+                }).catch(function() {
+                    showNotification('error', '请求失败，请稍后重试');
+                });
             }
         }
 
         // 校准番茄状态
         function calibratePomoStatus() {
-            $.ajax({
-                url: "/pomos/pomostatus",
-                type: 'GET',
-                dataType: 'json',
-                success: function (response) {
+            if (!apiRequest) {
+                return;
+            }
+            apiRequest('GET', '/pomos/status', {}).then(function(response) {
                     if (response.code == 9999) {
                         const newStatus = response.result.current_pomo_status;
                         const newRemain = response.result.current_pomo_remain;
@@ -728,8 +745,8 @@
                             }
                         }
                     }
-                }
-            });
+                }).catch(function() {
+                });
         }
 
         // 保存番茄记录
@@ -738,21 +755,19 @@
             const pomoId = document.getElementById('pomo_id').value;
 
             if (pomoName) {
-                $.ajax({
-                    url: "/pomo/" + pomoId,
-                    type: 'POST',
-                    data: {
-                        "name": pomoName,
-                        "_token": "{{ csrf_token() }}"
-                    },
-                    success: function (response) {
+                if (!apiRequest) {
+                    showNotification('error', 'API客户端未初始化');
+                    return;
+                }
+                apiRequest('POST', '/pomos/' + pomoId, { name: pomoName }).then(function(response) {
                         if (response.code == 9999) {
                             window.location.href = '{{url('/index')}}';
                         } else {
                             showNotification('error', '保存失败');
                         }
-                    }
-                });
+                    }).catch(function() {
+                        showNotification('error', '请求失败，请稍后重试');
+                    });
             } else {
                 showNotification('warning', '请输入番茄内容');
             }
@@ -860,15 +875,13 @@
         function toggleTaskStatus(taskId, element) {
             const isCurrentlyCompleted = element.classList.contains('checked');
             const action = isCurrentlyCompleted ? 'restore' : 'finish';
-
-            $.ajax({
-                url: `/task/${taskId}`,
-                type: 'DELETE',
-                data: {
-                    type: action,
-                    _token: "{{ csrf_token() }}"
-                },
-                success: function(response) {
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            apiRequest('DELETE', '/tasks/' + taskId, {
+                type: action
+            }).then(function(response) {
                     if (response.code == 9999) {
                         element.classList.toggle('checked');
                         const taskText = document.querySelector(`#task${taskId} .font-medium`);
@@ -879,20 +892,20 @@
                     } else {
                         showNotification('error', '操作失败');
                     }
-                }
-            });
+                }).catch(function() {
+                    showNotification('error', '请求失败');
+                });
         }
 
         function deleteTask(taskId) {
             if (confirm('确定要删除这个任务吗？此操作不可恢复。')) {
-                $.ajax({
-                    url: `/task/${taskId}`,
-                    type: 'DELETE',
-                    data: {
-                        type: 'delete',
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
+                if (!apiRequest) {
+                    showNotification('error', 'API客户端未初始化');
+                    return;
+                }
+                apiRequest('DELETE', '/tasks/' + taskId, {
+                    type: 'delete'
+                }).then(function(response) {
                         if (response.code == 9999) {
                             document.getElementById(`task${taskId}`).remove();
                             showNotification('success', '任务删除成功');
@@ -900,44 +913,43 @@
                         } else {
                             showNotification('error', '删除失败');
                         }
-                    }
-                });
+                    }).catch(function() {
+                        showNotification('error', '删除失败');
+                    });
             }
         }
 
         function toggleTaskTop(taskId, isTop) {
             const newStatus = isTop ? 0 : 1;
-
-            $.ajax({
-                url: `/task/${taskId}`,
-                type: 'POST',
-                data: {
-                    is_top: newStatus,
-                    _token: "{{ csrf_token() }}"
-                },
-                success: function(response) {
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            apiRequest('PUT', '/tasks/' + taskId, {
+                is_top: newStatus
+            }).then(function(response) {
                     if (response.code == 9999) {
                         window.location.reload();
                     } else {
                         showNotification('error', '操作失败');
                     }
-                }
-            });
+                }).catch(function() {
+                    showNotification('error', '请求失败');
+                });
         }
 
         function addChildTask(taskId, taskName) {
             const childName = prompt(`为"${taskName}"创建子任务：`, "");
             if (childName && childName.trim()) {
-                $.ajax({
-                    url: "{{ url('task') }}",
-                    type: 'POST',
-                    data: {
-                        name: childName.trim(),
-                        mode: mode,
-                        parent_task_id: taskId,
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
+                if (!apiRequest) {
+                    showNotification('error', 'API客户端未初始化');
+                    return;
+                }
+                apiRequest('POST', '/tasks', {
+                    name: childName.trim(),
+                    mode: mode,
+                    parent_task_id: taskId
+                }).then(function(response) {
                         if (response.code == 9999) {
                             const taskItem = createTaskListItem(response.result);
                             const parentElement = document.getElementById(`task${taskId}`);
@@ -967,37 +979,40 @@
                         } else {
                             showNotification('error', '添加失败');
                         }
-                    }
-                });
+                    }).catch(function() {
+                        showNotification('error', '请求失败');
+                    });
             }
         }
 
         // 为首页加载任务数据并打开编辑弹窗的函数
         function editTask(taskId) {
             // 从服务器获取任务数据 - 使用现有的API
-            $.get('/tasks/' + taskId, function(response) {
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+            apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
                 if(response.code == 9999) {
                     var task = response.result;
                     openTaskUpdateModal(task);
                 } else {
                     alert('获取任务数据失败：' + (response.msg || '未知错误'));
                 }
-            }).fail(function() {
+            }).catch(function() {
                 alert('获取任务数据失败');
             });
         }
 
         // 显示待办列表
         function showtasks() {
-            $.ajax({
-                url: "{{ url('tasksall') }}",
-                type: 'GET',
-                data: {
-                    "_token": "{{ csrf_token() }}",
-                    "status": 1,
-                    "mode": mode
-                },
-                success: function(response) {
+            if (!apiRequest) {
+                return;
+            }
+            apiRequest('GET', '/tasks/all', {
+                status: 1,
+                mode: mode
+            }).then(function(response) {
                     if (response.code == 9999) {
                         const tasksList = document.getElementById('tasks');
                         const loading = document.getElementById('tasksLoading');
@@ -1019,20 +1034,18 @@
 
                         updateTaskCount();
                     }
-                }
-            });
+                }).catch(function() {
+                });
         }
 
         // 显示番茄列表
         function showpomos() {
-            $.ajax({
-                url: "{{ url('pomostoday') }}",
-                type: 'GET',
-                data: {
-                    "_token": "{{ csrf_token() }}",
-                    'type': 'time'
-                },
-                success: function(response) {
+            if (!apiRequest) {
+                return;
+            }
+            apiRequest('GET', '/pomos/today', {
+                type: 'time'
+            }).then(function(response) {
                     if (response.code == 9999) {
                         const pomosList = document.getElementById('pomos');
                         const loading = document.getElementById('pomosLoading');
@@ -1050,21 +1063,37 @@
                         document.getElementById('pomoCount').textContent =
                             Object.keys(response.result).length;
                     }
-                }
-            });
+                }).catch(function() {
+                });
         }
 
         // 添加新任务
         function addNewTask(taskName) {
-            $.ajax({
-                url: "/task",
-                type: 'POST',
-                data: {
-                    "name": taskName,
-                    "mode": mode,
-                    "_token": "{{ csrf_token() }}"
-                },
-                success: function(response) {
+            const normalizedName = (taskName || '').trim();
+            if (!normalizedName) {
+                return;
+            }
+
+            const now = Date.now();
+            if (isCreatingTask) {
+                return;
+            }
+            if (lastCreatedTaskName === normalizedName && (now - lastCreatedTaskAt) < 1200) {
+                return;
+            }
+
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            isCreatingTask = true;
+            lastCreatedTaskName = normalizedName;
+            lastCreatedTaskAt = now;
+
+            apiRequest('POST', '/tasks', {
+                name: normalizedName,
+                mode: mode
+            }).then(function(response) {
                     if (response.code == 9999) {
                         document.getElementById('task_name').value = '';
                         const tasksList = document.getElementById('tasks');
@@ -1082,24 +1111,28 @@
                     } else {
                         showNotification('error', '添加失败');
                     }
-                }
-            });
+                }).catch(function() {
+                    showNotification('error', '请求失败');
+                }).finally(function() {
+                    isCreatingTask = false;
+                });
         }
 
         // 开始番茄
         function startPomo() {
-            $.ajax({
-                url: "{{ url('pomos/start') }}",
-                type: 'GET',
-                data: {"_token": "{{ csrf_token() }}"},
-                success: function (response) {
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            apiRequest('POST', '/pomos/start', {}).then(function(response) {
                     if (response.code != 9999) {
                         showNotification('error', '启动失败');
                     } else {
                         window.location.reload();
                     }
-                }
-            });
+                }).catch(function() {
+                    showNotification('error', '启动失败');
+                });
         }
 
         function updateTaskCount() {

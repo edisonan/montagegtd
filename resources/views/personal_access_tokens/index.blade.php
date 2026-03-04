@@ -506,6 +506,10 @@
 
 @section('scripts')
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         document.addEventListener('DOMContentLoaded', function() {
             // 模态框管理
             const modals = {
@@ -632,72 +636,68 @@
             // 显示加载状态
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>创建中...';
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                return;
+            }
 
-            $.ajax({
-                url: '/personal-access-tokens',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.code == 9999) {
-                        // 关闭创建模态框
-                        document.querySelector('#createTokenModal .modal-close').click();
+            const payload = {
+                name: formData.get('name') || '',
+                scopes: formData.getAll('scopes[]')
+            };
+            const expiresAt = formData.get('expires_at');
+            if (expiresAt) {
+                payload.expires_at = expiresAt;
+            }
 
-                        // 显示新令牌
-                        document.getElementById('newTokenValue').value = response.result.token;
+            apiRequest('POST', '/personal-access-tokens', payload).then(function(response) {
+                if (response && response.code == 9999) {
+                    // 关闭创建模态框
+                    document.querySelector('#createTokenModal .modal-close').click();
 
-                        // 打开显示令牌模态框
-                        document.getElementById('showTokenModal').classList.add('show');
+                    // 显示新令牌
+                    document.getElementById('newTokenValue').value = response.result.token;
 
-                        // 3秒后自动刷新页面
-                        setTimeout(function() {
-                            location.reload();
-                        }, 3000);
-                    } else {
-                        // 显示错误信息
-                        const errorDiv = document.getElementById('tokenErrors');
-                        const errorList = document.getElementById('tokenErrorList');
+                    // 打开显示令牌模态框
+                    document.getElementById('showTokenModal').classList.add('show');
 
-                        errorList.innerHTML = '';
-                        if (response.msg) {
-                            errorList.innerHTML = `<li>${response.msg}</li>`;
-                        } else {
-                            errorList.innerHTML = '<li>创建失败，请稍后重试</li>';
-                        }
-                        errorDiv.classList.remove('hidden');
-
-                        // 滚动到错误提示
-                        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                },
-                error: function(xhr) {
-                    // 显示验证错误
-                    const errorDiv = document.getElementById('tokenErrors');
-                    const errorList = document.getElementById('tokenErrorList');
-
-                    errorList.innerHTML = '';
-                    if (xhr.responseJSON && xhr.responseJSON.errors) {
-                        $.each(xhr.responseJSON.errors, function(key, value) {
-                            $.each(value, function(index, msg) {
-                                errorList.innerHTML += `<li>${msg}</li>`;
-                            });
-                        });
-                    } else {
-                        errorList.innerHTML = '<li>创建失败，请检查网络后重试</li>';
-                    }
-                    errorDiv.classList.remove('hidden');
-
-                    // 滚动到错误提示
-                    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                },
-                complete: function() {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
+                    // 3秒后自动刷新页面
+                    setTimeout(function() {
+                        location.reload();
+                    }, 3000);
+                    return;
                 }
+
+                // 显示错误信息
+                const errorDiv = document.getElementById('tokenErrors');
+                const errorList = document.getElementById('tokenErrorList');
+                errorList.innerHTML = `<li>${(response && response.msg) ? response.msg : '创建失败，请稍后重试'}</li>`;
+                errorDiv.classList.remove('hidden');
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }).catch(function(error) {
+                // 显示验证错误
+                const errorDiv = document.getElementById('tokenErrors');
+                const errorList = document.getElementById('tokenErrorList');
+                errorList.innerHTML = '';
+
+                const errors = error && error.data && error.data.errors ? error.data.errors : null;
+                if (errors) {
+                    Object.keys(errors).forEach(function(key) {
+                        (errors[key] || []).forEach(function(msg) {
+                            errorList.innerHTML += `<li>${msg}</li>`;
+                        });
+                    });
+                } else {
+                    errorList.innerHTML = '<li>创建失败，请检查网络后重试</li>';
+                }
+
+                errorDiv.classList.remove('hidden');
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }).finally(function() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             });
         }
 
@@ -709,46 +709,42 @@
             // 显示加载状态
             deleteBtn.disabled = true;
             deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>删除中...';
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = originalBtnText;
+                return;
+            }
 
-            $.ajax({
-                url: `/personal-access-tokens/${id}`,
-                type: 'DELETE',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.code == 9999) {
-                        // 从DOM中移除行
-                        const tokenRow = document.getElementById(`token-${id}`);
-                        if (tokenRow) {
-                            tokenRow.style.opacity = '0';
-                            setTimeout(() => {
-                                if (tokenRow.parentNode) {
-                                    tokenRow.parentNode.removeChild(tokenRow);
-                                }
-                            }, 300);
-                        }
-
-                        // 显示成功消息
-                        showNotification('success', response.msg || '令牌删除成功');
-
-                        // 关闭模态框
-                        document.querySelector('#deleteTokenModal .modal-close').click();
-
-                        // 更新计数
-                        updateTokenCount();
-                    } else {
-                        showNotification('error', response.msg || '删除失败');
+            apiRequest('DELETE', `/personal-access-tokens/${id}`, {}).then(function(response) {
+                if (response && response.code == 9999) {
+                    // 从DOM中移除行
+                    const tokenRow = document.getElementById(`token-${id}`);
+                    if (tokenRow) {
+                        tokenRow.style.opacity = '0';
+                        setTimeout(() => {
+                            if (tokenRow.parentNode) {
+                                tokenRow.parentNode.removeChild(tokenRow);
+                            }
+                        }, 300);
                     }
-                },
-                error: function(xhr) {
-                    showNotification('error', '删除失败，请稍后重试');
-                },
-                complete: function() {
-                    deleteBtn.disabled = false;
-                    deleteBtn.innerHTML = originalBtnText;
-                    currentDeleteTokenId = null;
+
+                    // 显示成功消息
+                    showNotification('success', response.msg || '令牌删除成功');
+
+                    // 关闭模态框
+                    document.querySelector('#deleteTokenModal .modal-close').click();
+
+                    // 更新计数
+                    updateTokenCount();
+                } else {
+                    showNotification('error', (response && response.msg) ? response.msg : '删除失败');
                 }
+            }).catch(function() {
+                showNotification('error', '删除失败，请稍后重试');
+            }).finally(function() {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = originalBtnText;
             });
         }
 

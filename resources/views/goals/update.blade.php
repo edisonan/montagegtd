@@ -70,7 +70,7 @@
                     </div>
                 </div>
 
-                <form action="{{ url('goal/'.$goal->id) }}" method="POST" class="space-y-6" id="goalForm">
+                <form action="{{ url('/api/v2/goals/'.$goal->id) }}" method="POST" class="space-y-6" id="goalForm">
                     {!! csrf_field() !!}
                     <input type="hidden" name="_method" value="PUT">
 
@@ -257,7 +257,7 @@
 
             <div class="flex gap-3">
                 <button type="button" class="modal-close btn btn-secondary flex-1">取消</button>
-                <form action="{{ url('goal/'.$goal->id) }}" method="POST" class="flex-1" id="deleteForm">
+                <form action="{{ url('/api/v2/goals/'.$goal->id) }}" method="POST" class="flex-1" id="deleteForm">
                     {!! csrf_field() !!}
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger w-full">
@@ -369,6 +369,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
             // 进度条实时更新
             const progressSlider = document.getElementById('goal-progress');
             const progressValue = document.getElementById('progress-value');
@@ -431,26 +434,76 @@
             const deleteFormBtn = deleteForm?.querySelector('button[type="submit"]');
 
             if (goalForm && submitBtn) {
-                goalForm.addEventListener('submit', function() {
+                goalForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!apiRequest) {
+                        showNotification('error', 'API客户端未初始化');
+                        return;
+                    }
+                    const goalNameValue = document.getElementById('goal-name').value.trim();
+                    if (!goalNameValue) {
+                        showNotification('warning', '请输入目标名称');
+                        document.getElementById('goal-name').focus();
+                        return;
+                    }
+
                     // 显示加载状态
                     const originalBtnText = submitBtn.innerHTML;
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
 
-                    // 3秒后恢复（防止无限加载）
-                    setTimeout(() => {
+                    apiRequest('PUT', '/goals/{{ $goal->id }}', {
+                        name: goalNameValue,
+                        description: document.getElementById('goal-description') ? document.getElementById('goal-description').value : '',
+                        category: document.querySelector('input[name=\"category\"]:checked') ? document.querySelector('input[name=\"category\"]:checked').value : '',
+                        progress: document.getElementById('goal-progress') ? document.getElementById('goal-progress').value : '',
+                        status: document.querySelector('input[name=\"status\"]:checked') ? document.querySelector('input[name=\"status\"]:checked').value : ''
+                    }).then(function(response) {
+                        if (response && response.code === 9999) {
+                            showNotification('success', response.msg || '保存成功');
+                            setTimeout(function() {
+                                window.location.href = "{{ url('/goals') }}";
+                            }, 400);
+                            return;
+                        }
+                        showNotification('error', (response && response.msg) ? response.msg : '保存失败');
+                    }).catch(function() {
+                        showNotification('error', '网络错误，请稍后重试');
+                    }).finally(function() {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalBtnText;
-                    }, 3000);
+                    });
                 });
             }
 
             if (deleteForm && deleteFormBtn) {
-                deleteForm.addEventListener('submit', function() {
+                deleteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!apiRequest) {
+                        showNotification('error', 'API客户端未初始化');
+                        return;
+                    }
+
                     // 显示加载状态
                     const originalBtnText = deleteFormBtn.innerHTML;
                     deleteFormBtn.disabled = true;
                     deleteFormBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>删除中...';
+
+                    apiRequest('DELETE', '/goals/{{ $goal->id }}', {}).then(function(response) {
+                        if (response && response.code === 9999) {
+                            showNotification('success', response.msg || '删除成功');
+                            setTimeout(function() {
+                                window.location.href = "{{ url('/goals') }}";
+                            }, 300);
+                            return;
+                        }
+                        showNotification('error', (response && response.msg) ? response.msg : '删除失败');
+                    }).catch(function() {
+                        showNotification('error', '网络错误，请稍后重试');
+                    }).finally(function() {
+                        deleteFormBtn.disabled = false;
+                        deleteFormBtn.innerHTML = originalBtnText;
+                    });
                 });
             }
 

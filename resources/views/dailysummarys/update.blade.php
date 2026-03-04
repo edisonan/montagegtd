@@ -29,7 +29,7 @@
                         <!-- 显示验证错误 -->
                         @include('common.errors')
 
-                        <form action="{{ url('dailysummary/'.$dailysummary->id) }}" method="POST" class="space-y-6" id="dailysummary-form">
+                        <form action="{{ url('/api/v2/daily-summaries/'.$dailysummary->id) }}" method="POST" class="space-y-6" id="dailysummary-form">
                             {{ csrf_field() }}
                             {{ method_field('PUT') }}
 
@@ -167,6 +167,10 @@
     </div>
 
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         document.addEventListener('DOMContentLoaded', function() {
             // 初始化日期显示
             const summaryDate = document.getElementById('dailysummary-summarydate').value;
@@ -226,39 +230,32 @@
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
                 submitBtn.disabled = true;
 
-                // 收集表单数据
-                const formData = new FormData(this);
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
 
-                // 发送请求
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
+                apiRequest('PUT', '/daily-summaries/{{ $dailysummary->id }}', {
+                    work_content: document.getElementById('dailysummary-workcontent').value || '',
+                    life_content: document.getElementById('dailysummary-lifecontent').value || ''
+                }).then(function(data) {
+                    if (data && data.code === 9999) {
+                        showToast('日报更新成功！', 'success');
+                        setTimeout(function() {
+                            window.location.href = '/dailysummarys';
+                        }, 300);
+                        return;
                     }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success || (data.code && data.code === 9999)) {
-                            showToast('日报更新成功！', 'success');
-
-                            // 延迟跳转
-                            setTimeout(() => {
-                                window.location.href = '/dailysummarys';
-                            }, 1000);
-                        } else {
-                            showToast(data.message || '保存失败，请稍后重试', 'error');
-                            submitBtn.innerHTML = originalText;
-                            submitBtn.disabled = false;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('保存失败:', error);
-                        showToast('网络错误，请稍后重试', 'error');
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    });
+                    showToast((data && data.msg) ? data.msg : '保存失败，请稍后重试', 'error');
+                }).catch(function(error) {
+                    console.error('保存失败:', error);
+                    showToast('网络错误，请稍后重试', 'error');
+                }).finally(function() {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
             });
         });
 
@@ -275,16 +272,16 @@
             emptyDiv.classList.add('hidden');
             tipsContainer.innerHTML = '';
 
-            fetch('{{ url("dailytips") }}', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
+            if (!apiRequest) {
+                loadingDiv.classList.add('hidden');
+                emptyDiv.classList.remove('hidden');
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
+
+            apiRequest('GET', '/daily-summaries/tips', {
+                summary_date: summaryDate
+            }).then(function(data) {
                     loadingDiv.classList.add('hidden');
 
                     if (data.code === 9999 && data.result && data.result.infos) {
@@ -367,8 +364,7 @@
                         emptyDiv.classList.remove('hidden');
                         showToast('未找到相关提示信息', 'info');
                     }
-                })
-                .catch(error => {
+                }).catch(function(error) {
                     console.error('获取提示失败:', error);
                     loadingDiv.classList.add('hidden');
                     emptyDiv.classList.remove('hidden');

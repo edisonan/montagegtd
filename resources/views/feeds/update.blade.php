@@ -39,7 +39,7 @@
                         <!-- 显示验证错误 -->
                         @include('common.errors')
 
-                        <form action="{{ url('feed/'.$feedSub->id) }}" method="POST" class="space-y-6" id="feed-edit-form">
+                        <form action="{{ url('/api/v2/feeds/'.$feedSub->id) }}" method="POST" class="space-y-6" id="feed-edit-form">
                             {{ csrf_field() }}
                             {{ method_field('PUT') }}
 
@@ -339,6 +339,10 @@
     </div>
 
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         document.addEventListener('DOMContentLoaded', function() {
             // 字数统计
             const feedNameInput = document.getElementById('feed_name');
@@ -372,18 +376,14 @@
                 submitBtn.disabled = true;
 
                 try {
-                    const formData = new FormData(this);
+                    if (!apiRequest) {
+                        throw new Error('API客户端未初始化');
+                    }
 
-                    const response = await fetch(this.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
+                    const data = await apiRequest('PUT', '/feeds/{{ $feedSub->id }}', {
+                        feed_name: document.getElementById('feed_name').value.trim(),
+                        category_id: document.getElementById('category_id').value
                     });
-
-                    const data = await response.json();
 
                     if (data.success || (data.code && data.code === 9999)) {
                         showToast('订阅更新成功！', 'success');
@@ -414,20 +414,15 @@
                 showToast('订阅地址为空', 'warning');
                 return;
             }
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
 
             showToast('正在检测订阅地址...', 'info');
 
             try {
-                const response = await fetch('{{ url("feed/checkFeedUrl") }}', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const data = await response.json();
+                const data = await apiRequest('GET', '/feeds/check-feed-url', { url: url });
 
                 if (data.code === 9999) {
                     showToast('订阅地址检测成功！', 'success');
@@ -451,17 +446,13 @@
             const feedId = '{{ $feedSub->id }}';
 
             showToast('正在同步订阅...', 'info');
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
 
             try {
-                const response = await fetch(`/feed/${feedId}/refresh`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const data = await response.json();
+                const data = await apiRequest('POST', `/feeds/${feedId}/refresh`, {});
 
                 if (data.success || data.code === 9999) {
                     showToast('同步完成！', 'success');
@@ -485,17 +476,15 @@
             }
 
             showToast(`${action}订阅中...`, 'info');
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
 
             try {
-                const response = await fetch(`/feed/${feedId}/toggle-status`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                const data = await apiRequest('POST', `/feeds/${feedId}/toggle-status`, {
+                    enable: enable ? 1 : 0
                 });
-
-                const data = await response.json();
 
                 if (data.success || data.code === 9999) {
                     showToast(`订阅已${action}`, 'success');
@@ -518,17 +507,13 @@
             }
 
             showToast('正在清空文章...', 'info');
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
 
             try {
-                const response = await fetch(`/feed/${feedId}/clear-articles`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const data = await response.json();
+                const data = await apiRequest('POST', `/feeds/${feedId}/clear-articles`, {});
 
                 if (data.success || data.code === 9999) {
                     showToast('文章已清空', 'success');

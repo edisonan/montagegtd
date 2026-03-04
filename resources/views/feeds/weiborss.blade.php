@@ -69,7 +69,7 @@
                     </div>
 
                     <!-- 订阅表单 -->
-                    <form action="/feed" method="post" id="weiboSubscriptionForm" class="space-y-6">
+                    <form action="/api/v2/feeds" method="post" id="weiboSubscriptionForm" class="space-y-6">
                         {!! csrf_field() !!}csrf
 
                         <!-- 微博用户ID -->
@@ -260,25 +260,36 @@
 
     <script>
         $(document).ready(function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
             // 表单验证
             const form = document.getElementById('weiboSubscriptionForm');
             const submitButton = document.getElementById('submitButton');
 
             form.addEventListener('submit', function(e) {
+                e.preventDefault();
                 const userIdInput = document.getElementById('weibo_user_id');
                 const userId = userIdInput.value.trim();
+                const categoryIdInput = document.getElementById('category_id');
 
                 // 验证用户ID是否为数字
                 if (!/^\d+$/.test(userId)) {
-                    e.preventDefault();
                     showValidationError('微博用户ID必须是纯数字');
                     return false;
                 }
 
                 // 验证用户ID长度（微博用户ID通常是10位左右）
                 if (userId.length < 5 || userId.length > 20) {
-                    e.preventDefault();
                     showValidationError('微博用户ID格式不正确，请检查是否正确获取');
+                    return false;
+                }
+                if (!categoryIdInput || !categoryIdInput.value) {
+                    showValidationError('请选择分类');
+                    return false;
+                }
+                if (!apiRequest) {
+                    showValidationError('API客户端未初始化');
                     return false;
                 }
 
@@ -287,11 +298,24 @@
                 submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>订阅中...';
                 submitButton.disabled = true;
 
-                // 如果表单验证通过，5秒后恢复按钮（防止长时间卡住）
-                setTimeout(() => {
+                apiRequest('POST', '/feeds', {
+                    weibo_user_id: userId,
+                    category_id: categoryIdInput.value,
+                    feed_type: 'weibo',
+                    feed_name: 'weibo',
+                    url: 'weibo'
+                }).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        window.location.href = '{{ url('/feeds') }}';
+                        return;
+                    }
+                    showValidationError((resp && resp.msg) ? resp.msg : '订阅失败，请稍后重试');
+                }).catch(function() {
+                    showValidationError('网络错误，请稍后重试');
+                }).finally(function() {
                     submitButton.innerHTML = originalText;
                     submitButton.disabled = false;
-                }, 8000);
+                });
             });
 
             // 显示验证错误

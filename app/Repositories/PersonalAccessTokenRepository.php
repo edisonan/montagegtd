@@ -13,7 +13,7 @@ class PersonalAccessTokenRepository
      */
     public function createToken(array $data): array
     {
-        $plainTextToken = Str::random(64);
+        $plainTextToken = 'pat_' . Str::random(64);
         $tokenHash = hash('sha256', $plainTextToken);
         $storedToken = 'pat_' . Str::random(60);
 

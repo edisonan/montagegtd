@@ -64,12 +64,14 @@ class StatisticsService {
 	 *
 	 * @return string[]|unknown[]
 	 */
-	public function getIndexInfo() {
+	public function getIndexInfo($range = 'month', $startDate = null, $endDate = null) {
 		$userId = \Auth::id ();
-		
-		$days = 30;
-		$startDate = date ( 'Y-m-d', strtotime ( "-$days days" ) );
-		$endDate = date ( 'Y-m-d' );
+
+		$dateRange = $this->resolveDateRange($range, $startDate, $endDate);
+		$range = $dateRange['range'];
+		$startDate = $dateRange['start_date'];
+		$endDate = $dateRange['end_date'];
+		$days = $dateRange['days'];
 		
 		$basicInfos = array (
 				'task' => '任务量',
@@ -114,8 +116,57 @@ class StatisticsService {
 				'mind_bar_statistics' => json_encode ( $detailFormatInfos ['mind'] ),
 				'count_pie_statistics' => json_encode ( $totalFormatInfos ),
 				'start_date' => $startDate,
-				'end_date' => $endDate 
+				'end_date' => $endDate,
+				'selected_range' => $range
 		];
+	}
+
+	private function resolveDateRange($range, $startDate = null, $endDate = null) {
+		$allowedRanges = array('week', 'month', 'quarter', 'year', 'custom');
+		if (!in_array($range, $allowedRanges, true)) {
+			$range = 'month';
+		}
+
+		if ($range === 'custom') {
+			$startTs = $startDate ? strtotime($startDate) : false;
+			$endTs = $endDate ? strtotime($endDate) : false;
+			if ($startTs === false || $endTs === false || $startTs > $endTs) {
+				$range = 'month';
+			} else {
+				$safeStart = date('Y-m-d', $startTs);
+				$safeEnd = date('Y-m-d', $endTs);
+				$days = (int) floor(($endTs - $startTs) / 86400);
+				if ($days < 1) {
+					$days = 1;
+				}
+				if ($days > 3660) {
+					$days = 3660;
+				}
+				return array(
+					'range' => 'custom',
+					'start_date' => $safeStart,
+					'end_date' => $safeEnd,
+					'days' => $days,
+				);
+			}
+		}
+
+		$daysMap = array(
+			'week' => 7,
+			'month' => 30,
+			'quarter' => 90,
+			'year' => 365,
+		);
+		$days = isset($daysMap[$range]) ? $daysMap[$range] : 30;
+		$safeEnd = date('Y-m-d');
+		$safeStart = date('Y-m-d', strtotime("-$days days"));
+
+		return array(
+			'range' => $range,
+			'start_date' => $safeStart,
+			'end_date' => $safeEnd,
+			'days' => $days,
+		);
 	}
 	
 	/**

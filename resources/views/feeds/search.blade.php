@@ -14,17 +14,17 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <!-- 搜索表单 -->
-                    <form action="{{ url('feeds/explorer') }}" method="GET" class="hidden sm:block">
+                    <!-- 搜索框 -->
+                    <div class="hidden sm:block">
                         <div class="relative">
                             <input type="text"
-                                   name="search"
+                                   id="explorerSearchDesktop"
                                    placeholder="搜索订阅源..."
                                    value="{{ request('search') }}"
                                    class="input pl-10 pr-4 w-64">
                             <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
                         </div>
-                    </form>
+                    </div>
 
                     <a href="{{ url('articles') }}" class="btn btn-secondary btn-sm">
                         <i class="fas fa-newspaper mr-2"></i>
@@ -39,16 +39,14 @@
 
             <!-- 移动端搜索 -->
             <div class="sm:hidden mb-6">
-                <form action="{{ url('feeds/explorer') }}" method="GET">
-                    <div class="relative">
-                        <input type="text"
-                               name="search"
-                               placeholder="搜索订阅源..."
-                               value="{{ request('search') }}"
-                               class="input pl-10 pr-4 w-full">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
-                    </div>
-                </form>
+                <div class="relative">
+                    <input type="text"
+                           id="explorerSearchMobile"
+                           placeholder="搜索订阅源..."
+                           value="{{ request('search') }}"
+                           class="input pl-10 pr-4 w-full">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
+                </div>
             </div>
 
             <!-- 成功/错误消息 -->
@@ -253,6 +251,10 @@
 
     <script>
         $(document).ready(function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : function() { return Promise.reject(new Error("API客户端未初始化")); };
+
             // 一键订阅功能
             $('.feed-quick-sub').click(function() {
                 const button = $(this);
@@ -263,12 +265,7 @@
                 button.html('<i class="fas fa-spinner fa-spin mr-2"></i>订阅中...');
                 button.prop('disabled', true);
 
-                $.ajax({
-                    url: "{{ url('/feeds/quickstore') }}",
-                    method: "GET",
-                    data: { feed_id: feedId },
-                    dataType: "json",
-                    success: function(response) {
+                apiRequest('POST', '/feeds/quickstore', { feed_id: feedId }).then(function(response) {
                         if (response.code === 9999) {
                             // 成功订阅
                             button.removeClass('btn-primary').addClass('btn-success');
@@ -282,12 +279,10 @@
                             button.prop('disabled', false);
                             showNotification('error', response.msg || '订阅失败，请重试');
                         }
-                    },
-                    error: function() {
-                        button.html(originalText);
-                        button.prop('disabled', false);
-                        showNotification('error', '网络错误，请检查连接后重试');
-                    }
+                }).catch(function() {
+                    button.html(originalText);
+                    button.prop('disabled', false);
+                    showNotification('error', '网络错误，请检查连接后重试');
                 });
             });
 
@@ -328,10 +323,20 @@
                 }, 5000);
             }
 
-            // 搜索框回车提交
-            $('input[name="search"]').keypress(function(e) {
+            function goExplorerSearch(keyword) {
+                var q = (keyword || '').trim();
+                if (!q) {
+                    window.location.href = '{{ url('feeds/explorer') }}';
+                    return;
+                }
+                window.location.href = '{{ url('feeds/explorer') }}?search=' + encodeURIComponent(q);
+            }
+
+            // 搜索框回车跳转
+            $('#explorerSearchDesktop, #explorerSearchMobile').keypress(function(e) {
                 if (e.which === 13) {
-                    $(this).closest('form').submit();
+                    e.preventDefault();
+                    goExplorerSearch($(this).val());
                 }
             });
         });

@@ -168,7 +168,7 @@
                 @include('common.errors')
 
                 <!-- 反馈表单 -->
-                <form action="{{ url('help/feedbackStore') }}" method="POST" class="space-y-6" id="feedbackForm">
+                <form action="{{ url('/api/v2/help/feedback') }}" method="POST" class="space-y-6" id="feedbackForm">
                     {!! csrf_field() !!}
 
                     <div class="space-y-6">
@@ -406,6 +406,10 @@
 
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 初始化函数
             document.addEventListener('DOMContentLoaded', function() {
                 // 初始化字符计数器
@@ -646,10 +650,11 @@
                 const form = document.getElementById('feedbackForm');
 
                 form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
                     // 验证必填字段
                     const content = document.getElementById('content').value.trim();
                     if (!content) {
-                        e.preventDefault();
                         document.getElementById('content').focus();
                         showToast('error', '请填写反馈内容');
                         return;
@@ -657,8 +662,11 @@
 
                     // 验证内容长度
                     if (content.length < 10) {
-                        e.preventDefault();
                         showToast('error', '反馈内容太短，请至少填写10个字符');
+                        return;
+                    }
+                    if (!apiRequest) {
+                        showToast('error', 'API客户端未初始化');
                         return;
                     }
 
@@ -668,11 +676,27 @@
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>提交中...';
                     submitBtn.disabled = true;
 
-                    // 5秒后恢复按钮状态
-                    setTimeout(() => {
+                    apiRequest('POST', '/help/feedback', {
+                        from: document.getElementById('from').value || '',
+                        content: content
+                    }).then(function(resp) {
+                        if (resp && resp.code === 9999) {
+                            showToast('success', '反馈提交成功，感谢你的建议');
+                            form.reset();
+                            const event = new Event('input');
+                            document.getElementById('content').dispatchEvent(event);
+                            setTimeout(function() {
+                                window.location.href = '{{ url('/index') }}';
+                            }, 500);
+                            return;
+                        }
+                        showToast('error', (resp && resp.msg) ? resp.msg : '提交失败，请稍后重试');
+                    }).catch(function() {
+                        showToast('error', '提交失败，请稍后重试');
+                    }).finally(function() {
                         submitBtn.innerHTML = originalText;
                         submitBtn.disabled = false;
-                    }, 5000);
+                    });
                 });
             }
 

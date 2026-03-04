@@ -628,7 +628,7 @@
             // 加载智能体数据
             async function loadAgents() {
                 try {
-                    const response = await fetch('/llm/api/agents', {
+                    const response = await window.taskApiFetch('/api/v2/llm/agents', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -810,7 +810,7 @@
             // 加载模型选项
             async function loadModels() {
                 try {
-                    const response = await fetch('/llm/api/models', {
+                    const response = await window.taskApiFetch('/api/v2/llm/models', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -886,11 +886,12 @@
                 }
 
                 try {
-                    const response = await fetch('/llm/api/agents', {
+                    const response = await window.taskApiFetch('/api/v2/llm/agents', {
                         method: 'POST',
                         headers: {
+                            'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
                         body: JSON.stringify(Object.fromEntries(formData))
                     });
@@ -915,11 +916,11 @@
             // 切换智能体状态
             async function toggleAgentStatus(agentId, currentStatus) {
                 try {
-                    const response = await fetch(`/llm/api/agents/${agentId}/toggle-status`, {
+                    const response = await window.taskApiFetch(`/api/v2/llm/agents/${agentId}/toggle-status`, {
                         method: 'POST',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
 
@@ -964,11 +965,11 @@
                 if (!deleteAgentId) return;
 
                 try {
-                    const response = await fetch(`/llm/api/agents/${deleteAgentId}`, {
+                    const response = await window.taskApiFetch(`/api/v2/llm/agents/${deleteAgentId}`, {
                         method: 'DELETE',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
 

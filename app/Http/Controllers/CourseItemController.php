@@ -94,6 +94,25 @@ class CourseItemController extends Controller
     }
 
     /**
+     * Legacy nested route compatibility: POST /courses/{courseId}/items
+     */
+    public function store(Request $request, $courseId)
+    {
+        $request->merge(array('course_id' => $courseId));
+        return $this->storeFromModal($request);
+    }
+
+    /**
+     * Legacy nested route compatibility: PUT /courses/{courseId}/items/{id}
+     */
+    public function update(Request $request, $courseId, $id)
+    {
+        // keep param for compatibility and permission checks by item ownership.
+        $request->merge(array('course_id' => $courseId));
+        return $this->updateFromModal($request, $id);
+    }
+
+    /**
      * 从模态框创建课程项目
      */
     public function storeFromModal(Request $request)

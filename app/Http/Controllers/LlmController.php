@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class LlmController extends Controller
@@ -36,11 +37,10 @@ class LlmController extends Controller
      * @var LlmSessionRepository
      */
     protected $sessionRepository;
+    protected $conversationHasSessionId = null;
 
     public function __construct(LlmConversationService $conversationService, LlmSessionRepository $sessionRepository)
     {
-        $this->middleware('auth');
-        
         $this->conversationService = $conversationService;
         $this->sessionRepository = $sessionRepository;
     }
@@ -424,6 +424,52 @@ class LlmController extends Controller
             return response()->json(['message' => '删除凭据失败'], 500);
         }
     }
+
+    public function testCredential($id)
+    {
+        try {
+            $user = Auth::user();
+
+            $credential = LlmProviderCredential::with('provider')
+                ->when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->find($id);
+
+            if (!$credential) {
+                return response()->json([
+                    'code' => 1001,
+                    'msg' => '凭据不存在',
+                    'result' => array(),
+                ], 404);
+            }
+
+            if ((int)$credential->is_active !== 1) {
+                return response()->json([
+                    'code' => 1002,
+                    'msg' => '凭据未启用',
+                    'result' => array(),
+                ]);
+            }
+
+            return response()->json(ResponseDataUtil::genSimpleSucc(array(
+                'credential_id' => $credential->id,
+                'provider_id' => $credential->provider_id,
+                'provider_name' => $credential->provider ? $credential->provider->name : null,
+                'msg' => '连接测试成功',
+            )));
+        } catch (\Exception $e) {
+            Log::error('测试凭据失败: ' . $e->getMessage());
+            return response()->json([
+                'code' => 1003,
+                'msg' => '连接测试失败',
+                'result' => array(),
+            ], 500);
+        }
+    }
+
     public function chat(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -557,14 +603,18 @@ class LlmController extends Controller
             header('X-Accel-Buffering: no'); // 禁用Nginx缓冲
 
             // 先创建对话记录
-            $conversation = $this->conversationService->createConversation([
+            $conversationPayload = [
                 'user_id' => $user->id,
                 'model_id' => $model->id,
                 'credential_id' => $credential->id,
                 'question' => $query,
                 'request_data' => $requestData,
                 'answer' => '' // 初始化为空，后续填充
-            ]);
+            ];
+            if ($sessionId && $this->conversationSupportsSession()) {
+                $conversationPayload['session_id'] = (int)$sessionId;
+            }
+            $conversation = $this->conversationService->createConversation($conversationPayload);
 
             // 记录详细的请求信息
             Log::info("askAi cURL Request Details:", [
@@ -610,8 +660,11 @@ class LlmController extends Controller
                     
                     // 直接输出原始数据，让前端处理
                     echo $data;
-                    ob_flush();
-                    flush();
+                    // 某些运行环境未开启输出缓冲，直接 ob_flush 会抛 warning
+                    if (ob_get_level() > 0) {
+                        @ob_flush();
+                    }
+                    @flush();
                     return strlen($data);
                 },
                 CURLOPT_HEADERFUNCTION => function($ch, $header) {
@@ -702,8 +755,10 @@ class LlmController extends Controller
                 ]);
 
                 echo "data: " . $errorMessage . "\n\n";
-                ob_flush();
-                flush();
+                if (ob_get_level() > 0) {
+                    @ob_flush();
+                }
+                @flush();
             } elseif ($httpCode >= 400) {
                 Log::warning("askAi HTTP Error Response:", [
                     'http_code' => $httpCode,
@@ -716,8 +771,10 @@ class LlmController extends Controller
 
             // 发送结束信号
             echo "\ndata: [DONE]\n\n";
-            ob_flush();
-            flush();
+            if (ob_get_level() > 0) {
+                @ob_flush();
+            }
+            @flush();
 
             exit();
         } catch (\Exception $e) {
@@ -748,10 +805,56 @@ class LlmController extends Controller
 
             echo "data: 发生异常: " . $e->getMessage() . "\n\n";
             echo "data: [DONE]\n\n";
-            ob_flush();
-            flush();
+            if (ob_get_level() > 0) {
+                @ob_flush();
+            }
+            @flush();
 
             exit();
+        }
+    }
+
+    public function askAi(Request $request)
+    {
+        // Legacy alias for chat endpoint.
+        return $this->chat($request);
+    }
+
+    protected function conversationSupportsSession()
+    {
+        if ($this->conversationHasSessionId !== null) {
+            return $this->conversationHasSessionId;
+        }
+        $this->conversationHasSessionId = Schema::hasColumn('llm_conversations', 'session_id');
+        return $this->conversationHasSessionId;
+    }
+
+    public function getUsageStats(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['message' => '未登录'], 401);
+            }
+
+            $query = LlmConversation::where('user_id', $user->id);
+
+            $totalConversations = (int)$query->count();
+            $totalTokens = (int)$query->sum('total_tokens');
+            $totalCost = (float)$query->sum('cost');
+            $todayConversations = (int)LlmConversation::where('user_id', $user->id)
+                ->whereDate('created_at', now()->toDateString())
+                ->count();
+
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+                'total_conversations' => $totalConversations,
+                'today_conversations' => $todayConversations,
+                'total_tokens' => $totalTokens,
+                'total_cost' => $totalCost,
+            )));
+        } catch (\Exception $e) {
+            Log::error('获取使用统计失败: ' . $e->getMessage());
+            return response()->json(['message' => '获取使用统计失败'], 500);
         }
     }
 

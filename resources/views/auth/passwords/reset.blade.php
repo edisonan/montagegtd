@@ -8,7 +8,7 @@
                     <div class="card-header">Reset Password</div>
 
                     <div class="card-body">
-                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}">
+                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}" id="passwordResetForm">
                             {!! csrf_field() !!}
 
                             <input type="hidden" name="token" value="{{ $token }}">
@@ -68,4 +68,48 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        (function() {
+            var form = document.getElementById('passwordResetForm');
+            if (!form) return;
+
+            form.addEventListener('submit', function(e) {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.request !== 'function') {
+                    return;
+                }
+
+                e.preventDefault();
+                var submitBtn = form.querySelector('button[type="submit"]');
+                var originalText = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa fa-btn fa-spinner fa-spin"></i>Resetting...';
+                }
+
+                window.TaskApiClient.request({
+                    method: 'POST',
+                    url: '/auth/password/reset',
+                    body: {
+                        token: form.querySelector('input[name="token"]').value,
+                        email: form.querySelector('input[name="email"]').value,
+                        password: form.querySelector('input[name="password"]').value,
+                        password_confirmation: form.querySelector('input[name="password_confirmation"]').value
+                    },
+                    skipAuth: true
+                }).then(function() {
+                    window.location.href = '{{ url('/login') }}';
+                }).catch(function() {
+                    form.submit();
+                }).finally(function() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                });
+            });
+        })();
+    </script>
 @endsection

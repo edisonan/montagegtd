@@ -105,7 +105,7 @@
                             </p>
                         </div>
 
-                        <form action="/feed" method="post" id="weixinSubscriptionForm">
+                        <form action="/api/v2/feeds" method="post" id="weixinSubscriptionForm">
                             {!! csrf_field() !!}
 
                             <!-- 公众号ID -->

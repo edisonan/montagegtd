@@ -15,7 +15,7 @@
                 @include('common.errors')
 
                 <!-- New Task Form -->
-                    <form action="{{ url('task/'.$task->id) }}" method="POST" class="form-horizontal">
+                    <form action="{{ url('/api/v2/tasks/'.$task->id) }}" method="POST" class="form-horizontal" id="taskUpdateForm">
                     {{ csrf_field() }}
 
                     <!-- Task Name -->
@@ -149,4 +149,57 @@
 
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
+            var form = document.getElementById('taskUpdateForm');
+            if (!form) {
+                return;
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (!apiRequest) {
+                    alert('API客户端未初始化');
+                    return;
+                }
+
+                var submitBtn = form.querySelector('button[type=\"submit\"]');
+                var original = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class=\"fa fa-spinner fa-spin\"></i> 提交中...';
+                }
+
+                apiRequest('PUT', '/tasks/{{ $task->id }}', {
+                    name: (document.getElementById('name') || {}).value || '',
+                    parent_task_id: (document.getElementById('parent_task_id') || {}).value || '',
+                    priority: (form.querySelector('input[name=\"priority\"]:checked') || {}).value || '',
+                    remindtime: (document.getElementById('remindtime') || {}).value || '',
+                    deadline: (document.getElementById('deadline') || {}).value || '',
+                    status: (form.querySelector('input[name=\"status\"]:checked') || {}).value || '',
+                    is_top: (form.querySelector('input[name=\"is_top\"]:checked') || {}).value || '',
+                    mode: (form.querySelector('input[name=\"mode\"]:checked') || {}).value || ''
+                }).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        window.location.href = '{{ url('/tasks') }}';
+                        return;
+                    }
+                    alert((resp && resp.msg) ? resp.msg : '更新失败');
+                }).catch(function() {
+                    alert('网络错误，请稍后重试');
+                }).finally(function() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = original;
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

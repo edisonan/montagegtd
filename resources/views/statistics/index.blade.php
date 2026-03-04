@@ -131,11 +131,11 @@
             </div>
             <div class="flex items-center space-x-4">
                 <div class="date-range-selector">
-                    <button class="date-btn active" data-range="week">本周</button>
-                    <button class="date-btn" data-range="month">本月</button>
-                    <button class="date-btn" data-range="quarter">本季</button>
-                    <button class="date-btn" data-range="year">本年</button>
-                    <button class="date-btn" data-range="custom">自定义</button>
+                    <button class="date-btn {{ ($selected_range ?? 'month') == 'week' ? 'active' : '' }}" data-range="week">本周</button>
+                    <button class="date-btn {{ ($selected_range ?? 'month') == 'month' ? 'active' : '' }}" data-range="month">本月</button>
+                    <button class="date-btn {{ ($selected_range ?? 'month') == 'quarter' ? 'active' : '' }}" data-range="quarter">本季</button>
+                    <button class="date-btn {{ ($selected_range ?? 'month') == 'year' ? 'active' : '' }}" data-range="year">本年</button>
+                    <button class="date-btn {{ ($selected_range ?? 'month') == 'custom' ? 'active' : '' }}" data-range="custom">自定义</button>
                 </div>
                 <a href="{{'/index'}}" class="btn btn-outline">
                     <i class="fas fa-arrow-left mr-2"></i>
@@ -721,34 +721,26 @@
 
         // 显示自定义日期选择器
         function showCustomDatePicker() {
-            alert('自定义日期选择功能开发中...');
+            var start = prompt('请输入开始日期（YYYY-MM-DD）', '{{ $start_date }}');
+            if (!start) {
+                hideLoading();
+                return;
+            }
+            var end = prompt('请输入结束日期（YYYY-MM-DD）', '{{ $end_date }}');
+            if (!end) {
+                hideLoading();
+                return;
+            }
+            var url = '{{ url("/statistics") }}' + '?range=custom&start_date='
+                + encodeURIComponent(start) + '&end_date=' + encodeURIComponent(end);
+            window.location.href = url;
         }
 
         // 按范围加载统计数据
         function loadStatisticsByRange(range) {
-            const ranges = {
-                week: '本周',
-                month: '本月',
-                quarter: '本季',
-                year: '本年'
-            };
-
-            // 显示加载状态
             showLoading();
-
-            // 发送AJAX请求
-            $.ajax({
-                url: '{{ url("/statistics") }}',
-                type: 'GET',
-                data: { range: range },
-                success: function(response) {
-                    location.reload();
-                },
-                error: function() {
-                    hideLoading();
-                    alert('加载数据失败，请重试');
-                }
-            });
+            var url = '{{ url("/statistics") }}?range=' + encodeURIComponent(range);
+            window.location.href = url;
         }
 
         // 显示加载状态

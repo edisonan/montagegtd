@@ -461,6 +461,24 @@
     @include('components.task-update-modal')
 
     <script>
+        function getApiRequest() {
+            if (window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function') {
+                return window.TaskApiBridge.requestWithFallback;
+            }
+            return null;
+        }
+
+        function withApiReady(fn) {
+            var bootstrap = window.__taskTokenBootstrapPromise;
+            if (bootstrap && typeof bootstrap.then === 'function') {
+                return bootstrap.finally(function() {
+                    fn();
+                });
+            }
+            fn();
+            return Promise.resolve();
+        }
+
         $(document).ready(function() {
             console.log('待办列表页面已加载');
 
@@ -468,24 +486,21 @@
             $(document).on('click', '.complete-task', function() {
                 const taskId = $(this).data('task-id');
                 if (confirm('确认将此任务标记为已完成吗？')) {
-                    $.ajax({
-                        url: '/task/' + taskId,
-                        type: 'POST',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            status: 2,
-                            _method: 'PUT'
-                        },
-                        success: function(response) {
-                            if (response.code == 9999) {
-                                location.reload();
-                            } else {
-                                alert('操作失败: ' + (response.msg || '未知错误'));
-                            }
-                        },
-                        error: function() {
-                            alert('请求失败，请稍后重试');
+                    withApiReady(function() {
+                        var apiRequest = getApiRequest();
+                        if (!apiRequest) {
+                            alert('API客户端未初始化');
+                            return;
                         }
+                        apiRequest('PUT', '/tasks/' + taskId, {status: 2}).then(function(response) {
+                        if (response.code == 9999) {
+                            location.reload();
+                        } else {
+                            alert('操作失败: ' + (response.msg || '未知错误'));
+                        }
+                        }).catch(function() {
+                            alert('请求失败，请稍后重试');
+                        });
                     });
                 }
             });
@@ -508,16 +523,23 @@
         });
 
         function editTask(taskId) {
-            // 从服务器获取任务数据 - 使用现有的API
-            $.get('/tasks/' + taskId, function(response) {
+            withApiReady(function() {
+                var apiRequest = getApiRequest();
+                if (!apiRequest) {
+                    alert('API客户端未初始化');
+                    return;
+                }
+
+                apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
                 if(response.code == 9999) {
                     var task = response.result;
                     openTaskUpdateModal(task);
                 } else {
                     alert('获取任务数据失败：' + (response.msg || '未知错误'));
                 }
-            }).fail(function() {
-                alert('获取任务数据失败');
+                }).catch(function() {
+                    alert('获取任务数据失败');
+                });
             });
         }
 

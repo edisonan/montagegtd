@@ -1122,21 +1122,25 @@
                                 @foreach ($article_subs as $articleSub)
                                         <?php
                                         $article = $articleSub->article;
-                                        if (empty($article)) { continue; }
-                                        $article_sub_ids[] = $articleSub->id;
+                                        $isValidArticle = !empty($article) && !empty($article->feed);
+                                        $formattedContent = '';
+                                        $needsCollapse = false;
+                                        if ($isValidArticle) {
+                                            $article_sub_ids[] = $articleSub->id;
 
-                                        // 处理内容
-                                        $content = $article->content;
-                                        if ($unable_img == "true") {
-                                            $content = str_replace('src="', 'src="/img/unable_img.png" data-original="', $content);
-                                            $content = str_replace("src='", "src='/img/unable_img.png' data-original='", $content);
+                                            // 处理内容
+                                            $content = $article->content;
+                                            if ($unable_img == "true") {
+                                                $content = str_replace('src="', 'src="/img/unable_img.png" data-original="', $content);
+                                                $content = str_replace("src='", "src='/img/unable_img.png' data-original='", $content);
+                                            }
+                                            $formattedContent = App\Http\Utils\CommonUtil::formatContentHtml($content);
+
+                                            $contentText = strip_tags($formattedContent);
+                                            $needsCollapse = $unable_desc == "true" && (strlen($contentText) > 500 || substr_count($contentText, "\n") > 5);
                                         }
-                                        $formattedContent = App\Http\Utils\CommonUtil::formatContentHtml($content);
-
-                                        $contentText = strip_tags($formattedContent);
-                                        $needsCollapse = $unable_desc == "true" && (strlen($contentText) > 500 || substr_count($contentText, "\n") > 5);
                                         ?>
-
+                                    @if($isValidArticle)
                                     <div class="article-card" id="article-{{ $articleSub->id }}">
                                         <!-- 文章头部 -->
                                         <div class="article-header">
@@ -1278,6 +1282,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @endif
                                 @endforeach
                             </div>
 
@@ -1373,6 +1378,10 @@
             var processNavFlag = false;
             var unableDesc = {{ $unable_desc == "true" ? 'true' : 'false' }};
 
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : function() { return Promise.reject(new Error("API客户端未初始化")); };
+
             // 存储的键名
             const NAV_STORAGE_KEY = 'nav_storage_data';
             const NAV_STORAGE_TIMESTAMP_KEY = 'nav_storage_timestamp';
@@ -1394,6 +1403,36 @@
                     // 没有缓存或已过期，请求远程数据
                     fetchNavFromRemote(status, false);
                 }
+            }
+
+            // 主动请求文章列表接口，确保页面核心数据走 /api/v2/articles
+            function loadArticleListByApi() {
+                var params = {
+                    status: status,
+                    feed_id: '{{ $feed_id }}',
+                    page_count: '{{ isset($page_params["page_count"]) ? $page_params["page_count"] : 20 }}'
+                };
+
+                apiRequest('GET', '/articles', params).then(function(result_arr) {
+                    if (!result_arr || result_arr.code !== 9999 || !result_arr.result) {
+                        return;
+                    }
+
+                    var articleSubs = result_arr.result.articles || [];
+                    var ids = [];
+                    for (var i = 0; i < articleSubs.length; i++) {
+                        if (articleSubs[i] && articleSubs[i].id) {
+                            ids.push(articleSubs[i].id);
+                        }
+                    }
+
+                    // 同步“一键标记已读”按钮参数，确保后续操作与接口列表一致
+                    if ($('#marked_all_read').length && ids.length > 0) {
+                        $('#marked_all_read').attr('data-ids', ids.join(','));
+                    }
+                }).catch(function(error) {
+                    console.warn('加载文章列表接口失败', error);
+                });
             }
 
             // 从localStorage获取缓存的导航数据
@@ -1521,43 +1560,36 @@
                     $('#nav').html('<li class="text-center py-4 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</li>');
                 }
 
-                $.ajax({
-                    url: "{{ url('article/navinfo') }}",
-                    type: 'GET',
-                    data: {"_token": "{{ csrf_token() }}", "status": status},
-                    success: function (result_arr) {
-                        if (result_arr.code != 9999) {
-                            if (!isSilentUpdate) {
-                                $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败</li>');
-                            }
-                        } else {
-                            // 保存到localStorage
-                            saveNavToStorage(status, result_arr.result);
-
-                            // 如果不是静默更新，才更新界面
-                            if (!isSilentUpdate) {
-                                renderNav(result_arr.result, status);
-                            } else {
-                                // 静默更新时，可以更新页面上的某些提示
-                                updateLastUpdateTime();
-                            }
-                        }
-                    },
-                    error: function(xhr, status, error) {
+                apiRequest('GET', '/articles/navinfo', {"status": status}).then(function(result_arr) {
+                    if (result_arr.code != 9999) {
                         if (!isSilentUpdate) {
-                            $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>网络错误，请刷新重试</li>');
+                            $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>加载失败</li>');
                         }
+                    } else {
+                        // 保存到localStorage
+                        saveNavToStorage(status, result_arr.result);
 
-                        // 如果是静默更新失败，可以记录日志
-                        if (isSilentUpdate) {
-                            console.warn('静默更新导航数据失败:', error);
+                        // 如果不是静默更新，才更新界面
+                        if (!isSilentUpdate) {
+                            renderNav(result_arr.result, status);
+                        } else {
+                            // 静默更新时，可以更新页面上的某些提示
+                            updateLastUpdateTime();
                         }
-                    },
-                    complete: function() {
-                        // 如果是静默更新，可以在这里做一些清理工作
-                        if (isSilentUpdate) {
-                            console.log('导航数据静默更新完成');
-                        }
+                    }
+                }).catch(function(error) {
+                    if (!isSilentUpdate) {
+                        $('#nav').html('<li class="text-center py-4 text-red-500"><i class="fas fa-exclamation-circle mr-2"></i>网络错误，请刷新重试</li>');
+                    }
+
+                    // 如果是静默更新失败，可以记录日志
+                    if (isSilentUpdate) {
+                        console.warn('静默更新导航数据失败:', error);
+                    }
+                }).then(function() {
+                    // 如果是静默更新，可以在这里做一些清理工作
+                    if (isSilentUpdate) {
+                        console.log('导航数据静默更新完成');
                     }
                 });
             }
@@ -1711,7 +1743,7 @@
                     return '';
                 }
 
-                $.get("{{ url('/articles/status') }}/" + article_sub_id, {"status": status}, function(result_arr) {
+                apiRequest('POST', "/articles/status/" + article_sub_id, {"status": status}).then(function(result_arr) {
                     if (result_arr.code != 9999) {
                         showNotification('设置失败，请重试', 'error');
                     } else {
@@ -1724,6 +1756,8 @@
                             showNotification('设置成功', 'success');
                         }
                     }
+                }).catch(function() {
+                    showNotification('设置失败，请重试', 'error');
                 });
             });
 
@@ -1736,7 +1770,7 @@
                 button.prop('disabled', true);
                 button.html('<i class="fas fa-spinner fa-spin mr-2"></i>处理中...');
 
-                $.get("{{ url('/articles/allstatus') }}", {"ids": ids, "status": "read"}, function(result_arr) {
+                apiRequest('POST', '/articles/allstatus', {"ids": ids, "status": "read"}).then(function(result_arr) {
                     if (result_arr.code != 9999) {
                         button.prop('disabled', false);
                         button.html(originalText);
@@ -1749,6 +1783,10 @@
                         //     location.reload();
                         // }, 1000);
                     }
+                }).catch(function() {
+                    button.prop('disabled', false);
+                    button.html(originalText);
+                    showNotification('设置失败，请重试', 'error');
                 });
             });
 
@@ -1922,12 +1960,14 @@
             // 快速订阅
             $(".feed_quick_sub").on('click', function() {
                 var feed_id = $(this).data('feed-id');
-                $.get("{{ url('/feeds/quickstore') }}", {"feed_id": feed_id}, function(result_arr) {
+                apiRequest('POST', '/feeds/quickstore', {"feed_id": feed_id}).then(function(result_arr) {
                     if (result_arr.code != 9999) {
                         showNotification(result_arr.msg, 'error');
                     } else {
                         showNotification(result_arr.msg, 'success');
                     }
+                }).catch(function() {
+                    showNotification('订阅失败，请重试', 'error');
                 });
             });
 
@@ -2116,6 +2156,7 @@
             }
 
             // 初始化
+            loadArticleListByApi();
             checkMobile();
 
             // 检查是否启用了一目十行

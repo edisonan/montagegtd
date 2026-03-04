@@ -33,7 +33,7 @@
                 @include('common.errors')
 
                 <!-- 编辑表单 -->
-                <form action="{{ url('thing/'.$thing->id) }}" method="POST" class="space-y-6">
+                <form action="{{ url('/api/v2/things/'.$thing->id) }}" method="POST" class="space-y-6" id="thing-update-form">
                     {!! csrf_field() !!}
                     <input type="hidden" name="_method" value="PUT">
 
@@ -264,6 +264,10 @@
     </style>
 
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         // 时间调整函数
         function adjustTime(inputId, minutes) {
             const input = document.getElementById(inputId);
@@ -327,8 +331,9 @@
             }
 
             // 表单验证
-            const form = document.querySelector('form');
+            const form = document.getElementById('thing-update-form');
             form.addEventListener('submit', function(event) {
+                event.preventDefault();
                 const nameInput = document.getElementById('name');
                 const startTimeInput = document.getElementById('start_time');
                 const endTimeInput = document.getElementById('end_time');
@@ -367,9 +372,40 @@
                 }
 
                 if (!isValid) {
-                    event.preventDefault();
                     showErrorToast(errorMessage);
+                    return;
                 }
+
+                if (!apiRequest) {
+                    showErrorToast('API客户端未初始化');
+                    return;
+                }
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const original = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
+                }
+
+                apiRequest('PUT', '/things/{{ $thing->id }}', {
+                    name: nameInput.value.trim(),
+                    start_time: startTimeInput.value,
+                    end_time: endTimeInput.value
+                }).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        window.location.href = '{{ url('/things') }}';
+                        return;
+                    }
+                    showErrorToast((resp && resp.msg) ? resp.msg : '保存失败');
+                }).catch(function() {
+                    showErrorToast('保存失败，请稍后重试');
+                }).finally(function() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = original;
+                    }
+                });
             });
         });
 

@@ -33,7 +33,7 @@
                 <div class="overflow-y-auto max-h-[calc(100vh-200px)] sm:max-h-[calc(100vh-240px)] p-4 sm:p-6">
                     @include('common.errors')
 
-                    <form id="thingCreateForm" action="{{ url('thing') }}" method="POST" class="space-y-4 sm:space-y-6">
+                    <form id="thingCreateForm" action="{{ url('/api/v2/things') }}" method="POST" class="space-y-4 sm:space-y-6">
                         {{ csrf_field() }}
 
                         <!-- 事情内容 -->
@@ -192,6 +192,9 @@
 
 <script>
     let isThingModalOpen = false;
+    var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+        ? window.TaskApiBridge.requestWithFallback
+        : null;
 
     // 模态框控制函数
     function showThingCreateModal() {
@@ -284,7 +287,37 @@
         }
 
         if (!hasError) {
-            form.submit();
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+
+            const submitBtn = document.querySelector('button[onclick="submitThingCreateForm()"]');
+            const original = submitBtn ? submitBtn.innerHTML : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1 sm:mr-2"></i>提交中...';
+            }
+
+            apiRequest('POST', '/things', {
+                name: nameInput.value.trim(),
+                start_time: startTimeInput.value,
+                end_time: endTimeInput.value
+            }).then(function(resp) {
+                if (resp && resp.code === 9999) {
+                    hideThingCreateModal();
+                    window.location.reload();
+                    return;
+                }
+                alert((resp && resp.msg) ? resp.msg : '提交失败');
+            }).catch(function() {
+                alert('提交失败，请稍后重试');
+            }).finally(function() {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = original;
+                }
+            });
         }
     }
 

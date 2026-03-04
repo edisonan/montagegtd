@@ -47,4 +47,15 @@ class IndexController extends Controller {
 		
 		return view ( 'index.index', array_merge ( $currentPomoInfo, $tipInfo ) );
 	}
+
+	/**
+	 * Legacy test endpoint (kept to avoid route 500).
+	 */
+	public function test(Request $request) {
+		return $this->jsonResponse($request, array(
+			'code' => 9999,
+			'msg' => 'ok',
+			'result' => array('path' => '/index/test')
+		));
+	}
 }

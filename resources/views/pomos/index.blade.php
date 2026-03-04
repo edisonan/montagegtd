@@ -5,33 +5,51 @@
 
 @section('content')
     <script type="text/javascript">
+        function getApiRequest() {
+            if (window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function') {
+                return window.TaskApiBridge.requestWithFallback;
+            }
+            return null;
+        }
+
+        function withApiReady(fn) {
+            var bootstrap = window.__taskTokenBootstrapPromise;
+            if (bootstrap && typeof bootstrap.then === 'function') {
+                return bootstrap.finally(function() {
+                    fn();
+                });
+            }
+            fn();
+            return Promise.resolve();
+        }
+
         $(document).ready(function () {
             // 删除番茄
             $(".delete_pomo").click(function (e) {
                 e.preventDefault();
                 pomo_value = $(this).attr("pomo_value");
-                pomo_token = $(this).attr("pomo_token");
 
                 if (!confirm("确认要删除此番茄咩？")) {
                     return false;
                 }
 
-                $.ajax({
-                    url: "{{ url('pomo') }}" + "/" + pomo_value,
-                    type: 'DELETE',
-                    data: {type: 'delete', _token: pomo_token},
-                    success: function (result_arr) {
+                withApiReady(function() {
+                    var apiRequest = getApiRequest();
+                    if (!apiRequest) {
+                        alert('API客户端未初始化');
+                        return;
+                    }
+                    apiRequest('DELETE', '/pomos/' + pomo_value, {}).then(function (result_arr) {
                         if (result_arr.code != 9999) {
                             alert('处理失败，请稍后再试');
                         } else {
-                            $('#' + pomo_value).fadeOut(300, function() {
+                            $('[data-pomo-row-id="' + pomo_value + '"]').fadeOut(300, function() {
                                 $(this).remove();
                             });
                         }
-                    },
-                    error: function() {
+                    }).catch(function() {
                         alert('请求失败，请稍后重试');
-                    }
+                    });
                 });
             });
 
@@ -43,20 +61,21 @@
 
                 var new_name = prompt("请输入番茄描述：", $pomo_name);
                 if (new_name != null && new_name != "" && new_name != $pomo_name) {
-                    $.ajax({
-                        url: "{{ url('pomoupdate') }}" + "/" + $pomo_id,
-                        type: 'POST',
-                        data: {_token: "{{ csrf_token() }}", name: new_name},
-                        success: function (result_arr) {
+                    withApiReady(function() {
+                        var apiRequest = getApiRequest();
+                        if (!apiRequest) {
+                            alert('API客户端未初始化');
+                            return;
+                        }
+                        apiRequest('PUT', '/pomos/' + $pomo_id, {name: new_name}).then(function (result_arr) {
                             if (result_arr.code != 9999) {
                                 alert('处理失败，请稍后再试');
                             } else {
-                                $('#name' + $pomo_id).html(new_name);
+                                $('[data-pomo-name-id="' + $pomo_id + '"]').text(new_name);
                             }
-                        },
-                        error: function() {
+                        }).catch(function() {
                             alert('请求失败，请稍后重试');
-                        }
+                        });
                     });
                 }
             });
@@ -162,7 +181,7 @@
                                     $showDate = $currentDate != $lastDate;
                                     $lastDate = $currentDate;
                                     ?>
-                                <tr id="{{$pomo->id}}" class="hover:bg-gray-50 transition-colors">
+                                <tr data-pomo-row-id="{{$pomo->id}}" class="hover:bg-gray-50 transition-colors">
                                     <td>
                                         <div class="flex items-center">
                                             @if($showDate)
@@ -179,7 +198,7 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center group">
-                                            <span id="name{{ $pomo->id }}" class="text-gray-800 font-medium">
+                                            <span data-pomo-name-id="{{ $pomo->id }}" class="text-gray-800 font-medium">
                                                 {{ $pomo->name }}
                                             </span>
                                             <div class="ml-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -222,7 +241,7 @@
                                 $showDate = $currentDate != $lastDate;
                                 $lastDate = $currentDate;
                                 ?>
-                            <div id="{{$pomo->id}}" class="card hover:shadow-md transition-shadow">
+                            <div data-pomo-row-id="{{$pomo->id}}" class="card hover:shadow-md transition-shadow">
                                 <div class="p-4">
                                     @if($showDate)
                                         <div class="mb-3 pb-2 border-b border-gray-100">
@@ -242,7 +261,7 @@
                                             </span>
                                             </div>
                                             <div class="text-gray-800 font-medium">
-                                                <span id="name{{ $pomo->id }}">{{ $pomo->name }}</span>
+                                                <span data-pomo-name-id="{{ $pomo->id }}">{{ $pomo->name }}</span>
                                             </div>
                                         </div>
                                     </div>

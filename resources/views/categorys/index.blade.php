@@ -43,7 +43,7 @@
                 @include('common.errors')
 
                 <!-- 创建分类表单 -->
-                <form action="{{ url('category') }}" method="POST" class="space-y-6">
+                <form action="{{ url('/api/v2/categories') }}" method="POST" class="space-y-6" id="createCategoryForm">
                     {!! csrf_field() !!}
 
                     <div class="space-y-4">
@@ -255,6 +255,10 @@
     </div>
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 重置表单
             function resetForm() {
                 document.getElementById('name').value = '';
@@ -283,31 +287,27 @@
 
             // 删除分类
             function deleteCategory(categoryId) {
-                $.ajax({
-                    url: "{{ url('category') }}/" + categoryId,
-                    type: 'DELETE',
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
-                        if (response.code === 9999) {
-                            // 移除分类元素
-                            $(`#${categoryId}`).fadeOut(300, function() {
-                                $(this).remove();
-                                showToast('success', '分类删除成功');
+                if (!apiRequest) {
+                    showToast('error', 'API客户端未初始化');
+                    return;
+                }
+                apiRequest('DELETE', '/categories/' + categoryId, {}).then(function(response) {
+                    if (response && response.code === 9999) {
+                        // 移除分类元素
+                        $(`#${categoryId}`).fadeOut(300, function() {
+                            $(this).remove();
+                            showToast('success', '分类删除成功');
 
-                                // 检查是否还有分类
-                                if ($('.group').length === 0) {
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            showToast('error', response.msg || '删除失败');
-                        }
-                    },
-                    error: function(xhr) {
-                        showToast('error', '操作失败，请稍后重试');
+                            // 检查是否还有分类
+                            if ($('.group').length === 0) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        showToast('error', (response && response.msg) ? response.msg : '删除失败');
                     }
+                }).catch(function() {
+                    showToast('error', '操作失败，请稍后重试');
                 });
             }
 
@@ -363,7 +363,7 @@
                 }
 
                 // 表单提交验证
-                const form = document.querySelector('form');
+                const form = document.getElementById('createCategoryForm');
                 if (form) {
                     form.addEventListener('submit', function(e) {
                         const nameInput = document.getElementById('name');
@@ -371,7 +371,37 @@
                             e.preventDefault();
                             showToast('error', '请输入分类名称');
                             nameInput.focus();
+                            return;
                         }
+                        if (!apiRequest) {
+                            e.preventDefault();
+                            showToast('error', 'API客户端未初始化');
+                            return;
+                        }
+
+                        e.preventDefault();
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>创建中...';
+
+                        apiRequest('POST', '/categories', {
+                            name: nameInput.value.trim()
+                        }).then(function(resp) {
+                            if (resp && resp.code === 9999) {
+                                showToast('success', '分类创建成功');
+                                setTimeout(function() {
+                                    window.location.reload();
+                                }, 300);
+                                return;
+                            }
+                            showToast('error', (resp && resp.msg) ? resp.msg : '创建失败');
+                        }).catch(function() {
+                            showToast('error', '创建失败，请稍后重试');
+                        }).finally(function() {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        });
                     });
                 }
 

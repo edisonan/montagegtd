@@ -9,7 +9,7 @@
                     <div class="card-header">Reset Password</div>
                     <div class="card-body">
 
-                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/email') }}">
+                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/email') }}" id="passwordEmailForm">
                             {!! csrf_field() !!}
 
                             <div class="form-group{{ $errors->has('email') ? ' has-error' : '' }}">
@@ -39,4 +39,48 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        (function() {
+            var form = document.getElementById('passwordEmailForm');
+            if (!form) return;
+
+            form.addEventListener('submit', function(e) {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.request !== 'function') {
+                    return;
+                }
+
+                e.preventDefault();
+                var submitBtn = form.querySelector('button[type="submit"]');
+                var originalText = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa fa-btn fa-spinner fa-spin"></i>Sending...';
+                }
+
+                window.TaskApiClient.request({
+                    method: 'POST',
+                    url: '/auth/password/email',
+                    body: {
+                        email: form.querySelector('input[name="email"]').value
+                    },
+                    skipAuth: true
+                }).then(function(resp) {
+                    var msg = (resp && resp.data && resp.data.result && resp.data.result.message)
+                        ? resp.data.result.message
+                        : 'Password reset link sent.';
+                    alert(msg);
+                }).catch(function() {
+                    form.submit();
+                }).finally(function() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                });
+            });
+        })();
+    </script>
 @endsection

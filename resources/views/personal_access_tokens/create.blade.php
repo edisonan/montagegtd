@@ -78,7 +78,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('personal-access-tokens.store') }}" method="POST" id="tokenForm" class="space-y-6">
+                    <form action="{{ url('/api/v2/personal-access-tokens') }}" method="POST" id="tokenForm" class="space-y-6">
                         {!! csrf_field() !!}
 
                         <!-- 令牌名称 -->
@@ -502,6 +502,10 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 模态框管理
             const successModal = document.getElementById('successModal');
             const modalCloseButtons = document.querySelectorAll('.modal-close');
@@ -660,38 +664,43 @@
                     if (selectedPreset && selectedPreset.value === '') {
                         formData.delete('expires_at');
                     }
+                    if (!apiRequest) {
+                        showNotification('error', 'API客户端未初始化');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                        return;
+                    }
 
-                    fetch(tokenForm.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
+                    const payload = {
+                        name: formData.get('name') || '',
+                        scopes: formData.getAll('scopes[]')
+                    };
+                    const expiresAt = formData.get('expires_at');
+                    if (expiresAt) {
+                        payload.expires_at = expiresAt;
+                    }
+
+                    apiRequest('POST', '/personal-access-tokens', payload).then(function(data) {
+                        if (data && data.code === 9999 && data.result && data.result.token) {
+                            // 显示成功模态框
+                            openSuccessModal(data.result.token);
+
+                            // 3秒后重定向到列表页
+                            setTimeout(() => {
+                                window.location.href = "{{ route('personal-access-tokens.index') }}";
+                            }, 5000);
+                            return;
                         }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.code === 9999 && data.result?.token) {
-                                // 显示成功模态框
-                                openSuccessModal(data.result.token);
 
-                                // 3秒后重定向到列表页
-                                setTimeout(() => {
-                                    window.location.href = "{{ route('personal-access-tokens.index') }}";
-                                }, 5000);
-                            } else {
-                                // 显示错误信息
-                                showNotification('error', data.msg || '创建失败');
-                                submitBtn.disabled = false;
-                                submitBtn.innerHTML = originalBtnText;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showNotification('error', '网络错误，请稍后重试');
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = originalBtnText;
-                        });
+                        // 显示错误信息
+                        showNotification('error', (data && data.msg) ? data.msg : '创建失败');
+                    }).catch(function(error) {
+                        console.error('Error:', error);
+                        showNotification('error', '网络错误，请稍后重试');
+                    }).finally(function() {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                    });
                 });
             }
 

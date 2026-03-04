@@ -225,7 +225,7 @@
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
         // 发送请求
-        fetch('/llm/api/llm-agents/create-draft', {
+        window.taskApiFetch('/api/v2/llm/agents/create-draft', {
             method: 'POST',
             body: formData,
             headers: {

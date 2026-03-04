@@ -579,6 +579,10 @@
     <script src="{{ url('/js/jsmind.zoom.js') }}"></script>
     <script src="/js/markdown-editor.js"></script>
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         // 全局变量
         let mindManager = {
             _jm: null,
@@ -629,15 +633,17 @@
 
             // 标题输入框实时保存
             $('#node_title_input').on('input', debounce(function() {
-                if (mindManager.selectedNode) {
-                    updateNodeTitle(mindManager.selectedNode.id, $(this).val());
+                const selected = getCurrentSelectedNode();
+                if (selected) {
+                    updateNodeTitle(selected.id, $(this).val());
                 }
             }, 500));
 
             // Markdown内容实时保存
             $('#mind_content').on('input', debounce(function() {
-                if (mindManager.selectedNode) {
-                    saveNodeContent(mindManager.selectedNode.id, $(this).val());
+                const selected = getCurrentSelectedNode();
+                if (selected) {
+                    saveNodeContent(selected.id, $(this).val());
                 }
             }, 1000));
         }
@@ -690,29 +696,29 @@
 
         // 加载思维导图数据
         function loadMindData() {
-            $.ajax({
-                url: "{{ url('/mindajaxget') }}/{{ $mind->id }}",
-                type: 'GET',
-                data: {_token: mindManager.taskToken},
-                success: function(response) {
-                    if (response.code == 9999 && response.result?.jsmind_datas) {
-                        try {
-                            const mindData = JSON.parse(response.result.jsmind_datas);
-                            initializeJsMind(mindData);
-                        } catch (error) {
-                            console.error('解析数据失败:', error);
-                            showError('数据格式错误');
-                            createDefaultMind();
-                        }
-                    } else {
-                        showError('数据加载失败');
+            if (!apiRequest) {
+                showError('API客户端未初始化');
+                createDefaultMind();
+                return;
+            }
+
+            apiRequest('GET', '/minds/{{ $mind->id }}/jsmind', {}).then(function(response) {
+                if (response.code == 9999 && response.result && response.result.jsmind_datas) {
+                    try {
+                        const mindData = JSON.parse(response.result.jsmind_datas);
+                        initializeJsMind(mindData);
+                    } catch (error) {
+                        console.error('解析数据失败:', error);
+                        showError('数据格式错误');
                         createDefaultMind();
                     }
-                },
-                error: function() {
-                    showError('网络错误，加载失败');
+                } else {
+                    showError('数据加载失败');
                     createDefaultMind();
                 }
+            }).catch(function() {
+                showError('网络错误，加载失败');
+                createDefaultMind();
             });
         }
 
@@ -839,6 +845,18 @@
             }
         }
 
+        function getCurrentSelectedNode() {
+            if (!mindManager._jm) {
+                return null;
+            }
+            const current = mindManager._jm.get_selected_node();
+            if (current) {
+                mindManager.selectedNode = current;
+                return current;
+            }
+            return mindManager.selectedNode || null;
+        }
+
         // 添加子节点
         function addChildNode() {
             if (!mindManager._jm) return;
@@ -852,11 +870,15 @@
             const title = prompt('请输入子节点标题:', '新节点');
             if (!title) return;
 
-            $.post("{{ url('mind') }}", {
-                _token: mindManager.taskToken,
+            if (!apiRequest) {
+                showNotification('API客户端未初始化', 'error');
+                return;
+            }
+
+            apiRequest('POST', '/minds', {
                 name: title,
                 parent_mind_id: selected.id
-            }, function(response) {
+            }).then(function(response) {
                 if (response.code == 9999) {
                     // 添加节点到思维导图
                     mindManager._jm.add_node(selected, response.result.id, response.result.name);
@@ -874,92 +896,100 @@
                 } else {
                     showNotification('添加失败: ' + response.message, 'error');
                 }
-            }).fail(function() {
+            }).catch(function() {
                 showNotification('网络错误，添加失败', 'error');
             });
         }
 
         // 编辑选中节点
         function editSelectedNode() {
-            if (!mindManager._jm || !mindManager.selectedNode) {
+            const selected = getCurrentSelectedNode();
+            if (!mindManager._jm || !selected) {
                 showNotification('请先选择一个节点', 'warning');
                 return;
             }
 
+            if ($('#node_title_input').val() !== selected.topic) {
+                $('#node_title_input').val(selected.topic);
+            }
             $('#node_title_input').focus().select();
         }
 
         // 删除选中节点
         function deleteSelectedNode() {
-            if (!mindManager._jm || !mindManager.selectedNode) {
+            const selected = getCurrentSelectedNode();
+            if (!mindManager._jm || !selected) {
                 showNotification('请先选择一个节点', 'warning');
                 return;
             }
 
             if (!confirm('确定删除该节点及其所有子节点吗？')) return;
 
-            $.ajax({
-                url: "{{ url('mind') }}/" + mindManager.selectedNode.id,
-                type: 'DELETE',
-                data: {_token: mindManager.taskToken},
-                success: function(response) {
-                    if (response.code == 9999) {
-                        mindManager._jm.remove_node(mindManager.selectedNode.id);
-                        mindManager.selectedNode = null;
+            if (!apiRequest) {
+                showNotification('API客户端未初始化', 'error');
+                return;
+            }
 
-                        // 清空编辑面板
-                        $('#current_node_name').text('未选择');
-                        $('#node_title_input').val('');
-                        $('#mind_content').val('');
-                        $('#mind_content_show').addClass('hidden');
+            apiRequest('DELETE', '/minds/' + selected.id, {}).then(function(response) {
+                if (response.code == 9999) {
+                    mindManager._jm.remove_node(selected.id);
+                    mindManager.selectedNode = null;
 
-                        // 更新统计
-                        updateStatistics();
+                    $('#current_node_name').text('未选择');
+                    $('#node_title_input').val('');
+                    $('#mind_content').val('');
+                    $('#mind_content_show').addClass('hidden');
 
-                        showNotification('节点删除成功', 'success');
-                    } else {
-                        showNotification('删除失败: ' + response.message, 'error');
-                    }
-                },
-                error: function() {
-                    showNotification('网络错误，删除失败', 'error');
+                    updateStatistics();
+                    showNotification('节点删除成功', 'success');
+                } else {
+                    showNotification('删除失败: ' + response.message, 'error');
                 }
+            }).catch(function() {
+                showNotification('网络错误，删除失败', 'error');
             });
         }
 
         // 切换节点展开/折叠
         function toggleSelectedNode() {
-            if (!mindManager._jm || !mindManager.selectedNode) return;
-            mindManager._jm.toggle_node(mindManager.selectedNode.id);
+            const selected = getCurrentSelectedNode();
+            if (!mindManager._jm || !selected) return;
+            mindManager._jm.toggle_node(selected.id);
         }
 
         // 更新节点标题
         function updateNodeTitle(nodeId, title) {
             if (!title.trim()) return;
 
-            $.post("{{ url('mind') }}/" + nodeId, {
-                _token: mindManager.taskToken,
+            if (!apiRequest) {
+                showNotification('API客户端未初始化', 'error');
+                return;
+            }
+
+            apiRequest('PUT', '/minds/' + nodeId, {
                 name: title,
-                _method: 'PUT'
-            }, function(response) {
+            }).then(function(response) {
                 if (response.code == 9999) {
                     mindManager._jm.update_node(nodeId, title);
                     showSaveStatus('success');
                 } else {
                     showNotification('更新失败: ' + response.message, 'error');
                 }
-            }).fail(function() {
+            }).catch(function() {
                 showNotification('网络错误，更新失败', 'error');
             });
         }
 
         // 保存节点内容
         function saveNodeContent(nodeId, content) {
-            $.post("{{ url('mind') }}/" + nodeId, {
-                _token: mindManager.taskToken,
+            if (!apiRequest) {
+                showNotification('API客户端未初始化', 'error');
+                return;
+            }
+
+            apiRequest('PUT', '/minds/' + nodeId, {
                 content: content,
-                _method: 'PUT'
-            }, function(response) {
+            }).then(function(response) {
                 if (response.code == 9999) {
                     // 更新节点数据
                     const node = mindManager._jm.get_node(nodeId);
@@ -971,14 +1001,15 @@
                 } else {
                     showNotification('保存失败: ' + response.message, 'error');
                 }
-            }).fail(function() {
+            }).catch(function() {
                 showNotification('网络错误，保存失败', 'error');
             });
         }
 
         // 保存所有更改
         function saveNodeChanges() {
-            if (!mindManager.selectedNode) {
+            const selected = getCurrentSelectedNode();
+            if (!selected) {
                 showNotification('请先选择一个节点', 'warning');
                 return;
             }
@@ -986,12 +1017,12 @@
             const title = $('#node_title_input').val();
             const content = $('#mind_content').val();
 
-            if (title !== mindManager.selectedNode.topic) {
-                updateNodeTitle(mindManager.selectedNode.id, title);
+            if (title !== selected.topic) {
+                updateNodeTitle(selected.id, title);
             }
 
-            if (content !== (mindManager.selectedNode.data?.content || '')) {
-                saveNodeContent(mindManager.selectedNode.id, content);
+            if (content !== (selected.data?.content || '')) {
+                saveNodeContent(selected.id, content);
             }
         }
 

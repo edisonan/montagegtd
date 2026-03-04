@@ -695,7 +695,7 @@
             const loadingElement = document.getElementById('providers-loading');
 
             try {
-                const response = await fetch('/llm/providers');
+                const response = await window.taskApiFetch('/api/v2/llm/providers');
                 const data = await response.json();
 
                 if (data.code === 9999) {
@@ -830,7 +830,7 @@
             const loadingElement = document.getElementById('models-loading');
 
             try {
-                const response = await fetch('/llm/models');
+                const response = await window.taskApiFetch('/api/v2/llm/models');
                 const data = await response.json();
 
                 if (data.code === 9999) {
@@ -867,7 +867,7 @@
             const loadingElement = document.getElementById('credentials-loading');
 
             try {
-                const response = await fetch('/llm/credentials');
+                const response = await window.taskApiFetch('/api/v2/llm/credentials');
                 const data = await response.json();
 
                 if (data.code === 9999) {
@@ -1204,7 +1204,7 @@
         // 编辑供应商
         async function editProvider(id) {
             try {
-                const response = await fetch(`/llm/providers/${id}`);
+                const response = await window.taskApiFetch(`/api/v2/llm/providers/${id}`);
                 const data = await response.json();
 
                 if (data.code === 9999) {
@@ -1241,7 +1241,7 @@
             }
 
             try {
-                const response = await fetch(`/llm/providers/${id}`, {
+                const response = await window.taskApiFetch(`/api/v2/llm/providers/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
@@ -1273,7 +1273,7 @@
             submitBtn.disabled = true;
 
             const id = document.getElementById('provider_id').value;
-            const url = id ? `/llm/providers/${id}` : '/llm/providers';
+            const url = id ? `/api/v2/llm/providers/${id}` : '/api/v2/llm/providers';
             const method = id ? 'PUT' : 'POST';
 
             const formData = {
@@ -1305,7 +1305,7 @@
             }
 
             try {
-                const response = await fetch(url, {
+                const response = await window.taskApiFetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1355,7 +1355,7 @@
         // 编辑模型
         async function editModel(id) {
             try {
-                const response = await fetch(`/llm/models/${id}`);
+                const response = await window.taskApiFetch(`/api/v2/llm/models/${id}`);
                 const data = await response.json();
 
                 if (data.code === 9999) {
@@ -1393,7 +1393,7 @@
             }
 
             try {
-                const response = await fetch(`/llm/models/${id}`, {
+                const response = await window.taskApiFetch(`/api/v2/llm/models/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
@@ -1426,7 +1426,7 @@
             submitBtn.disabled = true;
 
             const id = document.getElementById('model_id').value;
-            const url = id ? `/llm/models/${id}` : '/llm/models';
+            const url = id ? `/api/v2/llm/models/${id}` : '/api/v2/llm/models';
             const method = id ? 'PUT' : 'POST';
 
             const formData = {
@@ -1462,7 +1462,7 @@
             }
 
             try {
-                const response = await fetch(url, {
+                const response = await window.taskApiFetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1529,7 +1529,7 @@
         // 编辑凭据
         async function editCredential(id) {
             try {
-                const response = await fetch(`/llm/credentials/${id}`);
+                const response = await window.taskApiFetch(`/api/v2/llm/credentials/${id}`);
                 const data = await response.json();
 
                 if (data.code === 9999) {
@@ -1561,7 +1561,7 @@
             showToast('正在测试连接...', 'info');
 
             try {
-                const response = await fetch(`/llm/credentials/${id}/test`, {
+                const response = await window.taskApiFetch(`/api/v2/llm/credentials/${id}/test`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
@@ -1589,7 +1589,7 @@
             }
 
             try {
-                const response = await fetch(`/llm/credentials/${id}`, {
+                const response = await window.taskApiFetch(`/api/v2/llm/credentials/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
@@ -1622,7 +1622,7 @@
             submitBtn.disabled = true;
 
             const id = document.getElementById('credential_id').value;
-            const url = id ? `/llm/credentials/${id}` : '/llm/credentials';
+            const url = id ? `/api/v2/llm/credentials/${id}` : '/api/v2/llm/credentials';
             const method = id ? 'PUT' : 'POST';
 
             const formData = {
@@ -1656,7 +1656,7 @@
             }
 
             try {
-                const response = await fetch(url, {
+                const response = await window.taskApiFetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

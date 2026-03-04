@@ -253,6 +253,14 @@ class FeedController extends Controller
     }
 
     /**
+     * Legacy alias for old route /feed/checkNewFeed.
+     */
+    public function checkNewFeed(Request $request)
+    {
+        return $this->checkFeedUrl($request);
+    }
+
+    /**
      * 通过Opml导入订阅源
      *
      * @param Request $request

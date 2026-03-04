@@ -103,11 +103,11 @@ class LoginController extends Controller
             $ffuser_info = json_decode($ffuser_result, true);
 
             $third_user = new User ([
-                'id' => $this->arrayItem($user, 'id'),
-                'nickname' => $this->arrayItem($user, 'screen_name'),
-                'name' => $this->arrayItem($user, 'name'),
-                'email' => $this->arrayItem($user, 'email'),
-                'avatar' => $this->arrayItem($user, 'avatar_large')
+                'id' => $this->safeArrayItem($ffuser_info, 'id'),
+                'nickname' => $this->safeArrayItem($ffuser_info, 'screen_name'),
+                'name' => $this->safeArrayItem($ffuser_info, 'name'),
+                'email' => $this->safeArrayItem($ffuser_info, 'email'),
+                'avatar' => $this->safeArrayItem($ffuser_info, 'avatar_large')
             ]);
         } else {
             $socialite = new SocialiteManager (config('services'));
@@ -179,5 +179,26 @@ class LoginController extends Controller
                 return redirect('/accounts');
             }
         }
+    }
+
+    /**
+     * Web logout endpoint compatibility.
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+        return redirect('/login');
+    }
+
+    protected function safeArrayItem(array $data = null, $key = '', $default = null)
+    {
+        if (empty($data) || $key === '') {
+            return $default;
+        }
+        return array_key_exists($key, $data) ? $data[$key] : $default;
     }
 }

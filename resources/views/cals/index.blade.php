@@ -592,11 +592,11 @@
                                 {{ $person_cal_url }}
                             </div>
                             <div class="url-actions">
-                                <button class="url-action-btn" onclick="copyToClipboard('{{ $person_cal_url }}')">
+                                <button class="url-action-btn" id="copyPersonalCalBtn" onclick="copyToClipboard('{{ $person_cal_url }}')">
                                     <i class="fas fa-copy"></i>
                                     复制地址
                                 </button>
-                                <a href="{{ $person_cal_url }}" class="url-action-btn" target="_blank">
+                                <a href="{{ $person_cal_url }}" class="url-action-btn" id="testPersonalCalBtn" target="_blank">
                                     <i class="fas fa-external-link-alt"></i>
                                     测试访问
                                 </a>
@@ -616,11 +616,11 @@
                                 <i class="fas fa-users"></i>
                                 公共日历地址
                             </h4>
-                            <span class="text-sm text-gray-600">{{ count($cals) }} 个日历</span>
+                            <span class="text-sm text-gray-600" id="publicCalCount">{{ count($cals) }} 个日历</span>
                         </div>
 
                         @if(count($cals) > 0)
-                            <div class="calendar-list">
+                            <div class="calendar-list" id="publicCalList">
                                 @foreach ($cals as $cal)
                                     <div class="calendar-item">
                                         <h5 class="calendar-theme">
@@ -644,7 +644,7 @@
                                 @endforeach
                             </div>
                         @else
-                            <div class="text-center py-8 bg-gray-50 rounded-lg">
+                            <div class="text-center py-8 bg-gray-50 rounded-lg" id="publicCalEmpty">
                                 <i class="fas fa-calendar-times text-gray-400 text-3xl mb-4"></i>
                                 <p class="text-gray-600">暂无公共日历</p>
                             </div>
@@ -657,6 +657,10 @@
 
     <script>
         $(document).ready(function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 复制到剪贴板功能
             window.copyToClipboard = function(text) {
                 // 创建临时textarea元素
@@ -750,6 +754,58 @@
                     $(this).css('transform', 'scale(1)');
                 }
             );
+
+            // 从v2接口刷新日历数据（优先API数据，SSR作为回退）
+            if (apiRequest) {
+                apiRequest('GET', '/calendar', {}).then(function(resp) {
+                    if (!resp || resp.code != 9999 || !resp.result) {
+                        return;
+                    }
+
+                    var personUrl = resp.result.person_cal_url || '';
+                    if (personUrl) {
+                        $('#personalCalUrl').text(personUrl);
+                        $('#copyPersonalCalBtn').attr('onclick', "copyToClipboard('" + personUrl.replace(/'/g, "\\'") + "')");
+                        $('#testPersonalCalBtn').attr('href', personUrl);
+                    }
+
+                    var cals = Array.isArray(resp.result.cals) ? resp.result.cals : [];
+                    $('#publicCalCount').text(cals.length + ' 个日历');
+
+                    var $list = $('#publicCalList');
+                    var $empty = $('#publicCalEmpty');
+                    if (cals.length === 0) {
+                        if ($list.length) {
+                            $list.html('');
+                        } else if ($empty.length === 0) {
+                            $('.public-calendars').append('<div class="text-center py-8 bg-gray-50 rounded-lg" id="publicCalEmpty"><i class="fas fa-calendar-times text-gray-400 text-3xl mb-4"></i><p class="text-gray-600">暂无公共日历</p></div>');
+                        }
+                        return;
+                    }
+
+                    if (!$list.length) {
+                        if ($empty.length) {
+                            $empty.remove();
+                        }
+                        $('.public-calendars').append('<div class="calendar-list" id="publicCalList"></div>');
+                        $list = $('#publicCalList');
+                    }
+
+                    var html = '';
+                    cals.forEach(function(cal) {
+                        var theme = cal.theme || '';
+                        var url = cal.url || '';
+                        html += '<div class="calendar-item">';
+                        html += '<h5 class="calendar-theme"><i class="fas fa-calendar-week"></i>' + theme + '</h5>';
+                        html += '<div class="calendar-url">' + url + '</div>';
+                        html += '<div class="calendar-actions">';
+                        html += '<button class="calendar-action-btn" onclick="copyToClipboard(\\'' + url.replace(/'/g, "\\'") + '\\')"><i class="fas fa-copy"></i>复制</button>';
+                        html += '<a href="' + url + '" class="calendar-action-btn" target="_blank"><i class="fas fa-eye"></i>预览</a>';
+                        html += '</div></div>';
+                    });
+                    $list.html(html);
+                });
+            }
 
             // 页面加载动画
             $('.animate-fadeIn').css({

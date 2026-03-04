@@ -431,9 +431,7 @@
                                     </a>
                                     <button type="button"
                                             class="summary-action-btn delete delete_dailysummary"
-                                            dailysummary_type="delete"
                                             dailysummary_value="{{ $dailysummary->id }}"
-                                            dailysummary_token="{{ csrf_token() }}"
                                             title="删除日报">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
@@ -505,6 +503,10 @@
     </div>
 
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         $(document).ready(function() {
             // 删除功能
             $(".delete_dailysummary").click(function(e) {
@@ -512,52 +514,46 @@
                 e.stopPropagation();
 
                 const summary_value = $(this).attr("dailysummary_value");
-                const summary_token = $(this).attr("dailysummary_token");
-                const summary_type = $(this).attr("dailysummary_type");
-
-                if (summary_type == 'delete') {
-                    if (!confirm("确认要删除此日报吗？")) {
-                        return false;
-                    }
+                if (!confirm("确认要删除此日报吗？")) {
+                    return false;
                 }
 
                 const $card = $('#summary-' + summary_value);
+                if (!apiRequest) {
+                    showNotification('API客户端未初始化', 'error');
+                    return false;
+                }
 
-                $.ajax({
-                    url: "{{ url('dailysummary') }}" + "/" + summary_value,
-                    type: 'DELETE',
-                    data: {type: summary_type, _token: summary_token},
-                    success: function (result_arr) {
-                        if (result_arr.code != 9999) {
-                            showNotification('删除失败，请稍后再试', 'error');
-                        } else {
-                            // 添加删除动画
-                            $card.css({
-                                'transform': 'scale(0.95)',
-                                'opacity': '0.5'
-                            });
-
-                            setTimeout(() => {
-                                $card.css({
-                                    'transform': 'translateX(100%)',
-                                    'opacity': '0'
-                                });
-
-                                setTimeout(() => {
-                                    $card.remove();
-                                    showNotification('日报删除成功', 'success');
-
-                                    // 如果没有日报了，显示空状态
-                                    if ($('.summary-card').length === 0) {
-                                        location.reload();
-                                    }
-                                }, 300);
-                            }, 100);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        showNotification('网络错误，删除失败', 'error');
+                apiRequest('DELETE', '/daily-summaries/' + summary_value, {}).then(function(result_arr) {
+                    if (!result_arr || result_arr.code != 9999) {
+                        showNotification('删除失败，请稍后再试', 'error');
+                        return;
                     }
+
+                    // 添加删除动画
+                    $card.css({
+                        'transform': 'scale(0.95)',
+                        'opacity': '0.5'
+                    });
+
+                    setTimeout(() => {
+                        $card.css({
+                            'transform': 'translateX(100%)',
+                            'opacity': '0'
+                        });
+
+                        setTimeout(() => {
+                            $card.remove();
+                            showNotification('日报删除成功', 'success');
+
+                            // 如果没有日报了，显示空状态
+                            if ($('.summary-card').length === 0) {
+                                location.reload();
+                            }
+                        }, 300);
+                    }, 100);
+                }).catch(function() {
+                    showNotification('网络错误，删除失败', 'error');
                 });
             });
 

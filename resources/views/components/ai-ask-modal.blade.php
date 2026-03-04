@@ -465,7 +465,7 @@
                 csrfToken = inputToken.value;
             }
 
-            const response = await fetch('/llm/sessions', {
+            const response = await window.taskApiFetch('/api/v2/llm/sessions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -653,7 +653,7 @@
         }
 
         // 发送请求到后端进行AI问答
-        fetch('/llm/chat', {
+        window.taskApiFetch('/api/v2/llm/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

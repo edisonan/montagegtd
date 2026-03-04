@@ -260,58 +260,41 @@
         var form = document.getElementById('taskUpdateForm');
         var formData = new FormData(form);
         var taskId = $('#task_id_input').val();
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
 
-        $.ajax({
-            url: '/task/' + taskId,
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            beforeSend: function() {
-                // 显示加载状态
-                const submitBtn = $('#taskUpdateModal .btn-primary');
-                submitBtn.prop('disabled', true);
-                submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>保存中...');
-            },
-            success: function(response) {
-                const submitBtn = $('#taskUpdateModal .btn-primary');
-                submitBtn.prop('disabled', false);
-                submitBtn.html('<i class="fas fa-save mr-2"></i>保存修改');
+        if (!apiRequest) {
+            $('#taskUpdateErrorList').empty().append('<li>API客户端未初始化</li>');
+            $('#taskUpdateErrors').removeClass('hidden');
+            return;
+        }
 
-                if(response.code == 9999) {
-                    hideTaskUpdateModal();
-                    location.reload();
-                } else {
-                    $('#taskUpdateErrorList').empty();
-                    if(response.msg) {
-                        $('#taskUpdateErrorList').append('<li>' + response.msg + '</li>');
-                    } else {
-                        $('#taskUpdateErrorList').append('<li>更新失败</li>');
-                    }
-                    $('#taskUpdateErrors').removeClass('hidden');
+        var payload = {};
+        formData.forEach(function(value, key) {
+            if (key === '_token' || key === '_method') {
+                return;
+            }
+            payload[key] = value;
+        });
 
-                    // 滚动到错误位置
-                    const errorElement = document.getElementById('taskUpdateErrors');
-                    if (errorElement) {
-                        errorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }
-            },
-            error: function(xhr) {
-                const submitBtn = $('#taskUpdateModal .btn-primary');
-                submitBtn.prop('disabled', false);
-                submitBtn.html('<i class="fas fa-save mr-2"></i>保存修改');
+        const submitBtn = $('#taskUpdateModal .btn-primary');
+        submitBtn.prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>保存中...');
 
+        apiRequest('PUT', '/tasks/' + taskId, payload).then(function(response) {
+            submitBtn.prop('disabled', false);
+            submitBtn.html('<i class="fas fa-save mr-2"></i>保存修改');
+
+            if(response.code == 9999) {
+                hideTaskUpdateModal();
+                location.reload();
+            } else {
                 $('#taskUpdateErrorList').empty();
-                if(xhr.responseJSON && xhr.responseJSON.errors) {
-                    $.each(xhr.responseJSON.errors, function(key, value) {
-                        $('#taskUpdateErrorList').append('<li>' + value[0] + '</li>');
-                    });
+                if(response.msg) {
+                    $('#taskUpdateErrorList').append('<li>' + response.msg + '</li>');
                 } else {
-                    $('#taskUpdateErrorList').append('<li>更新失败，请稍后重试</li>');
+                    $('#taskUpdateErrorList').append('<li>更新失败</li>');
                 }
                 $('#taskUpdateErrors').removeClass('hidden');
 
@@ -320,45 +303,64 @@
                     errorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
+        }).catch(function(xhr) {
+            submitBtn.prop('disabled', false);
+            submitBtn.html('<i class="fas fa-save mr-2"></i>保存修改');
+
+            $('#taskUpdateErrorList').empty();
+            if(xhr && xhr.responseJSON && xhr.responseJSON.errors) {
+                $.each(xhr.responseJSON.errors, function(key, value) {
+                    $('#taskUpdateErrorList').append('<li>' + value[0] + '</li>');
+                });
+            } else {
+                $('#taskUpdateErrorList').append('<li>更新失败，请稍后重试</li>');
+            }
+            $('#taskUpdateErrors').removeClass('hidden');
+
+            const errorElement = document.getElementById('taskUpdateErrors');
+            if (errorElement) {
+                errorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
     }
 
     // 加载父级任务下拉框数据
     function loadParentTasks(excludeTaskId = null, currentParentTaskId = null) {
-        let url = '/taskparenttasks';
-        if(excludeTaskId) {
-            url += '?exclude_task_id=' + excludeTaskId;
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+        if (!apiRequest) {
+            const select = $('#parent_task_id_input');
+            select.html('<option value="">API客户端未初始化</option>');
+            return;
         }
 
-        $.ajax({
-            url: url,
-            type: 'GET',
-            beforeSend: function() {
-                const select = $('#parent_task_id_input');
-                select.html('<option value="">加载中...</option>');
-            },
-            success: function(response) {
-                if(response.code == 9999) {
-                    var selectElement = $('#parent_task_id_input');
-                    selectElement.empty();
-                    selectElement.append('<option value="">-- 无父级任务 --</option>');
+        const select = $('#parent_task_id_input');
+        select.html('<option value="">加载中...</option>');
 
-                    $.each(response.result, function(index, task) {
-                        type = task.mode == 1 ? '[工作]' : '[生活]';
-                        statusIcon = task.status == 2 ? '✓ ' : task.status == 3 ? '🗂 ' : '';
-                        selectElement.append('<option value="' + task.id + '">' + type + ' ' + statusIcon + task.name + '</option>');
-                    });
+        apiRequest('GET', '/tasks/parent-tasks', {
+            exclude_task_id: excludeTaskId || ''
+        }).then(function(response) {
+            if(response.code == 9999) {
+                var selectElement = $('#parent_task_id_input');
+                selectElement.empty();
+                selectElement.append('<option value="">-- 无父级任务 --</option>');
 
-                    if(currentParentTaskId) {
-                        selectElement.val(currentParentTaskId);
-                    }
+                $.each(response.result, function(index, task) {
+                    var type = task.mode == 1 ? '[工作]' : '[生活]';
+                    var statusIcon = task.status == 2 ? '✓ ' : task.status == 3 ? '🗂 ' : '';
+                    selectElement.append('<option value="' + task.id + '">' + type + ' ' + statusIcon + task.name + '</option>');
+                });
+
+                if(currentParentTaskId) {
+                    selectElement.val(currentParentTaskId);
                 }
-            },
-            error: function(xhr) {
-                console.log('加载父级任务失败');
-                const select = $('#parent_task_id_input');
+            } else {
                 select.html('<option value="">加载失败，请重试</option>');
             }
+        }).catch(function() {
+            console.log('加载父级任务失败');
+            select.html('<option value="">加载失败，请重试</option>');
         });
     }
 

@@ -249,7 +249,7 @@
                                                 {{ $item->achieved_at }}
                                             </div>
                                         @else
-                                            <form method="POST" action="{{ url('/achievement/claim') }}" class="m-0">
+                                            <form method="POST" action="{{ url('/api/v2/achievements/claim') }}" class="m-0 claim-achievement-form">
                                                 {!! csrf_field() !!}
                                                 <input type="hidden" name="achievement_code" value="{{ $item->code }}">
                                                 <button type="submit" class="btn btn-primary btn-sm flex items-center">
@@ -297,6 +297,10 @@
     </div>
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 勋章领取成功提示
             @if(session('success'))
             document.addEventListener('DOMContentLoaded', function() {
@@ -309,6 +313,44 @@
                 showToast('error', '{{ session('error') }}');
             });
             @endif
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.claim-achievement-form').forEach(function(form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        if (!apiRequest) {
+                            showToast('error', 'API客户端未初始化');
+                            return;
+                        }
+
+                        var codeInput = form.querySelector('input[name="achievement_code"]');
+                        var claimBtn = form.querySelector('button[type="submit"]');
+                        var original = claimBtn ? claimBtn.innerHTML : '';
+                        if (claimBtn) {
+                            claimBtn.disabled = true;
+                            claimBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>领取中...';
+                        }
+
+                        apiRequest('POST', '/achievements/claim', {
+                            achievement_code: codeInput ? codeInput.value : ''
+                        }).then(function(resp) {
+                            if (resp && resp.code === 9999) {
+                                showToast('success', '领取成功');
+                                setTimeout(function() { window.location.reload(); }, 300);
+                                return;
+                            }
+                            showToast('error', (resp && resp.msg) ? resp.msg : '领取失败');
+                        }).catch(function() {
+                            showToast('error', '领取失败，请稍后重试');
+                        }).finally(function() {
+                            if (claimBtn) {
+                                claimBtn.disabled = false;
+                                claimBtn.innerHTML = original;
+                            }
+                        });
+                    });
+                });
+            });
 
             // 显示提示消息
             function showToast(type, message) {

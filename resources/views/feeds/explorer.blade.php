@@ -14,16 +14,16 @@
                         <p class="text-sm text-gray-500 mt-1">快速开始您的订阅之旅</p>
                     </div>
 
-                    <form action="/feeds/search" class="flex gap-2 w-full md:w-auto">
+                    <div class="flex gap-2 w-full md:w-auto">
                         <div class="flex-1 md:flex-none">
-                            <input type="text" name="name" placeholder="搜索订阅源..."
+                            <input type="text" id="feedSearchInput" placeholder="搜索订阅源..."
                                    class="input w-full" value="{{ request('name') ?? '' }}">
                         </div>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="button" id="feedSearchBtn" class="btn btn-primary">
                             <i class="fas fa-search mr-2"></i>
                             搜索
                         </button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
@@ -231,6 +231,10 @@
 
     <script>
         $(document).ready(function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : function() { return Promise.reject(new Error("API客户端未初始化")); };
+
             // 快速订阅功能
             $(document).on('click', '.feed-quick-subscribe', function() {
                 const button = $(this);
@@ -244,11 +248,7 @@
                 const originalText = button.html();
                 button.html('<i class="fas fa-spinner fa-spin mr-1"></i>处理中...');
 
-                $.ajax({
-                    url: "{{ url('/feeds/quickstore') }}",
-                    method: 'GET',
-                    data: { feed_id: feedId },
-                    success: function(response) {
+                apiRequest('POST', '/feeds/quickstore', { feed_id: feedId }).then(function(response) {
                         if (response.code === 9999) {
                             // 成功 - 更新按钮状态
                             button.removeClass('btn-outline').addClass('btn-success');
@@ -261,11 +261,9 @@
                             showNotification('error', response.msg || '订阅失败，请重试');
                             button.html(originalText).removeClass('loading').prop('disabled', false);
                         }
-                    },
-                    error: function(xhr) {
-                        showNotification('error', '网络错误，请稍后重试');
-                        button.html(originalText).removeClass('loading').prop('disabled', false);
-                    }
+                }).catch(function() {
+                    showNotification('error', '网络错误，请稍后重试');
+                    button.html(originalText).removeClass('loading').prop('disabled', false);
                 });
             });
 
@@ -303,13 +301,25 @@
                 }, 5000);
             }
 
-            // 搜索表单优化
-            $('form[action="/feeds/search"]').on('submit', function(e) {
-                const input = $(this).find('input[name="name"]');
-                if (!input.val().trim()) {
-                    e.preventDefault();
+            function goFeedSearch() {
+                const input = $('#feedSearchInput');
+                const keyword = (input.val() || '').trim();
+                if (!keyword) {
                     input.focus();
                     showNotification('warning', '请输入搜索关键词');
+                    return;
+                }
+                window.location.href = '/feeds/search?name=' + encodeURIComponent(keyword);
+            }
+
+            $('#feedSearchBtn').on('click', function() {
+                goFeedSearch();
+            });
+
+            $('#feedSearchInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    goFeedSearch();
                 }
             });
         });

@@ -117,6 +117,23 @@ class TaskRepository {
 	public function getAllListByDeadline($startTime, $endTime) {
 		return Task::where ( 'deadline', '>', $startTime )->where ( 'deadline', '<', $endTime )->where ( 'status', 1 )->orderBy ( 'priority', 'desc' )->orderBy ( 'updated_at', 'desc' )->get ();
 	}
+
+	/**
+	 * 获取指定用户在提醒时间范围内的任务（用于个人日历订阅）
+	 *
+	 * @param int $userId
+	 * @param string $startTime
+	 * @param string $endTime
+	 * @return \Illuminate\Database\Eloquent\Collection
+	 */
+	public function getListByRemindTime($userId, $startTime, $endTime) {
+		return Task::where ( 'user_id', $userId )
+			->where ( 'remindtime', '>', $startTime )
+			->where ( 'remindtime', '<', $endTime )
+			->where ( 'status', 1 )
+			->orderBy ( 'remindtime', 'asc' )
+			->get ();
+	}
 	
 	/**
 	 * 获取时间段内统计情况

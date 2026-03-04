@@ -647,10 +647,10 @@
             // 加载模型列表
             async function loadModels() {
                 try {
-                    const response = await fetch('/llm/api/models', {
+                    const response = await window.taskApiFetch('/api/v2/llm/models', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
 
@@ -825,12 +825,12 @@
                 }
 
                 try {
-                    const response = await fetch(`/llm/api/llm-agents/${currentAgentId}/draft`, {
+                    const response = await window.taskApiFetch(`/api/v2/llm/agents/${currentAgentId}/draft`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
                         body: JSON.stringify(formData)
                     });
@@ -857,11 +857,11 @@
                 }
 
                 try {
-                    const response = await fetch(`/llm/api/llm-agents/${currentAgentId}/publish`, {
+                    const response = await window.taskApiFetch(`/api/v2/llm/agents/${currentAgentId}/publish`, {
                         method: 'POST',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
 
@@ -909,12 +909,12 @@
                 sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>思考中';
 
                 try {
-                    const response = await fetch(`/llm/api/llm-agents/${currentAgentId}/test-chat`, {
+                    const response = await window.taskApiFetch(`/api/v2/llm/agents/${currentAgentId}/test-chat`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').attr('content')
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
                         body: JSON.stringify({ message: message })
                     });

@@ -48,7 +48,7 @@
                 @include('common.errors')
 
                 <!-- 创建导图表单 -->
-                <form action="{{ url('mind') }}" method="POST" id="newMindForm" class="space-y-4">
+                <form action="{{ url('/api/v2/minds') }}" method="POST" id="newMindForm" class="space-y-4">
                     {!! csrf_field() !!}
 
                     <div class="space-y-4">
@@ -370,6 +370,10 @@
 
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 添加标签到思维导图
             function addTagToMind(mindId) {
                 Swal.fire({
@@ -390,32 +394,28 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        $.ajax({
-                            url: "{{ url('mindaddtag') }}/" + mindId,
-                            type: 'POST',
-                            data: {
-                                tag_name: result.value,
-                                _token: "{{ csrf_token() }}"
-                            },
-                            success: function(response) {
-                                if (response.code === 9999) {
-                                    // 更新标签列表
-                                    const tagHtml = `
+                        if (!apiRequest) {
+                            showToast('error', 'API客户端未初始化');
+                            return;
+                        }
+                        apiRequest('POST', '/minds/' + mindId + '/tags', {
+                            tag_name: result.value
+                        }).then(function(response) {
+                            if (response.code === 9999) {
+                                const tagHtml = `
                                 <a href="/minds?tag_id=${response.result.tag.id}"
                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors duration-200">
                                     <i class="fas fa-hashtag mr-0.5 text-xs"></i>
                                     ${result.value}
                                 </a>
                             `;
-                                    $(`#${mindId} .flex-wrap`).append(tagHtml);
-                                    showToast('success', '标签添加成功');
-                                } else {
-                                    showToast('error', response.msg || '添加失败');
-                                }
-                            },
-                            error: function() {
-                                showToast('error', '网络错误，请稍后重试');
+                                $(`#${mindId} .flex-wrap`).append(tagHtml);
+                                showToast('success', '标签添加成功');
+                            } else {
+                                showToast('error', response.msg || '添加失败');
                             }
+                        }).catch(function() {
+                            showToast('error', '网络错误，请稍后重试');
                         });
                     }
                 });
@@ -446,30 +446,25 @@
 
             // 删除思维导图
             function deleteMind(mindId) {
-                $.ajax({
-                    url: "{{ url('mind') }}/" + mindId,
-                    type: 'DELETE',
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
-                        if (response.code === 9999) {
-                            $(`#${mindId}`).fadeOut(300, function() {
-                                $(this).remove();
-                                showToast('success', '思维导图删除成功');
+                if (!apiRequest) {
+                    showToast('error', 'API客户端未初始化');
+                    return;
+                }
+                apiRequest('DELETE', '/minds/' + mindId, {}).then(function(response) {
+                    if (response.code === 9999) {
+                        $(`#${mindId}`).fadeOut(300, function() {
+                            $(this).remove();
+                            showToast('success', '思维导图删除成功');
 
-                                // 检查是否还有导图
-                                if ($('#mindList .group').length === 0) {
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            showToast('error', response.msg || '删除失败');
-                        }
-                    },
-                    error: function() {
-                        showToast('error', '网络错误，请稍后重试');
+                            if ($('#mindList .group').length === 0) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        showToast('error', response.msg || '删除失败');
                     }
+                }).catch(function() {
+                    showToast('error', '网络错误，请稍后重试');
                 });
             }
 
@@ -562,7 +557,31 @@
                             e.preventDefault();
                             nameInput.focus();
                             showToast('error', '请输入思维导图名称');
+                            return;
                         }
+
+                        e.preventDefault();
+                        if (!apiRequest) {
+                            showToast('error', 'API客户端未初始化');
+                            return;
+                        }
+
+                        apiRequest('POST', '/minds', {
+                            name: nameInput.value.trim()
+                        }).then(function(response) {
+                            if (response && response.code === 9999) {
+                                var createdId = response.result && response.result.id ? response.result.id : null;
+                                if (createdId) {
+                                    window.location.href = "{{ url('mind') }}/" + createdId;
+                                    return;
+                                }
+                                window.location.reload();
+                                return;
+                            }
+                            showToast('error', (response && response.msg) ? response.msg : '创建失败');
+                        }).catch(function() {
+                            showToast('error', '网络错误，请稍后重试');
+                        });
                     });
                 }
             });

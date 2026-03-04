@@ -181,6 +181,10 @@
 </div>
 
 <script>
+    var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+        ? window.TaskApiBridge.requestWithFallback
+        : null;
+
     // 全局变量
     let currentCourseId = null;
     let currentExcludeItemId = null;
@@ -312,9 +316,12 @@
         selectElement.innerHTML = '<option value="">加载中...</option>';
         selectElement.disabled = true;
 
-        fetch(`/course-items/structure/${courseId}`)
-            .then(response => response.json())
-            .then(data => {
+        if (!apiRequest) {
+            selectElement.innerHTML = '<option value="">API客户端未初始化</option>';
+            return;
+        }
+
+        apiRequest('GET', '/course-items/structure/' + courseId, {}).then(data => {
                 if (data.code === 9999) {
                     selectElement.innerHTML = '';
                     selectElement.appendChild(createOptionElement('', '无父级（顶级章节）', null));
@@ -354,8 +361,7 @@
                 } else {
                     throw new Error(data.msg || '加载失败');
                 }
-            })
-            .catch(error => {
+            }).catch(error => {
                 console.error('加载章节结构失败:', error);
                 selectElement.innerHTML = '<option value="">加载失败，请刷新重试</option>';
                 setTimeout(() => {
@@ -468,26 +474,26 @@
         submitBtn.disabled = true;
 
         // 准备表单数据
-        const formData = new FormData(form);
-
-        // 如果存在itemId，表示是更新操作
-        if (itemId) {
-            formData.append('_method', 'PUT');
+        if (!apiRequest) {
+            showCourseItemErrors(['API客户端未初始化']);
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
         }
 
-        try {
-            const url = itemId ? `/course-items/${itemId}` : '/course-items';
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                }
-            });
+        const payload = {
+            course_id: document.getElementById('course_id_modal').value,
+            parent_id: document.getElementById('parent_id_modal').value || null,
+            title: document.getElementById('title_modal').value,
+            item_type: document.getElementById('item_type_modal').value,
+            duration: document.getElementById('duration_modal').value,
+            external_url: document.getElementById('external_url_modal').value,
+            description: document.getElementById('description_modal').value,
+            order_index: document.getElementById('order_index_modal').value
+        };
 
-            const data = await response.json();
+        try {
+            const data = await apiRequest(itemId ? 'PUT' : 'POST', itemId ? ('/course-items/' + itemId) : '/course-items', payload);
 
             if (data.code === 9999) {
                 // 成功

@@ -275,6 +275,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
             // 模态框功能
             const deleteModal = document.getElementById('deleteModal');
             const modalCloseButtons = document.querySelectorAll('.modal-close');
@@ -324,8 +328,11 @@
             // 确认删除
             document.getElementById('confirmDelete').addEventListener('click', function() {
                 if (!currentFeedId) return;
+                if (!apiRequest) {
+                    showNotification('error', 'API客户端未初始化');
+                    return;
+                }
 
-                const token = "{{ csrf_token() }}";
                 const button = this;
                 const originalHtml = button.innerHTML;
 
@@ -333,14 +340,7 @@
                 button.disabled = true;
                 button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>删除中...';
 
-                $.ajax({
-                    url: "{{ url('feeds') }}/" + currentFeedId,
-                    type: 'DELETE',
-                    data: {
-                        "_token": token,
-                        "_method": "DELETE"
-                    },
-                    success: function(response) {
+                apiRequest('DELETE', "/feeds/" + currentFeedId, {}).then(function(response) {
                         if (response.code === 9999) {
                             // 从DOM中移除元素
                             const feedElement = document.getElementById(currentFeedId);
@@ -357,16 +357,13 @@
                             showNotification('error', response.msg || '删除失败');
                         }
                         closeModal();
-                    },
-                    error: function() {
+                    }).catch(function() {
                         showNotification('error', '网络错误，请稍后重试');
                         closeModal();
-                    },
-                    complete: function() {
+                    }).finally(function() {
                         button.disabled = false;
                         button.innerHTML = originalHtml;
-                    }
-                });
+                    });
             });
 
             // 拖拽排序功能
@@ -388,19 +385,19 @@
                                 .map(card => card.id)
                                 .join(',');
 
-                            $.ajax({
-                                url: "{{ url('categorys/sort') }}",
-                                type: 'POST',
-                                data: {
-                                    "category_ids": categoryIds,
-                                    "_token": "{{ csrf_token() }}"
-                                },
-                                success: function(response) {
+                            if (!apiRequest) {
+                                showNotification('warning', 'API客户端未初始化');
+                                return;
+                            }
+                            apiRequest('POST', '/categories/sort', {
+                                category_ids: categoryIds
+                            }).then(function(response) {
                                     if (response.code !== 9999) {
                                         showNotification('warning', '排序保存失败，请稍后再试');
                                     }
-                                }
-                            });
+                                }).catch(function() {
+                                    showNotification('warning', '排序保存失败，请稍后再试');
+                                });
                         }
                     }
                 });
@@ -429,8 +426,7 @@
 
                             // 准备发送的数据
                             const data = {
-                                "feed_sub_ids": feedIds,
-                                "_token": "{{ csrf_token() }}"
+                                "feed_sub_ids": feedIds
                             };
 
                             // 如果更换了分类，添加相关信息
@@ -439,19 +435,20 @@
                                 data.change_feed_sub_category = newCategoryId;
                             }
 
-                            $.ajax({
-                                url: "{{ url('feeds/sort') }}",
-                                type: 'POST',
-                                data: data,
-                                success: function(response) {
+                            if (!apiRequest) {
+                                showNotification('warning', 'API客户端未初始化');
+                                return;
+                            }
+                            apiRequest('POST', '/feeds/sort', data).then(function(response) {
                                     if (response.code !== 9999) {
                                         showNotification('warning', '排序保存失败，请稍后再试');
                                     } else if (originalCategoryId !== newCategoryId) {
                                         showNotification('success', '已移动到新分类');
                                         updateCategoryCounts();
                                     }
-                                }
-                            });
+                                }).catch(function() {
+                                    showNotification('warning', '排序保存失败，请稍后再试');
+                                });
                         }
                     });
                 });

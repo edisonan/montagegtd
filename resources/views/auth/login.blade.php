@@ -371,7 +371,7 @@
                         </div>
 
                         <div class="form-body">
-                            <form method="POST" action="{{ url('/login') }}">
+                            <form method="POST" action="{{ url('/login') }}" id="loginForm">
                                 {{ csrf_field() }}
 
                                 <div class="form-group">
@@ -476,7 +476,7 @@
                         </div>
 
                         <div class="form-body">
-                            <form method="POST" action="{{ url('/register') }}">
+                            <form method="POST" action="{{ url('/register') }}" id="registerForm">
                                 {{ csrf_field() }}
 
                                 <div class="form-group">
@@ -683,11 +683,150 @@
         `;
             document.head.appendChild(style);
 
-            // 表单提交时禁用按钮防止重复提交
-            $('form').on('submit', function() {
-                const submitBtn = $(this).find('.btn-submit');
-                submitBtn.prop('disabled', true);
-                submitBtn.html('<i class="fas fa-spinner fa-spin"></i> 处理中...');
+            function setButtonLoading($form, text) {
+                const $btn = $form.find('.btn-submit');
+                if ($btn.length === 0) return;
+                if (!$btn.data('original-text')) {
+                    $btn.data('original-text', $btn.html());
+                }
+                $btn.prop('disabled', true);
+                $btn.html('<i class="fas fa-spinner fa-spin"></i> ' + text);
+            }
+
+            function restoreButton($form) {
+                const $btn = $form.find('.btn-submit');
+                if ($btn.length === 0) return;
+                $btn.prop('disabled', false);
+                if ($btn.data('original-text')) {
+                    $btn.html($btn.data('original-text'));
+                }
+            }
+
+            function clearApiError($form) {
+                $form.find('.api-error-message').remove();
+            }
+
+            function showApiError($form, message) {
+                clearApiError($form);
+                const html = '<div class="error-message api-error-message mt-3">' +
+                    '<i class="fas fa-exclamation-circle"></i> ' + $('<div>').text(message).html() +
+                    '</div>';
+                $form.find('.form-actions').before(html);
+            }
+
+            function extractErrorMessage(error) {
+                if (!error) return '请求失败，请稍后再试';
+                if (error.data) {
+                    if (error.data.msg) return error.data.msg;
+                    if (error.data.message) return error.data.message;
+                    if (error.data.errors) {
+                        const firstKey = Object.keys(error.data.errors)[0];
+                        if (firstKey && error.data.errors[firstKey] && error.data.errors[firstKey][0]) {
+                            return error.data.errors[firstKey][0];
+                        }
+                    }
+                }
+                if (error.message) return error.message;
+                return '请求失败，请稍后再试';
+            }
+
+            function establishWebSessionFromToken() {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.getAccessToken !== 'function') {
+                    return Promise.resolve();
+                }
+
+                var accessToken = window.TaskApiClient.getAccessToken();
+                if (!accessToken) {
+                    return Promise.reject(new Error('登录令牌缺失，无法建立会话'));
+                }
+
+                return fetch('{{ url('/api/v2/auth/session-from-token') }}', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Authorization': 'Bearer ' + accessToken
+                    }
+                }).then(function(resp) {
+                    if (!resp.ok) {
+                        throw new Error('建立会话失败');
+                    }
+                    return resp.json();
+                });
+            }
+
+            $('#loginForm').on('submit', function(e) {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.login !== 'function') {
+                    return;
+                }
+
+                e.preventDefault();
+                const $form = $(this);
+                const formEl = this;
+                clearApiError($form);
+                setButtonLoading($form, '登录中...');
+
+                const payload = {
+                    email: $form.find('input[name="email"]').val(),
+                    password: $form.find('input[name="password"]').val(),
+                    client_type: 'web',
+                    device_id: navigator.userAgent || 'web'
+                };
+
+                window.TaskApiClient.login(payload).then(function() {
+                    return establishWebSessionFromToken();
+                }).then(function() {
+                    window.location.href = '{{ url('/index') }}';
+                }).catch(function(error) {
+                    var token = (window.TaskApiClient && typeof window.TaskApiClient.getAccessToken === 'function')
+                        ? window.TaskApiClient.getAccessToken()
+                        : '';
+                    if (token && formEl && typeof formEl.submit === 'function') {
+                        formEl.submit();
+                        return;
+                    }
+                    showApiError($form, extractErrorMessage(error));
+                    restoreButton($form);
+                });
+            });
+
+            $('#registerForm').on('submit', function(e) {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.request !== 'function') {
+                    return;
+                }
+
+                e.preventDefault();
+                const $form = $(this);
+                clearApiError($form);
+                setButtonLoading($form, '注册中...');
+
+                const payload = {
+                    name: $form.find('input[name="name"]').val(),
+                    email: $form.find('input[name="email"]').val(),
+                    password: $form.find('input[name="password"]').val(),
+                    password_confirmation: $form.find('input[name="password_confirmation"]').val(),
+                    client_type: 'web',
+                    device_id: navigator.userAgent || 'web'
+                };
+
+                window.TaskApiClient.request({
+                    method: 'POST',
+                    url: '/auth/register',
+                    body: payload,
+                    skipAuth: true
+                }).then(function(resp) {
+                    if (resp && resp.data && resp.data.result && typeof window.TaskApiClient.setTokenPair === 'function') {
+                        window.TaskApiClient.setTokenPair(resp.data.result);
+                    }
+                    return establishWebSessionFromToken();
+                }).then(function() {
+                    window.location.href = '{{ url('/index') }}';
+                }).catch(function(error) {
+                    showApiError($form, extractErrorMessage(error));
+                    restoreButton($form);
+                });
             });
         });
     </script>

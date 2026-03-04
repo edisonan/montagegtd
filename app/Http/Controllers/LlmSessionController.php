@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\LlmAgent;
+use App\Models\LlmConversation;
 use App\Repositories\LlmSessionRepository;
 use App\Services\LlmSessionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 class LlmSessionController extends Controller
 {
     protected $sessionService;
     protected $sessionRepository;
+    protected $conversationHasSessionId = null;
     
     public function __construct(
         LlmSessionService $sessionService,
@@ -184,6 +186,32 @@ class LlmSessionController extends Controller
     }
 
     /**
+     * 清空指定会话的对话内容
+     */
+    public function clearSession($id)
+    {
+        $session = $this->sessionRepository->findById($id);
+        if (!$session) {
+            return response()->json([
+                'success' => false,
+                'message' => '会话不存在或无权限操作'
+            ], 404);
+        }
+
+        if ($this->conversationSupportsSession()) {
+            LlmConversation::where('session_id', $session->id)->delete();
+        }
+        $session->message_count = 0;
+        $session->token_count = 0;
+        $session->last_message_at = null;
+        $session->save();
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
+    /**
      * 获取指定会话详情
      */
     public function getSession($id)
@@ -195,6 +223,30 @@ class LlmSessionController extends Controller
                 'success' => false,
                 'message' => '会话不存在或无权限访问'
             ], 404);
+        }
+
+        $messages = [];
+        if ($this->conversationSupportsSession()) {
+            $conversations = LlmConversation::where('session_id', $session->id)
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            foreach ($conversations as $conv) {
+                if (!empty($conv->question)) {
+                    $messages[] = [
+                        'role' => 'user',
+                        'content' => $conv->question,
+                        'created_at' => optional($conv->created_at)->format('Y-m-d H:i:s'),
+                    ];
+                }
+                if (!empty($conv->answer)) {
+                    $messages[] = [
+                        'role' => 'assistant',
+                        'content' => $conv->answer,
+                        'created_at' => optional($conv->answered_at ?: $conv->updated_at)->format('Y-m-d H:i:s'),
+                    ];
+                }
+            }
         }
 
         return response()->json([
@@ -212,7 +264,17 @@ class LlmSessionController extends Controller
                 ] : null,
                 'is_pinned' => $session->is_pinned,
                 'last_message_at' => $session->last_message_at ? $session->last_message_at->format('Y-m-d H:i:s') : null,
+                'messages' => $messages,
             ]
         ]);
+    }
+
+    protected function conversationSupportsSession()
+    {
+        if ($this->conversationHasSessionId !== null) {
+            return $this->conversationHasSessionId;
+        }
+        $this->conversationHasSessionId = Schema::hasColumn('llm_conversations', 'session_id');
+        return $this->conversationHasSessionId;
     }
 }

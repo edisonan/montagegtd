@@ -38,7 +38,10 @@ class StatisticsController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$datas = $this->statisticsService->getIndexInfo ();
+		$range = $request->input('range', 'month');
+		$startDate = $request->input('start_date');
+		$endDate = $request->input('end_date');
+		$datas = $this->statisticsService->getIndexInfo ($range, $startDate, $endDate);
 		
 		return view ( 'statistics.index', $datas );
 	}

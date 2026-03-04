@@ -457,6 +457,26 @@
 
     <script src="/js/recorder/recorder.js"></script>
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
+        function waitTokenReady() {
+            if (window.__taskTokenBootstrapPromise && typeof window.__taskTokenBootstrapPromise.then === 'function') {
+                return window.__taskTokenBootstrapPromise;
+            }
+            return Promise.resolve();
+        }
+
+        function getAccessToken() {
+            try {
+                if (window.TaskApiClient && typeof window.TaskApiClient.getAccessToken === 'function') {
+                    return window.TaskApiClient.getAccessToken() || '';
+                }
+            } catch (e) {}
+            return '';
+        }
+
         // 全局变量
         let recorder = null;
         let easymde = null;
@@ -529,14 +549,29 @@
 
         // 提交表单
         function submitProcess(status) {
-            // 同步编辑器内容到textarea
-            if (easymde) {
-                document.getElementById('note-content').value = easymde.value();
+            document.getElementById('status_id').value = status;
+
+            const content = easymde ? easymde.value() : '';
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
             }
 
-            // 设置状态并提交
-            document.getElementById('status_id').value = status;
-            document.getElementById('update_note_form').submit();
+            apiRequest('PUT', '/notes/{{ $note->id }}', {
+                name: content,
+                status: status
+            }).then(function(response) {
+                if (response.code == 9999) {
+                    showToast('笔记更新成功', 'success');
+                    setTimeout(function() {
+                        window.location.href = '{{ url("/notes") }}';
+                    }, 300);
+                } else {
+                    showToast('更新失败: ' + (response.msg || '未知错误'), 'error');
+                }
+            }).catch(function() {
+                showToast('更新失败，请检查网络连接', 'error');
+            });
         }
 
         // 录音功能
@@ -614,29 +649,30 @@
             const filename = '{{ md5(date("YmdHis").rand(0,99)) }}.mp3';
 
             formData.append('file', blob, filename);
-            formData.append('_token', "{{ csrf_token() }}");
+            formData.append('fname', filename.replace('.mp3', ''));
 
-            $.ajax({
-                url: '{{ url("notes/upload") }}',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    try {
-                        const data = JSON.parse(response);
-                        if (data.code == 9999) {
-                            document.getElementById('fname').value = filename;
-                            showToast('🎤 录音已保存并添加到笔记', 'success');
-                        }
-                    } catch (e) {
-                        console.error('上传失败:', e);
-                        showToast('录音上传失败，请重试', 'error');
-                    }
-                },
-                error: function() {
-                    showToast('录音上传失败，请检查网络连接', 'error');
+            waitTokenReady().then(function() {
+                const headers = {'Accept': 'application/json'};
+                const accessToken = getAccessToken();
+                if (accessToken) {
+                    headers['Authorization'] = 'Bearer ' + accessToken;
                 }
+                return fetch('/api/v2/notes/upload', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: headers,
+                    body: formData
+                });
+            }).then(function(resp) {
+                return resp.json().then(function(data) {
+                    if (!resp.ok || !data || data.code != 9999) {
+                        throw new Error((data && data.msg) ? data.msg : 'upload failed');
+                    }
+                    document.getElementById('fname').value = filename.replace('.mp3', '');
+                    showToast('🎤 录音已保存并添加到笔记', 'success');
+                });
+            }).catch(function() {
+                showToast('录音上传失败，请检查网络连接', 'error');
             });
         }
 
@@ -670,6 +706,15 @@
 
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
+            const updateForm = document.getElementById('update_note_form');
+            if (updateForm) {
+                updateForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const statusVal = parseInt((document.getElementById('status_id') || {}).value || '{{ $note->status }}', 10);
+                    submitProcess(isNaN(statusVal) ? {{ $note->status }} : statusVal);
+                });
+            }
+
             // 初始化Markdown编辑器
             initMarkdownEditor();
 
@@ -701,7 +746,7 @@
 
         // 初始化现有音频播放器
         function initExistingAudioPlayer() {
-            const audioUrl = '{{ url("note/getRecord/".$note->id) }}';
+            const audioUrl = '/api/v2/notes/{{ $note->id }}/record';
             const container = document.getElementById('existing-audio-container');
 
             if (container) {
@@ -716,7 +761,7 @@
                             <div style="font-weight: 500; color: var(--gray-700);">原有录音</div>
                             <div style="font-size: 13px; color: var(--gray-500);">点击播放按钮试听</div>
                         </div>
-                        <audio id="existing-audio" src="${audioUrl}" preload="metadata"></audio>
+                        <audio id="existing-audio" data-api-url="${audioUrl}" preload="metadata"></audio>
                     </div>
                 </div>
             `;
@@ -726,22 +771,51 @@
         function playAudio(button) {
             const audio = document.getElementById('existing-audio');
             const icon = button.querySelector('i');
+            const startPlay = function() {
+                if (audio.paused) {
+                    audio.play();
+                    icon.className = 'fas fa-pause';
+                    button.onclick = function() { pauseAudio(button); };
 
-            if (audio.paused) {
-                audio.play();
-                icon.className = 'fas fa-pause';
-                button.onclick = function() { pauseAudio(button); };
-
-                // 监听播放结束
-                audio.onended = function() {
+                    audio.onended = function() {
+                        icon.className = 'fas fa-play';
+                        button.onclick = function() { playAudio(button); };
+                    };
+                } else {
+                    audio.pause();
                     icon.className = 'fas fa-play';
                     button.onclick = function() { playAudio(button); };
-                };
-            } else {
-                audio.pause();
-                icon.className = 'fas fa-play';
-                button.onclick = function() { playAudio(button); };
+                }
+            };
+
+            if (!audio.dataset.loaded && audio.dataset.apiUrl) {
+                waitTokenReady().then(function() {
+                    const headers = {};
+                    const accessToken = getAccessToken();
+                    if (accessToken) {
+                        headers['Authorization'] = 'Bearer ' + accessToken;
+                    }
+                    return fetch(audio.dataset.apiUrl, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: headers
+                    });
+                }).then(function(resp) {
+                    if (!resp.ok) {
+                        throw new Error('audio fetch failed');
+                    }
+                    return resp.blob();
+                }).then(function(blob) {
+                    audio.src = URL.createObjectURL(blob);
+                    audio.dataset.loaded = '1';
+                    startPlay();
+                }).catch(function() {
+                    showToast('语音加载失败', 'error');
+                });
+                return;
             }
+
+            startPlay();
         }
 
         function pauseAudio(button) {
@@ -797,7 +871,7 @@
             @include('common.errors')
 
             <!-- 编辑表单 -->
-            <form action="{{ url('noteupdate/'.$note->id) }}" method="POST" id="update_note_form">
+            <form action="{{ url('/api/v2/notes/'.$note->id) }}" method="POST" id="update_note_form">
                 {!! csrf_field() !!}
                 <input type="hidden" name="_method" value="PUT">
 

@@ -69,7 +69,7 @@
                 @include('common.errors')
 
                 <!-- 添加订阅表单 -->
-                <form action="{{ url('feed') }}" method="POST" id="addFeedForm" class="space-y-6">
+                <form action="{{ url('/api/v2/feeds') }}" method="POST" id="addFeedForm" class="space-y-6">
                     {!! csrf_field() !!}
 
                     <div class="space-y-6">
@@ -460,6 +460,10 @@
     </div>
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : function() { return Promise.reject(new Error("API客户端未初始化")); };
+
             // 检测订阅地址
             document.getElementById('check_url').addEventListener('click', function() {
                 const url = document.getElementById('url').value.trim();
@@ -484,7 +488,7 @@
                 processTips.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-blue-500"></i>正在检测订阅地址...';
 
                 // 发送检测请求
-                $.get("{{ url('feed/checkFeedUrl') }}", {url: url}, function(response) {
+                apiRequest('GET', '/feeds/check-feed-url', {url: url}).then(function(response) {
                     if (response.code === 9999) {
                         // 显示订阅信息区域
                         document.getElementById('feedInfo').classList.remove('hidden');
@@ -516,7 +520,7 @@
                 `;
                         showToast('error', '未检测到订阅内容，请确认地址');
                     }
-                }).fail(function() {
+                }).catch(function() {
                     processTips.innerHTML = `
                 <div class="flex items-center text-red-600">
                     <i class="fas fa-exclamation-circle mr-2"></i>
@@ -524,7 +528,7 @@
                 </div>
             `;
                     showToast('error', '网络错误，请检查连接');
-                }).always(function() {
+                }).then(function() {
                     // 恢复按钮状态
                     const checkBtn = document.getElementById('check_url');
                     checkBtn.disabled = false;
@@ -567,13 +571,7 @@
 
             // 删除订阅
             function deleteFeed(feedId) {
-                $.ajax({
-                    url: "{{ url('feed') }}/" + feedId,
-                    type: 'DELETE',
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
+                apiRequest('DELETE', "/feeds/" + feedId, {}).then(function(response) {
                         if (response.code === 9999) {
                             $(`#${feedId}`).fadeOut(300, function() {
                                 $(this).remove();
@@ -587,10 +585,8 @@
                         } else {
                             showToast('error', response.msg || '删除失败');
                         }
-                    },
-                    error: function() {
-                        showToast('error', '网络错误，请稍后重试');
-                    }
+                }).catch(function() {
+                    showToast('error', '网络错误，请稍后重试');
                 });
             }
 
@@ -632,21 +628,57 @@
                 const form = document.getElementById('addFeedForm');
                 if (form) {
                     form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
                         const urlInput = document.getElementById('url');
                         const feedNameInput = document.getElementById('feed_name');
+                        const categoryInput = document.querySelector('input[name="category_id"]:checked');
 
                         if (!urlInput.value.trim()) {
-                            e.preventDefault();
                             urlInput.focus();
                             showToast('error', '请输入订阅地址');
                             return;
                         }
 
                         if (!feedNameInput.value.trim() && document.getElementById('feedInfo').classList.contains('hidden')) {
-                            e.preventDefault();
                             showToast('error', '请先检测订阅地址获取订阅名称');
                             return;
                         }
+
+                        if (!categoryInput) {
+                            showToast('error', '请选择分类');
+                            return;
+                        }
+
+                        if (!apiRequest) {
+                            showToast('error', 'API客户端未初始化');
+                            return;
+                        }
+
+                        const submitBtn = document.getElementById('submitBtn');
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>添加中...';
+
+                        apiRequest('POST', '/feeds', {
+                            url: urlInput.value.trim(),
+                            feed_name: feedNameInput.value.trim(),
+                            category_id: categoryInput.value
+                        }).then(function(resp) {
+                            if (resp && resp.code === 9999) {
+                                showToast('success', '订阅添加成功');
+                                setTimeout(function() {
+                                    window.location.reload();
+                                }, 300);
+                                return;
+                            }
+                            showToast('error', (resp && resp.msg) ? resp.msg : '添加失败');
+                        }).catch(function() {
+                            showToast('error', '添加失败，请稍后重试');
+                        }).finally(function() {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        });
                     });
                 }
             });

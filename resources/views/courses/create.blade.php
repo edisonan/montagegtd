@@ -83,7 +83,7 @@
                 @endif
 
                 <!-- 创建课程表单 -->
-                <form action="{{ url('/courses') }}" method="POST" id="createCourseForm" class="space-y-8">
+                <form action="{{ url('/api/v2/courses') }}" method="POST" id="createCourseForm" class="space-y-8">
                     {!! csrf_field() !!}
 
                     <!-- 第一行：课程标题和讲师 -->
@@ -505,6 +505,9 @@
         <script>
             // 字符计数功能
             document.addEventListener('DOMContentLoaded', function() {
+                var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                    ? window.TaskApiBridge.requestWithFallback
+                    : null;
                 const titleInput = document.getElementById('title');
                 const tagsInput = document.getElementById('tags');
                 const descInput = document.getElementById('description');
@@ -547,6 +550,13 @@
                         showToast('error', '请输入课程标题');
                         return;
                     }
+                    if (!apiRequest) {
+                        e.preventDefault();
+                        showToast('error', 'API客户端未初始化');
+                        return;
+                    }
+
+                    e.preventDefault();
 
                     // 显示加载状态
                     const submitBtn = document.getElementById('submitBtn');
@@ -554,14 +564,34 @@
                     submitBtn.innerHTML = `
                 <i class="fas fa-spinner fa-spin mr-2"></i>
                 创建中...
-            `;
+                    `;
                     submitBtn.disabled = true;
 
-                    // 5秒后恢复按钮状态（防止重复提交）
-                    setTimeout(() => {
+                    apiRequest('POST', '/courses', {
+                        title: document.getElementById('title') ? document.getElementById('title').value.trim() : '',
+                        instructor: document.getElementById('instructor') ? document.getElementById('instructor').value.trim() : '',
+                        platform: document.getElementById('platform') ? document.getElementById('platform').value : '',
+                        difficulty: document.getElementById('difficulty') ? document.getElementById('difficulty').value : '',
+                        estimated_hours: document.getElementById('estimated_hours') ? document.getElementById('estimated_hours').value : '',
+                        public_url: document.getElementById('public_url') ? document.getElementById('public_url').value.trim() : '',
+                        cover_image_url: document.getElementById('cover_image_url') ? document.getElementById('cover_image_url').value.trim() : '',
+                        description: document.getElementById('description') ? document.getElementById('description').value.trim() : '',
+                        tags: document.getElementById('tags') ? document.getElementById('tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean) : []
+                    }).then(function(response) {
+                        if (response && response.code === 9999) {
+                            showToast('success', response.msg || '课程创建成功');
+                            setTimeout(function() {
+                                window.location.href = "{{ url('/courses') }}";
+                            }, 300);
+                            return;
+                        }
+                        showToast('error', (response && response.msg) ? response.msg : '课程创建失败');
+                    }).catch(function() {
+                        showToast('error', '网络错误，请稍后重试');
+                    }).finally(function() {
                         submitBtn.innerHTML = originalText;
                         submitBtn.disabled = false;
-                    }, 5000);
+                    });
                 });
             });
 

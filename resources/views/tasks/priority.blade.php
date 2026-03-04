@@ -369,6 +369,10 @@
     @include('components.task-update-modal')
 
     <script>
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         $(document).ready(function() {
             console.log('四象限页面已加载');
 
@@ -385,14 +389,20 @@
 
         // ===================== 任务操作函数 =====================
         function toggleComplete(taskId, button) {
-            $.post('/tasks/' + taskId + '/toggleComplete', {
-                _token: '{{ csrf_token() }}'
-            }, function(response) {
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+
+            const taskItem = $(`[data-task-id="${taskId}"]`);
+            const isCompleted = taskItem.data('completed') === true;
+            const targetStatus = isCompleted ? 1 : 2;
+
+            apiRequest('PUT', '/tasks/' + taskId, {
+                status: targetStatus
+            }).then(function(response) {
                 if (response.code === 9999) {
                     // 更新UI而不刷新页面
-                    const taskItem = $(`[data-task-id="${taskId}"]`);
-                    const isCompleted = taskItem.data('completed') === true;
-
                     taskItem.data('completed', !isCompleted);
 
                     if (isCompleted) {
@@ -409,32 +419,32 @@
                 } else {
                     alert('操作失败：' + (response.msg || '请稍后重试'));
                 }
-            }).fail(function() {
+            }).catch(function() {
                 alert('请求失败，请检查网络连接');
             });
         }
 
         function editTask(taskId) {
-            // 从服务器获取任务数据 - 使用现有的API
-            $.get('/tasks/' + taskId, function(response) {
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+
+            apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
                 if(response.code == 9999) {
                     var task = response.result;
                     openTaskUpdateModal(task);
                 } else {
                     alert('获取任务数据失败：' + (response.msg || '未知错误'));
                 }
-            }).fail(function() {
+            }).catch(function() {
                 alert('获取任务数据失败');
             });
         }
 
         function deleteTask(taskId) {
             if (confirm('确认要删除此任务吗？删除后无法恢复。')) {
-                $.ajax({
-                    url: '/tasks/' + taskId,
-                    type: 'DELETE',
-                    data: {_token: '{{ csrf_token() }}'},
-                    success: function(response) {
+                apiRequest('DELETE', '/tasks/' + taskId, {}).then(function(response) {
                         if (response.code === 9999) {
                             // 动画删除效果
                             const taskItem = $(`[data-task-id="${taskId}"]`);
@@ -457,10 +467,8 @@
                         } else {
                             alert('删除失败：' + (response.msg || '请稍后重试'));
                         }
-                    },
-                    error: function() {
-                        alert('请求失败，请检查网络连接');
-                    }
+                }).catch(function() {
+                    alert('请求失败，请检查网络连接');
                 });
             }
         }
@@ -521,16 +529,19 @@
                     }
 
                     // 发送更新请求
-                    $.post('/tasks/' + taskId + '/updateQuadrant', {
-                        _token: '{{ csrf_token() }}',
-                        quadrant: newQuadrant
-                    }, function(response) {
+                    apiRequest('PUT', '/tasks/' + taskId, {
+                        priority: newQuadrant
+                    }).then(function(response) {
                         if (response.code !== 9999) {
                             alert('更新失败，请刷新页面重试');
                             // 恢复原来的位置
                             const originalList = document.querySelector(`.task-list[data-quadrant="${oldQuadrant}"]`);
                             originalList.appendChild(draggedItem);
                         }
+                    }).catch(function() {
+                        alert('更新失败，请刷新页面重试');
+                        const originalList = document.querySelector(`.task-list[data-quadrant="${oldQuadrant}"]`);
+                        originalList.appendChild(draggedItem);
                     });
                 }
             }

@@ -19,7 +19,6 @@ class LlmAgentController extends Controller
         LlmAgentService $agentService,
         LlmAgentVersionService $agentVersionService
     ) {
-        $this->middleware('auth');
         $this->agentService = $agentService;
         $this->agentVersionService = $agentVersionService;
     }
@@ -221,6 +220,39 @@ class LlmAgentController extends Controller
             \Log::error('LlmAgentController@destroy error: ' . $e->getMessage());
             return response()->json([
                 'message' => '删除智能体失败: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    /**
+     * 启用/禁用智能体
+     */
+    public function toggleStatus($id)
+    {
+        try {
+            $agent = $this->agentService->getAgentById($id);
+            if (!$agent || $agent->user_id != Auth::id()) {
+                return response()->json([
+                    'message' => '智能体不存在或无权访问',
+                    'success' => false
+                ], 404);
+            }
+
+            $agent->is_active = !$agent->is_active;
+            $agent->save();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $agent->id,
+                    'is_active' => (bool)$agent->is_active,
+                ],
+            ]);
+        } catch (Exception $e) {
+            \Log::error('LlmAgentController@toggleStatus error: ' . $e->getMessage());
+            return response()->json([
+                'message' => '切换状态失败: ' . $e->getMessage(),
                 'success' => false
             ], 500);
         }
@@ -429,6 +461,44 @@ class LlmAgentController extends Controller
         } catch (\Exception $e) {
             \Log::error('Error publishing draft: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to publish draft'], 500);
+        }
+    }
+
+    /**
+     * 草稿编辑器中的测试对话（轻量实现）
+     */
+    public function testChat(Request $request, $agentId)
+    {
+        try {
+            $agent = \App\Models\LlmAgent::findOrFail($agentId);
+            if ($agent->user_id != Auth::id()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => '无权访问该智能体'
+                ], 403);
+            }
+
+            $message = trim((string)$request->input('message', ''));
+            if ($message === '') {
+                return response()->json([
+                    'success' => false,
+                    'error' => '消息不能为空'
+                ], 422);
+            }
+
+            // 当前项目中编辑器测试对话仅用于验证链路与配置可用性
+            $responseText = '测试模式已收到消息：' . $message;
+
+            return response()->json([
+                'success' => true,
+                'response' => $responseText
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error testing agent chat: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => '测试失败: ' . $e->getMessage()
+            ], 500);
         }
     }
 

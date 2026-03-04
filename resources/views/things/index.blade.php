@@ -514,6 +514,10 @@
 
     <script src="{{ '/js/My97DatePicker/WdatePicker.js' }}"></script>
     <script type="text/javascript">
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+
         $(document).ready(function () {
             // 删除功能
             $(".delete_thing").click(function (e) {
@@ -521,18 +525,18 @@
                 e.stopPropagation();
 
                 var thing_value = $(this).attr("thing_value");
-                var thing_token = $(this).attr("thing_token");
                 var thing_type = $(this).attr("thing_type");
 
                 if (thing_type == 'delete' && !confirm("确认要删除此事情吗？")) {
                     return false;
                 }
 
-                $.ajax({
-                    url: "{{ url('thing') }}" + "/" + thing_value,
-                    type: 'DELETE',
-                    data: {type: thing_type, _token: thing_token},
-                    success: function (result_arr) {
+                if (!apiRequest) {
+                    alert('API客户端未初始化');
+                    return false;
+                }
+
+                apiRequest('DELETE', '/things/' + thing_value, {}).then(function(result_arr) {
                         if (result_arr.code != 9999) {
                             alert(result_arr.msg);
                         } else {
@@ -552,10 +556,8 @@
                                 }, 500);
                             }
                         }
-                    },
-                    error: function(xhr, status, error) {
+                    }).catch(function() {
                         alert('删除失败，请重试');
-                    }
                 });
             });
 

@@ -97,103 +97,90 @@
 </div>
 
 <script>
+var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+    ? window.TaskApiBridge.requestWithFallback
+    : null;
+
 // 提交课程章节表单
 function submitCourseItemForm() {
+    if (!apiRequest) {
+        alert('API客户端未初始化');
+        return;
+    }
+
     var form = document.getElementById('courseItemFormModal');
-    var formData = new FormData(form);
     var itemId = $('#item_id_modal').val();
     var courseId = $('#course_id_modal').val();
-    
-    var url = itemId ? '/course-items/' + itemId : '/course-items';
-    var method = itemId ? 'POST' : 'POST'; // 使用POST方法，通过_method参数指定PUT或保持POST
-    
-    // 如果是更新操作，添加_method参数
-    if (itemId) {
-        formData.append('_method', 'PUT');
-    }
-    
-    $.ajax({
-        url: url,
-        type: method,
-        data: formData,
-        processData: false,
-        contentType: false,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        success: function(response) {
-            if(response.code == 9999) {
-                $('#courseItemModal').modal('hide');
-                // 显示成功消息
-                alert(response.msg || '操作成功');
-                // 刷新页面或重新加载课程结构
-                location.reload();
-            } else {
-                // 显示错误信息
-                $('#courseItemErrorList').empty();
-                if(response.msg) {
-                    $('#courseItemErrorList').append('<li>' + response.msg + '</li>');
-                } else {
-                    $('#courseItemErrorList').append('<li>操作失败</li>');
-                }
-                $('#courseItemErrors').show();
-            }
-        },
-        error: function(xhr) {
-            // 显示验证错误
+
+    var payload = {
+        course_id: courseId,
+        title: $('#title_modal').val(),
+        parent_id: $('#parent_id_modal').val() || null,
+        item_type: $('#item_type_modal').val(),
+        duration: $('#duration_modal').val(),
+        external_url: $('#external_url_modal').val(),
+        description: $('#description_modal').val(),
+        order_index: $('#order_index_modal').val()
+    };
+
+    var apiPath = itemId ? ('/course-items/' + itemId) : '/course-items';
+
+    apiRequest(itemId ? 'PUT' : 'POST', apiPath, payload).then(function(response) {
+        if(response.code == 9999) {
+            $('#courseItemModal').modal('hide');
+            alert(response.msg || '操作成功');
+            location.reload();
+        } else {
             $('#courseItemErrorList').empty();
-            if(xhr.responseJSON && xhr.responseJSON.errors) {
-                $.each(xhr.responseJSON.errors, function(key, value) {
-                    $('#courseItemErrorList').append('<li>' + value[0] + '</li>');
-                });
+            if(response.msg) {
+                $('#courseItemErrorList').append('<li>' + response.msg + '</li>');
             } else {
-                $('#courseItemErrorList').append('<li>操作失败，请稍后重试</li>');
+                $('#courseItemErrorList').append('<li>操作失败</li>');
             }
             $('#courseItemErrors').show();
         }
+    }).catch(function() {
+        $('#courseItemErrorList').empty();
+        $('#courseItemErrorList').append('<li>操作失败，请稍后重试</li>');
+        $('#courseItemErrors').show();
     });
 }
 
 // 加载章节结构到下拉框
 function loadCourseStructure(courseId, excludeItemId = null, currentParentId = null) {
-    $.ajax({
-        url: '/course-items/structure/' + courseId,
-        type: 'GET',
-        success: function(response) {
-            if(response.code == 9999) {
-                var selectElement = $('#parent_id_modal');
-                selectElement.empty();
-                selectElement.append('<option value="">无父级（顶级章节）</option>');
-                
-                // 递归构建选项
-                function buildOptions(items, level = 0) {
-                    var prefix = level > 0 ? '--'.repeat(level) + ' ' : '';
-                    $.each(items, function(index, item) {
-                        // 如果当前项是要排除的项，则跳过
-                        if(excludeItemId && item.id == excludeItemId) {
-                            return true; // continue
-                        }
-                        
-                        selectElement.append('<option value="' + item.id + '">' + prefix + item.title + '</option>');
-                        
-                        if(item.children && item.children.length > 0) {
-                            buildOptions(item.children, level + 1);
-                        }
-                    });
-                }
-                
-                buildOptions(response.result);
-                
-                // 如果提供了当前父级ID，则选中该项
-                if(currentParentId) {
-                    selectElement.val(currentParentId);
-                }
+    if (!apiRequest) {
+        console.log('API客户端未初始化');
+        return;
+    }
+    apiRequest('GET', '/course-items/structure/' + courseId, {}).then(function(response) {
+        if(response.code == 9999) {
+            var selectElement = $('#parent_id_modal');
+            selectElement.empty();
+            selectElement.append('<option value="">无父级（顶级章节）</option>');
+
+            function buildOptions(items, level = 0) {
+                var prefix = level > 0 ? '--'.repeat(level) + ' ' : '';
+                $.each(items, function(index, item) {
+                    if(excludeItemId && item.id == excludeItemId) {
+                        return true;
+                    }
+
+                    selectElement.append('<option value="' + item.id + '">' + prefix + item.title + '</option>');
+
+                    if(item.children && item.children.length > 0) {
+                        buildOptions(item.children, level + 1);
+                    }
+                });
             }
-        },
-        error: function(xhr) {
-            console.log('加载章节结构失败');
-            console.log(xhr.responseText);
+
+            buildOptions(response.result);
+            if(currentParentId) {
+                selectElement.val(currentParentId);
+            }
         }
+    }).catch(function(err) {
+        console.log('加载章节结构失败');
+        console.log(err);
     });
 }
 
@@ -247,31 +234,31 @@ function cancelEdit() {
 
 // 删除项目
 function deleteItem(id) {
+    if (!apiRequest) {
+        alert('API客户端未初始化');
+        return;
+    }
     if (confirm('确定要删除这个章节吗？')) {
-        $.ajax({
-            url: `/course-items/${id}`,
-            type: 'DELETE',
-            data: {
-                _token: $('input[name="_token"]').val()
-            },
-            success: function(response) {
-                if(response.code == 9999) {
-                    alert(response.msg || '删除成功');
-                    location.reload();
-                } else {
-                    alert('删除失败: ' + (response.msg || '未知错误'));
-                }
-            },
-            error: function(xhr) {
-                alert('删除失败: ' + (xhr.responseJSON && xhr.responseJSON.msg ? xhr.responseJSON.msg : '未知错误'));
+        apiRequest('DELETE', '/course-items/' + id, {}).then(function(response) {
+            if(response.code == 9999) {
+                alert(response.msg || '删除成功');
+                location.reload();
+            } else {
+                alert('删除失败: ' + (response.msg || '未知错误'));
             }
+        }).catch(function() {
+            alert('删除失败: 未知错误');
         });
     }
 }
 
 // 编辑项目 - 现在使用模态框
 function editItem(id) {
-    $.get(`/course-items/${id}`, function(response) {
+    if (!apiRequest) {
+        alert('API客户端未初始化');
+        return;
+    }
+    apiRequest('GET', '/course-items/' + id, {}).then(function(response) {
         if(response.code == 9999) {
             const item = response.result.course_item;
             // 调用模态框组件的函数来打开编辑窗口
@@ -279,8 +266,8 @@ function editItem(id) {
         } else {
             alert('获取章节信息失败: ' + (response.msg || '未知错误'));
         }
-    }).fail(function(xhr) {
-        alert('获取章节信息失败: ' + (xhr.responseJSON && xhr.responseJSON.msg ? xhr.responseJSON.msg : '未知错误'));
+    }).catch(function() {
+        alert('获取章节信息失败: 未知错误');
     });
 }
 </script>

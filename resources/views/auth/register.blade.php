@@ -9,7 +9,7 @@
                 <div class="card">
                     <div class="card-header">注册</div>
                     <div class="card-body">
-                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/register') }}">
+                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/register') }}" id="registerStandaloneForm">
                             {!! csrf_field() !!}
 
                             <div class="form-group row {{ $errors->has('name') ? ' has-error' : '' }}">
@@ -81,4 +81,84 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        (function() {
+            var form = document.getElementById('registerStandaloneForm');
+            if (!form) return;
+
+            function establishWebSessionFromToken() {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.getAccessToken !== 'function') {
+                    return Promise.resolve();
+                }
+
+                var accessToken = window.TaskApiClient.getAccessToken();
+                if (!accessToken) {
+                    return Promise.reject(new Error('登录令牌缺失，无法建立会话'));
+                }
+
+                return fetch('{{ url('/api/v2/auth/session-from-token') }}', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Authorization': 'Bearer ' + accessToken
+                    }
+                }).then(function(resp) {
+                    if (!resp.ok) {
+                        throw new Error('建立会话失败');
+                    }
+                    return resp.json();
+                });
+            }
+
+            form.addEventListener('submit', function(e) {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.request !== 'function') {
+                    return;
+                }
+
+                e.preventDefault();
+                var submitBtn = form.querySelector('button[type="submit"]');
+                var originalText = submitBtn ? submitBtn.innerHTML : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa fa-btn fa-spinner fa-spin"></i>处理中...';
+                }
+
+                var payload = {
+                    name: form.querySelector('input[name="name"]').value,
+                    email: form.querySelector('input[name="email"]').value,
+                    password: form.querySelector('input[name="password"]').value,
+                    password_confirmation: form.querySelector('input[name="password_confirmation"]').value,
+                    client_type: 'web',
+                    device_id: navigator.userAgent || 'web'
+                };
+
+                window.TaskApiClient.request({
+                    method: 'POST',
+                    url: '/auth/register',
+                    body: payload,
+                    skipAuth: true
+                }).then(function(resp) {
+                    if (resp && resp.data && resp.data.result && typeof window.TaskApiClient.setTokenPair === 'function') {
+                        window.TaskApiClient.setTokenPair(resp.data.result);
+                    }
+                    return establishWebSessionFromToken();
+                }).then(function() {
+                    window.location.href = '{{ url('/index') }}';
+                }).catch(function() {
+                    form.submit();
+                }).finally(function() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                });
+            });
+        })();
+    </script>
 @endsection
