@@ -70,13 +70,19 @@ class TaskService {
 	 * @param int $pageSize
 	 * @return unknown
 	 */
-	public function getTaskListWithPagination($status, $pageSize = 10) {
-        $filters = array(
-            "status" => $status,
-            "user_id" => Auth::id ()
-        );
+	public function getTaskListWithPagination($filters, $pageSize = 10) {
 		$tasks = $this->taskRepository->getTaskListWithPagination ( $filters, $pageSize );
 		return $tasks;
+	}
+
+	/**
+	 * 获取用户任务tab计数
+	 *
+	 * @param int $userId
+	 * @return array
+	 */
+	public function getStatusCounts($userId) {
+		return $this->taskRepository->getUserStatusCounts($userId);
 	}
 	
 	/**
@@ -201,10 +207,12 @@ class TaskService {
 		
 		if ($type == 'finish') {
 			$params ['status'] = 2;
+			$params ['is_doing'] = 0;
 			
 			$this->thingService->storeThing ( 2, $task->name, $task->created_at, date ( 'Y-m-d H:i:s' ) );
 		} else {
 			$params ['status'] = 3;
+			$params ['is_doing'] = 0;
 		}
 		$flag = $task->update ( $params );
 	}

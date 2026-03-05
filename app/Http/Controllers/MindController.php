@@ -47,13 +47,7 @@ class MindController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request, $add_content = '') {
-		$tagId = $request->input('tag_id', '');
-		$name = $request->input('name', '');
-		$minds = $this->mindService->getIndexList ($tagId, $name);
-		
-		return view ( 'minds.index', [ 
-				'minds' => $minds 
-		] );
+		return view ( 'minds.index', [ ] );
 	}
 	
 	/**
@@ -129,10 +123,8 @@ class MindController extends Controller {
 	 */
 	public function view(Request $request, Mind $mind) {
 		$this->authorize ( 'destroy', $mind );
-		
-		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
-				'mind' => $mind 
-		] ), 'minds.view' );
+
+		return view('minds.view', []);
 	}
 	
 	/**
@@ -145,18 +137,14 @@ class MindController extends Controller {
 	 */
 	public function outlineView(Request $request, Mind $mind) {
 		$this->authorize ( 'destroy', $mind );
-		
-		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
-				'mind' => $mind 
-		] ), 'minds.outlineview' );
+
+		return view('minds.outlineview', []);
 	}
 	
 	public function outlineViewv2(Request $request, Mind $mind) {
 		$this->authorize ( 'destroy', $mind );
-		
-		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
-				'mind' => $mind 
-		] ), 'minds.outlineviewv2' );
+
+		return view('minds.outlineviewv2', []);
 	}
 	
 	/**

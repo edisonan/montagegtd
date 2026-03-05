@@ -35,12 +35,7 @@ class CourseItemController extends Controller
             }
         }
 
-        $courseStructure = $this->courseService->getCourseStructure($courseId);
-
-        return view('course-items.index', [
-            'course' => $course,
-            'structure' => $courseStructure
-        ]);
+        return view('course-items.index');
     }
 
     /**

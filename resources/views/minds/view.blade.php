@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $mind->name . ' - 编辑思维导图 - 蒙太奇')
-@section('description', '编辑思维导图：' . $mind->name)
+@section('title', '编辑思维导图 - 蒙太奇')
+@section('description', '编辑思维导图')
 
 
 @section('content')
@@ -145,27 +145,6 @@
             }
         }
 
-        /* 全屏模式 */
-        .fullscreen-mode {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 9999 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
-            border: none !important;
-        }
-
-        .fullscreen-mode #jsmind_container {
-            height: calc(100vh - 60px) !important;
-            border-radius: 0 !important;
-            border: none !important;
-        }
 
         /* 工具栏样式 */
         .mind-toolbar {
@@ -286,7 +265,7 @@
                         <i class="fas fa-project-diagram text-white text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">{{ $mind->name }}</h1>
+                        <h1 class="text-2xl font-bold text-gray-900" id="mind_name_text">思维导图</h1>
                         <p class="text-gray-600 mt-1">编辑思维导图</p>
                     </div>
                 </div>
@@ -316,15 +295,11 @@
 
                     <!-- 视图切换 -->
                     <div class="flex items-center gap-2">
-                        <a href="{{ '/mindoutlineviewv2/' . $mind->id }}"
+                        <a href="#" id="mind_outline_link"
                            class="btn btn-secondary btn-sm">
                             <i class="fas fa-list-alt mr-2"></i>
                             大纲视图
                         </a>
-                        <button id="fullscreen_toggle" class="btn btn-outline btn-sm">
-                            <i class="fas fa-expand mr-2"></i>
-                            全屏
-                        </button>
                         <a href="{{ '/minds' }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left mr-2"></i>
                             返回列表
@@ -442,7 +417,7 @@
                                         </label>
                                         <textarea id="mind_content"
                                                   class="input w-full h-48 resize-none"
-                                                  placeholder="输入节点备注...">{{ $mind->content }}</textarea>
+                                                  placeholder="输入节点备注..."></textarea>
 
                                         <div class="mt-2 flex items-center gap-2">
                                             <button onclick="showMarkdownHelp()"
@@ -492,7 +467,7 @@
             <!-- 底部信息栏 -->
             <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
                 <div>
-                    <span>最后更新: {{ $mind->updated_at ? $mind->updated_at->format('Y-m-d H:i') : '未知' }}</span>
+                    <span>最后更新: <span id="mind_updated_text">未知</span></span>
                     <span class="mx-2">•</span>
                     <span>创建者: {{ Auth::user()->name }}</span>
                 </div>
@@ -587,22 +562,76 @@
         let mindManager = {
             _jm: null,
             taskToken: "{{ csrf_token() }}",
-            mindId: "{{ $mind->id }}",
-            mindName: "{{ $mind->name }}",
+            mindId: '',
+            mindName: '思维导图',
             isFullscreen: false,
             saveTimeout: null,
             selectedNode: null
         };
 
+        function getResultData(response) {
+            if (!response) return {};
+            return response.result || response.data || {};
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '未知';
+            const d = new Date(String(value).replace(' ', 'T'));
+            if (Number.isNaN(d.getTime())) return value;
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return y + '-' + m + '-' + day + ' ' + hh + ':' + mm;
+        }
+
+        function resolveMindId() {
+            const parts = (window.location.pathname || '').split('/').filter(Boolean);
+            const last = parts.length ? parts[parts.length - 1] : '';
+            const id = parseInt(last, 10);
+            return Number.isFinite(id) ? String(id) : '';
+        }
+
+        function loadMindMeta() {
+            if (!apiRequest) {
+                showError('API客户端未初始化');
+                return Promise.resolve();
+            }
+            if (!mindManager.mindId) {
+                showError('无效的导图ID');
+                return Promise.resolve();
+            }
+            return apiRequest('GET', '/minds/' + mindManager.mindId, {}).then(function(response) {
+                if (!response || response.code != 9999) {
+                    throw new Error((response && response.msg) ? response.msg : '加载失败');
+                }
+                const result = getResultData(response);
+                const mind = result.mind || {};
+                mindManager.mindName = mind.name || mindManager.mindName;
+                $('#mind_name_text').text(mindManager.mindName);
+                $('#mind_outline_link').attr('href', '/mindoutlineviewv2/' + mindManager.mindId);
+                $('#mind_updated_text').text(formatDateTime(mind.updated_at));
+                if (mind.content) {
+                    $('#mind_content').val(String(mind.content).replace(/<br\s*\/?>/ig, '\n'));
+                }
+                document.title = mindManager.mindName + ' - 编辑思维导图 - 蒙太奇';
+            }).catch(function(err) {
+                showError('加载导图信息失败: ' + (err && err.message ? err.message : '网络错误'));
+            });
+        }
+
         // 初始化
         $(document).ready(function() {
+            mindManager.mindId = resolveMindId();
+            if (!mindManager.mindId) {
+                showError('无效的导图ID');
+                return;
+            }
             // 初始化Markdown编辑器
             if (typeof markdownEditor !== 'undefined') {
                 markdownEditor.init('mind_content', 'markdown_preview');
             }
-
-            // 加载思维导图
-            loadMindData();
 
             // 绑定按钮事件
             bindButtonEvents();
@@ -612,6 +641,10 @@
 
             // 监听窗口大小变化
             window.addEventListener('resize', handleResize);
+
+            loadMindMeta().then(function() {
+                loadMindData();
+            });
         });
 
         // 绑定按钮事件
@@ -625,8 +658,6 @@
             $('#reset_view_btn').click(resetView);
             $('#center_view_btn').click(centerView);
 
-            // 全屏切换
-            $('#fullscreen_toggle').click(toggleFullscreen);
 
             // 保存按钮
             $('#save_node_btn').click(saveNodeChanges);
@@ -702,10 +733,11 @@
                 return;
             }
 
-            apiRequest('GET', '/minds/{{ $mind->id }}/jsmind', {}).then(function(response) {
-                if (response.code == 9999 && response.result && response.result.jsmind_datas) {
+            apiRequest('GET', '/minds/' + mindManager.mindId + '/jsmind', {}).then(function(response) {
+                const result = getResultData(response);
+                if (response.code == 9999 && result && result.jsmind_datas) {
                     try {
-                        const mindData = JSON.parse(response.result.jsmind_datas);
+                        const mindData = JSON.parse(result.jsmind_datas);
                         initializeJsMind(mindData);
                     } catch (error) {
                         console.error('解析数据失败:', error);
@@ -775,12 +807,22 @@
             // 绑定事件
             mindManager._jm.add_event_listener(function(type, data) {
                 if (type === jsMind.event_type.select) {
-                    handleNodeSelect(data.node);
+                    var selectedNode = (data && data.node) ? data.node : mindManager._jm.get_selected_node();
+                    handleNodeSelect(selectedNode);
                 }
             });
 
+            // 兼容部分环境中 select 事件参数不稳定：点击节点后强制同步当前选中节点
+            $('#jsmind_container').off('click.syncNodeTitle').on('click.syncNodeTitle', 'jmnode', function() {
+                setTimeout(function() {
+                    if (!mindManager._jm) return;
+                    var selectedNode = mindManager._jm.get_selected_node();
+                    handleNodeSelect(selectedNode);
+                }, 0);
+            });
+
             // 初始选中根节点
-            const rootId = "{{ $mind->id }}";
+            const rootId = String(mindManager.mindId);
             if (mindManager._jm.get_node(rootId)) {
                 mindManager._jm.select_node(rootId);
             }
@@ -794,7 +836,7 @@
             const defaultData = {
                 meta: {
                     name: mindManager.mindName,
-                    author: "{{ Auth::user()->name }}",
+                    author: "user",
                     version: "1.0"
                 },
                 format: "node_tree",
@@ -821,15 +863,18 @@
 
         // 处理节点选择
         function handleNodeSelect(node) {
+            if (!node) {
+                return;
+            }
             mindManager.selectedNode = node;
 
             // 更新编辑面板
-            $('#current_node_name').text(node.topic);
-            $('#current_node_id').text(node.id);
-            $('#node_title_input').val(node.topic);
+            $('#current_node_name').text(node.topic || '');
+            $('#current_node_id').text(node.id || '');
+            $('#node_title_input').val(node.topic || '');
 
             // 更新内容编辑器
-            const content = node.data?.content || '';
+            const content = (node.data && node.data.content) ? node.data.content : '';
             $('#mind_content').val(content);
 
             // 更新Markdown预览
@@ -1086,31 +1131,6 @@
             }
         }
 
-        // 全屏切换
-        function toggleFullscreen() {
-            const container = $('.container');
-            const card = $('.card');
-
-            if (!mindManager.isFullscreen) {
-                container.addClass('fullscreen-mode');
-                $('#jsmind_container').css('height', 'calc(100vh - 60px)');
-                $('#fullscreen_toggle').html('<i class="fas fa-compress mr-2"></i>退出全屏');
-                mindManager.isFullscreen = true;
-            } else {
-                container.removeClass('fullscreen-mode');
-                $('#jsmind_container').css('height', '600px');
-                $('#fullscreen_toggle').html('<i class="fas fa-expand mr-2"></i>全屏');
-                mindManager.isFullscreen = false;
-            }
-
-            // 重新布局
-            if (mindManager._jm) {
-                setTimeout(() => {
-                    mindManager._jm.resize();
-                    mindManager._jm.center();
-                }, 100);
-            }
-        }
 
         // 窗口大小变化处理
         function handleResize() {

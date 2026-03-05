@@ -78,7 +78,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ url('/api/v2/personal-access-tokens') }}" method="POST" id="tokenForm" class="space-y-6">
+                    <form action="javascript:void(0)" method="POST" id="tokenForm" class="space-y-6">
                         {!! csrf_field() !!}
 
                         <!-- 令牌名称 -->

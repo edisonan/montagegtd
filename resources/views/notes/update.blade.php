@@ -477,12 +477,99 @@
             return '';
         }
 
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatRelativeTime(value) {
+            if (!value) {
+                return '刚刚';
+            }
+            const date = new Date(value.replace(' ', 'T'));
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+            const diffSec = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+            if (diffSec < 60) return '刚刚';
+            if (diffSec < 3600) return Math.floor(diffSec / 60) + '分钟前';
+            if (diffSec < 86400) return Math.floor(diffSec / 3600) + '小时前';
+            if (diffSec < 86400 * 30) return Math.floor(diffSec / 86400) + '天前';
+            return value;
+        }
+
+        function updateStatusUI(status) {
+            const badge = document.getElementById('note-status-badge');
+            const statusInput = document.getElementById('status_id');
+            const secondaryBtn = document.getElementById('status-secondary-btn');
+            const primaryBtn = document.getElementById('status-primary-btn');
+            const isPublic = parseInt(status, 10) === 2;
+
+            if (statusInput) {
+                statusInput.value = isPublic ? '2' : '1';
+            }
+
+            if (badge) {
+                badge.className = 'status-badge ' + (isPublic ? 'status-public' : 'status-private');
+                badge.innerHTML = '<i class="fas fa-' + (isPublic ? 'globe' : 'lock') + ' mr-2"></i>' + (isPublic ? '公开' : '私密');
+            }
+
+            if (secondaryBtn) {
+                secondaryBtn.innerHTML = '<i class="fas fa-lock"></i>' + (isPublic ? '设为私密' : '保持私密');
+            }
+            if (primaryBtn) {
+                primaryBtn.innerHTML = '<i class="fas fa-globe"></i>' + (isPublic ? '保持公开' : '设为公开');
+            }
+        }
+
+        function loadNote() {
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return Promise.resolve();
+            }
+
+            return apiRequest('GET', '/notes/' + noteIdFromPath, {}).then(function(response) {
+                if (!response || response.code != 9999 || !response.data) {
+                    throw new Error((response && response.msg) ? response.msg : '加载失败');
+                }
+
+                currentNote = response.data;
+                const noteContentInput = document.getElementById('note-content');
+                if (noteContentInput) {
+                    noteContentInput.value = (currentNote.name || '').replace(/<br\s*\/?>/ig, '\n');
+                }
+
+                const timeNode = document.getElementById('note-updated-time');
+                if (timeNode) {
+                    timeNode.textContent = formatRelativeTime(currentNote.updated_at);
+                }
+
+                updateStatusUI(currentNote.status);
+                if (currentNote.record_path) {
+                    initExistingAudioPlayer();
+                }
+            }).catch(function(error) {
+                showToast('加载笔记失败: ' + (error && error.message ? error.message : '网络错误'), 'error');
+            });
+        }
+
         // 全局变量
         let recorder = null;
         let easymde = null;
         let isRecording = false;
         let timerInterval = null;
         let startTime = null;
+        let currentNote = null;
+        const noteIdFromPath = (function() {
+            const parts = (window.location.pathname || '').split('/').filter(Boolean);
+            const last = parts.length ? parts[parts.length - 1] : '';
+            const parsed = parseInt(last, 10);
+            return Number.isFinite(parsed) ? parsed : 0;
+        })();
 
         // 初始化Markdown编辑器
         function initMarkdownEditor() {
@@ -557,7 +644,12 @@
                 return;
             }
 
-            apiRequest('PUT', '/notes/{{ $note->id }}', {
+            if (!noteIdFromPath) {
+                showToast('未识别到笔记ID', 'error');
+                return;
+            }
+
+            apiRequest('PUT', '/notes/' + noteIdFromPath, {
                 name: content,
                 status: status
             }).then(function(response) {
@@ -646,12 +738,22 @@
 
         function uploadAudioFile(blob) {
             const formData = new FormData();
-            const filename = '{{ md5(date("YmdHis").rand(0,99)) }}.mp3';
+            const filename = 'rec_' + Date.now() + '_' + Math.floor(Math.random() * 10000) + '.mp3';
 
             formData.append('file', blob, filename);
             formData.append('fname', filename.replace('.mp3', ''));
 
             waitTokenReady().then(function() {
+                if (typeof window.taskApiFetch === 'function') {
+                    return window.taskApiFetch('/api/v2/notes/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+                }
+
                 const headers = {'Accept': 'application/json'};
                 const accessToken = getAccessToken();
                 if (accessToken) {
@@ -710,13 +812,19 @@
             if (updateForm) {
                 updateForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const statusVal = parseInt((document.getElementById('status_id') || {}).value || '{{ $note->status }}', 10);
-                    submitProcess(isNaN(statusVal) ? {{ $note->status }} : statusVal);
+                    const statusVal = parseInt((document.getElementById('status_id') || {}).value || '1', 10);
+                    submitProcess(isNaN(statusVal) ? 1 : statusVal);
                 });
             }
+            if (!noteIdFromPath) {
+                showToast('无效的笔记ID', 'error');
+                return;
+            }
 
-            // 初始化Markdown编辑器
-            initMarkdownEditor();
+            loadNote().then(function() {
+                // 初始化Markdown编辑器
+                initMarkdownEditor();
+            });
 
             // 初始化录音器
             try {
@@ -738,16 +846,16 @@
                 console.error('录音器初始化失败:', error);
             }
 
-            // 如果有现有录音，初始化播放器
-            @if(!empty($note->record_path))
-            initExistingAudioPlayer();
-            @endif
         });
 
         // 初始化现有音频播放器
         function initExistingAudioPlayer() {
-            const audioUrl = '/api/v2/notes/{{ $note->id }}/record';
+            const audioUrl = '/api/v2/notes/' + noteIdFromPath + '/record';
             const container = document.getElementById('existing-audio-container');
+            const section = document.getElementById('existing-audio-section');
+            if (section) {
+                section.style.display = '';
+            }
 
             if (container) {
                 container.innerHTML = `
@@ -790,6 +898,12 @@
 
             if (!audio.dataset.loaded && audio.dataset.apiUrl) {
                 waitTokenReady().then(function() {
+                    if (typeof window.taskApiFetch === 'function') {
+                        return window.taskApiFetch(audio.dataset.apiUrl, {
+                            method: 'GET'
+                        });
+                    }
+
                     const headers = {};
                     const accessToken = getAccessToken();
                     if (accessToken) {
@@ -847,9 +961,9 @@
                         </div>
                     </div>
                     <div class="status-badge-container">
-                    <span class="status-badge {{ $note->status == 2 ? 'status-public' : 'status-private' }}">
-                        <i class="fas fa-{{ $note->status == 2 ? 'globe' : 'lock' }} mr-2"></i>
-                        {{ $note->status == 2 ? '公开' : '私密' }}
+                    <span class="status-badge status-private" id="note-status-badge">
+                        <i class="fas fa-lock mr-2"></i>
+                        私密
                     </span>
                     </div>
                 </div>
@@ -862,7 +976,7 @@
                     </a>
                     <div class="text-sm text-gray-500 ml-4">
                         <i class="fas fa-clock mr-1"></i>
-                        最后更新: {{ $note->updated_at->diffForHumans() }}
+                        最后更新: <span id="note-updated-time">刚刚</span>
                     </div>
                 </div>
             </div>
@@ -871,7 +985,7 @@
             @include('common.errors')
 
             <!-- 编辑表单 -->
-            <form action="{{ url('/api/v2/notes/'.$note->id) }}" method="POST" id="update_note_form">
+            <form action="#" method="POST" id="update_note_form">
                 {!! csrf_field() !!}
                 <input type="hidden" name="_method" value="PUT">
 
@@ -884,7 +998,7 @@
 
                     <!-- Markdown编辑器 -->
                     <textarea id="markdown-editor" name="name" style="display: none;"></textarea>
-                    <input type="hidden" id="note-content" value="{{ $note->name }}">
+                    <input type="hidden" id="note-content" value="">
 
                     <!-- 快捷标签 -->
                     <div class="quick-tags-container">
@@ -919,11 +1033,9 @@
                 </div>
 
                 <!-- 现有录音 -->
-                @if(!empty($note->record_path))
-                    <div class="recording-section">
-                        <div id="existing-audio-container"></div>
-                    </div>
-                @endif
+                <div class="recording-section" id="existing-audio-section" style="display:none;">
+                    <div id="existing-audio-container"></div>
+                </div>
 
                 <!-- 录音功能 -->
                 <div class="recording-section">
@@ -948,7 +1060,7 @@
                 </div>
 
                 <!-- 隐藏字段 -->
-                <input type="hidden" name="status" id="status_id" value="{{ $note->status }}">
+                <input type="hidden" name="status" id="status_id" value="1">
                 <input type="hidden" name="fname" id="fname" value="">
 
                 <!-- 表单操作 -->
@@ -962,25 +1074,14 @@
                         </div>
 
                         <div class="action-right">
-                            @if($note->status == 2)
-                                <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
-                                    <i class="fas fa-lock"></i>
-                                    设为私密
-                                </button>
-                                <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
-                                    <i class="fas fa-globe"></i>
-                                    保持公开
-                                </button>
-                            @else
-                                <button type="button" class="btn btn-secondary" onclick="submitProcess(1)">
-                                    <i class="fas fa-lock"></i>
-                                    保持私密
-                                </button>
-                                <button type="button" class="btn btn-primary" onclick="submitProcess(2)">
-                                    <i class="fas fa-globe"></i>
-                                    设为公开
-                                </button>
-                            @endif
+                            <button type="button" class="btn btn-secondary" onclick="submitProcess(1)" id="status-secondary-btn">
+                                <i class="fas fa-lock"></i>
+                                保持私密
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="submitProcess(2)" id="status-primary-btn">
+                                <i class="fas fa-globe"></i>
+                                设为公开
+                            </button>
                         </div>
                     </div>
                 </div>

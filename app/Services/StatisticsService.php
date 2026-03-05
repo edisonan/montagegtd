@@ -88,7 +88,7 @@ class StatisticsService {
 			$basicDetailInfos [date ( 'Y-m-d', strtotime ( "-$i days" ) )] = 0;
 		}
 		foreach ( $basicInfos as $type => $name ) {
-			$statisticDatas = Statistics::where ( 'user_id', $userId )->where ( 'date_type', 'day' )->where ( 'data_type', $type )->where ( 'statistic_date', '>', $startDate )->where ( 'statistic_date', '<=', $endDate )->orderBy ( 'id', 'desc' )->get ();
+			$statisticDatas = Statistics::where ( 'user_id', $userId )->where ( 'date_type', 'day' )->where ( 'data_type', $type )->where ( 'statistic_date', '>=', $startDate )->where ( 'statistic_date', '<=', $endDate )->orderBy ( 'id', 'desc' )->get ();
 			
 			$sum = 0;
 			$currentDetailInfos = $basicDetailInfos;

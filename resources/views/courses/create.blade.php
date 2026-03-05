@@ -83,8 +83,7 @@
                 @endif
 
                 <!-- 创建课程表单 -->
-                <form action="{{ url('/api/v2/courses') }}" method="POST" id="createCourseForm" class="space-y-8">
-                    {!! csrf_field() !!}
+                <form action="javascript:void(0)" method="POST" id="createCourseForm" class="space-y-8">
 
                     <!-- 第一行：课程标题和讲师 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -567,15 +566,19 @@
                     `;
                     submitBtn.disabled = true;
 
+                    var selectedDifficulty = document.querySelector('input[name="difficulty"]:checked');
+                    var selectedPublicStatus = document.querySelector('input[name="public_status"]:checked');
+
                     apiRequest('POST', '/courses', {
                         title: document.getElementById('title') ? document.getElementById('title').value.trim() : '',
                         instructor: document.getElementById('instructor') ? document.getElementById('instructor').value.trim() : '',
                         platform: document.getElementById('platform') ? document.getElementById('platform').value : '',
-                        difficulty: document.getElementById('difficulty') ? document.getElementById('difficulty').value : '',
+                        difficulty: selectedDifficulty ? selectedDifficulty.value : 'intermediate',
                         estimated_hours: document.getElementById('estimated_hours') ? document.getElementById('estimated_hours').value : '',
                         public_url: document.getElementById('public_url') ? document.getElementById('public_url').value.trim() : '',
                         cover_image_url: document.getElementById('cover_image_url') ? document.getElementById('cover_image_url').value.trim() : '',
                         description: document.getElementById('description') ? document.getElementById('description').value.trim() : '',
+                        public_status: selectedPublicStatus ? Number(selectedPublicStatus.value) : 2,
                         tags: document.getElementById('tags') ? document.getElementById('tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean) : []
                     }).then(function(response) {
                         if (response && response.code === 9999) {

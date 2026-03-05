@@ -28,7 +28,9 @@ class UserTokenService
 
     public function issueTokenPair(User $user, array $capabilities = array('*'), $clientType = 'web', $deviceId = null)
     {
-        return DB::transaction(function () use ($user, $capabilities, $clientType, $deviceId) {
+        $normalizedDeviceId = $this->normalizeDeviceId($deviceId);
+
+        return DB::transaction(function () use ($user, $capabilities, $clientType, $normalizedDeviceId) {
             $accessPlain = self::ACCESS_TOKEN_PREFIX . Str::random(64);
             $refreshPlain = self::REFRESH_TOKEN_PREFIX . Str::random(64);
 
@@ -43,7 +45,7 @@ class UserTokenService
                 'user_id' => $user->id,
                 'access_token_id' => $access->id,
                 'token_hash' => hash('sha256', $refreshPlain),
-                'device_id' => $deviceId,
+                'device_id' => $normalizedDeviceId,
                 'client_type' => $clientType,
                 'expires_at' => Carbon::now()->addDays(14),
             ));
@@ -137,5 +139,24 @@ class UserTokenService
         $token->update(array('last_used_at' => Carbon::now()));
 
         return $token;
+    }
+
+    protected function normalizeDeviceId($deviceId)
+    {
+        if ($deviceId === null) {
+            return null;
+        }
+
+        $value = trim((string)$deviceId);
+        if ($value === '') {
+            return null;
+        }
+
+        if (strlen($value) <= 120) {
+            return $value;
+        }
+
+        // UA 很长时做稳定哈希，避免超过数据库长度限制。
+        return 'ua256:' . hash('sha256', $value);
     }
 }

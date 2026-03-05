@@ -54,6 +54,16 @@ class PomoService {
         );
 		return $this->pomoRepository->getPomoListWithPagination ( $filters , $pageSize);
 	}
+
+	/**
+	 * 获取番茄计数（总完成数 + 今日完成数）
+	 *
+	 * @param int $userId
+	 * @return array
+	 */
+	public function getDoneCounts($userId) {
+		return $this->pomoRepository->getUserDoneCounts($userId);
+	}
 	
 	/**
 	 * 获取当日番茄列表
@@ -287,4 +297,3 @@ class PomoService {
 		}
 	}
 }
-

@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Services\PointGrantService;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
@@ -30,13 +31,20 @@ class TaskController extends Controller
             $pageSize = 20;
         }
 
-        $tasks = $this->taskService->getTaskListWithPagination($status, $pageSize);
+        $filters = array(
+            "status" => $status,
+            "user_id" => Auth::id ()
+        );
+
+        $tasks = $this->taskService->getTaskListWithPagination($filters, $pageSize);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'tasks' => $tasks->items(),
             'pagination' => array(
                 'current_page' => $tasks->currentPage(),
                 'per_page' => $tasks->perPage(),
+                'total' => null,
+                'last_page' => null,
                 'next_page_url' => $tasks->nextPageUrl(),
                 'prev_page_url' => $tasks->previousPageUrl(),
                 'has_more_pages' => $tasks->hasMorePages(),
@@ -51,6 +59,27 @@ class TaskController extends Controller
         $formatTasks = $this->taskService->getAllList($status, $mode);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($formatTasks));
+    }
+
+    public function tabCounts(Request $request)
+    {
+        $userId = $this->getAuthUserId($request);
+        if (!$userId) {
+            return response()->json(array(
+                'code' => 9998,
+                'msg' => '用户未认证',
+                'result' => array(),
+            ));
+        }
+
+        $counts = $this->taskService->getStatusCounts($userId);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'active' => (int)$counts['1'],
+            'completed' => (int)$counts['2'],
+            'folded' => (int)$counts['3'],
+            'total' => (int)$counts['all'],
+        )));
     }
 
     public function priority(Request $request)
@@ -123,8 +152,22 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         $this->authorize('destroy', $task);
+        $this->validate($request, array(
+            'is_doing' => 'nullable|in:0,1',
+            'status' => 'nullable|in:1,2,3',
+        ));
+
+        if ($request->has('is_doing') && (int)$request->input('is_doing') === 1 && (int)$task->status !== 1) {
+            throw new CustomException('仅进行中的任务可设置为正在做');
+        }
+
+        $payload = $request->all();
+        if (isset($payload['status']) && (int)$payload['status'] !== 1) {
+            $payload['is_doing'] = 0;
+        }
+
         $oldStatus = (int)$task->status;
-        $task->update($request->all());
+        $task->update($payload);
         $freshTask = $task->fresh();
 
         if ($oldStatus !== 2 && (int)$freshTask->status === 2) {

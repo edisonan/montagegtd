@@ -52,13 +52,7 @@ class KindleController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$page_params = array ();
-		
-		$setting = $this->settingService->getSettingInfo ( true );
-		
-		return view ( 'kindles.index', [ 
-				'setting' => $setting 
-		] );
+		return view ( 'kindles.index', [ ] );
 	}
 	
 	/**

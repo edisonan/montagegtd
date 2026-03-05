@@ -43,9 +43,6 @@ class AccountController extends Controller
      */
     public function index(Request $request)
     {
-        $oauthInfos = $this->accountService->getOauthInfos();
-        return view('accounts.index', [
-            'oauths' => $oauthInfos
-        ]);
+        return view('accounts.index');
     }
 }

@@ -53,7 +53,7 @@ class ArticleController extends Controller
      */
     public function welcome(Request $request)
     {
-        return view('articles.welcome', []);
+        return view('articles.welcome');
     }
 
     /**
@@ -65,28 +65,7 @@ class ArticleController extends Controller
      */
     public function index(Request $request)
     {
-        // 页面参数
-        $pageCount = $request->input('page_count', 20);
-        $status = $request->input('status', 'unread');
-        $categoryId = $request->input('category_id', '');
-        $feedId = $request->input('feed_id', '');
-
-        // 获取订阅文章
-        $articleSubs = $this->articleService->getArticleSubList($status, $pageCount, $feedId, $categoryId);
-
-        return view('articles.index', [
-            'article_subs' => $articleSubs,
-            'page_params' => [
-		'page_count'=>$pageCount,
-				    'status'=>$status,
-				    'category_id'=>$categoryId,
-				    'feed_id'=>$feedId,
-            ],
-            'status' => $status,
-            'feed_id' => $feedId,
-            'unable_img' => isset ($_COOKIE ['unable_img']) ? $_COOKIE ['unable_img'] : "false",
-            'unable_desc' => isset ($_COOKIE ['unable_desc']) ? $_COOKIE ['unable_desc'] : "false"
-        ]);
+        return view('articles.index');
     }
 
     /**
@@ -142,18 +121,7 @@ class ArticleController extends Controller
      */
     public function list(Request $request)
     {
-        $feedId = $request->get('feed_id'); // 获取订阅id
-        $pageCount = $request->input('page_count', 20); // 获取每页数量，默认参数值为 20
-
-        // 查询文章集合
-        $articleInfos = $this->articleService->getArticleListByFeedId($feedId, $pageCount);
-
-        return view('articles.list', array_merge($articleInfos, [
-            'page_params' => [
-                'page_count' => $pageCount,
-                'feed_id' => $feedId
-            ]
-        ]));
+        return view('articles.list');
     }
 
     /**
@@ -165,22 +133,7 @@ class ArticleController extends Controller
      */
     public function view(Request $request, Article $article)
     {
-        // 是否已订阅此源
-        $isFeed = false;
-
-        // 查看是否登录, 如果登录, 查看是否已经订阅
-        if (Auth::check()) {
-            $isFeed = $this->articleService->isFeed($article->feed->id);
-        }
-
-        if ($isFeed == false && $article->feed->audit_status == 0) {
-            throw new CustomException("订阅源审核中,审核通过后可正常分享");
-        }
-
-        return $this->jsonAndViewAutoResponse($request, ResponseDataUtil::genSimpleSucc([
-            'article' => $article,
-            'is_feed' => $isFeed
-        ]), 'articles.view');
+        return view('articles.view');
     }
 
     /**
@@ -211,10 +164,10 @@ class ArticleController extends Controller
             $processCount = $this->articleService->setArticleSubStatus($articleSub, $request->status);
         }
 
-        return $this->jsonAndViewAutoResponse($request, ResponseDataUtil::genSimpleSucc([
+        return $this->jsonAndRedirectAutoResponse($request, ResponseDataUtil::genSimpleSucc([
             'article' => $articleSub->article,
             'count' => $processCount
-        ]), 'articles.view');
+        ]), '/articles');
     }
 
     /**

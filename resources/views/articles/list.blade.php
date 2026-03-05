@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $feed->feed_name . ' - 蒙太奇阅读')
-@section('description', '查看来自 ' . $feed->feed_name . ' 的最新文章')
+@section('title', '订阅文章 - 蒙太奇阅读')
+@section('description', '查看订阅源的最新文章')
 
 <style>
     /* 订阅源页面专用样式 */
@@ -471,134 +471,70 @@
             <!-- 订阅源头部 -->
             <div class="feed-header animate-fadeIn">
                 <div class="feed-title-section">
-                    <h1 class="feed-title">
+                    <h1 class="feed-title" id="feedTitle">
                         <i class="fas fa-rss"></i>
-                        {{ $feed->feed_name }}
+                        订阅文章
                     </h1>
 
                     <button type="button"
                             class="subscribe-btn feed_quick_sub"
-                            data-feed-id="{{ $feed->id }}">
+                            id="feedQuickSubBtn"
+                            data-feed-id="">
                         <i class="fas fa-plus"></i>
                         订阅此源
                     </button>
                 </div>
 
-                <div class="feed-meta">
+                <div class="feed-meta" id="feedMeta">
                     <div class="meta-item">
                         <i class="fas fa-link"></i>
                         来源：
-                        <a href="{{ App\Http\Utils\CommonUtil::hostUrl($feed->url) }}"
+                        <a href="#"
+                           id="feedSourceLink"
                            class="feed-source-link"
                            target="_blank"
                            rel="noopener noreferrer">
-                            {{ parse_url($feed->url, PHP_URL_HOST) }}
+                            -
                         </a>
                     </div>
 
                     <div class="meta-item">
                         <i class="fas fa-newspaper"></i>
-                        文章数量：{{ count($articles) }}
+                        <span id="feedArticleCount">文章数量：0</span>
                     </div>
 
-                    @if($feed->updated_at)
-                        <div class="meta-item">
-                            <i class="fas fa-clock"></i>
-                            最近更新：{{ $feed->updated_at->diffForHumans() }}
-                        </div>
-                    @endif
+                    <div class="meta-item" id="feedUpdatedAtWrap" style="display: none;">
+                        <i class="fas fa-clock"></i>
+                        <span id="feedUpdatedAtText"></span>
+                    </div>
                 </div>
             </div>
 
-            <!-- 成功消息 -->
-            @include('common.success')
+            <div id="articleLoading" class="text-center py-12 text-gray-500">
+                <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+            </div>
 
-            <!-- 错误消息 -->
-            @include('common.errors')
+            <div id="articleList"></div>
 
-            @if (count($articles) > 0)
-                <!-- 文章列表 -->
-                <div id="articleList">
-                    @foreach ($articles as $article)
-                        <div class="article-card animate-fadeIn">
-                            <!-- 文章头部 -->
-                            <div class="article-header">
-                                <h2 class="article-title">
-                                    <a href="{{ url('article/view/'.$article->id) }}" title="{{ $article->subject }}">
-                                        {{ $article->subject }}
-                                    </a>
-                                </h2>
+            <div class="pagination-wrapper" id="articlePagination" style="display: none;"></div>
 
-                                <div class="article-meta">
-                                <span>
-                                    <i class="far fa-clock"></i>
-                                    {{ $article->published }}
-                                </span>
-                                    <span>•</span>
-                                    <a href="{{ $article->url }}" target="_blank" rel="noopener noreferrer">
-                                        <i class="fas fa-external-link-alt"></i>
-                                        阅读原文
-                                    </a>
-                                    <span>•</span>
-                                    <span>
-                                    来源：
-                                    <a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}"
-                                       target="_blank"
-                                       rel="noopener noreferrer">
-                                        {{ $article->feed->feed_name }}
-                                    </a>
-                                </span>
-                                </div>
-                            </div>
-
-                            <!-- 文章内容 -->
-                            <div class="article-content">
-                                <div class="content-preview" id="content-{{ $article->id }}">
-                                        <?php
-                                        echo App\Http\Utils\CommonUtil::formatContentHtml($article->content);
-                                        ?>
-
-                                    <div class="content-fade"></div>
-                                </div>
-
-                                <div class="read-more">
-                                    <button type="button"
-                                            class="read-more-btn"
-                                            data-article-id="{{ $article->id }}">
-                                        <i class="fas fa-chevron-down"></i>
-                                        阅读更多
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
+            <div class="empty-state animate-fadeIn" id="articleEmptyState" style="display: none;">
+                <img src="/img/new/love.png" alt="暂无文章" class="mx-auto">
+                <h3 class="empty-state-title">暂时没有文章</h3>
+                <p class="empty-state-text">
+                    当前订阅源暂无文章，或者文章正在同步中。您可以稍后再来查看，或者浏览其他订阅源。
+                </p>
+                <div class="empty-state-actions">
+                    <a href="/articles" class="empty-state-btn">
+                        <i class="fas fa-newspaper mr-2"></i>
+                        浏览其他文章
+                    </a>
+                    <a href="/feeds/explorer" class="empty-state-btn">
+                        <i class="fas fa-compass mr-2"></i>
+                        发现新订阅
+                    </a>
                 </div>
-
-                <!-- 分页 -->
-                <div class="pagination-wrapper">
-                    {!! $articles->appends($page_params)->onEachSide(1)->links('vendor.pagination.custom') !!}
-                </div>
-
-            @else
-                <!-- 空状态 -->
-                <div class="empty-state animate-fadeIn">
-                    <img src="/img/new/love.png" alt="暂无文章" class="mx-auto">
-                    <h3 class="empty-state-title">暂时没有文章</h3>
-                    <p class="empty-state-text">
-                        当前订阅源暂无文章，或者文章正在同步中。您可以稍后再来查看，或者浏览其他订阅源。
-                    </p>
-                    <div class="empty-state-actions">
-                        <a href="/articles" class="empty-state-btn">
-                            <i class="fas fa-newspaper mr-2"></i>
-                            浏览其他文章
-                        </a>
-                        <a href="/feeds/explorer" class="empty-state-btn">
-                            <i class="fas fa-compass mr-2"></i>
-                            发现新订阅
-                        </a>
-                    </div>
-                </div>
-            @endif
+            </div>
         </div>
     </div>
 
@@ -609,37 +545,178 @@
                 ? window.TaskApiBridge.requestWithFallback
                 : function() { return Promise.reject(new Error("API客户端未初始化")); };
 
-            // 初始化图片懒加载
-            if (typeof $.fn.lazyload === 'function') {
-                $("img.lazy").lazyload({
-                    effect: "fadeIn",
-                    threshold: 200
+            function escapeHtml(text) {
+                return String(text || '').replace(/[&<>"']/g, function(c) {
+                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
                 });
             }
 
-            // 快速订阅功能
-            $(".feed_quick_sub").click(function() {
+            function getQueryParam(name) {
+                var params = new URLSearchParams(window.location.search);
+                return params.get(name) || '';
+            }
+
+            function buildPageUrl(page) {
+                var params = new URLSearchParams(window.location.search);
+                params.set('page', String(page));
+                return window.location.pathname + '?' + params.toString();
+            }
+
+            function renderFeedHeader(feed, articleCount) {
+                var title = feed && feed.feed_name ? feed.feed_name : '订阅文章';
+                $('#feedTitle').html('<i class="fas fa-rss"></i>' + escapeHtml(title));
+                document.title = title + ' - 蒙太奇阅读';
+                $('#feedArticleCount').text('文章数量：' + Number(articleCount || 0));
+
+                var feedUrl = feed && feed.url ? feed.url : '';
+                if (feedUrl) {
+                    var host = '';
+                    try {
+                        host = new URL(feedUrl).host;
+                    } catch (e) {
+                        host = feedUrl;
+                    }
+                    $('#feedSourceLink').attr('href', feedUrl).text(host);
+                } else {
+                    $('#feedSourceLink').attr('href', '#').text('-');
+                }
+
+                var feedId = feed && feed.id ? Number(feed.id) : 0;
+                $('#feedQuickSubBtn').attr('data-feed-id', feedId || '');
+                if (feed && feed.updated_at) {
+                    $('#feedUpdatedAtWrap').show();
+                    $('#feedUpdatedAtText').text('最近更新：' + String(feed.updated_at).replace('T', ' ').slice(0, 16));
+                } else {
+                    $('#feedUpdatedAtWrap').hide();
+                }
+            }
+
+            function renderArticleCards(articleSubs) {
+                var html = '';
+                articleSubs.forEach(function(item) {
+                    var article = item && item.article ? item.article : null;
+                    if (!article) return;
+                    var articleId = Number(article.id || 0);
+                    var subject = escapeHtml(article.subject || '无标题');
+                    var published = escapeHtml(article.published || '');
+                    var articleUrl = article.url ? String(article.url) : '#';
+                    var feedName = escapeHtml(article.feed && article.feed.feed_name ? article.feed.feed_name : '未知来源');
+                    var feedUrl = article.feed && article.feed.url ? String(article.feed.url) : '#';
+                    var contentHtml = article.formatted_content ? String(article.formatted_content) : String(article.content || '');
+
+                    html += ''
+                        + '<div class="article-card animate-fadeIn">'
+                        + '<div class="article-header">'
+                        + '<h2 class="article-title"><a href="/article/view/' + articleId + '" title="' + subject + '">' + subject + '</a></h2>'
+                        + '<div class="article-meta">'
+                        + '<span><i class="far fa-clock"></i> ' + published + '</span><span>•</span>'
+                        + '<a href="' + escapeHtml(articleUrl) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> 阅读原文</a><span>•</span>'
+                        + '<span>来源：<a href="' + escapeHtml(feedUrl) + '" target="_blank" rel="noopener noreferrer">' + feedName + '</a></span>'
+                        + '</div></div>'
+                        + '<div class="article-content">'
+                        + '<div class="content-preview" id="content-' + articleId + '">' + contentHtml + '<div class="content-fade"></div></div>'
+                        + '<div class="read-more"><button type="button" class="read-more-btn" data-article-id="' + articleId + '"><i class="fas fa-chevron-down"></i> 阅读更多</button></div>'
+                        + '</div></div>';
+                });
+                $('#articleList').html(html);
+            }
+
+            function renderPagination(pagination) {
+                var $wrap = $('#articlePagination');
+                if (!pagination || (!pagination.next_page_url && !pagination.prev_page_url)) {
+                    $wrap.hide().html('');
+                    return;
+                }
+
+                var currentPage = Number(pagination.current_page || 1);
+                var prevBtn = pagination.prev_page_url
+                    ? '<a href="' + buildPageUrl(Math.max(1, currentPage - 1)) + '" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left mr-1"></i>上一页</a>'
+                    : '<span class="px-3 py-2 text-gray-400 bg-gray-100 rounded-lg"><i class="fas fa-chevron-left mr-1"></i>上一页</span>';
+                var nextBtn = pagination.next_page_url
+                    ? '<a href="' + buildPageUrl(currentPage + 1) + '" class="btn btn-secondary btn-sm">下一页<i class="fas fa-chevron-right ml-1"></i></a>'
+                    : '<span class="px-3 py-2 text-gray-400 bg-gray-100 rounded-lg">下一页<i class="fas fa-chevron-right ml-1"></i></span>';
+
+                $wrap.show().html('<div class="flex items-center justify-between w-full"><div class="text-sm text-gray-500">当前第 ' + currentPage + ' 页</div><div class="flex gap-1">' + prevBtn + nextBtn + '</div></div>');
+            }
+
+            function loadFeedArticlesByApi() {
+                var feedId = getQueryParam('feed_id');
+                if (!feedId) {
+                    $('#articleLoading').hide();
+                    $('#articleEmptyState').show();
+                    return;
+                }
+
+                var page = Number(getQueryParam('page') || 1);
+                var pageCount = Number(getQueryParam('page_count') || 20);
+
+                apiRequest('GET', '/articles/list', {
+                    feed_id: feedId,
+                    page_count: pageCount,
+                    page: page
+                }).then(function(resp) {
+                    if (!resp || resp.code !== 9999 || !resp.result) {
+                        throw new Error((resp && resp.msg) ? resp.msg : '加载失败');
+                    }
+
+                    var result = resp.result || {};
+                    var articleSubs = Array.isArray(result.articles) ? result.articles : [];
+                    renderFeedHeader(result.feed || null, articleSubs.length);
+
+                    if (!articleSubs.length) {
+                        $('#articleList').empty();
+                        $('#articlePagination').hide().empty();
+                        $('#articleEmptyState').show();
+                    } else {
+                        $('#articleEmptyState').hide();
+                        renderArticleCards(articleSubs);
+                        renderPagination(result.pagination || null);
+                    }
+
+                    $('#articleLoading').hide();
+                    initReadMoreButtons();
+
+                    if (typeof $.fn.lazyload === 'function') {
+                        $("img.lazy").lazyload({
+                            effect: "fadeIn",
+                            threshold: 200
+                        });
+                    }
+                }).catch(function(error) {
+                    $('#articleLoading').hide();
+                    $('#articleList').empty();
+                    $('#articlePagination').hide().empty();
+                    $('#articleEmptyState').show();
+                    showNotification(error && error.message ? error.message : '加载失败，请稍后重试', 'error');
+                });
+            }
+
+            // 快速订阅功能（委托绑定，兼容动态渲染）
+            $(document).on('click', '.feed_quick_sub', function() {
                 var feed_id = $(this).data('feed-id');
                 var button = $(this);
                 var originalText = button.html();
+                if (!feed_id) {
+                    showNotification('订阅源信息缺失', 'error');
+                    return;
+                }
 
                 button.prop('disabled', true);
                 button.html('<i class="fas fa-spinner fa-spin mr-2"></i>处理中...');
 
                 apiRequest('POST', '/feeds/quickstore', {"feed_id": feed_id}).then(function(result_arr) {
-                    if (result_arr.code != 9999) {
-                        showNotification(result_arr.msg, 'error');
+                    if (!result_arr || result_arr.code != 9999) {
+                        showNotification(result_arr && result_arr.msg ? result_arr.msg : '订阅失败，请重试', 'error');
                         button.prop('disabled', false);
                         button.html(originalText);
                     } else {
-                        showNotification(result_arr.msg, 'success');
+                        showNotification(result_arr.msg || '订阅成功', 'success');
                         button.html('<i class="fas fa-check mr-2"></i>已订阅');
                         button.css({
                             'background': 'rgba(16, 185, 129, 0.2)',
                             'border-color': 'rgba(16, 185, 129, 0.3)'
                         });
 
-                        // 3秒后恢复原状
                         setTimeout(function() {
                             button.prop('disabled', false);
                             button.html(originalText);
@@ -766,7 +843,7 @@
             }
 
             // 初始化功能
-            initReadMoreButtons();
+            loadFeedArticlesByApi();
         });
     </script>
 @endsection

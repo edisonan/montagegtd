@@ -4,10 +4,9 @@
 @section('description', '编辑您的事情记录信息')
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
-        <!-- 卡片头部 -->
-        <div class="card mb-6">
-            <div class="card-header !border-b-0 !pb-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="card overflow-hidden mb-6">
+            <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -24,18 +23,12 @@
                     </a>
                 </div>
             </div>
-        </div>
-
-        <!-- 表单卡片 -->
-        <div class="card">
             <div class="p-6">
                 <!-- 错误提示 -->
                 @include('common.errors')
 
                 <!-- 编辑表单 -->
-                <form action="{{ url('/api/v2/things/'.$thing->id) }}" method="POST" class="space-y-6" id="thing-update-form">
-                    {!! csrf_field() !!}
-                    <input type="hidden" name="_method" value="PUT">
+                <form action="javascript:void(0);" method="POST" class="space-y-6" id="thing-update-form">
 
                     <!-- 事情内容 -->
                     <div class="space-y-2">
@@ -48,7 +41,7 @@
                                     name="name"
                                     id="name"
                                     class="input w-full pl-10"
-                                    value="{{ old('name', $thing->name) }}"
+                                    value=""
                                     placeholder="请输入事情内容"
                                     required
                             >
@@ -84,7 +77,7 @@
                                         name="start_time"
                                         id="start_time"
                                         class="input w-full pl-10"
-                                        value="{{ old('start_time', $thing->start_time) }}"
+                                        value=""
                                         placeholder="选择开始时间"
                                         onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})"
                                         readonly
@@ -114,7 +107,7 @@
                                         name="end_time"
                                         id="end_time"
                                         class="input w-full pl-10"
-                                        value="{{ old('end_time', $thing->end_time) }}"
+                                        value=""
                                         placeholder="选择结束时间"
                                         onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})"
                                         readonly
@@ -126,40 +119,21 @@
                         </div>
 
                         <!-- 时间长度提示 -->
-                        @php
-                            try {
-                                $start = new DateTime($thing->start_time);
-                                $end = new DateTime($thing->end_time);
-                                $interval = $start->diff($end);
-                                $hours = $interval->h;
-                                $minutes = $interval->i;
-                                $totalMinutes = $hours * 60 + $minutes;
-                            } catch (Exception $e) {
-                                $totalMinutes = 0;
-                            }
-                        @endphp
-
-                        @if($totalMinutes > 0)
-                            <div class="mt-3 p-3 bg-blue-50 rounded-lg">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-hourglass-half text-blue-500"></i>
-                                        <span class="text-sm font-medium text-gray-700">耗时：</span>
-                                    </div>
-                                    <div class="text-lg font-bold text-blue-600">
-                                        {{ floor($totalMinutes / 60) }}小时{{ $totalMinutes % 60 }}分钟
-                                    </div>
+                        <div id="duration_hint" class="mt-3 p-3 bg-blue-50 rounded-lg hidden">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas fa-hourglass-half text-blue-500"></i>
+                                    <span class="text-sm font-medium text-gray-700">耗时：</span>
                                 </div>
-                                @if($totalMinutes <= 25)
-                                    <div class="mt-2">
-                                        <div class="flex items-center text-xs text-green-600">
-                                            <i class="fas fa-check-circle mr-1"></i>
-                                            <span>这是一个完整的番茄钟时间 🍅</span>
-                                        </div>
-                                    </div>
-                                @endif
+                                <div class="text-lg font-bold text-blue-600" id="duration_text">0小时0分钟</div>
                             </div>
-                        @endif
+                            <div class="mt-2 hidden" id="tomato_hint">
+                                <div class="flex items-center text-xs text-green-600">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    <span>这是一个完整的番茄钟时间 🍅</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 表单操作 -->
@@ -226,20 +200,6 @@
     </div>
 
     <style>
-        /* 自定义样式 */
-        .card-header {
-            border-bottom: 1px solid var(--gray-200);
-            padding: 1.5rem 1.5rem 0.75rem;
-        }
-
-        .card-header.border-b-0 {
-            border-bottom: 0 !important;
-        }
-
-        .card-header.pb-0 {
-            padding-bottom: 0 !important;
-        }
-
         /* 表单输入框聚焦效果 */
         .input:focus {
             border-color: var(--primary-color);
@@ -267,6 +227,7 @@
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
             : null;
+        var currentThingId = null;
 
         // 时间调整函数
         function adjustTime(inputId, minutes) {
@@ -294,6 +255,7 @@
                 const mins = String(date.getMinutes()).padStart(2, '0');
 
                 input.value = `${year}-${month}-${day} ${hours}:${mins}:00`;
+                updateDurationHint();
 
                 // 显示成功提示
                 showTimeAdjustmentToast(minutes > 0 ? '增加' : '减少', Math.abs(minutes));
@@ -322,13 +284,68 @@
             }, 2000);
         }
 
+        function getThingIdFromPath() {
+            var parts = window.location.pathname.split('/').filter(Boolean);
+            return parts.length ? parts[parts.length - 1] : '';
+        }
+
+        function updateDurationHint() {
+            var startValue = document.getElementById('start_time').value;
+            var endValue = document.getElementById('end_time').value;
+            if (!startValue || !endValue) {
+                document.getElementById('duration_hint').classList.add('hidden');
+                return;
+            }
+            var start = new Date(startValue.replace(' ', 'T'));
+            var end = new Date(endValue.replace(' ', 'T'));
+            if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+                document.getElementById('duration_hint').classList.add('hidden');
+                return;
+            }
+            var totalMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+            var hours = Math.floor(totalMinutes / 60);
+            var minutes = totalMinutes % 60;
+            document.getElementById('duration_text').textContent = hours + '小时' + minutes + '分钟';
+            document.getElementById('duration_hint').classList.remove('hidden');
+            document.getElementById('tomato_hint').classList.toggle('hidden', totalMinutes > 25);
+        }
+
+        function loadThingDetail() {
+            if (!apiRequest) {
+                showErrorToast('API客户端未初始化');
+                return;
+            }
+            currentThingId = getThingIdFromPath();
+            if (!currentThingId) {
+                showErrorToast('无法识别事情ID');
+                return;
+            }
+            apiRequest('GET', '/things/' + currentThingId, {}).then(function(resp) {
+                if (!(resp && resp.code === 9999 && resp.result)) {
+                    showErrorToast((resp && resp.msg) ? resp.msg : '加载失败');
+                    return;
+                }
+                document.getElementById('name').value = resp.result.name || '';
+                document.getElementById('start_time').value = resp.result.start_time || '';
+                document.getElementById('end_time').value = resp.result.end_time || '';
+                updateDurationHint();
+            }).catch(function() {
+                showErrorToast('加载失败，请稍后重试');
+            });
+        }
+
         // 时间选择器配置
         document.addEventListener('DOMContentLoaded', function() {
+            loadThingDetail();
+
             // 确保WdatePicker可用
             if (typeof WdatePicker !== 'undefined') {
                 // 可以在这里添加全局配置
                 console.log('日期选择器已加载');
             }
+
+            document.getElementById('start_time').addEventListener('change', updateDurationHint);
+            document.getElementById('end_time').addEventListener('change', updateDurationHint);
 
             // 表单验证
             const form = document.getElementById('thing-update-form');
@@ -388,7 +405,7 @@
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
                 }
 
-                apiRequest('PUT', '/things/{{ $thing->id }}', {
+                apiRequest('PUT', '/things/' + currentThingId, {
                     name: nameInput.value.trim(),
                     start_time: startTimeInput.value,
                     end_time: endTimeInput.value

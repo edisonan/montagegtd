@@ -25,15 +25,16 @@
         }
 
         .stat-card {
-            height: 280px;
-            min-height: 280px;
             display: flex;
             flex-direction: column;
+            min-height: 360px;
+            height: auto;
+            overflow: hidden;
         }
 
         .chart-container {
             flex: 1;
-            min-height: 200px;
+            min-height: 180px;
         }
 
         .stat-header {
@@ -65,6 +66,7 @@
             justify-content: space-between;
             padding: 4px 0;
             font-size: 13px;
+            gap: 12px;
         }
 
         .summary-label {
@@ -74,13 +76,18 @@
         .summary-value {
             font-weight: 600;
             color: var(--gray-900);
+            white-space: nowrap;
+            text-align: right;
+            max-width: 60%;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .date-range-selector {
             background: var(--gray-100);
             border-radius: 8px;
             padding: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 0;
         }
 
         .date-btn {
@@ -120,6 +127,11 @@
             margin-bottom: 12px;
             opacity: 0.5;
         }
+
+        .stats-detail-card {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -129,13 +141,13 @@
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">数据统计</h1>
                 <p class="text-gray-600">分析您的工作效率和学习成长</p>
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="flex flex-wrap items-center gap-3 md:justify-end">
                 <div class="date-range-selector">
-                    <button class="date-btn {{ ($selected_range ?? 'month') == 'week' ? 'active' : '' }}" data-range="week">本周</button>
-                    <button class="date-btn {{ ($selected_range ?? 'month') == 'month' ? 'active' : '' }}" data-range="month">本月</button>
-                    <button class="date-btn {{ ($selected_range ?? 'month') == 'quarter' ? 'active' : '' }}" data-range="quarter">本季</button>
-                    <button class="date-btn {{ ($selected_range ?? 'month') == 'year' ? 'active' : '' }}" data-range="year">本年</button>
-                    <button class="date-btn {{ ($selected_range ?? 'month') == 'custom' ? 'active' : '' }}" data-range="custom">自定义</button>
+                    <button class="date-btn active" data-range="week">本周</button>
+                    <button class="date-btn" data-range="month">本月</button>
+                    <button class="date-btn" data-range="quarter">本季</button>
+                    <button class="date-btn" data-range="year">本年</button>
+                    <button class="date-btn" data-range="custom">自定义</button>
                 </div>
                 <a href="{{'/index'}}" class="btn btn-outline">
                     <i class="fas fa-arrow-left mr-2"></i>
@@ -154,12 +166,12 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">番茄总数</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $total_pomos ?? 0 }}</p>
+                            <p id="totalPomosValue" class="text-2xl font-bold text-gray-900">{{ $total_pomos ?? 0 }}</p>
                         </div>
                     </div>
                     <div class="text-sm text-gray-500">
                         <i class="fas fa-calendar-alt mr-1"></i>
-                        统计周期: {{$start_date}} - {{$end_date}}
+                        统计周期: <span id="statRangeText">-</span>
                     </div>
                 </div>
             </div>
@@ -172,7 +184,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">完成任务</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $completed_tasks ?? 0 }}</p>
+                            <p id="totalTasksValue" class="text-2xl font-bold text-gray-900">{{ $completed_tasks ?? 0 }}</p>
                         </div>
                     </div>
                     <div class="text-sm text-gray-500">
@@ -189,7 +201,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">阅读文章</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $total_articles ?? 0 }}</p>
+                            <p id="totalArticlesValue" class="text-2xl font-bold text-gray-900">{{ $total_articles ?? 0 }}</p>
                         </div>
                     </div>
                     <div class="text-sm text-gray-500">
@@ -206,7 +218,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">记录想法</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $total_notes ?? 0 }}</p>
+                            <p id="totalNotesValue" class="text-2xl font-bold text-gray-900">{{ $total_notes ?? 0 }}</p>
                         </div>
                     </div>
                     <div class="text-sm text-gray-500">
@@ -242,11 +254,11 @@
                     <div class="stat-summary">
                         <div class="summary-item">
                             <span class="summary-label">平均每日番茄</span>
-                            <span class="summary-value">{{ $avg_daily_pomos ?? 0 }} 个</span>
+                            <span class="summary-value" id="avgDailyPomosValue">0 个</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">最长专注时间</span>
-                            <span class="summary-value">{{ $max_focus_time ?? '0' }} 分钟</span>
+                            <span class="summary-value" id="maxFocusTimeValue">0 分钟</span>
                         </div>
                     </div>
                 </div>
@@ -276,11 +288,11 @@
                     <div class="stat-summary">
                         <div class="summary-item">
                             <span class="summary-label">平均完成时间</span>
-                            <span class="summary-value">{{ $avg_completion_time ?? '0' }} 小时</span>
+                            <span class="summary-value" id="avgTaskCompletionHoursValue">0 小时</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">四象限分布</span>
-                            <span class="summary-value">{{ $quadrant_distribution ?? '-' }}</span>
+                            <span class="summary-value" id="quadrantDistributionValue">-</span>
                         </div>
                     </div>
                 </div>
@@ -310,11 +322,11 @@
                     <div class="stat-summary">
                         <div class="summary-item">
                             <span class="summary-label">平均长度</span>
-                            <span class="summary-value">{{ $avg_note_length ?? '0' }} 字</span>
+                            <span class="summary-value" id="avgNoteLengthValue">-</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">最高产日期</span>
-                            <span class="summary-value">{{ $most_productive_day ?? '-' }}</span>
+                            <span class="summary-value" id="mostProductiveDayValue">-</span>
                         </div>
                     </div>
                 </div>
@@ -344,11 +356,11 @@
                     <div class="stat-summary">
                         <div class="summary-item">
                             <span class="summary-label">平均阅读时间</span>
-                            <span class="summary-value">{{ $avg_reading_time ?? '0' }} 分钟</span>
+                            <span class="summary-value" id="avgReadingTimeValue">0 分钟</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">收藏率</span>
-                            <span class="summary-value">{{ $star_rate ?? '0' }}%</span>
+                            <span class="summary-value" id="starRateValue">-</span>
                         </div>
                     </div>
                 </div>
@@ -378,11 +390,11 @@
                     <div class="stat-summary">
                         <div class="summary-item">
                             <span class="summary-label">平均节点数</span>
-                            <span class="summary-value">{{ $avg_nodes ?? '0' }} 个</span>
+                            <span class="summary-value" id="avgMindNodesValue">0 个</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">最大层级</span>
-                            <span class="summary-value">{{ $max_depth ?? '0' }} 层</span>
+                            <span class="summary-value" id="maxMindDepthValue">-</span>
                         </div>
                     </div>
                 </div>
@@ -412,11 +424,11 @@
                     <div class="stat-summary">
                         <div class="summary-item">
                             <span class="summary-label">活跃天数</span>
-                            <span class="summary-value">{{ $active_days ?? '0' }} 天</span>
+                            <span class="summary-value" id="activeDaysValue">0 天</span>
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">总投入时间</span>
-                            <span class="summary-value">{{ $total_focus_hours ?? '0' }} 小时</span>
+                            <span class="summary-value" id="totalFocusHoursValue">0 小时</span>
                         </div>
                     </div>
                 </div>
@@ -424,7 +436,7 @@
         </div>
 
         <!-- 详细数据表格 -->
-        <div class="card mb-8">
+        <div class="card mb-8 stats-detail-card">
             <div class="p-6 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900">详细数据</h3>
             </div>
@@ -442,38 +454,7 @@
                             <th>效率评分</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        @if(isset($daily_stats) && count($daily_stats) > 0)
-                            @foreach($daily_stats as $stat)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="font-medium">{{ $stat['date'] ?? '-' }}</td>
-                                    <td>{{ $stat['pomos'] ?? 0 }}</td>
-                                    <td>{{ $stat['completed_tasks'] ?? 0 }}</td>
-                                    <td>{{ $stat['notes'] ?? 0 }}</td>
-                                    <td>{{ $stat['articles'] ?? 0 }}</td>
-                                    <td>{{ $stat['minds'] ?? 0 }}</td>
-                                    <td>
-                                        @php
-                                            $score = $stat['efficiency_score'] ?? 0;
-                                            $color = $score >= 80 ? 'text-green-600 bg-green-100' :
-                                                     ($score >= 60 ? 'text-yellow-600 bg-yellow-100' :
-                                                     'text-red-600 bg-red-100');
-                                        @endphp
-                                        <span class="px-2 py-1 rounded-full text-xs font-medium {{ $color }}">
-                                            {{ $score }}%
-                                        </span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @else
-                            <tr>
-                                <td colspan="7" class="text-center py-8 text-gray-500">
-                                    <i class="fas fa-database text-2xl mb-3 block"></i>
-                                    <p>暂无详细统计数据</p>
-                                </td>
-                            </tr>
-                        @endif
-                        </tbody>
+                        <tbody id="statisticsDetailBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -513,25 +494,32 @@
     </div>
 
     <script type="text/javascript">
-        // 等待 ECharts 加载的辅助函数
-        function waitForECharts(callback, attempts = 30) {
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+        var chartInstances = {};
+        var currentRange = 'week';
+        var currentStartDate = '';
+        var currentEndDate = '';
+        var currentStatsData = null;
+
+        function waitForECharts(callback, attempts) {
+            var remain = typeof attempts === 'number' ? attempts : 30;
             if (typeof echarts !== 'undefined') {
-                console.log('ECharts 已加载，版本:', echarts.version);
                 callback();
-            } else if (attempts > 0) {
-                setTimeout(function() {
-                    waitForECharts(callback, attempts - 1);
-                }, 100);
-            } else {
-                console.error('等待 ECharts 加载超时');
-                // 显示错误信息
-                showAllEmptyStates('图表库加载失败，请刷新页面重试');
+                return;
             }
+            if (remain <= 0) {
+                showAllEmptyStates('图表库加载失败，请刷新页面重试');
+                return;
+            }
+            setTimeout(function() {
+                waitForECharts(callback, remain - 1);
+            }, 100);
         }
 
-        // 显示所有空状态
         function showAllEmptyStates(message) {
-            const charts = [
+            var charts = [
                 { id: 'pomo_main', type: 'pomo' },
                 { id: 'task_main', type: 'task' },
                 { id: 'note_main', type: 'note' },
@@ -540,98 +528,341 @@
                 { id: 'pie_main', type: 'pie' }
             ];
 
-            charts.forEach(chart => {
-                const element = document.getElementById(chart.id);
+            charts.forEach(function(chart) {
+                var element = document.getElementById(chart.id);
                 if (element) {
                     showEmptyState(element, chart.type, message);
                 }
             });
         }
 
-        $(document).ready(function() {
-            console.log('统计页面已加载');
-            console.log('检查 ECharts:', typeof echarts);
-
-            // 使用等待函数确保 ECharts 加载完成
-            waitForECharts(function() {
-                // 初始化图表
-                initCharts();
-
-                // 初始化日期范围选择器
-                initDateRangeSelector();
-
-                // 窗口大小变化时重绘图表
-                $(window).on('resize', function() {
-                    setTimeout(initCharts, 300);
-                });
-            });
-        });
-
-        // 初始化图表
-        function initCharts() {
-            try {
-                if (typeof echarts === 'undefined') {
-                    console.error('ECharts 未定义，无法初始化图表');
-                    return;
+        function parseChartData(raw) {
+            if (!raw) return null;
+            if (typeof raw === 'string') {
+                try {
+                    return JSON.parse(raw);
+                } catch (e) {
+                    return null;
                 }
-
-                console.log('开始初始化图表...');
-
-                // 初始化ECharts实例
-                const chartOptions = {
-                    pomo: {
-                        dom: document.getElementById('pomo_main'),
-                        data: {!! $pomo_bar_statistics ?? 'null' !!}
-                    },
-                    task: {
-                        dom: document.getElementById('task_main'),
-                        data: {!! $task_bar_statistics ?? 'null' !!}
-                    },
-                    note: {
-                        dom: document.getElementById('note_main'),
-                        data: {!! $note_bar_statistics ?? 'null' !!}
-                    },
-                    article: {
-                        dom: document.getElementById('article_main'),
-                        data: {!! $article_bar_statistics ?? 'null' !!}
-                    },
-                    mind: {
-                        dom: document.getElementById('mind_main'),
-                        data: {!! $mind_bar_statistics ?? 'null' !!}
-                    },
-                    pie: {
-                        dom: document.getElementById('pie_main'),
-                        data: {!! $count_pie_statistics ?? 'null' !!}
-                    }
-                };
-
-                // 渲染所有图表
-                Object.entries(chartOptions).forEach(([key, option]) => {
-                    if (option.dom && option.data) {
-                        renderChart(option.dom, option.data, key);
-                    } else {
-                        showEmptyState(option.dom, key);
-                    }
-                });
-
-            } catch(error) {
-                console.error('初始化图表时出错:', error);
             }
+            return raw;
         }
 
-        // 渲染单个图表
-        function renderChart(domElement, optionData, chartType) {
+        function getSeriesSum(optionData) {
+            if (!optionData || !optionData.series || !optionData.series.length) {
+                return 0;
+            }
+            var series = optionData.series[0];
+            var data = Array.isArray(series.data) ? series.data : [];
+            return data.reduce(function(total, item) {
+                if (typeof item === 'number') {
+                    return total + item;
+                }
+                if (item && typeof item.value === 'number') {
+                    return total + item.value;
+                }
+                return total;
+            }, 0);
+        }
+
+        function getDailySeries(optionData) {
+            if (!optionData || !optionData.xAxis || !optionData.xAxis.length || !optionData.series || !optionData.series.length) {
+                return { dates: [], values: [] };
+            }
+            var dates = Array.isArray(optionData.xAxis[0].data) ? optionData.xAxis[0].data : [];
+            var rawValues = Array.isArray(optionData.series[0].data) ? optionData.series[0].data : [];
+            var values = rawValues.map(function(item) {
+                if (typeof item === 'number') return item;
+                if (item && typeof item.value === 'number') return item.value;
+                return 0;
+            });
+            return { dates: dates, values: values };
+        }
+
+        function formatNum(value, unit) {
+            var n = Number(value || 0);
+            return n.toFixed(1).replace(/\.0$/, '') + (unit || '');
+        }
+
+        function buildDetailRows(payload) {
+            var pomoSeries = getDailySeries(parseChartData(payload.pomo_bar_statistics || null));
+            var taskSeries = getDailySeries(parseChartData(payload.task_bar_statistics || null));
+            var noteSeries = getDailySeries(parseChartData(payload.note_bar_statistics || null));
+            var articleSeries = getDailySeries(parseChartData(payload.article_bar_statistics || null));
+            var mindSeries = getDailySeries(parseChartData(payload.mind_bar_statistics || null));
+
+            var datesMap = {};
+            [pomoSeries.dates, taskSeries.dates, noteSeries.dates, articleSeries.dates, mindSeries.dates].forEach(function(list) {
+                (list || []).forEach(function(d) { datesMap[d] = true; });
+            });
+            var dates = Object.keys(datesMap).sort();
+            var rows = [];
+            var maxComposite = 0;
+
+            dates.forEach(function(date, i) {
+                var row = {
+                    date: date,
+                    pomo: Number(pomoSeries.values[i] || 0),
+                    task: Number(taskSeries.values[i] || 0),
+                    note: Number(noteSeries.values[i] || 0),
+                    article: Number(articleSeries.values[i] || 0),
+                    mind: Number(mindSeries.values[i] || 0),
+                    score: 0
+                };
+                var composite = row.task * 3 + row.pomo * 2 + row.note * 1.5 + row.article * 1.2 + row.mind * 1.8;
+                row.__composite = composite;
+                if (composite > maxComposite) {
+                    maxComposite = composite;
+                }
+                rows.push(row);
+            });
+
+            rows = rows.filter(function(row) {
+                return (row.pomo + row.task + row.note + row.article + row.mind) > 0;
+            });
+
+            rows.forEach(function(row) {
+                row.score = maxComposite > 0 ? Math.round((row.__composite / maxComposite) * 100) : 0;
+                delete row.__composite;
+            });
+
+            return rows.reverse();
+        }
+
+        function renderDetailTable(rows) {
+            var body = $('#statisticsDetailBody');
+            if (!body.length) {
+                return;
+            }
+            body.empty();
+
+            if (!rows || !rows.length) {
+                body.append(
+                    '<tr>' +
+                    '<td colspan="7" class="text-center py-8 text-gray-500">' +
+                    '<i class="fas fa-database text-2xl mb-3 block"></i>' +
+                    '<p>暂无详细统计数据</p>' +
+                    '</td>' +
+                    '</tr>'
+                );
+                return;
+            }
+
+            rows.forEach(function(row) {
+                var scoreClass = row.score >= 80 ? 'text-green-600' : (row.score >= 50 ? 'text-yellow-600' : 'text-gray-600');
+                body.append(
+                    '<tr>' +
+                    '<td>' + row.date + '</td>' +
+                    '<td>' + row.pomo + '</td>' +
+                    '<td>' + row.task + '</td>' +
+                    '<td>' + row.note + '</td>' +
+                    '<td>' + row.article + '</td>' +
+                    '<td>' + row.mind + '</td>' +
+                    '<td><span class="font-semibold ' + scoreClass + '">' + row.score + '</span></td>' +
+                    '</tr>'
+                );
+            });
+        }
+
+        function updateSummaryCards(payload) {
+            var pomo = parseChartData(payload.pomo_bar_statistics || payload.pomo_bar_chart || null);
+            var task = parseChartData(payload.task_bar_statistics || payload.task_bar_chart || null);
+            var note = parseChartData(payload.note_bar_statistics || payload.note_bar_chart || null);
+            var article = parseChartData(payload.article_bar_statistics || payload.article_bar_chart || null);
+            var mind = parseChartData(payload.mind_bar_statistics || payload.mind_bar_chart || null);
+
+            var pomoSum = getSeriesSum(pomo);
+            var taskSum = getSeriesSum(task);
+            var noteSum = getSeriesSum(note);
+            var articleSum = getSeriesSum(article);
+            var mindSum = getSeriesSum(mind);
+
+            var pomoEl = document.getElementById('totalPomosValue');
+            var taskEl = document.getElementById('totalTasksValue');
+            var noteEl = document.getElementById('totalNotesValue');
+            var articleEl = document.getElementById('totalArticlesValue');
+            var rangeEl = document.getElementById('statRangeText');
+
+            if (pomoEl) pomoEl.textContent = String(pomoSum);
+            if (taskEl) taskEl.textContent = String(taskSum);
+            if (noteEl) noteEl.textContent = String(noteSum);
+            if (articleEl) articleEl.textContent = String(articleSum);
+
+            currentStartDate = payload.start_date || currentStartDate;
+            currentEndDate = payload.end_date || currentEndDate;
+            currentRange = payload.selected_range || currentRange;
+            if (rangeEl) {
+                rangeEl.textContent = currentStartDate + ' - ' + currentEndDate;
+            }
+
+            var detailRows = buildDetailRows(payload);
+            renderDetailTable(detailRows);
+
+            var rangeDays = getDailySeries(pomo).dates.length
+                || getDailySeries(task).dates.length
+                || getDailySeries(note).dates.length
+                || getDailySeries(article).dates.length
+                || getDailySeries(mind).dates.length
+                || detailRows.length;
+
+            var daysCount = Math.max(1, Number(rangeDays || 0));
+            var activeDays = detailRows.filter(function(row) {
+                return (row.pomo + row.task + row.note + row.article + row.mind) > 0;
+            }).length;
+            var maxPomoPerDay = detailRows.reduce(function(max, row) {
+                return Math.max(max, row.pomo || 0);
+            }, 0);
+            var mostProductive = detailRows.reduce(function(prev, row) {
+                var score = row.pomo + row.task + row.note + row.article + row.mind;
+                if (!prev || score > prev.score) {
+                    return { date: row.date, score: score };
+                }
+                return prev;
+            }, null);
+
+            var avgTaskHours = taskSum > 0 ? ((pomoSum * 25) / 60 / taskSum) : 0;
+            var avgReadMinutes = daysCount > 0 ? (articleSum / daysCount) * 8 : 0;
+            var avgMindNodes = daysCount > 0 ? (mindSum / daysCount) * 6 : 0;
+            var totalFocusHours = (pomoSum * 25) / 60;
+
+            $('#avgDailyPomosValue').text(formatNum(pomoSum / daysCount, ' 个'));
+            $('#maxFocusTimeValue').text(formatNum(maxPomoPerDay * 25, ' 分钟'));
+            $('#avgTaskCompletionHoursValue').text(formatNum(avgTaskHours, ' 小时'));
+            $('#quadrantDistributionValue').text('-');
+            $('#avgNoteLengthValue').text('-');
+            $('#mostProductiveDayValue').text(mostProductive && mostProductive.score > 0 ? mostProductive.date : '-');
+            $('#avgReadingTimeValue').text(formatNum(avgReadMinutes, ' 分钟'));
+            $('#starRateValue').text('-');
+            $('#avgMindNodesValue').text(formatNum(avgMindNodes, ' 个'));
+            $('#maxMindDepthValue').text('-');
+            $('#activeDaysValue').text(String(activeDays) + ' 天');
+            $('#totalFocusHoursValue').text(formatNum(totalFocusHours, ' 小时'));
+        }
+
+        function initDateRangeSelector() {
+            $('.date-btn').on('click', function() {
+                var range = $(this).data('range');
+                if (range === 'custom') {
+                    showCustomDatePicker();
+                    return;
+                }
+                loadStatisticsByRange(range);
+            });
+        }
+
+        function setActiveRangeButton(range) {
+            $('.date-btn').removeClass('active');
+            $('.date-btn[data-range="' + range + '"]').addClass('active');
+        }
+
+        function showCustomDatePicker() {
+            var defaultStart = currentStartDate || '';
+            var defaultEnd = currentEndDate || '';
+            var start = prompt('请输入开始日期（YYYY-MM-DD）', defaultStart);
+            if (!start) {
+                return;
+            }
+            var end = prompt('请输入结束日期（YYYY-MM-DD）', defaultEnd);
+            if (!end) {
+                return;
+            }
+            var dateReg = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateReg.test(start) || !dateReg.test(end)) {
+                alert('日期格式不正确，请使用 YYYY-MM-DD');
+                return;
+            }
+            if (new Date(start) > new Date(end)) {
+                alert('开始日期不能晚于结束日期');
+                return;
+            }
+            loadStatisticsByRange('custom', start, end);
+        }
+
+        function loadStatisticsByRange(range, startDate, endDate) {
+            if (!apiRequest) {
+                showAllEmptyStates('API客户端未初始化');
+                return;
+            }
+
+            showLoading();
+            var query = { range: range };
+            if (range === 'custom') {
+                query.start_date = startDate;
+                query.end_date = endDate;
+            }
+
+            apiRequest('GET', '/statistics', query).then(function(resp) {
+                if (resp.code !== 9999 || !resp.result) {
+                    throw new Error(resp.msg || '加载失败');
+                }
+                currentStatsData = resp.result;
+                renderFromApiData(resp.result);
+                hideLoading();
+            }).catch(function(err) {
+                hideLoading();
+                showAllEmptyStates('数据加载失败');
+                console.error('load statistics failed:', err);
+            });
+        }
+
+        function renderFromApiData(payload) {
+            setActiveRangeButton(payload.selected_range || currentRange);
+            updateSummaryCards(payload);
+            initCharts(payload);
+        }
+
+        function initCharts(payload) {
+            var chartOptions = {
+                pomo: {
+                    dom: document.getElementById('pomo_main'),
+                    data: parseChartData(payload.pomo_bar_statistics || null)
+                },
+                task: {
+                    dom: document.getElementById('task_main'),
+                    data: parseChartData(payload.task_bar_statistics || null)
+                },
+                note: {
+                    dom: document.getElementById('note_main'),
+                    data: parseChartData(payload.note_bar_statistics || null)
+                },
+                article: {
+                    dom: document.getElementById('article_main'),
+                    data: parseChartData(payload.article_bar_statistics || null)
+                },
+                mind: {
+                    dom: document.getElementById('mind_main'),
+                    data: parseChartData(payload.mind_bar_statistics || null)
+                },
+                pie: {
+                    dom: document.getElementById('pie_main'),
+                    data: parseChartData(payload.count_pie_statistics || null)
+                }
+            };
+
+            Object.keys(chartOptions).forEach(function(key) {
+                var option = chartOptions[key];
+                if (!option.dom || !option.data) {
+                    showEmptyState(option.dom, key);
+                    return;
+                }
+                renderChart(key, option.dom, option.data);
+            });
+        }
+
+        function renderChart(chartKey, domElement, optionData) {
             try {
                 if (typeof echarts === 'undefined') {
-                    console.error('ECharts 未定义，无法渲染图表');
-                    showEmptyState(domElement, chartType, '图表库未加载');
+                    showEmptyState(domElement, chartKey, '图表库未加载');
                     return;
                 }
 
-                const chart = echarts.init(domElement);
+                if (chartInstances[chartKey]) {
+                    chartInstances[chartKey].dispose();
+                }
+                var chart = echarts.init(domElement);
+                chartInstances[chartKey] = chart;
 
-                // 统一主题和样式配置
-                const defaultOptions = {
+                var defaultOptions = {
                     backgroundColor: 'transparent',
                     tooltip: {
                         trigger: 'item',
@@ -641,12 +872,6 @@
                         textStyle: {
                             color: '#334155',
                             fontSize: 12
-                        },
-                        formatter: function(params) {
-                            if (params.seriesType === 'pie') {
-                                return `${params.name}<br/>${params.value} (${params.percent}%)`;
-                            }
-                            return `${params.name}<br/>${params.seriesName}: ${params.value}`;
                         }
                     },
                     grid: {
@@ -657,38 +882,24 @@
                         containLabel: true
                     }
                 };
-
-                // 合并配置
-                const finalOption = Object.assign({}, defaultOptions, optionData);
-
-                // 设置图表
+                var finalOption = Object.assign({}, defaultOptions, optionData);
                 chart.setOption(finalOption);
-
-                // 添加加载完成样式
-                $(domElement).find('.empty-chart').fadeOut(200);
-
-            } catch(error) {
-                console.error(`渲染${chartType}图表时出错:`, error);
-                showEmptyState(domElement, chartType, '渲染失败');
+                $(domElement).find('.empty-chart').fadeOut(120);
+            } catch (error) {
+                console.error('render chart failed:', chartKey, error);
+                showEmptyState(domElement, chartKey, '渲染失败');
             }
         }
 
-        // 显示空状态
-        function showEmptyState(domElement, chartType, message = '暂无数据') {
-            const emptyHtml = `
-            <div class="empty-chart">
-                <div>
-                    <i class="fas fa-chart-${getChartIcon(chartType)}"></i>
-                    <p>${message}</p>
-                </div>
-            </div>
-        `;
+        function showEmptyState(domElement, chartType, message) {
+            if (!domElement) return;
+            var msg = message || '暂无数据';
+            var emptyHtml = '<div class="empty-chart"><div><i class="fas fa-chart-' + getChartIcon(chartType) + '"></i><p>' + msg + '</p></div></div>';
             $(domElement).html(emptyHtml);
         }
 
-        // 获取图表图标
         function getChartIcon(chartType) {
-            const icons = {
+            var icons = {
                 pomo: 'line',
                 task: 'bar',
                 note: 'area',
@@ -699,60 +910,28 @@
             return icons[chartType] || 'bar';
         }
 
-        // 初始化日期范围选择器
-        function initDateRangeSelector() {
-            $('.date-btn').on('click', function() {
-                const range = $(this).data('range');
-
-                // 更新按钮状态
-                $('.date-btn').removeClass('active');
-                $(this).addClass('active');
-
-                // 如果是自定义范围，显示日期选择器
-                if (range === 'custom') {
-                    showCustomDatePicker();
-                    return;
-                }
-
-                // 发送请求获取新数据
-                loadStatisticsByRange(range);
-            });
-        }
-
-        // 显示自定义日期选择器
-        function showCustomDatePicker() {
-            var start = prompt('请输入开始日期（YYYY-MM-DD）', '{{ $start_date }}');
-            if (!start) {
-                hideLoading();
-                return;
-            }
-            var end = prompt('请输入结束日期（YYYY-MM-DD）', '{{ $end_date }}');
-            if (!end) {
-                hideLoading();
-                return;
-            }
-            var url = '{{ url("/statistics") }}' + '?range=custom&start_date='
-                + encodeURIComponent(start) + '&end_date=' + encodeURIComponent(end);
-            window.location.href = url;
-        }
-
-        // 按范围加载统计数据
-        function loadStatisticsByRange(range) {
-            showLoading();
-            var url = '{{ url("/statistics") }}?range=' + encodeURIComponent(range);
-            window.location.href = url;
-        }
-
-        // 显示加载状态
         function showLoading() {
             $('.stat-grid').addClass('opacity-50');
             $('.date-btn').prop('disabled', true);
         }
 
-        // 隐藏加载状态
         function hideLoading() {
             $('.stat-grid').removeClass('opacity-50');
             $('.date-btn').prop('disabled', false);
         }
+
+        $(document).ready(function() {
+            waitForECharts(function() {
+                initDateRangeSelector();
+                loadStatisticsByRange(currentRange || 'week', currentStartDate, currentEndDate);
+                $(window).on('resize', function() {
+                    Object.keys(chartInstances).forEach(function(key) {
+                        if (chartInstances[key] && typeof chartInstances[key].resize === 'function') {
+                            chartInstances[key].resize();
+                        }
+                    });
+                });
+            });
+        });
     </script>
 @endsection

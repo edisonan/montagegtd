@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $mind->name . ' - 思维导图 - 蒙太奇')
-@section('description', '查看思维导图：' . $mind->name)
+@section('title', '思维导图 - 蒙太奇')
+@section('description', '查看思维导图')
 
 @section('content')
     <div class="fade-in">
@@ -14,7 +14,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">思维导图</h1>
-                        <p class="text-gray-600 mt-1">{{ $mind->name }}</p>
+                        <p class="text-gray-600 mt-1" id="outline_mind_name">思维导图</p>
                     </div>
                 </div>
 
@@ -26,17 +26,12 @@
                             <span class="hidden sm:inline">折叠/展开备注</span>
                         </button>
 
-                        <button id="toggle_focus_mode" class="btn btn-outline btn-sm">
-                            <i class="fas fa-expand mr-2"></i>
-                            <span class="hidden sm:inline">专注模式</span>
-                        </button>
-
                         <button id="export_mind" class="btn btn-outline btn-sm">
                             <i class="fas fa-download mr-2"></i>
                             <span class="hidden sm:inline">导出</span>
                         </button>
 
-                        <a href="{{ '/mind/' . $mind->id }}" class="btn btn-primary btn-sm">
+                        <a href="#" id="outline_edit_link" class="btn btn-primary btn-sm">
                             <i class="fas fa-edit mr-2"></i>
                             <span class="hidden sm:inline">编辑</span>
                         </a>
@@ -66,7 +61,7 @@
                             </span>
                                 <span class="flex items-center gap-1">
                                 <i class="fas fa-clock text-gray-500"></i>
-                                更新于: {{ $mind->updated_at ? $mind->updated_at->format('Y-m-d H:i') : '未知' }}
+                                更新于: <span id="outline_updated_text">未知</span>
                             </span>
                             </div>
                         </div>
@@ -81,11 +76,6 @@
                                     <option value="radial">放射</option>
                                 </select>
                             </div>
-
-                            <button id="fullscreen_toggle" class="btn btn-sm btn-outline">
-                                <i class="fas fa-expand-arrows-alt mr-1"></i>
-                                全屏
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -259,7 +249,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">分享链接</label>
                     <div class="flex">
                         <input type="text" readonly
-                               value="{{ url('/mind/view/' . $mind->id) }}"
+                               value=""
+                               id="outline_share_link"
                                class="input flex-1 rounded-r-none">
                         <button id="copy_link" class="btn btn-primary rounded-l-none">
                             <i class="fas fa-copy"></i>
@@ -295,11 +286,62 @@
 
         $(document).ready(function(){
             let mindData = null;
+            let mindId = resolveMindId();
             let allRemarksVisible = true;
             let isFocusMode = false;
             let nodeCount = 0;
             let remarkCount = 0;
             let maxDepth = 0;
+
+            function getResultData(response) {
+                if (!response) return {};
+                return response.result || response.data || {};
+            }
+
+            function resolveMindId() {
+                const parts = (window.location.pathname || '').split('/').filter(Boolean);
+                const last = parts.length ? parts[parts.length - 1] : '';
+                const parsed = parseInt(last, 10);
+                return Number.isFinite(parsed) ? String(parsed) : '';
+            }
+
+            function formatDateTime(value) {
+                if (!value) return '未知';
+                const d = new Date(String(value).replace(' ', 'T'));
+                if (Number.isNaN(d.getTime())) return value;
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const hh = String(d.getHours()).padStart(2, '0');
+                const mm = String(d.getMinutes()).padStart(2, '0');
+                return y + '-' + m + '-' + day + ' ' + hh + ':' + mm;
+            }
+
+            function loadMindMeta() {
+                if (!apiRequest) {
+                    showError('API客户端未初始化');
+                    return Promise.resolve();
+                }
+                if (!mindId) {
+                    showError('无效的导图ID');
+                    return Promise.resolve();
+                }
+                return apiRequest('GET', '/minds/' + mindId, {}).then(function(response) {
+                    if (!response || response.code != 9999) {
+                        throw new Error((response && response.msg) ? response.msg : '加载失败');
+                    }
+                    const result = getResultData(response);
+                    const mind = result.mind || {};
+                    const name = mind.name || '思维导图';
+                    $('#outline_mind_name').text(name);
+                    $('#outline_edit_link').attr('href', '/mind/' + mindId);
+                    $('#outline_updated_text').text(formatDateTime(mind.updated_at));
+                    $('#outline_share_link').val(window.location.origin + '/mind/view/' + mindId);
+                    document.title = name + ' - 思维导图 - 蒙太奇';
+                }).catch(function(err) {
+                    showError('加载导图信息失败: ' + (err && err.message ? err.message : '网络错误'));
+                });
+            }
 
             // 加载思维导图数据
             function loadMindData() {
@@ -307,11 +349,12 @@
                     showError('API客户端未初始化');
                     return;
                 }
-                apiRequest('GET', '/minds/{{ $mind->id }}/jsmind', {}).then(function(res) {
+                apiRequest('GET', '/minds/' + mindId + '/jsmind', {}).then(function(res) {
+                    const result = getResultData(res);
                     if(res.code != 9999){
                         showError('加载失败，请稍后再试');
                     } else {
-                        mindData = JSON.parse(res.result.jsmind_datas);
+                        mindData = JSON.parse(result.jsmind_datas);
                         hideLoading();
                         renderMindList(mindData);
                         updateStats();
@@ -487,36 +530,6 @@
                 }
             });
 
-            // 切换专注模式
-            $('#toggle_focus_mode').click(function(){
-                isFocusMode = !isFocusMode;
-                const $container = $('#list_container');
-                const $actions = $('.card-header, #quick_actions, #stats_panel');
-
-                if (isFocusMode) {
-                    $container.css('max-height', '80vh');
-                    $actions.fadeOut(200);
-                    $(this).html('<i class="fas fa-compress mr-2"></i><span class="hidden sm:inline">退出专注</span>');
-                    $(this).removeClass('btn-outline').addClass('btn-primary');
-                } else {
-                    $container.css('max-height', '600px');
-                    $actions.fadeIn(200);
-                    $(this).html('<i class="fas fa-expand mr-2"></i><span class="hidden sm:inline">专注模式</span>');
-                    $(this).removeClass('btn-primary').addClass('btn-outline');
-                }
-            });
-
-            // 全屏切换
-            $('#fullscreen_toggle').click(function(){
-                const $container = $('.container');
-                if ($container.css('max-width') === '1980px') {
-                    $container.css('max-width', '');
-                    $(this).html('<i class="fas fa-expand-arrows-alt mr-1"></i>全屏');
-                } else {
-                    $container.css('max-width', '1980px');
-                    $(this).html('<i class="fas fa-compress-arrows-alt mr-1"></i>退出全屏');
-                }
-            });
 
             // 视图切换
             $('#switch_to_list').click(function(){
@@ -570,7 +583,9 @@
             }
 
             // 初始化加载
-            loadMindData();
+            loadMindMeta().then(function() {
+                loadMindData();
+            });
         });
     </script>
 

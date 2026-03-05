@@ -13,7 +13,7 @@ class PersonalAccessTokenController extends Controller
 
     public function __construct(PersonalAccessTokenService $tokenService)
     {
-        $this->middleware('auth')->except(['verify']); // PAT校验接口由hybrid.token中间件负责
+        $this->middleware('auth');
         $this->tokenService = $tokenService;
     }
 
@@ -22,12 +22,7 @@ class PersonalAccessTokenController extends Controller
      */
     public function index(Request $request)
     {
-        $userId = Auth::id();
-        $tokens = $this->tokenService->getUserTokens($userId);
-
-        return $this->jsonAndViewAutoResponse($request, ResponseDataUtil::genSimpleSucc([
-            'tokens' => $tokens
-        ]), 'personal_access_tokens.index');
+        return view('personal_access_tokens.index');
     }
 
     /**
@@ -92,31 +87,4 @@ class PersonalAccessTokenController extends Controller
         ], 404);
     }
 
-    /**
-     * 验证令牌（用于测试目的）
-     */
-    public function verify(Request $request)
-    {
-        $user = $request->user(); // 通过中间件获取用户
-        $personalAccessToken = $request->attributes->get('personal_access_token');
-
-        return response()->json([
-            'code' => 9999,
-            'msg' => 'Token is valid',
-            'result' => [
-                'user' => [
-                    'id' => $user->id ?? null,
-                    'name' => $user->name ?? null,
-                    'email' => $user->email ?? null,
-                ],
-                'token' => [
-                    'id' => $personalAccessToken->id ?? null,
-                    'name' => $personalAccessToken->name ?? null,
-                    'scopes' => $personalAccessToken->scopes ?? [],
-                    'last_used_at' => $personalAccessToken->last_used_at ?? null,
-                    'expires_at' => $personalAccessToken->expires_at ?? null,
-                ],
-            ]
-        ]);
-    }
 }

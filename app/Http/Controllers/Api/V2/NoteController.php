@@ -6,16 +6,20 @@ use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Note;
+use App\Services\AchievementAutoUnlockService;
 use App\Services\NoteService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NoteController extends Controller
 {
     protected $noteService;
+    protected $achievementAutoUnlockService;
 
-    public function __construct(NoteService $noteService)
+    public function __construct(NoteService $noteService, AchievementAutoUnlockService $achievementAutoUnlockService)
     {
         $this->noteService = $noteService;
+        $this->achievementAutoUnlockService = $achievementAutoUnlockService;
     }
 
     public function index(Request $request)
@@ -105,6 +109,17 @@ class NoteController extends Controller
         $sourceId = $request->input('source_id', 0);
 
         $this->noteService->store($name, $status, $addImage, $fname, $sourceType, $sourceId);
+        $userId = (int)$this->getAuthUserId($request);
+        if ($userId > 0) {
+            try {
+                $this->achievementAutoUnlockService->evaluateForUser($userId);
+            } catch (\Throwable $e) {
+                Log::warning('auto unlock achievements on note store failed', array(
+                    'user_id' => $userId,
+                    'error' => $e->getMessage(),
+                ));
+            }
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
     }

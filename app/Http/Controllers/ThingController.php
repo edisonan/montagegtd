@@ -41,11 +41,7 @@ class ThingController extends Controller {
 	 * @param Request $request         
 	 */
 	public function index(Request $request) {
-		$pageSize = $request->get('page_size', 10);
-			
-		return view ( 'things.index', [ 
-				'things' => $this->thingService->getList($pageSize)
-		] );
+		return view('things.index');
 	}
 	
 	/**
@@ -101,9 +97,7 @@ class ThingController extends Controller {
 	public function update(Request $request, Thing $thing) {
 		$this->authorize ( 'destroy', $thing );
 		if ($request->method () == 'GET') {
-			return view ( 'things.update', array (
-					'thing' => $thing 
-			) );
+			return view('things.update');
 		}
 		
 		$flag = $thing->update ( $request->all () );

@@ -487,16 +487,66 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="calendar-config-page">
-            <!-- 页面标题 -->
-            <div class="page-title-section animate-fadeIn">
-                <h1 class="page-title">
-                    <i class="fas fa-calendar-alt"></i>
-                    日历配置
-                </h1>
-            </div>
-
             <!-- 成功消息 -->
             @include('common.success')
+
+            <!-- 日历地址卡片 -->
+            <div class="calendar-url-card animate-fadeIn">
+                <div class="calendar-url-card-header">
+                    <h3 class="calendar-url-card-title">
+                        <i class="fas fa-link"></i>
+                        日历订阅地址
+                    </h3>
+                </div>
+
+                <div class="calendar-url-card-body">
+                    <!-- 个人日历地址 -->
+                    <div class="personal-calendar">
+                        <h4 class="calendar-url-card-title" style="font-size: 1.125rem; margin-bottom: 16px;">
+                            <i class="fas fa-user-circle"></i>
+                            个人日历地址
+                        </h4>
+
+                        <div class="url-display">
+                            <div class="url-text" id="personalCalUrl">
+                                加载中...
+                            </div>
+                            <div class="url-actions">
+                                <button class="url-action-btn" id="copyPersonalCalBtn" type="button">
+                                    <i class="fas fa-copy"></i>
+                                    复制地址
+                                </button>
+                                <a href="#" class="url-action-btn" id="testPersonalCalBtn" target="_blank" rel="noopener">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    测试访问
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="url-hint">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>这是您的专属日历地址，包含所有个人日程和待办事项，请妥善保管</span>
+                        </div>
+                    </div>
+
+                    <!-- 公共日历列表 -->
+                    <div class="public-calendars">
+                        <div class="public-calendars-header">
+                            <h4 class="calendar-url-card-title" style="font-size: 1.125rem; margin: 0;">
+                                <i class="fas fa-users"></i>
+                                公共日历地址
+                            </h4>
+                            <span class="text-sm text-gray-600" id="publicCalCount">0 个日历</span>
+                        </div>
+
+                        <div class="calendar-list" id="publicCalList"></div>
+                        <div class="text-center py-8 bg-gray-50 rounded-lg" id="publicCalEmpty">
+                            <i class="fas fa-calendar-times text-gray-400 text-3xl mb-4"></i>
+                            <p class="text-gray-600">暂无公共日历</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- 配置说明卡片 -->
             <div class="instruction-card animate-fadeIn">
@@ -505,10 +555,6 @@
                         <i class="fas fa-info-circle"></i>
                         配置说明
                     </h3>
-                    <a href="{{ url('/') }}" class="back-link">
-                        <i class="fas fa-arrow-left"></i>
-                        返回首页
-                    </a>
                 </div>
 
                 <div class="instruction-card-body">
@@ -569,89 +615,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 日历地址卡片 -->
-            <div class="calendar-url-card animate-fadeIn">
-                <div class="calendar-url-card-header">
-                    <h3 class="calendar-url-card-title">
-                        <i class="fas fa-link"></i>
-                        日历订阅地址
-                    </h3>
-                </div>
-
-                <div class="calendar-url-card-body">
-                    <!-- 个人日历地址 -->
-                    <div class="personal-calendar">
-                        <h4 class="calendar-url-card-title" style="font-size: 1.125rem; margin-bottom: 16px;">
-                            <i class="fas fa-user-circle"></i>
-                            个人日历地址
-                        </h4>
-
-                        <div class="url-display">
-                            <div class="url-text" id="personalCalUrl">
-                                {{ $person_cal_url }}
-                            </div>
-                            <div class="url-actions">
-                                <button class="url-action-btn" id="copyPersonalCalBtn" onclick="copyToClipboard('{{ $person_cal_url }}')">
-                                    <i class="fas fa-copy"></i>
-                                    复制地址
-                                </button>
-                                <a href="{{ $person_cal_url }}" class="url-action-btn" id="testPersonalCalBtn" target="_blank">
-                                    <i class="fas fa-external-link-alt"></i>
-                                    测试访问
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="url-hint">
-                            <i class="fas fa-lightbulb"></i>
-                            <span>这是您的专属日历地址，包含所有个人日程和待办事项，请妥善保管</span>
-                        </div>
-                    </div>
-
-                    <!-- 公共日历列表 -->
-                    <div class="public-calendars">
-                        <div class="public-calendars-header">
-                            <h4 class="calendar-url-card-title" style="font-size: 1.125rem; margin: 0;">
-                                <i class="fas fa-users"></i>
-                                公共日历地址
-                            </h4>
-                            <span class="text-sm text-gray-600" id="publicCalCount">{{ count($cals) }} 个日历</span>
-                        </div>
-
-                        @if(count($cals) > 0)
-                            <div class="calendar-list" id="publicCalList">
-                                @foreach ($cals as $cal)
-                                    <div class="calendar-item">
-                                        <h5 class="calendar-theme">
-                                            <i class="fas fa-calendar-week"></i>
-                                            {{ $cal['theme'] }}
-                                        </h5>
-                                        <div class="calendar-url">
-                                            {{ $cal['url'] }}
-                                        </div>
-                                        <div class="calendar-actions">
-                                            <button class="calendar-action-btn" onclick="copyToClipboard('{{ $cal['url'] }}')">
-                                                <i class="fas fa-copy"></i>
-                                                复制
-                                            </button>
-                                            <a href="{{ $cal['url'] }}" class="calendar-action-btn" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                                预览
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-8 bg-gray-50 rounded-lg" id="publicCalEmpty">
-                                <i class="fas fa-calendar-times text-gray-400 text-3xl mb-4"></i>
-                                <p class="text-gray-600">暂无公共日历</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -660,6 +623,21 @@
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : null;
+
+            $('#copyPersonalCalBtn').on('click', function() {
+                var text = ($('#personalCalUrl').text() || '').trim();
+                if (!text || text === '加载中...') {
+                    showNotification('地址尚未加载完成', 'error');
+                    return;
+                }
+                copyToClipboard(text);
+            });
+
+            function escapeHtml(text) {
+                return String(text || '').replace(/[&<>"']/g, function(c) {
+                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
+                });
+            }
 
             // 复制到剪贴板功能
             window.copyToClipboard = function(text) {
@@ -765,7 +743,9 @@
                     var personUrl = resp.result.person_cal_url || '';
                     if (personUrl) {
                         $('#personalCalUrl').text(personUrl);
-                        $('#copyPersonalCalBtn').attr('onclick', "copyToClipboard('" + personUrl.replace(/'/g, "\\'") + "')");
+                        $('#copyPersonalCalBtn').off('click').on('click', function() {
+                            copyToClipboard(personUrl);
+                        });
                         $('#testPersonalCalBtn').attr('href', personUrl);
                     }
 
@@ -775,35 +755,31 @@
                     var $list = $('#publicCalList');
                     var $empty = $('#publicCalEmpty');
                     if (cals.length === 0) {
-                        if ($list.length) {
-                            $list.html('');
-                        } else if ($empty.length === 0) {
-                            $('.public-calendars').append('<div class="text-center py-8 bg-gray-50 rounded-lg" id="publicCalEmpty"><i class="fas fa-calendar-times text-gray-400 text-3xl mb-4"></i><p class="text-gray-600">暂无公共日历</p></div>');
-                        }
+                        $list.html('');
+                        $empty.removeClass('hidden');
                         return;
                     }
 
-                    if (!$list.length) {
-                        if ($empty.length) {
-                            $empty.remove();
-                        }
-                        $('.public-calendars').append('<div class="calendar-list" id="publicCalList"></div>');
-                        $list = $('#publicCalList');
-                    }
+                    $empty.addClass('hidden');
 
                     var html = '';
                     cals.forEach(function(cal) {
-                        var theme = cal.theme || '';
-                        var url = cal.url || '';
+                        var theme = escapeHtml(cal.theme || '');
+                        var url = String(cal.url || '');
+                        var safeUrl = escapeHtml(url);
                         html += '<div class="calendar-item">';
                         html += '<h5 class="calendar-theme"><i class="fas fa-calendar-week"></i>' + theme + '</h5>';
-                        html += '<div class="calendar-url">' + url + '</div>';
+                        html += '<div class="calendar-url">' + safeUrl + '</div>';
                         html += '<div class="calendar-actions">';
-                        html += '<button class="calendar-action-btn" onclick="copyToClipboard(\\'' + url.replace(/'/g, "\\'") + '\\')"><i class="fas fa-copy"></i>复制</button>';
-                        html += '<a href="' + url + '" class="calendar-action-btn" target="_blank"><i class="fas fa-eye"></i>预览</a>';
+                        html += '<button class="calendar-action-btn copy-cal-btn" type="button" data-cal-url="' + safeUrl + '"><i class="fas fa-copy"></i>复制</button>';
+                        html += '<a href="' + safeUrl + '" class="calendar-action-btn" target="_blank" rel="noopener"><i class="fas fa-eye"></i>预览</a>';
                         html += '</div></div>';
                     });
                     $list.html(html);
+
+                    $('.copy-cal-btn').off('click').on('click', function() {
+                        copyToClipboard($(this).attr('data-cal-url'));
+                    });
                 });
             }
 

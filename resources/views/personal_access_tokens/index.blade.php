@@ -41,7 +41,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-lg font-semibold text-gray-800">Personal Access Tokens</h2>
-                        <p class="text-sm text-gray-500 mt-1">共 {{ count($tokens) }} 个访问令牌</p>
+                        <p id="tokenCountText" class="text-sm text-gray-500 mt-1">共 0 个访问令牌</p>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -53,120 +53,9 @@
             </div>
 
             <div class="p-6">
-                @if(count($tokens) > 0)
-                    <!-- 令牌表格 -->
-                    <div class="overflow-x-auto">
-                        <table class="table w-full">
-                            <thead>
-                            <tr class="bg-gray-50">
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">名称</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">权限范围</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">状态</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">创建时间</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">最后使用</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">操作</th>
-                            </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                            @foreach($tokens as $token)
-                                <tr id="token-{{ $token->id }}" class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-4 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-key text-white text-sm"></i>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium text-gray-900">{{ $token->name }}</div>
-                                                <div class="text-xs text-gray-500">ID: {{ $token->id }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-4">
-                                        <div class="flex flex-wrap gap-1">
-                                            @if($token->scopes && count($token->scopes) > 0)
-                                                @foreach($token->scopes as $scope)
-                                                    @php
-                                                        $scopeColors = [
-                                                            'read' => 'bg-blue-100 text-blue-800',
-                                                            'write' => 'bg-green-100 text-green-800',
-                                                            'delete' => 'bg-red-100 text-red-800',
-                                                            'admin' => 'bg-purple-100 text-purple-800'
-                                                        ];
-                                                    @endphp
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scopeColors[$scope] ?? 'bg-gray-100 text-gray-800' }}">
-                                                {{ $scope }}
-                                            </span>
-                                                @endforeach
-                                            @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            无权限
-                                        </span>
-                                            @endif
-                                        </div>
-                                    </td>
-
-                                    <td class="px-4 py-4">
-                                        @if($token->expires_at)
-                                            @if($token->isExpired())
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            <i class="fas fa-exclamation-circle mr-1"></i>已过期
-                                        </span>
-                                            @else
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check-circle mr-1"></i>有效
-                                        </span>
-                                            @endif
-                                        @else
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        <i class="fas fa-infinity mr-1"></i>永不过期
-                                    </span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-4 text-sm text-gray-500">
-                                        <div>{{ $token->created_at->format('Y-m-d') }}</div>
-                                        <div class="text-xs text-gray-400">{{ $token->created_at->format('H:i:s') }}</div>
-                                    </td>
-
-                                    <td class="px-4 py-4 text-sm text-gray-500">
-                                        @if($token->last_used_at)
-                                            <div>{{ $token->last_used_at->format('Y-m-d') }}</div>
-                                            <div class="text-xs text-gray-400">{{ $token->last_used_at->format('H:i:s') }}</div>
-                                        @else
-                                            <span class="text-gray-400 italic">从未使用</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-4 py-4">
-                                        <button type="button"
-                                                data-token-id="{{ $token->id }}"
-                                                data-token-name="{{ $token->name }}"
-                                                class="delete-token-btn px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors">
-                                            <i class="fas fa-trash-alt mr-1"></i>删除
-                                        </button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <!-- 空状态 -->
-                    <div class="text-center py-12">
-                        <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-key text-gray-400 text-xl"></i>
-                        </div>
-                        <h3 class="text-lg font-medium text-gray-700 mb-2">暂无访问令牌</h3>
-                        <p class="text-gray-500 max-w-md mx-auto mb-6">
-                            您还没有创建任何访问令牌。访问令牌用于第三方应用通过API访问您的账户数据。
-                        </p>
-                        <button type="button" id="createEmptyTokenBtn" class="btn btn-primary">
-                            <i class="fas fa-plus mr-2"></i>
-                            创建第一个令牌
-                        </button>
-                    </div>
-                @endif
+                <div id="tokenTableContainer">
+                    <div class="text-center py-12 text-gray-500">加载令牌中...</div>
+                </div>
 
                 <!-- 安全提示 -->
                 <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -213,8 +102,6 @@
                 </div>
 
                 <form id="tokenForm" method="POST" class="space-y-5">
-                    {!! csrf_field() !!}
-
                     <!-- 令牌名称 -->
                     <div class="space-y-2">
                         <label for="tokenName" class="block text-sm font-medium text-gray-700">
@@ -236,36 +123,70 @@
                             权限范围
                         </label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            @php
-                                $scopes = [
-                                    'read' => ['label' => '读取权限', 'desc' => '查看数据，但不允许修改', 'color' => 'border-blue-300 peer-checked:bg-blue-50'],
-                                    'write' => ['label' => '写入权限', 'desc' => '创建和修改数据', 'color' => 'border-green-300 peer-checked:bg-green-50'],
-                                    'delete' => ['label' => '删除权限', 'desc' => '删除数据（危险）', 'color' => 'border-red-300 peer-checked:bg-red-50'],
-                                    'admin' => ['label' => '管理权限', 'desc' => '完全控制，包括账户设置', 'color' => 'border-purple-300 peer-checked:bg-purple-50']
-                                ];
-                            @endphp
-
-                            @foreach($scopes as $scope => $info)
-                                <label class="cursor-pointer">
-                                    <input type="checkbox"
-                                           name="scopes[]"
-                                           value="{{ $scope }}"
-                                           class="peer sr-only">
-                                    <div class="p-4 rounded-lg border-2 border-gray-200 {{ $info['color'] }} transition-all duration-200">
-                                        <div class="flex items-start gap-3">
-                                            <div class="flex-shrink-0">
-                                                <div class="w-6 h-6 border-2 border-gray-300 rounded peer-checked:border-blue-500 peer-checked:bg-blue-500 peer-checked:border-none flex items-center justify-center">
-                                                    <i class="fas fa-check text-white text-xs hidden peer-checked:block"></i>
-                                                </div>
-                                            </div>
-                                            <div class="flex-1">
-                                                <div class="font-medium text-gray-700">{{ $info['label'] }}</div>
-                                                <div class="text-xs text-gray-500 mt-1">{{ $info['desc'] }}</div>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="scopes[]" value="read" class="peer sr-only">
+                                <div class="p-4 rounded-lg border-2 border-gray-200 border-blue-300 peer-checked:bg-blue-50 transition-all duration-200">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-6 h-6 border-2 border-gray-300 rounded peer-checked:border-blue-500 peer-checked:bg-blue-500 peer-checked:border-none flex items-center justify-center">
+                                                <i class="fas fa-check text-white text-xs hidden peer-checked:block"></i>
                                             </div>
                                         </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-700">读取权限</div>
+                                            <div class="text-xs text-gray-500 mt-1">查看数据，但不允许修改</div>
+                                        </div>
                                     </div>
-                                </label>
-                            @endforeach
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="scopes[]" value="write" class="peer sr-only">
+                                <div class="p-4 rounded-lg border-2 border-gray-200 border-green-300 peer-checked:bg-green-50 transition-all duration-200">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-6 h-6 border-2 border-gray-300 rounded peer-checked:border-blue-500 peer-checked:bg-blue-500 peer-checked:border-none flex items-center justify-center">
+                                                <i class="fas fa-check text-white text-xs hidden peer-checked:block"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-700">写入权限</div>
+                                            <div class="text-xs text-gray-500 mt-1">创建和修改数据</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="scopes[]" value="delete" class="peer sr-only">
+                                <div class="p-4 rounded-lg border-2 border-gray-200 border-red-300 peer-checked:bg-red-50 transition-all duration-200">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-6 h-6 border-2 border-gray-300 rounded peer-checked:border-blue-500 peer-checked:bg-blue-500 peer-checked:border-none flex items-center justify-center">
+                                                <i class="fas fa-check text-white text-xs hidden peer-checked:block"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-700">删除权限</div>
+                                            <div class="text-xs text-gray-500 mt-1">删除数据（危险）</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="scopes[]" value="admin" class="peer sr-only">
+                                <div class="p-4 rounded-lg border-2 border-gray-200 border-purple-300 peer-checked:bg-purple-50 transition-all duration-200">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-6 h-6 border-2 border-gray-300 rounded peer-checked:border-blue-500 peer-checked:bg-blue-500 peer-checked:border-none flex items-center justify-center">
+                                                <i class="fas fa-check text-white text-xs hidden peer-checked:block"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-700">管理权限</div>
+                                            <div class="text-xs text-gray-500 mt-1">完全控制，包括账户设置</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
                         <p class="text-xs text-gray-500">遵循最小权限原则，只授予必要的权限</p>
                     </div>
@@ -288,8 +209,7 @@
                             </select>
                             <input type="date"
                                    id="customExpiryDate"
-                                   class="input hidden"
-                                   min="{{ date('Y-m-d') }}">
+                                   class="input hidden">
                             <input type="time"
                                    id="customExpiryTime"
                                    class="input hidden"
@@ -504,43 +424,192 @@
     </style>
 @endsection
 
+
 @section('scripts')
     <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
             : null;
+        var tokenState = {
+            items: [],
+            currentDeleteTokenId: null
+        };
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // 模态框管理
-            const modals = {
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatDateTime(value, emptyText) {
+            if (!value) {
+                return '<span class="text-gray-400 italic">' + (emptyText || '从未使用') + '</span>';
+            }
+            var date = new Date(value);
+            if (isNaN(date.getTime())) {
+                return '<span class="text-gray-400 italic">未知</span>';
+            }
+            var d = date.toISOString().slice(0, 10);
+            var t = date.toTimeString().slice(0, 8);
+            return '<div>' + d + '</div><div class="text-xs text-gray-400">' + t + '</div>';
+        }
+
+        function scopeBadgeClass(scope) {
+            var map = {
+                read: 'bg-blue-100 text-blue-800',
+                write: 'bg-green-100 text-green-800',
+                delete: 'bg-red-100 text-red-800',
+                admin: 'bg-purple-100 text-purple-800'
+            };
+            return map[scope] || 'bg-gray-100 text-gray-800';
+        }
+
+        function updateTokenCount() {
+            var countElement = document.getElementById('tokenCountText');
+            if (countElement) {
+                countElement.textContent = '共 ' + tokenState.items.length + ' 个访问令牌';
+            }
+        }
+
+        function renderTokenTable() {
+            var container = document.getElementById('tokenTableContainer');
+            if (!container) {
+                return;
+            }
+
+            if (!tokenState.items.length) {
+                container.innerHTML = ''
+                    + '<div class="text-center py-12">'
+                    + '<div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">'
+                    + '<i class="fas fa-key text-gray-400 text-xl"></i>'
+                    + '</div>'
+                    + '<h3 class="text-lg font-medium text-gray-700 mb-2">暂无访问令牌</h3>'
+                    + '<p class="text-gray-500 max-w-md mx-auto mb-6">您还没有创建任何访问令牌。访问令牌用于第三方应用通过API访问您的账户数据。</p>'
+                    + '<button type="button" id="createEmptyTokenBtn" class="btn btn-primary"><i class="fas fa-plus mr-2"></i>创建第一个令牌</button>'
+                    + '</div>';
+                bindCreateButtons();
+                updateTokenCount();
+                return;
+            }
+
+            var rowsHtml = tokenState.items.map(function(token) {
+                var scopes = Array.isArray(token.scopes) ? token.scopes : [];
+                var scopeHtml = scopes.length
+                    ? scopes.map(function(scope) {
+                        return '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ' + scopeBadgeClass(scope) + '">' + escapeHtml(scope) + '</span>';
+                    }).join(' ')
+                    : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">无权限</span>';
+
+                var expiresAt = token.expires_at ? new Date(token.expires_at) : null;
+                var isExpired = expiresAt && !isNaN(expiresAt.getTime()) ? expiresAt.getTime() < Date.now() : false;
+                var statusHtml = !token.expires_at
+                    ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><i class="fas fa-infinity mr-1"></i>永不过期</span>'
+                    : (isExpired
+                        ? '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"><i class="fas fa-exclamation-circle mr-1"></i>已过期</span>'
+                        : '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>有效</span>');
+
+                return ''
+                    + '<tr id="token-' + Number(token.id || 0) + '" class="hover:bg-gray-50 transition-colors">'
+                    + '<td class="px-4 py-4"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg flex items-center justify-center"><i class="fas fa-key text-white text-sm"></i></div><div><div class="font-medium text-gray-900">' + escapeHtml(token.name || '未命名令牌') + '</div><div class="text-xs text-gray-500">ID: ' + Number(token.id || 0) + '</div></div></div></td>'
+                    + '<td class="px-4 py-4"><div class="flex flex-wrap gap-1">' + scopeHtml + '</div></td>'
+                    + '<td class="px-4 py-4">' + statusHtml + '</td>'
+                    + '<td class="px-4 py-4 text-sm text-gray-500">' + formatDateTime(token.created_at, '未知') + '</td>'
+                    + '<td class="px-4 py-4 text-sm text-gray-500">' + formatDateTime(token.last_used_at, '从未使用') + '</td>'
+                    + '<td class="px-4 py-4"><button type="button" data-token-id="' + Number(token.id || 0) + '" data-token-name="' + escapeHtml(token.name || '') + '" class="delete-token-btn px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"><i class="fas fa-trash-alt mr-1"></i>删除</button></td>'
+                    + '</tr>';
+            }).join('');
+
+            container.innerHTML = ''
+                + '<div class="overflow-x-auto"><table class="table w-full"><thead><tr class="bg-gray-50">'
+                + '<th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">名称</th>'
+                + '<th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">权限范围</th>'
+                + '<th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">状态</th>'
+                + '<th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">创建时间</th>'
+                + '<th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">最后使用</th>'
+                + '<th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">操作</th>'
+                + '</tr></thead><tbody class="divide-y divide-gray-200">' + rowsHtml + '</tbody></table></div>';
+
+            updateTokenCount();
+        }
+
+        function loadTokens() {
+            var container = document.getElementById('tokenTableContainer');
+            if (!apiRequest) {
+                if (container) {
+                    container.innerHTML = '<div class="text-center py-12 text-gray-500">API客户端未初始化</div>';
+                }
+                return;
+            }
+
+            if (container) {
+                container.innerHTML = '<div class="text-center py-12 text-gray-500">加载令牌中...</div>';
+            }
+
+            apiRequest('GET', '/personal-access-tokens', {}).then(function(response) {
+                if (!response || response.code !== 9999) {
+                    throw new Error((response && response.msg) || '加载失败');
+                }
+                tokenState.items = Array.isArray(response.result && response.result.tokens)
+                    ? response.result.tokens
+                    : [];
+                renderTokenTable();
+            }).catch(function(err) {
+                console.error('loadTokens failed:', err);
+                if (container) {
+                    container.innerHTML = '<div class="text-center py-12 text-gray-500">令牌加载失败，请稍后重试</div>';
+                }
+            });
+        }
+
+        function bindCreateButtons() {
+            document.querySelectorAll('#createTokenBtn, #createEmptyTokenBtn').forEach(function(btn) {
+                btn.onclick = function() {
+                    document.getElementById('tokenErrors').classList.add('hidden');
+                    document.getElementById('tokenForm').reset();
+                    openModal('create');
+                };
+            });
+        }
+
+        function openModal(modalName) {
+            var modals = {
                 create: document.getElementById('createTokenModal'),
                 show: document.getElementById('showTokenModal'),
                 delete: document.getElementById('deleteTokenModal')
             };
-
-            const modalCloseButtons = document.querySelectorAll('.modal-close');
-            let currentDeleteTokenId = null;
-
-            // 打开模态框
-            function openModal(modalName) {
-                Object.values(modals).forEach(modal => modal.classList.remove('show'));
-                if (modals[modalName]) {
-                    modals[modalName].classList.add('show');
+            Object.values(modals).forEach(function(modal) {
+                if (modal) {
+                    modal.classList.remove('show');
                 }
+            });
+            if (modals[modalName]) {
+                modals[modalName].classList.add('show');
+            }
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(function(modal) {
+                modal.classList.remove('show');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var customDateInput = document.getElementById('customExpiryDate');
+            if (customDateInput) {
+                customDateInput.min = new Date().toISOString().slice(0, 10);
             }
 
-            // 关闭所有模态框
-            function closeModals() {
-                Object.values(modals).forEach(modal => modal.classList.remove('show'));
-            }
+            bindCreateButtons();
+            loadTokens();
 
-            // 绑定关闭按钮事件
-            modalCloseButtons.forEach(button => {
+            document.querySelectorAll('.modal-close').forEach(function(button) {
                 button.addEventListener('click', closeModals);
             });
 
-            // 点击模态框背景关闭
-            Object.values(modals).forEach(modal => {
+            document.querySelectorAll('.modal').forEach(function(modal) {
                 modal.addEventListener('click', function(e) {
                     if (e.target === modal) {
                         closeModals();
@@ -548,84 +617,65 @@
                 });
             });
 
-            // ESC键关闭模态框
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeModals();
                 }
             });
 
-            // 创建令牌按钮
-            const createTokenBtns = document.querySelectorAll('#createTokenBtn, #createEmptyTokenBtn');
-            createTokenBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.getElementById('tokenErrors').classList.add('hidden');
-                    document.getElementById('tokenForm').reset();
-                    openModal('create');
-                });
-            });
-
-            // 过期时间选择器逻辑
-            const expiresSelect = document.getElementById('expiresAt');
-            const customDateInput = document.getElementById('customExpiryDate');
-            const customTimeInput = document.getElementById('customExpiryTime');
-
-            if (expiresSelect) {
+            var expiresSelect = document.getElementById('expiresAt');
+            var customTimeInput = document.getElementById('customExpiryTime');
+            if (expiresSelect && customDateInput && customTimeInput) {
                 expiresSelect.addEventListener('change', function() {
-                    const isCustom = this.value === 'custom';
+                    var isCustom = this.value === 'custom';
                     customDateInput.classList.toggle('hidden', !isCustom);
                     customTimeInput.classList.toggle('hidden', !isCustom);
 
                     if (!isCustom && this.value) {
-                        const days = parseInt(this.value);
-                        const expiryDate = new Date();
+                        var days = parseInt(this.value, 10);
+                        var expiryDate = new Date();
                         expiryDate.setDate(expiryDate.getDate() + days);
                         customDateInput.value = expiryDate.toISOString().split('T')[0];
                     }
                 });
             }
 
-            // 创建令牌提交
-            const createTokenSubmitBtn = document.getElementById('createTokenSubmit');
+            var createTokenSubmitBtn = document.getElementById('createTokenSubmit');
             if (createTokenSubmitBtn) {
-                createTokenSubmitBtn.addEventListener('click', function() {
-                    createToken();
-                });
+                createTokenSubmitBtn.addEventListener('click', createToken);
             }
 
-            // 删除令牌功能
-            const deleteTokenBtns = document.querySelectorAll('.delete-token-btn');
-            deleteTokenBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentDeleteTokenId = this.getAttribute('data-token-id');
-                    document.getElementById('deleteTokenName').textContent =
-                        this.getAttribute('data-token-name');
-                    openModal('delete');
-                });
+            document.addEventListener('click', function(e) {
+                var deleteBtn = e.target.closest('.delete-token-btn');
+                if (!deleteBtn) {
+                    return;
+                }
+                tokenState.currentDeleteTokenId = deleteBtn.getAttribute('data-token-id');
+                document.getElementById('deleteTokenName').textContent = deleteBtn.getAttribute('data-token-name') || '';
+                openModal('delete');
             });
 
-            // 确认删除令牌
-            const confirmDeleteBtn = document.getElementById('confirmDeleteToken');
+            var confirmDeleteBtn = document.getElementById('confirmDeleteToken');
             if (confirmDeleteBtn) {
                 confirmDeleteBtn.addEventListener('click', function() {
-                    if (!currentDeleteTokenId) return;
-                    deleteToken(currentDeleteTokenId);
+                    if (!tokenState.currentDeleteTokenId) {
+                        return;
+                    }
+                    deleteToken(tokenState.currentDeleteTokenId);
                 });
             }
         });
 
-        // 创建令牌函数
         function createToken() {
             const form = document.getElementById('tokenForm');
             const formData = new FormData(form);
 
-            // 处理自定义过期时间
             const expiresSelect = document.getElementById('expiresAt');
             if (expiresSelect.value === 'custom') {
                 const date = document.getElementById('customExpiryDate').value;
                 const time = document.getElementById('customExpiryTime').value;
                 if (date && time) {
-                    const datetime = new Date(`${date}T${time}:00`);
+                    const datetime = new Date(date + 'T' + time + ':00');
                     formData.set('expires_at', datetime.toISOString());
                 }
             }
@@ -633,7 +683,6 @@
             const submitBtn = document.getElementById('createTokenSubmit');
             const originalBtnText = submitBtn.innerHTML;
 
-            // 显示加载状态
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>创建中...';
             if (!apiRequest) {
@@ -654,30 +703,19 @@
 
             apiRequest('POST', '/personal-access-tokens', payload).then(function(response) {
                 if (response && response.code == 9999) {
-                    // 关闭创建模态框
-                    document.querySelector('#createTokenModal .modal-close').click();
-
-                    // 显示新令牌
+                    closeModals();
                     document.getElementById('newTokenValue').value = response.result.token;
-
-                    // 打开显示令牌模态框
-                    document.getElementById('showTokenModal').classList.add('show');
-
-                    // 3秒后自动刷新页面
-                    setTimeout(function() {
-                        location.reload();
-                    }, 3000);
+                    openModal('show');
+                    loadTokens();
                     return;
                 }
 
-                // 显示错误信息
                 const errorDiv = document.getElementById('tokenErrors');
                 const errorList = document.getElementById('tokenErrorList');
-                errorList.innerHTML = `<li>${(response && response.msg) ? response.msg : '创建失败，请稍后重试'}</li>`;
+                errorList.innerHTML = '<li>' + ((response && response.msg) ? response.msg : '创建失败，请稍后重试') + '</li>';
                 errorDiv.classList.remove('hidden');
                 errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }).catch(function(error) {
-                // 显示验证错误
                 const errorDiv = document.getElementById('tokenErrors');
                 const errorList = document.getElementById('tokenErrorList');
                 errorList.innerHTML = '';
@@ -686,7 +724,7 @@
                 if (errors) {
                     Object.keys(errors).forEach(function(key) {
                         (errors[key] || []).forEach(function(msg) {
-                            errorList.innerHTML += `<li>${msg}</li>`;
+                            errorList.innerHTML += '<li>' + escapeHtml(msg) + '</li>';
                         });
                     });
                 } else {
@@ -701,12 +739,10 @@
             });
         }
 
-        // 删除令牌函数
         function deleteToken(id) {
             const deleteBtn = document.getElementById('confirmDeleteToken');
             const originalBtnText = deleteBtn.innerHTML;
 
-            // 显示加载状态
             deleteBtn.disabled = true;
             deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>删除中...';
             if (!apiRequest) {
@@ -716,27 +752,14 @@
                 return;
             }
 
-            apiRequest('DELETE', `/personal-access-tokens/${id}`, {}).then(function(response) {
+            apiRequest('DELETE', '/personal-access-tokens/' + id, {}).then(function(response) {
                 if (response && response.code == 9999) {
-                    // 从DOM中移除行
-                    const tokenRow = document.getElementById(`token-${id}`);
-                    if (tokenRow) {
-                        tokenRow.style.opacity = '0';
-                        setTimeout(() => {
-                            if (tokenRow.parentNode) {
-                                tokenRow.parentNode.removeChild(tokenRow);
-                            }
-                        }, 300);
-                    }
-
-                    // 显示成功消息
+                    tokenState.items = tokenState.items.filter(function(item) {
+                        return String(item.id) !== String(id);
+                    });
+                    renderTokenTable();
                     showNotification('success', response.msg || '令牌删除成功');
-
-                    // 关闭模态框
-                    document.querySelector('#deleteTokenModal .modal-close').click();
-
-                    // 更新计数
-                    updateTokenCount();
+                    closeModals();
                 } else {
                     showNotification('error', (response && response.msg) ? response.msg : '删除失败');
                 }
@@ -748,23 +771,17 @@
             });
         }
 
-        // 复制令牌函数
         function copyToken() {
             const tokenInput = document.getElementById('newTokenValue');
-
-            // 选择文本
             tokenInput.select();
             tokenInput.setSelectionRange(0, 99999);
 
-            // 复制到剪贴板
             try {
                 const successful = document.execCommand('copy');
                 if (successful) {
                     showNotification('success', '令牌已复制到剪贴板');
-
-                    // 关闭模态框
-                    setTimeout(() => {
-                        document.querySelector('#showTokenModal .modal-close').click();
+                    setTimeout(function() {
+                        closeModals();
                     }, 1500);
                 } else {
                     showNotification('error', '复制失败，请手动选择复制');
@@ -774,48 +791,33 @@
             }
         }
 
-        // 辅助函数
-        function updateTokenCount() {
-            const tokenCount = document.querySelectorAll('tbody tr').length;
-            const countElement = document.querySelector('.text-sm.text-gray-500.mt-1');
-            if (countElement) {
-                countElement.textContent = `共 ${tokenCount} 个访问令牌`;
-            }
-        }
-
         function showNotification(type, message) {
-            // 移除已有的通知
-            document.querySelectorAll('.notification-item').forEach(el => el.remove());
+            document.querySelectorAll('.notification-item').forEach(function(el) {
+                el.remove();
+            });
 
             const notification = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
             const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
 
-            notification.className = `notification-item fixed top-4 right-4 z-50 fade-in max-w-sm`;
-            notification.innerHTML = `
-            <div class="card ${bgColor} text-white shadow-xl">
-                <div class="p-4 flex items-center gap-3">
-                    <i class="fas ${icon} text-lg"></i>
-                    <div class="flex-1">${message}</div>
-                    <button class="text-white hover:text-gray-200 close-notification">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        `;
+            notification.className = 'notification-item fixed top-4 right-4 z-50 fade-in max-w-sm';
+            notification.innerHTML = ''
+                + '<div class="card ' + bgColor + ' text-white shadow-xl">'
+                + '<div class="p-4 flex items-center gap-3">'
+                + '<i class="fas ' + icon + ' text-lg"></i>'
+                + '<div class="flex-1">' + escapeHtml(message) + '</div>'
+                + '<button class="text-white hover:text-gray-200 close-notification"><i class="fas fa-times"></i></button>'
+                + '</div></div>';
 
             document.body.appendChild(notification);
-
-            // 点击关闭
-            notification.querySelector('.close-notification').addEventListener('click', () => {
+            notification.querySelector('.close-notification').addEventListener('click', function() {
                 notification.remove();
             });
 
-            // 5秒后自动关闭
-            setTimeout(() => {
+            setTimeout(function() {
                 if (notification.parentNode) {
                     notification.style.opacity = '0';
-                    setTimeout(() => {
+                    setTimeout(function() {
                         notification.parentNode.removeChild(notification);
                     }, 300);
                 }

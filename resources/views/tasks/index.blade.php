@@ -7,7 +7,6 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         @include('common.success')
 
-        <!-- 页面标题和操作栏 -->
         <div class="flex items-center justify-between mb-8">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">待办事项列表</h1>
@@ -15,96 +14,64 @@
             </div>
             <div class="flex items-center space-x-4">
                 <a href="{{'/index'}}" class="btn btn-outline">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    返回首页
+                    <i class="fas fa-arrow-left mr-2"></i>返回首页
                 </a>
                 <a href="{{'/taskpriority'}}" class="btn btn-primary">
-                    <i class="fas fa-th-large mr-2"></i>
-                    四象限视图
+                    <i class="fas fa-th-large mr-2"></i>四象限视图
                 </a>
-{{--                <button onclick="openTaskUpdateModal()" class="btn btn-primary">--}}
-{{--                    <i class="fas fa-plus mr-2"></i>--}}
-{{--                    新建任务--}}
-{{--                </button>--}}
             </div>
         </div>
 
-        <!-- 状态筛选和统计 -->
-        <div class="mb-6">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <!-- 状态筛选 -->
-                <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-                    <a href="{{'/tasks'}}?status=1&need_page=1"
-                       class="px-4 py-2 rounded-md text-sm font-medium transition-colors
-                          {{ request('status') == 1 || !request('status') ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200' }}">
-                        <i class="fas fa-spinner mr-2"></i>进行中
-                        <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs">{{ $stats['active'] ?? 0 }}</span>
-                    </a>
-                    <a href="{{'/tasks'}}?status=2&need_page=1"
-                       class="px-4 py-2 rounded-md text-sm font-medium transition-colors
-                          {{ request('status') == 2 ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200' }}">
-                        <i class="fas fa-check-circle mr-2"></i>已完成
-                        <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs">{{ $stats['completed'] ?? 0 }}</span>
-                    </a>
-                    <a href="{{'/tasks'}}?status=3&need_page=1"
-                       class="px-4 py-2 rounded-md text-sm font-medium transition-colors
-                          {{ request('status') == 3 ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200' }}">
-                        <i class="fas fa-folder mr-2"></i>已折叠
-                        <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs">{{ $stats['folded'] ?? 0 }}</span>
-                    </a>
-                    <a href="{{'/tasks'}}?status=all&need_page=1"
-                       class="px-4 py-2 rounded-md text-sm font-medium transition-colors
-                          {{ request('status') == 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200' }}">
-                        <i class="fas fa-list mr-2"></i>全部
-                        <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs">{{ $stats['total'] ?? 0 }}</span>
-                    </a>
-                </div>
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1" id="taskStatusFilters">
+                <button type="button" class="px-4 py-2 rounded-md text-sm font-medium transition-colors" data-status="1">
+                    <i class="fas fa-spinner mr-2"></i>进行中
+                    <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs" id="count-active">0</span>
+                </button>
+                <button type="button" class="px-4 py-2 rounded-md text-sm font-medium transition-colors" data-status="2">
+                    <i class="fas fa-check-circle mr-2"></i>已完成
+                    <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs" id="count-completed">0</span>
+                </button>
+                <button type="button" class="px-4 py-2 rounded-md text-sm font-medium transition-colors" data-status="3">
+                    <i class="fas fa-folder mr-2"></i>已折叠
+                    <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs" id="count-folded">0</span>
+                </button>
+                <button type="button" class="px-4 py-2 rounded-md text-sm font-medium transition-colors" data-status="all">
+                    <i class="fas fa-list mr-2"></i>全部
+                    <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs" id="count-total">0</span>
+                </button>
+            </div>
 
-                <!-- 快速操作 -->
-                <div class="flex items-center space-x-2">
-                    <div class="relative">
-                        <input type="text"
-                               placeholder="搜索任务..."
-                               class="input pl-10 pr-4 py-2 w-64"
-                               id="taskSearch">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    </div>
-                    <button class="btn btn-sm btn-outline" id="exportTasks">
-                        <i class="fas fa-download mr-2"></i>
-                        导出
-                    </button>
+            <div class="flex items-center space-x-2">
+                <div class="relative">
+                    <input type="text" placeholder="搜索任务..." class="input pl-10 pr-4 py-2 w-64" id="taskSearch">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                 </div>
             </div>
         </div>
 
-        <!-- 待办列表 -->
         <div class="card">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <h2 class="text-xl font-semibold text-gray-900">任务列表</h2>
-                        <span class="text-sm text-gray-500">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        共 {{ count($tasks) }} 条记录
-                    </span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-                                title="列表视图">
-                            <i class="fas fa-list"></i>
-                        </button>
-                        <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-                                title="分组视图">
-                            <i class="fas fa-th"></i>
-                        </button>
-                    </div>
-                </div>
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900">任务列表</h2>
+                <span class="text-sm text-gray-500" id="taskRecordCount">共 0 条记录</span>
             </div>
 
             <div class="p-6">
-                @if (count($tasks) > 0)
-                    <!-- 桌面端表格视图 -->
-                    <div class="hidden md:block">
+                <div id="taskEmptyState" class="text-center py-16 hidden">
+                    <div class="mb-6">
+                        <div class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gray-100 mb-4">
+                            <i class="fas fa-tasks text-4xl text-gray-400"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">当前没有待办任务</h3>
+                        <p class="text-gray-600 mb-6">创建您的第一个任务，开始高效工作吧！</p>
+                    </div>
+                    <a href="{{url('/index')}}" class="btn btn-outline ml-4">
+                        <i class="fas fa-home mr-2"></i>返回首页
+                    </a>
+                </div>
+
+                <div id="taskContentArea">
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="table">
                             <thead>
                             <tr>
@@ -112,350 +79,30 @@
                                 <th class="w-40">更新日期</th>
                                 <th>任务内容</th>
                                 <th class="w-40">优先级</th>
-                                <th class="w-40">模式</th>
                                 <th class="w-32">操作</th>
                             </tr>
                             </thead>
-                            <tbody>
-                                <?php $lastDate = ''; ?>
-                            @foreach ($tasks as $task)
-                                    <?php
-                                    $currentDate = date('m-d', strtotime($task->updated_at));
-                                    $shouldShowDate = ($currentDate != $lastDate);
-                                    $lastDate = $currentDate;
-                                    ?>
-                                <tr class="hover:bg-gray-50 transition-colors
-                                    {{ $task->priority == 4 ? 'bg-red-50 hover:bg-red-100' :
-                                       ($task->priority == 3 ? 'bg-orange-50 hover:bg-orange-100' :
-                                       ($task->priority == 2 ? 'bg-blue-50 hover:bg-blue-100' : '')) }}">
-                                    <td>
-                                        <div class="flex items-center">
-                                            @if($task->status == 1)
-                                                <span class="badge badge-primary">
-                                                    <i class="fas fa-spinner mr-1"></i>进行中
-                                                </span>
-                                            @elseif($task->status == 2)
-                                                <span class="badge badge-success">
-                                                    <i class="fas fa-check-circle mr-1"></i>已完成
-                                                </span>
-                                            @elseif($task->status == 3)
-                                                <span class="badge badge-secondary">
-                                                    <i class="fas fa-folder mr-1"></i>已折叠
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="flex flex-col">
-                                            @if($shouldShowDate)
-                                                <span class="text-sm font-medium text-gray-900">{{ $currentDate }}</span>
-                                            @endif
-                                            <span class="text-xs text-gray-500">{{ date('H:i', strtotime($task->updated_at)) }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="flex items-start">
-                                            <div class="flex-1">
-                                                <div class="font-medium text-gray-900 mb-1">
-                                                    @if(isset($task->parentTask->name))
-                                                        <span class="text-gray-500 text-sm">{{ $task->parentTask->name}} →</span>
-                                                    @endif
-                                                    {{ $task->name }}
-                                                </div>
-                                                @if($task->remindtime || $task->deadline)
-                                                    <div class="flex items-center space-x-3 text-xs text-gray-500">
-                                                        @if($task->remindtime)
-                                                            <span>
-                                                        <i class="far fa-bell mr-1"></i>
-                                                        提醒: {{ date('m-d H:i', strtotime($task->remindtime)) }}
-                                                    </span>
-                                                        @endif
-                                                        @if($task->deadline)
-                                                            <span>
-                                                        <i class="far fa-clock mr-1"></i>
-                                                        截止: {{ date('m-d H:i', strtotime($task->deadline)) }}
-                                                    </span>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            @if($task->is_top == 1)
-                                                <div class="ml-2">
-                                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                                                    <i class="fas fa-thumbtack"></i> 置顶
-                                                </span>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if($task->priority == 4)
-                                            <span class="badge bg-red-100 text-red-700">
-                                                <i class="fas fa-exclamation-circle mr-1"></i>重要紧急
-                                            </span>
-                                        @elseif($task->priority == 3)
-                                            <span class="badge bg-orange-100 text-orange-700">
-                                                <i class="fas fa-star mr-1"></i>重要不紧急
-                                            </span>
-                                        @elseif($task->priority == 2)
-                                            <span class="badge bg-blue-100 text-blue-700">
-                                                <i class="fas fa-bolt mr-1"></i>紧急不重要
-                                            </span>
-                                        @else
-                                            <span class="badge bg-gray-100 text-gray-700">
-                                                <i class="fas fa-ellipsis-h mr-1"></i>不重要不紧急
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($task->mode == 1)
-                                            <span class="badge bg-blue-100 text-blue-700">
-                                            <i class="fas fa-briefcase mr-1"></i>工作
-                                        </span>
-                                        @else
-                                            <span class="badge bg-green-100 text-green-700">
-                                            <i class="fas fa-home mr-1"></i>生活
-                                        </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="flex items-center justify-end space-x-3">
-                                            <a href="/notes?source_type=3&source_id={{$task->id}}"
-                                               class="text-gray-400 hover:text-blue-600 transition-colors"
-                                               title="添加笔记">
-                                                <i class="fas fa-sticky-note"></i>
-                                            </a>
-                                            <button onclick="editTask('{{ $task->id }}')"
-                                                    class="text-gray-400 hover:text-green-600 transition-colors"
-                                                    title="编辑任务">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            @if($task->status == 1)
-                                                <button class="complete-task text-gray-400 hover:text-green-600 transition-colors"
-                                                        data-task-id="{{ $task->id }}"
-                                                        title="标记完成">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
+                            <tbody id="taskTableBody"></tbody>
                         </table>
                     </div>
 
-                    <!-- 移动端卡片视图 -->
-                    <div class="md:hidden space-y-4">
-                            <?php $lastDate = ''; ?>
-                        @foreach ($tasks as $task)
-                                <?php
-                                $currentDate = date('m-d', strtotime($task->updated_at));
-                                $shouldShowDate = ($currentDate != $lastDate);
-                                $lastDate = $currentDate;
-                                ?>
-                            <div class="card hover:shadow-md transition-shadow
-                            {{ $task->priority == 4 ? 'border-l-4 border-red-500' :
-                               ($task->priority == 3 ? 'border-l-4 border-orange-500' :
-                               ($task->priority == 2 ? 'border-l-4 border-blue-500' : 'border-l-4 border-gray-300')) }}">
-                                <div class="p-4">
-                                    <!-- 日期分隔 -->
-                                    @if($shouldShowDate)
-                                        <div class="mb-3 pb-2 border-b border-gray-100">
-                                            <div class="flex items-center space-x-2">
-                                                <i class="fas fa-calendar-day text-blue-500"></i>
-                                                <span class="font-medium text-gray-900">{{ $currentDate }}</span>
-                                                <span class="text-sm text-gray-500">{{ date('H:i', strtotime($task->updated_at)) }}</span>
-                                            </div>
-                                        </div>
-                                    @endif
+                    <div class="md:hidden space-y-4" id="taskMobileList"></div>
 
-                                    <!-- 任务内容 -->
-                                    <div class="mb-4">
-                                        <div class="flex items-start justify-between mb-2">
-                                            <div class="flex-1">
-                                                <div class="flex items-center flex-wrap gap-2 mb-2">
-                                                    @if($task->status == 1)
-                                                        <span class="badge badge-primary text-xs">进行中</span>
-                                                    @elseif($task->status == 2)
-                                                        <span class="badge badge-success text-xs">已完成</span>
-                                                    @elseif($task->status == 3)
-                                                        <span class="badge badge-secondary text-xs">已折叠</span>
-                                                    @endif
-
-                                                    @if($task->priority == 4)
-                                                        <span class="badge bg-red-100 text-red-700 text-xs">重要紧急</span>
-                                                    @elseif($task->priority == 3)
-                                                        <span class="badge bg-orange-100 text-orange-700 text-xs">重要不紧急</span>
-                                                    @elseif($task->priority == 2)
-                                                        <span class="badge bg-blue-100 text-blue-700 text-xs">紧急不重要</span>
-                                                    @endif
-
-                                                    @if($task->mode == 1)
-                                                        <span class="badge bg-blue-100 text-blue-700 text-xs">工作</span>
-                                                    @else
-                                                        <span class="badge bg-green-100 text-green-700 text-xs">生活</span>
-                                                    @endif
-                                                </div>
-
-                                                <div class="font-medium text-gray-900">
-                                                    @if(isset($task->parentTask->name))
-                                                        <div class="text-sm text-gray-500 mb-1">
-                                                            <i class="fas fa-level-up-alt rotate-90 mr-1"></i>
-                                                            {{ $task->parentTask->name}}
-                                                        </div>
-                                                    @endif
-                                                    {{ $task->name }}
-                                                </div>
-
-                                                @if($task->remindtime || $task->deadline)
-                                                    <div class="mt-2 space-y-1">
-                                                        @if($task->remindtime)
-                                                            <div class="text-xs text-gray-500">
-                                                                <i class="far fa-bell mr-1"></i>
-                                                                提醒: {{ date('m-d H:i', strtotime($task->remindtime)) }}
-                                                            </div>
-                                                        @endif
-                                                        @if($task->deadline)
-                                                            <div class="text-xs text-gray-500">
-                                                                <i class="far fa-clock mr-1"></i>
-                                                                截止: {{ date('m-d H:i', strtotime($task->deadline)) }}
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                            </div>
-
-                                            @if($task->is_top == 1)
-                                                <div class="ml-2">
-                                                    <i class="fas fa-thumbtack text-yellow-500" title="置顶任务"></i>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    <!-- 操作栏 -->
-                                    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-                                        <div class="flex items-center space-x-4">
-                                            <a href="/notes?source_type=3&source_id={{$task->id}}"
-                                               class="text-sm text-gray-600 hover:text-blue-600">
-                                                <i class="fas fa-sticky-note mr-1"></i>笔记
-                                            </a>
-                                            <button onclick="callOpenTaskUpdateModal('{{ addslashes(json_encode($task->toArray())) }}')"
-                                                    class="text-sm text-gray-600 hover:text-green-600">
-                                                <i class="fas fa-edit mr-1"></i>编辑
-                                            </button>
-                                        </div>
-                                        <div class="flex items-center space-x-3">
-                                            @if($task->status == 1)
-                                                <button class="complete-task text-sm text-green-600 hover:text-green-800"
-                                                        data-task-id="{{ $task->id }}">
-                                                    <i class="fas fa-check mr-1"></i>完成
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <!-- 分页 -->
-                    @if($tasks->hasPages())
-                        <div class="mt-8 pt-6 border-t border-gray-200">
-                            <div class="flex flex-col md:flex-row items-center justify-between">
-                                <div class="text-sm text-gray-500 mb-4 md:mb-0">
-                                    显示 {{ $tasks->firstItem() }} - {{ $tasks->lastItem() }} 条，共 {{ $tasks->total() }} 条记录
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    @if($tasks->onFirstPage())
-                                        <button class="btn btn-sm btn-secondary" disabled>
-                                            <i class="fas fa-chevron-left"></i>
-                                        </button>
-                                    @else
-                                        <a href="{{ $tasks->previousPageUrl() }}" class="btn btn-sm btn-secondary">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </a>
-                                    @endif
-
-                                    @foreach(range(1, $tasks->lastPage()) as $page)
-                                        @if($page == $tasks->currentPage())
-                                            <button class="btn btn-sm btn-primary">{{ $page }}</button>
-                                        @else
-                                            <a href="{{ $tasks->url($page) }}" class="btn btn-sm btn-outline">{{ $page }}</a>
-                                        @endif
-                                    @endforeach
-
-                                    @if($tasks->hasMorePages())
-                                        <a href="{{ $tasks->nextPageUrl() }}" class="btn btn-sm btn-secondary">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </a>
-                                    @else
-                                        <button class="btn btn-sm btn-secondary" disabled>
-                                            <i class="fas fa-chevron-right"></i>
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                @else
-                    <!-- 空状态 -->
-                    <div class="text-center py-16">
-                        <div class="mb-6">
-                            <div class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gray-100 mb-4">
-                                <i class="fas fa-tasks text-4xl text-gray-400"></i>
-                            </div>
-                            <h3 class="text-xl font-semibold text-gray-900 mb-2">当前没有待办任务</h3>
-                            <p class="text-gray-600 mb-6">创建您的第一个任务，开始高效工作吧！</p>
-                        </div>
-{{--                        <button onclick="openTaskUpdateModal()" class="btn btn-primary">--}}
-{{--                            <i class="fas fa-plus mr-2"></i>--}}
-{{--                            创建第一个任务--}}
-{{--                        </button>--}}
-                        <a href="{{url('/index')}}" class="btn btn-outline ml-4">
-                            <i class="fas fa-home mr-2"></i>
-                            返回首页
-                        </a>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <!-- 使用建议 -->
-        @if(count($tasks) > 0)
-            <div class="mt-8 card">
-                <div class="p-6">
-                    <div class="flex items-start space-x-3">
-                        <div class="rounded-full bg-blue-100 p-2 mt-1">
-                            <i class="fas fa-lightbulb text-blue-600"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">高效任务管理建议</h3>
-                            <ul class="space-y-2 text-gray-600">
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                    <span><strong>使用四象限法则</strong>：将任务按重要性和紧急性分类，优先处理重要紧急事项</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                    <span><strong>设置合理提醒</strong>：为重要任务设置提醒时间，避免错过截止日期</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                    <span><strong>每日回顾</strong>：每天结束时回顾任务列表，规划第二天的工作重点</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                                    <span><strong>及时标记完成</strong>：完成任务后及时标记，保持列表整洁并获得成就感</span>
-                                </li>
-                            </ul>
+                    <div class="mt-8 pt-6 border-t border-gray-200 flex items-center justify-between" id="taskPaginationWrap">
+                        <div class="text-sm text-gray-500" id="taskPaginationText"></div>
+                        <div class="flex items-center space-x-2">
+                            <button type="button" class="btn btn-sm btn-secondary" id="taskPrevPage">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="text-sm text-gray-600" id="taskPageIndicator"></span>
+                            <button type="button" class="btn btn-sm btn-secondary" id="taskNextPage">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        @endif
+        </div>
     </div>
 
     @include('components.task-update-modal')
@@ -471,77 +118,304 @@
         function withApiReady(fn) {
             var bootstrap = window.__taskTokenBootstrapPromise;
             if (bootstrap && typeof bootstrap.then === 'function') {
-                return bootstrap.finally(function() {
-                    fn();
-                });
+                return bootstrap.finally(fn);
             }
             fn();
             return Promise.resolve();
         }
 
-        $(document).ready(function() {
-            console.log('待办列表页面已加载');
+        var taskPageState = {
+            status: '1',
+            page: 1,
+            perPage: 20,
+            total: 0,
+            lastPage: 1,
+            tasks: [],
+            statusCounts: {
+                active: 0,
+                completed: 0,
+                folded: 0,
+                total: 0
+            },
+            hasStatsLoaded: false
+        };
 
-            // 任务完成功能
-            $(document).on('click', '.complete-task', function() {
-                const taskId = $(this).data('task-id');
-                if (confirm('确认将此任务标记为已完成吗？')) {
-                    withApiReady(function() {
-                        var apiRequest = getApiRequest();
-                        if (!apiRequest) {
-                            alert('API客户端未初始化');
-                            return;
-                        }
-                        apiRequest('PUT', '/tasks/' + taskId, {status: 2}).then(function(response) {
-                        if (response.code == 9999) {
-                            location.reload();
-                        } else {
-                            alert('操作失败: ' + (response.msg || '未知错误'));
-                        }
-                        }).catch(function() {
-                            alert('请求失败，请稍后重试');
-                        });
-                    });
+        function getQueryParam(name) {
+            var params = new URLSearchParams(window.location.search || '');
+            return params.get(name);
+        }
+
+        function updateUrl() {
+            var params = new URLSearchParams(window.location.search || '');
+            params.set('status', taskPageState.status);
+            params.set('page', String(taskPageState.page));
+            window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
+        }
+
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text == null ? '' : String(text);
+            return div.innerHTML;
+        }
+
+        function formatDateTime(value) {
+            if (!value) {
+                return {date: '-', time: '-'};
+            }
+            var d = new Date(value.replace(' ', 'T'));
+            if (isNaN(d.getTime())) {
+                return {date: value, time: ''};
+            }
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var dd = String(d.getDate()).padStart(2, '0');
+            var hh = String(d.getHours()).padStart(2, '0');
+            var mi = String(d.getMinutes()).padStart(2, '0');
+            return {date: mm + '-' + dd, time: hh + ':' + mi};
+        }
+
+        function statusBadge(status) {
+            if (Number(status) === 2) {
+                return '<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>已完成</span>';
+            }
+            if (Number(status) === 3) {
+                return '<span class="badge badge-secondary"><i class="fas fa-folder mr-1"></i>已折叠</span>';
+            }
+            return '<span class="badge badge-primary"><i class="fas fa-spinner mr-1"></i>进行中</span>';
+        }
+
+        function priorityBadge(priority) {
+            if (Number(priority) === 4) {
+                return '<span class="badge bg-red-100 text-red-700"><i class="fas fa-exclamation-circle mr-1"></i>重要紧急</span>';
+            }
+            if (Number(priority) === 3) {
+                return '<span class="badge bg-orange-100 text-orange-700"><i class="fas fa-star mr-1"></i>重要不紧急</span>';
+            }
+            if (Number(priority) === 2) {
+                return '<span class="badge bg-blue-100 text-blue-700"><i class="fas fa-bolt mr-1"></i>紧急不重要</span>';
+            }
+            return '<span class="badge bg-gray-100 text-gray-700"><i class="fas fa-ellipsis-h mr-1"></i>不重要不紧急</span>';
+        }
+
+        function renderTasks() {
+            var tasks = taskPageState.tasks || [];
+            var tbody = $('#taskTableBody');
+            var mobile = $('#taskMobileList');
+            tbody.empty();
+            mobile.empty();
+
+            tasks.forEach(function(task) {
+                var updated = formatDateTime(task.updated_at);
+                var parentName = (task.parentTask && task.parentTask.name) ? task.parentTask.name : '';
+                var taskNameHtml = parentName
+                    ? '<span class="text-gray-500 text-sm">' + escapeHtml(parentName) + ' →</span> ' + escapeHtml(task.name)
+                    : escapeHtml(task.name);
+
+                var desktopRow = '' +
+                    '<tr>' +
+                    '<td>' + statusBadge(task.status) + '</td>' +
+                    '<td><div class="flex flex-col"><span class="text-sm font-medium text-gray-900">' + updated.date + '</span><span class="text-xs text-gray-500">' + updated.time + '</span></div></td>' +
+                    '<td><div class="font-medium text-gray-900">' + taskNameHtml + '</div></td>' +
+                    '<td>' + priorityBadge(task.priority) + '</td>' +
+                    '<td>' +
+                    '<div class="flex items-center justify-end space-x-3">' +
+                    '<a href="/notes?source_type=3&source_id=' + task.id + '" class="text-gray-400 hover:text-blue-600" title="添加笔记"><i class="fas fa-sticky-note"></i></a>' +
+                    '<button onclick="editTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="编辑任务"><i class="fas fa-edit"></i></button>' +
+                    (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="标记完成"><i class="fas fa-check"></i></button>' : '') +
+                    '</div>' +
+                    '</td>' +
+                    '</tr>';
+
+                var mobileCard = '' +
+                    '<div class="card border-l-4 border-gray-300"><div class="p-4">' +
+                    '<div class="flex items-center justify-between mb-2">' + statusBadge(task.status) + '<span class="text-xs text-gray-500">' + updated.date + ' ' + updated.time + '</span></div>' +
+                    '<div class="font-medium text-gray-900 mb-3">' + taskNameHtml + '</div>' +
+                    '<div class="flex items-center justify-between">' +
+                    '<div>' + priorityBadge(task.priority) + '</div>' +
+                    '<div class="flex items-center space-x-3">' +
+                    '<button onclick="editTask(' + task.id + ')" class="text-sm text-gray-600 hover:text-green-600"><i class="fas fa-edit mr-1"></i>编辑</button>' +
+                    (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-sm text-green-600 hover:text-green-800"><i class="fas fa-check mr-1"></i>完成</button>' : '') +
+                    '</div></div></div></div>';
+
+                tbody.append(desktopRow);
+                mobile.append(mobileCard);
+            });
+
+            $('#taskRecordCount').text('共 ' + taskPageState.total + ' 条记录');
+            $('#taskEmptyState').toggle(tasks.length === 0);
+            $('#taskContentArea').toggle(tasks.length > 0);
+
+            var start = taskPageState.total === 0 ? 0 : ((taskPageState.page - 1) * taskPageState.perPage + 1);
+            var end = Math.min(taskPageState.total, taskPageState.page * taskPageState.perPage);
+            $('#taskPaginationText').text('显示 ' + start + ' - ' + end + ' 条，共 ' + taskPageState.total + ' 条记录');
+            $('#taskPageIndicator').text('第 ' + taskPageState.page + ' / ' + taskPageState.lastPage + ' 页');
+            $('#taskPrevPage').prop('disabled', taskPageState.page <= 1);
+            $('#taskNextPage').prop('disabled', taskPageState.page >= taskPageState.lastPage);
+        }
+
+        function setFilterActive() {
+            $('#taskStatusFilters button').each(function() {
+                var active = $(this).data('status') == taskPageState.status;
+                $(this).toggleClass('bg-white text-gray-900 shadow-sm', active);
+                $(this).toggleClass('text-gray-600 hover:text-gray-900 hover:bg-gray-200', !active);
+            });
+        }
+
+        function loadTaskStats() {
+            var apiRequest = getApiRequest();
+            if (!apiRequest) {
+                return Promise.resolve();
+            }
+
+            return apiRequest('GET', '/tasks/tab-counts', {}).then(function(resp) {
+                if (!resp || resp.code !== 9999 || !resp.result) {
+                    return;
+                }
+                taskPageState.statusCounts = {
+                    active: Number(resp.result.active || 0),
+                    completed: Number(resp.result.completed || 0),
+                    folded: Number(resp.result.folded || 0),
+                    total: Number(resp.result.total || 0)
+                };
+                taskPageState.hasStatsLoaded = true;
+                $('#count-active').text(taskPageState.statusCounts.active);
+                $('#count-completed').text(taskPageState.statusCounts.completed);
+                $('#count-folded').text(taskPageState.statusCounts.folded);
+                $('#count-total').text(taskPageState.statusCounts.total);
+            }).catch(function() {
+                // ignore stats failure
+            });
+        }
+
+        function loadTasks() {
+            var apiRequest = getApiRequest();
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+
+            var url = '/tasks?status=' + encodeURIComponent(taskPageState.status)
+                + '&page_count=' + taskPageState.perPage
+                + '&page=' + taskPageState.page;
+
+            apiRequest('GET', url, {}).then(function(response) {
+                if (response.code !== 9999) {
+                    alert(response.msg || '加载任务失败');
+                    return;
+                }
+                var result = response.result || {};
+                var pagination = result.pagination || {};
+                taskPageState.tasks = result.tasks || [];
+
+                var currentStatus = String(taskPageState.status || '1');
+                var totalByStatus = 0;
+                if (taskPageState.hasStatsLoaded) {
+                    if (currentStatus === '2') {
+                        totalByStatus = taskPageState.statusCounts.completed;
+                    } else if (currentStatus === '3') {
+                        totalByStatus = taskPageState.statusCounts.folded;
+                    } else if (currentStatus === 'all') {
+                        totalByStatus = taskPageState.statusCounts.total;
+                    } else {
+                        totalByStatus = taskPageState.statusCounts.active;
+                    }
+                } else {
+                    totalByStatus = Number(taskPageState.tasks.length || 0);
+                }
+
+                taskPageState.total = totalByStatus;
+                taskPageState.page = Math.max(1, Number(pagination.current_page || taskPageState.page));
+                taskPageState.lastPage = Math.max(1, Math.ceil((taskPageState.total || 0) / taskPageState.perPage));
+                if (taskPageState.lastPage < taskPageState.page) {
+                    taskPageState.lastPage = taskPageState.page;
+                }
+
+                if (pagination.has_more_pages) {
+                    taskPageState.lastPage = Math.max(taskPageState.lastPage, taskPageState.page + 1);
+                }
+
+                setFilterActive();
+                renderTasks();
+                updateUrl();
+            }).catch(function() {
+                alert('请求失败，请稍后重试');
+            });
+        }
+
+        function completeTask(taskId) {
+            if (!confirm('确认将此任务标记为已完成吗？')) {
+                return;
+            }
+            var apiRequest = getApiRequest();
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+            apiRequest('PUT', '/tasks/' + taskId, {status: 2}).then(function(response) {
+                if (response.code === 9999) {
+                    loadTasks();
+                } else {
+                    alert('操作失败: ' + (response.msg || '未知错误'));
+                }
+            }).catch(function() {
+                alert('请求失败，请稍后重试');
+            });
+        }
+
+        function editTask(taskId) {
+            var apiRequest = getApiRequest();
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+            apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
+                if (response.code === 9999) {
+                    openTaskUpdateModal(response.result);
+                } else {
+                    alert('获取任务数据失败：' + (response.msg || '未知错误'));
+                }
+            }).catch(function() {
+                alert('获取任务数据失败');
+            });
+        }
+
+        $(document).ready(function() {
+            taskPageState.status = getQueryParam('status') || '1';
+            taskPageState.page = Math.max(1, Number(getQueryParam('page') || 1));
+
+            $('#taskStatusFilters').on('click', 'button', function() {
+                taskPageState.status = String($(this).data('status'));
+                taskPageState.page = 1;
+                loadTasks();
+            });
+
+            $('#taskPrevPage').on('click', function() {
+                if (taskPageState.page > 1) {
+                    taskPageState.page -= 1;
+                    loadTasks();
                 }
             });
 
-            // 搜索功能
+            $('#taskNextPage').on('click', function() {
+                if (taskPageState.page < taskPageState.lastPage) {
+                    taskPageState.page += 1;
+                    loadTasks();
+                }
+            });
+
             $('#taskSearch').on('keyup', function(e) {
                 if (e.key === 'Enter') {
-                    const searchTerm = $(this).val();
+                    var searchTerm = $(this).val();
                     if (searchTerm) {
                         window.location.href = '{{ url("/tasks") }}?search=' + encodeURIComponent(searchTerm);
                     }
                 }
             });
 
-            // 导出功能
-            $('#exportTasks').on('click', function() {
-                const status = '{{ request("status") }}' || '1';
-                window.location.href = '{{ url("/tasks/export") }}?status=' + status;
-            });
-        });
-
-        function editTask(taskId) {
             withApiReady(function() {
-                var apiRequest = getApiRequest();
-                if (!apiRequest) {
-                    alert('API客户端未初始化');
-                    return;
-                }
-
-                apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
-                if(response.code == 9999) {
-                    var task = response.result;
-                    openTaskUpdateModal(task);
-                } else {
-                    alert('获取任务数据失败：' + (response.msg || '未知错误'));
-                }
-                }).catch(function() {
-                    alert('获取任务数据失败');
+                loadTaskStats().finally(function() {
+                    loadTasks();
                 });
             });
-        }
-
+        });
     </script>
 @endsection

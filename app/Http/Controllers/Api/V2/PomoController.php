@@ -9,6 +9,7 @@ use App\Models\Pomo;
 use App\Services\PointGrantService;
 use App\Services\PomoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class PomoController extends Controller
@@ -36,10 +37,22 @@ class PomoController extends Controller
             'pagination' => array(
                 'current_page' => $pomos->currentPage(),
                 'per_page' => $pomos->perPage(),
+                'total' => null,
+                'last_page' => null,
                 'next_page_url' => $pomos->nextPageUrl(),
                 'prev_page_url' => $pomos->previousPageUrl(),
                 'has_more_pages' => $pomos->hasMorePages(),
             ),
+        )));
+    }
+
+    public function tabCounts(Request $request)
+    {
+        $counts = $this->pomoService->getDoneCounts(Auth::id());
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'total' => (int)($counts['total'] ?? 0),
+            'today' => (int)($counts['today'] ?? 0),
         )));
     }
 

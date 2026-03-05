@@ -30,9 +30,6 @@
                 </div>
             </div>
 
-            <!-- 成功消息提示 -->
-            @include('common.success')
-
             <!-- 微信公众号订阅卡片 -->
             <div class="card border-2 border-yellow-200 bg-yellow-50">
                 <div class="p-6 border-b border-yellow-200">
@@ -105,8 +102,7 @@
                             </p>
                         </div>
 
-                        <form action="/api/v2/feeds" method="post" id="weixinSubscriptionForm">
-                            {!! csrf_field() !!}
+                        <form action="javascript:void(0)" method="post" id="weixinSubscriptionForm">
 
                             <!-- 公众号ID -->
                             <div class="space-y-2 mb-6">
@@ -148,11 +144,7 @@
                                             name="category_id"
                                             disabled
                                             class="input pl-10 w-full appearance-none bg-gray-100 cursor-not-allowed">
-                                        @foreach ($categorys as $category)
-                                            <option value="{{ $category->id }}">
-                                                {{ $category->name }}
-                                            </option>
-                                        @endforeach
+                                        <option value="">维护中</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                         <i class="fas fa-chevron-down text-gray-400"></i>

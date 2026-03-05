@@ -616,6 +616,15 @@
 
         // 初始化Markdown编辑器
         let easymde = null;
+        let notesState = {
+            items: [],
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0
+            }
+        };
+        const CURRENT_USER_ID = Number('{{ Auth::id() }}' || 0);
 
         function initMarkdownEditor() {
             easymde = new EasyMDE({
@@ -656,10 +665,6 @@
                 updateCharCount();
             });
 
-            // 初始加载内容
-            @if(isset($add_content) && $add_content)
-            easymde.value(`{{ $add_content }}`);
-            @endif
         }
 
         // 更新字符计数
@@ -870,15 +875,23 @@
 
         function uploadAudioFile(blob) {
             const formData = new FormData();
-            const filename = '{{ md5(date('YmdHis').rand(0,99)) }}.mp3';
+            const filename = 'rec_' + Date.now() + '_' + Math.floor(Math.random() * 10000) + '.mp3';
 
             formData.append('file', blob, filename);
             formData.append('fname', filename.replace('.mp3', ''));
 
             waitTokenReady().then(function() {
-                const headers = {
-                    'Accept': 'application/json'
-                };
+                if (typeof window.taskApiFetch === 'function') {
+                    return window.taskApiFetch('/api/v2/notes/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+                }
+
+                const headers = { 'Accept': 'application/json' };
                 const accessToken = getAccessToken();
                 if (accessToken) {
                     headers['Authorization'] = 'Bearer ' + accessToken;
@@ -966,6 +979,7 @@
             // 初始化Markdown编辑器
             initMarkdownEditor();
             updateCharCount();
+            initCreateFormFromQuery();
 
             // 初始化录音器 - 恢复以前的初始化逻辑
             try {
@@ -992,23 +1006,7 @@
                 console.error('页面初始化失败:', error);
             }
 
-            // 检查笔记是否需要折叠
-            document.querySelectorAll('.note-content').forEach(content => {
-                const noteId = content.id.replace('note-content-', '');
-                const lineHeight = parseInt(getComputedStyle(content).lineHeight);
-                const maxLines = 8;
-
-                if (content.scrollHeight > lineHeight * maxLines) {
-                    content.classList.add('collapsed');
-
-                    // 添加展开按钮
-                    const expandBtn = document.createElement('button');
-                    expandBtn.className = 'expand-btn';
-                    expandBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>展开';
-                    expandBtn.onclick = () => toggleNoteExpand(noteId);
-                    content.parentNode.appendChild(expandBtn);
-                }
-            });
+            loadNotes(getNoteQueryParams().page || 1);
         });
 
         // 打开AI助手
@@ -1089,11 +1087,13 @@
         }
 
         // 标签过滤
-        function filterNotes(tag) {
+        function filterNotes(tag, evt) {
             const currentFilter = document.querySelector('.filter-tag.active');
             if (currentFilter) currentFilter.classList.remove('active');
 
-            event.target.classList.add('active');
+            if (evt && evt.target) {
+                evt.target.classList.add('active');
+            }
 
             // 这里可以添加AJAX请求来筛选笔记
             // 暂时先实现简单的客户端筛选
@@ -1110,22 +1110,10 @@
     </script>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- 页面标题 -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 mb-2">记录想法</h1>
-                    <p class="text-gray-600">使用Markdown记录您的思考、灵感和笔记，支持AI助手优化</p>
-                </div>
-                <a href="{{ url('/notes?view=help') }}" class="btn btn-outline btn-sm" target="_blank">
-                    <i class="fas fa-question-circle mr-2"></i>Markdown帮助
-                </a>
-            </div>
-        </div>
 
         <!-- 新建笔记卡片 -->
         <div class="card card-elevated mb-8">
-            <form id="add_note_form" action="{{ url('/api/v2/notes') }}" method="POST">
+            <form id="add_note_form" action="javascript:void(0)" method="POST">
                 {!! csrf_field() !!}
 
                 <div class="p-6">
@@ -1172,26 +1160,22 @@
                     </div>
 
                     <!-- 图片预览 -->
-                    @if(!empty($add_image))
-                        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-sm font-medium text-gray-700">图片预览</span>
-                                <button type="button" onclick="this.parentElement.parentElement.remove()"
-                                        class="text-gray-400 hover:text-gray-600">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <img src="{{ $add_image }}"
-                                 alt="预览图片"
-                                 class="rounded-lg max-h-[200px] mx-auto">
-                            <input type="hidden" name="add_image" value="{{ $add_image }}">
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg" id="add-image-preview-box" style="display:none;">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-medium text-gray-700">图片预览</span>
+                            <button type="button" onclick="hideAddImagePreview()"
+                                    class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                    @endif
+                        <img src="" alt="预览图片" class="rounded-lg max-h-[200px] mx-auto" id="add-image-preview-img">
+                        <input type="hidden" name="add_image" value="" id="add_image_input">
+                    </div>
                 </div>
 
                 <!-- 隐藏字段 -->
-                <input type="hidden" name="source_type" value="{{ $source_type }}">
-                <input type="hidden" name="source_id" value="{{ $source_id }}">
+                <input type="hidden" name="source_type" value="0" id="source_type_input">
+                <input type="hidden" name="source_id" value="0" id="source_id_input">
                 <input type="hidden" name="fname" id="fname">
                 <input type="hidden" name="status" id="status_id" value="">
 
@@ -1223,145 +1207,22 @@
             </form>
         </div>
 
-        <!-- 标签过滤 -->
-        <div class="filter-tags">
-            <div class="filter-tag active" onclick="filterNotes('all')">全部笔记</div>
-            <div class="filter-tag" onclick="filterNotes('每日小目标')">每日小目标</div>
-            <div class="filter-tag" onclick="filterNotes('读书笔记')">读书笔记</div>
-            <div class="filter-tag" onclick="filterNotes('工作思考')">工作思考</div>
-            <div class="filter-tag" onclick="filterNotes('灵感闪现')">灵感闪现</div>
-            <div class="filter-tag" onclick="filterNotes('会议记录')">会议记录</div>
-            <div class="filter-tag" onclick="filterNotes('项目复盘')">项目复盘</div>
-        </div>
 
         <!-- 笔记列表 -->
-        @if(count($notes) > 0)
-            <div class="mb-8">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-gray-900">
-                        <i class="fas fa-comments text-blue-500 mr-2"></i>
-                        笔记列表
-                    </h2>
-                    <div class="text-sm text-gray-500">
-                        共 {{ $notes->total() }} 条笔记
-                    </div>
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900">
+                    <i class="fas fa-comments text-blue-500 mr-2"></i>
+                    笔记列表
+                </h2>
+                <div class="text-sm text-gray-500" id="note-total-text">
+                    共 0 条笔记
                 </div>
-
-                @foreach ($notes as $note)
-                    <div class="note-card" id="note-{{ $note->id }}">
-                        <!-- 笔记头部 -->
-                        <div class="note-header">
-                            <div class="user-info">
-                                <div class="user-avatar" style="background: linear-gradient(135deg, {{ $note->user->color_1 ?? '#4a90e2' }}, {{ $note->user->color_2 ?? '#8a6cff' }})">
-                                    {{ substr($note->user->name, 0, 1) }}
-                                </div>
-                                <div class="user-details">
-                                    <div class="user-name">
-                                        {{ $note->user->name }}
-                                        <span class="note-status-badge {{ $note->status == 2 ? 'status-public' : 'status-private' }}">
-                                            {{ $note->status == 2 ? '公开' : '私密' }}
-                                        </span>
-                                    </div>
-                                    <div class="note-time">
-                                        <i class="far fa-clock mr-1"></i>
-                                        {{ $note->created_at->diffForHumans() }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 操作按钮 -->
-                            <div class="note-operations">
-                                <button class="operation-btn ai" onclick="openNoteAI('{{ $note->id }}')" title="AI助手">
-                                    <i class="fas fa-robot"></i>
-                                </button>
-                                <button class="operation-btn" onclick="copyNoteContent('{{ $note->id }}')" title="复制内容">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                @if($note->user_id == Auth::id())
-                                    <button class="operation-btn edit"
-                                            onclick="window.location='{{ url('noteupdate/'.$note->id) }}'"
-                                            title="编辑笔记">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="operation-btn delete delete_note"
-                                            note_value="{{ $note->id }}"
-                                            note_token="{{ csrf_token() }}"
-                                            title="删除笔记">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                @else
-                                    <button class="operation-btn like like_note"
-                                            note_value="{{ $note->id }}"
-                                            note_token="{{ csrf_token() }}"
-                                            title="点赞">
-                                        <i class="far fa-thumbs-up"></i>
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
-
-                        <!-- 笔记内容 -->
-                        <div class="note-body">
-                            <!-- 语音记录 -->
-                            @if(!empty($note->record_path) && ($note->user_id == Auth::id() || $note->status == 2))
-                                <div class="note-media">
-                                    <div class="audio-player">
-                                        <button class="audio-player-btn" onclick="playNoteAudio('{{ $note->id }}', this)">
-                                            <i class="fas fa-play"></i>
-                                        </button>
-                                        <div style="flex: 1">
-                                            <div style="font-weight: 500; color: var(--gray-700); margin-bottom: 4px;">语音记录</div>
-                                            <div style="font-size: 13px; color: var(--gray-500);">点击播放收听</div>
-                                        </div>
-                                        <audio id="audio-{{ $note->id }}"
-                                               data-api-url="/api/v2/notes/{{ $note->id }}/record"
-                                               preload="metadata"></audio>
-                                    </div>
-                                </div>
-                            @endif
-
-                            <!-- 图片 -->
-                            @if(!empty($note->image_path) && ($note->user_id == Auth::id() || $note->status == 2))
-                                <div class="note-media">
-                                    <a href="{{ $note->image_path }}" target="_blank">
-                                        <img src="{{ $note->image_path }}"
-                                             alt="笔记图片"
-                                             class="note-image">
-                                    </a>
-                                </div>
-                            @endif
-
-                            <!-- Markdown内容 -->
-                            <div class="note-content markdown-content" id="note-content-{{ $note->id }}">
-                                {!! App\Http\Utils\CommonUtil::formatContentHtml($note->name) !!}
-                            </div>
-
-                            <!-- AI助手操作 -->
-                            <div class="ai-actions">
-                                <button class="ai-action-btn" onclick="openNoteAI('{{ $note->id }}', '{{ addslashes($note->name) }}')">
-                                    <i class="fas fa-robot"></i> AI优化
-                                </button>
-                                <button class="ai-action-btn" onclick="summarizeNote('{{ $note->id }}')">
-                                    <i class="fas fa-file-alt"></i> 总结摘要
-                                </button>
-                                <button class="ai-action-btn" onclick="translateNote('{{ $note->id }}')">
-                                    <i class="fas fa-language"></i> 翻译
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-
-                <!-- 分页 -->
-                @if($notes->hasPages())
-                    <div class="mt-8 pt-6 border-t border-gray-200">
-                        {{ $notes->links() }}
-                    </div>
-                @endif
             </div>
-        @else
-            <!-- 空状态 -->
-            <div class="text-center py-16 card">
+
+            <div id="notes-list"></div>
+
+            <div class="text-center py-16 card" id="notes-empty" style="display:none;">
                 <div class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gray-100 mb-6">
                     <i class="fas fa-sticky-note text-4xl text-gray-400"></i>
                 </div>
@@ -1372,10 +1233,230 @@
                     开始记录
                 </button>
             </div>
-        @endif
+
+            <div class="mt-8 pt-6 border-t border-gray-200 flex items-center justify-center gap-3" id="notes-pagination" style="display:none;">
+                <button type="button" class="btn btn-outline" id="notes-prev-btn">
+                    <i class="fas fa-chevron-left mr-2"></i>上一页
+                </button>
+                <span class="text-sm text-gray-600" id="notes-page-text">第 1 / 1 页</span>
+                <button type="button" class="btn btn-outline" id="notes-next-btn">
+                    下一页<i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatRelativeTime(value) {
+            if (!value) return '刚刚';
+            const date = new Date(String(value).replace(' ', 'T'));
+            if (Number.isNaN(date.getTime())) return value;
+            const diffSec = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+            if (diffSec < 60) return '刚刚';
+            if (diffSec < 3600) return Math.floor(diffSec / 60) + '分钟前';
+            if (diffSec < 86400) return Math.floor(diffSec / 3600) + '小时前';
+            if (diffSec < 86400 * 30) return Math.floor(diffSec / 86400) + '天前';
+            return value;
+        }
+
+        function getNoteQueryParams() {
+            const query = new URLSearchParams(window.location.search || '');
+            return {
+                type: query.get('type') || '',
+                add_content: query.get('add_content') || '',
+                source_type: parseInt(query.get('source_type') || '0', 10) || 0,
+                source_id: parseInt(query.get('source_id') || '0', 10) || 0,
+                tag_id: parseInt(query.get('tag_id') || '0', 10) || 0,
+                keyword: query.get('keyword') || '',
+                page: parseInt(query.get('page') || '1', 10) || 1
+            };
+        }
+
+        function hideAddImagePreview() {
+            const box = document.getElementById('add-image-preview-box');
+            const img = document.getElementById('add-image-preview-img');
+            const input = document.getElementById('add_image_input');
+            if (box) box.style.display = 'none';
+            if (img) img.src = '';
+            if (input) input.value = '';
+        }
+
+        function initCreateFormFromQuery() {
+            const params = getNoteQueryParams();
+            const sourceTypeInput = document.getElementById('source_type_input');
+            const sourceIdInput = document.getElementById('source_id_input');
+            if (sourceTypeInput) sourceTypeInput.value = String(params.source_type || 0);
+            if (sourceIdInput) sourceIdInput.value = String(params.source_id || 0);
+
+            if (params.type === 'image' && params.add_content) {
+                const box = document.getElementById('add-image-preview-box');
+                const img = document.getElementById('add-image-preview-img');
+                const input = document.getElementById('add_image_input');
+                if (box && img && input) {
+                    img.src = params.add_content;
+                    input.value = params.add_content;
+                    box.style.display = '';
+                }
+            } else if (params.add_content && easymde) {
+                easymde.value(params.add_content);
+            }
+        }
+
+        function buildNoteCardHtml(note) {
+            const isOwn = Number(note.user_id || 0) === CURRENT_USER_ID;
+            const isPublic = Number(note.status || 0) === 2;
+            const user = note.user || {};
+            const userName = user.name || '用户';
+            const avatarLetter = userName ? userName.substring(0, 1) : 'U';
+            const color1 = user.color_1 || '#4a90e2';
+            const color2 = user.color_2 || '#8a6cff';
+            const canReadMedia = isOwn || isPublic;
+            const contentHtml = (window.marked && typeof window.marked.parse === 'function')
+                ? window.marked.parse(note.name || '')
+                : (note.name || '');
+            const actionsHtml = isOwn
+                ? '<button class="operation-btn edit" onclick="window.location=\'/noteupdate/' + Number(note.id) + '\'" title="编辑笔记"><i class="fas fa-edit"></i></button>' +
+                  '<button class="operation-btn delete delete_note" note_value="' + Number(note.id) + '" title="删除笔记"><i class="fas fa-trash"></i></button>'
+                : '<button class="operation-btn like like_note" note_value="' + Number(note.id) + '" title="点赞"><i class="far fa-thumbs-up"></i></button>';
+
+            return (
+                '<div class="note-card" id="note-' + Number(note.id) + '">' +
+                    '<div class="note-header">' +
+                        '<div class="user-info">' +
+                            '<div class="user-avatar" style="background: linear-gradient(135deg, ' + escapeHtml(color1) + ', ' + escapeHtml(color2) + ')">' + escapeHtml(avatarLetter) + '</div>' +
+                            '<div class="user-details">' +
+                                '<div class="user-name">' + escapeHtml(userName) +
+                                    '<span class="note-status-badge ' + (isPublic ? 'status-public' : 'status-private') + '">' + (isPublic ? '公开' : '私密') + '</span>' +
+                                '</div>' +
+                                '<div class="note-time"><i class="far fa-clock mr-1"></i>' + escapeHtml(formatRelativeTime(note.created_at)) + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="note-operations">' +
+                            '<button class="operation-btn ai" onclick="openNoteAI(\'' + Number(note.id) + '\')" title="AI助手"><i class="fas fa-robot"></i></button>' +
+                            '<button class="operation-btn" onclick="copyNoteContent(\'' + Number(note.id) + '\')" title="复制内容"><i class="fas fa-copy"></i></button>' +
+                            actionsHtml +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="note-body">' +
+                        (canReadMedia && note.record_path
+                            ? '<div class="note-media"><div class="audio-player"><button class="audio-player-btn" onclick="playNoteAudio(\'' + Number(note.id) + '\', this)"><i class="fas fa-play"></i></button><div style="flex: 1"><div style="font-weight: 500; color: var(--gray-700); margin-bottom: 4px;">语音记录</div><div style="font-size: 13px; color: var(--gray-500);">点击播放收听</div></div><audio id="audio-' + Number(note.id) + '" data-api-url="/api/v2/notes/' + Number(note.id) + '/record" preload="metadata"></audio></div></div>'
+                            : ''
+                        ) +
+                        (canReadMedia && note.image_path
+                            ? '<div class="note-media"><a href="' + escapeHtml(note.image_path) + '" target="_blank"><img src="' + escapeHtml(note.image_path) + '" alt="笔记图片" class="note-image"></a></div>'
+                            : ''
+                        ) +
+                        '<div class="note-content markdown-content" id="note-content-' + Number(note.id) + '">' + contentHtml + '</div>' +
+                    '</div>' +
+                '</div>'
+            );
+        }
+
+        function updateNotesPaginationUI() {
+            const pager = document.getElementById('notes-pagination');
+            const prevBtn = document.getElementById('notes-prev-btn');
+            const nextBtn = document.getElementById('notes-next-btn');
+            const pageText = document.getElementById('notes-page-text');
+            const pagination = notesState.pagination || {};
+            const currentPage = Number(pagination.current_page || 1);
+            const lastPage = Number(pagination.last_page || 1);
+
+            if (pageText) {
+                pageText.textContent = '第 ' + currentPage + ' / ' + lastPage + ' 页';
+            }
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= lastPage;
+            if (pager) {
+                pager.style.display = lastPage > 1 ? '' : 'none';
+            }
+        }
+
+        function bindNoteExpandState() {
+            document.querySelectorAll('.note-content').forEach(function(content) {
+                const noteId = content.id.replace('note-content-', '');
+                const lineHeight = parseInt(getComputedStyle(content).lineHeight || '24', 10);
+                const maxLines = 8;
+                if (content.scrollHeight > lineHeight * maxLines) {
+                    content.classList.add('collapsed');
+                    const wrapper = content.parentNode;
+                    if (wrapper && !wrapper.querySelector('.expand-btn')) {
+                        const expandBtn = document.createElement('button');
+                        expandBtn.className = 'expand-btn';
+                        expandBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>展开';
+                        expandBtn.onclick = function() { toggleNoteExpand(noteId); };
+                        wrapper.appendChild(expandBtn);
+                    }
+                }
+            });
+        }
+
+        function renderNotesList() {
+            const listEl = document.getElementById('notes-list');
+            const emptyEl = document.getElementById('notes-empty');
+            const totalText = document.getElementById('note-total-text');
+            const items = Array.isArray(notesState.items) ? notesState.items : [];
+            const total = Number((notesState.pagination || {}).total || 0);
+
+            if (totalText) totalText.textContent = '共 ' + total + ' 条笔记';
+            if (!listEl || !emptyEl) return;
+            if (!items.length) {
+                listEl.innerHTML = '';
+                emptyEl.style.display = '';
+                updateNotesPaginationUI();
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            listEl.innerHTML = items.map(buildNoteCardHtml).join('');
+            bindNoteExpandState();
+            updateNotesPaginationUI();
+        }
+
+        function loadNotes(page) {
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return Promise.resolve();
+            }
+            const params = getNoteQueryParams();
+            const requestParams = {
+                type: params.type,
+                add_content: '',
+                source_type: params.source_type,
+                source_id: params.source_id,
+                tag_id: params.tag_id,
+                keyword: params.keyword,
+                page: page || params.page || 1
+            };
+            return apiRequest('GET', '/notes', requestParams).then(function(response) {
+                var payloadRoot = response && (response.result || response.data);
+                if (!response || response.code != 9999 || !payloadRoot) {
+                    throw new Error((response && response.msg) ? response.msg : '加载失败');
+                }
+
+                const notesPayload = payloadRoot.notes || {};
+                notesState.items = Array.isArray(notesPayload.data)
+                    ? notesPayload.data
+                    : (Array.isArray(notesPayload) ? notesPayload : []);
+                notesState.pagination = {
+                    current_page: Number(notesPayload.current_page || 1),
+                    last_page: Number(notesPayload.last_page || 1),
+                    total: Number(notesPayload.total || notesState.items.length)
+                };
+                renderNotesList();
+            }).catch(function(error) {
+                showToast('笔记列表加载失败: ' + (error && error.message ? error.message : '网络错误'), 'error');
+            });
+        }
+
         // 提交表单
         function submitProcess(status) {
             if (easymde) {
@@ -1430,6 +1511,12 @@
 
             if (!audio.dataset.loaded && audio.dataset.apiUrl) {
                 waitTokenReady().then(function() {
+                    if (typeof window.taskApiFetch === 'function') {
+                        return window.taskApiFetch(audio.dataset.apiUrl, {
+                            method: 'GET'
+                        });
+                    }
+
                     const headers = {};
                     const accessToken = getAccessToken();
                     if (accessToken) {
@@ -1480,6 +1567,20 @@
 
         // 删除笔记
         $(document).ready(function(){
+            $('#notes-prev-btn').on('click', function() {
+                const currentPage = Number((notesState.pagination || {}).current_page || 1);
+                if (currentPage > 1) {
+                    loadNotes(currentPage - 1);
+                }
+            });
+            $('#notes-next-btn').on('click', function() {
+                const currentPage = Number((notesState.pagination || {}).current_page || 1);
+                const lastPage = Number((notesState.pagination || {}).last_page || 1);
+                if (currentPage < lastPage) {
+                    loadNotes(currentPage + 1);
+                }
+            });
+
             $(document).off('click', '.delete_note');
             $(document).on('click', '.delete_note', function(){
                 if(!confirm('确认要删除此笔记吗？删除后无法恢复。')) return;
@@ -1493,10 +1594,9 @@
 
                 apiRequest('DELETE', '/notes/' + noteId, {}).then(function(response) {
                     if (response.code == 9999) {
-                        $('#note-' + noteId).fadeOut(300, function() {
-                            $(this).remove();
-                            showToast('笔记删除成功', 'success');
-                        });
+                        const currentPage = Number((notesState.pagination || {}).current_page || 1);
+                        showToast('笔记删除成功', 'success');
+                        loadNotes(currentPage);
                     } else {
                         showToast('删除失败: ' + (response.msg || '未知错误'), 'error');
                     }

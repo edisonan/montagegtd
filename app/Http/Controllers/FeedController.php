@@ -10,7 +10,6 @@ use App\Services\CategoryService;
 use App\Services\FeedService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 
 
 /**
@@ -57,8 +56,7 @@ class FeedController extends Controller
      */
     public function index(Request $request)
     {
-        $indexInfo = $this->feedService->getIndexInfo($request->input('url', ''));
-        return view('feeds.index', $indexInfo);
+        return view('feeds.index');
     }
 
     /**
@@ -68,8 +66,7 @@ class FeedController extends Controller
      */
     public function explorer(Request $request)
     {
-        $explorerInfo = $this->feedService->getExplorerInfo();
-        return view('feeds.explorer', $explorerInfo);
+        return view('feeds.explorer');
     }
 
     /**
@@ -79,17 +76,7 @@ class FeedController extends Controller
      */
     public function search(Request $request)
     {
-        $recommendCategoryId = $request->input('recommend_category_id', '');
-        $name = $request->input('name', '');
-        if (empty ($recommendCategoryId) && empty ($name)) {
-            throw new CustomException ("error params");
-        }
-
-        $feeds = $this->feedService->getSearchFeeds($recommendCategoryId, $name);
-
-        return view('feeds.search', [
-            'feeds' => $feeds
-        ]);
+        return view('feeds.search');
     }
 
     /**
@@ -101,11 +88,7 @@ class FeedController extends Controller
      */
     public function setting(Request $request)
     {
-        $navInfos = $this->feedService->getNavInfo();
-
-        return view('feeds.setting', [
-            'nav_infos' => $navInfos
-        ]);
+        return view('feeds.setting');
     }
 
     /**
@@ -188,11 +171,7 @@ class FeedController extends Controller
         $this->authorize('destroy', $feedSub);
 
         if ($request->method() == 'GET') {
-            $categorys = $this->categoryService->getList($request->user(), false);
-            return view('feeds.update', array(
-                'feedSub' => $feedSub,
-                'categorys' => $categorys
-            ));
+            return view('feeds.update');
         }
 
         $this->validate($request, [
@@ -286,9 +265,7 @@ class FeedController extends Controller
      */
     public function weiborss(Request $request)
     {
-        return view('feeds.weiborss', [
-            'categorys' => $this->categoryService->getList($request->user(), false, true)
-        ]);
+        return view('feeds.weiborss');
     }
 
     /**
@@ -300,9 +277,7 @@ class FeedController extends Controller
      */
     public function weixinrss(Request $request)
     {
-        return view('feeds.weixinrss', [
-            'categorys' => $this->categoryService->getList($request->user(), false, true)
-        ]);
+        return view('feeds.weixinrss');
     }
 
     /**
@@ -314,8 +289,6 @@ class FeedController extends Controller
      */
     public function opml(Request $request)
     {
-        return view('feeds.opml', [
-            'categorys' => $this->categoryService->getList($request->user(), false, true)
-        ]);
+        return view('feeds.opml');
     }
 }

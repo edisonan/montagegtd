@@ -44,7 +44,23 @@ class PomoRepository {
         if (isset($filters['status'])){
             $pomos = $pomos->where ( 'status', $filters['status'] );
         }
-		return $pomos->paginate ($pageSize);
+		return $pomos->simplePaginate ($pageSize);
+	}
+
+	/**
+	 * 获取用户番茄统计：总完成数 + 今日完成数
+	 *
+	 * @param int $userId
+	 * @return array
+	 */
+	public function getUserDoneCounts($userId) {
+		$todayStart = date('Y-m-d 00:00:00');
+		$baseQuery = Pomo::where('user_id', $userId)->where('status', 2);
+
+		return array(
+			'total' => (int)(clone $baseQuery)->count(),
+			'today' => (int)(clone $baseQuery)->where('end_time', '>=', $todayStart)->count(),
+		);
 	}
 	
 	/**

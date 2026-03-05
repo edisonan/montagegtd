@@ -8,7 +8,7 @@
                     <div class="card-header">Reset Password</div>
 
                     <div class="card-body">
-                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/reset') }}" id="passwordResetForm">
+                        <form class="form-horizontal" role="form" method="POST" action="javascript:void(0)" id="passwordResetForm">
                             {!! csrf_field() !!}
 
                             <input type="hidden" name="token" value="{{ $token }}">
@@ -91,7 +91,7 @@
 
                 window.TaskApiClient.request({
                     method: 'POST',
-                    url: '/auth/password/reset',
+                    url: '/api/v2/auth/password/reset',
                     body: {
                         token: form.querySelector('input[name="token"]').value,
                         email: form.querySelector('input[name="email"]').value,
@@ -101,8 +101,11 @@
                     skipAuth: true
                 }).then(function() {
                     window.location.href = '{{ url('/login') }}';
-                }).catch(function() {
-                    form.submit();
+                }).catch(function(error) {
+                    var msg = (error && error.data && (error.data.msg || error.data.message))
+                        ? (error.data.msg || error.data.message)
+                        : '重置失败，请稍后重试';
+                    alert(msg);
                 }).finally(function() {
                     if (submitBtn) {
                         submitBtn.disabled = false;

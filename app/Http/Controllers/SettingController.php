@@ -44,13 +44,7 @@ class SettingController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$page_params = array ();
-		
-		$setting = $this->settingService->getSettingInfo ( true );
-		
-		return view ( 'settings.index', [ 
-				'setting' => $setting 
-		] );
+		return view ( 'settings.index', [ ] );
 	}
 	
 	/**

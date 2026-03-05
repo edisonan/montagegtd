@@ -32,6 +32,8 @@ class ThingController extends Controller
             'pagination' => array(
                 'current_page' => $things->currentPage(),
                 'per_page' => $things->perPage(),
+                'total' => $things->total(),
+                'last_page' => $things->lastPage(),
                 'next_page_url' => $things->nextPageUrl(),
                 'prev_page_url' => $things->previousPageUrl(),
                 'has_more_pages' => $things->hasMorePages(),
@@ -94,4 +96,3 @@ class ThingController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
     }
 }
-

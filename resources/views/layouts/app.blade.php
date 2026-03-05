@@ -133,10 +133,21 @@
                 <!-- 右侧用户区域 -->
                 <div class="flex items-center space-x-4 ml-6">
                     <!-- 通知 -->
-                    <button class="relative p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100">
-                        <i class="fas fa-bell"></i>
-                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
+                    <div class="dropdown relative" id="userNotificationDropdown">
+                        <button id="userNotificationButton" class="relative p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 focus:outline-none">
+                            <i class="fas fa-bell"></i>
+                            <span id="userNotificationBadge" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[18px] text-center hidden">0</span>
+                        </button>
+                        <div id="userNotificationMenu" class="dropdown-menu hidden" style="right: 0; left: auto; min-width: 320px;">
+                            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                                <div class="text-sm font-semibold text-gray-900">站内通知</div>
+                                <button id="markAllNotificationsReadBtn" type="button" class="text-xs text-[#00b894] hover:underline">全部已读</button>
+                            </div>
+                            <div id="userNotificationList" class="max-h-80 overflow-y-auto">
+                                <div class="px-4 py-6 text-sm text-gray-500 text-center">暂无通知</div>
+                            </div>
+                        </div>
+                    </div>
 
                     @if(Auth::guest())
                         <!-- 登录/注册 -->
@@ -296,6 +307,11 @@
     window.__TASK_ALLOW_LEGACY_FALLBACK__ = false;
     window.__TASK_FORCE_API__ = true;
     window.__taskBootstrapAccessToken = function() {
+        if (typeof fetch !== 'function') {
+            console.warn('task bootstrap skipped: fetch is unavailable');
+            window.__TASK_FORCE_API__ = false;
+            return Promise.resolve(null);
+        }
         var tokenNode = document.head.querySelector('meta[name="csrf-token"]');
         var csrfToken = tokenNode ? tokenNode.content : '';
 
@@ -324,9 +340,18 @@
         });
     };
 
-    window.__taskTokenBootstrapPromise = window.__taskBootstrapAccessToken();
+    try {
+        window.__taskTokenBootstrapPromise = window.__taskBootstrapAccessToken();
+    } catch (bootstrapErr) {
+        console.error('token bootstrap init error', bootstrapErr);
+        window.__TASK_FORCE_API__ = false;
+        window.__taskTokenBootstrapPromise = Promise.resolve(null);
+    }
 
     window.taskApiFetch = function(url, options) {
+        if (typeof fetch !== 'function') {
+            return Promise.reject(new Error('fetch is unavailable in this browser'));
+        }
         var opts = options ? Object.assign({}, options) : {};
         var originalHeaders = (opts.headers && typeof opts.headers === 'object') ? opts.headers : {};
         var baseHeaders = Object.assign({}, originalHeaders);
@@ -483,6 +508,109 @@
                 window.__taskTokenBootstrapPromise = window.__taskBootstrapAccessToken();
             }
         });
+    })();
+
+    (function() {
+        var badgeEl = document.getElementById('userNotificationBadge');
+        var listEl = document.getElementById('userNotificationList');
+        var markAllBtn = document.getElementById('markAllNotificationsReadBtn');
+        if (!badgeEl || !listEl) {
+            return;
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function updateBadge(unreadCount) {
+            var count = Number(unreadCount || 0);
+            if (count > 0) {
+                badgeEl.textContent = count > 99 ? '99+' : String(count);
+                badgeEl.classList.remove('hidden');
+            } else {
+                badgeEl.textContent = '0';
+                badgeEl.classList.add('hidden');
+            }
+        }
+
+        function renderList(items) {
+            if (!Array.isArray(items) || items.length === 0) {
+                listEl.innerHTML = '<div class="px-4 py-6 text-sm text-gray-500 text-center">暂无通知</div>';
+                return;
+            }
+
+            listEl.innerHTML = items.map(function(item) {
+                var isRead = !!item.read_at;
+                var readClass = isRead ? 'bg-white' : 'bg-emerald-50';
+                var readDot = isRead ? '' : '<span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-2"></span>';
+                var createdAt = item.created_at ? String(item.created_at).replace('T', ' ').slice(0, 19) : '';
+                var title = escapeHtml(item.title || '系统通知');
+                var content = escapeHtml(item.content || '');
+
+                return ''
+                    + '<button type="button" class="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition '
+                    + readClass
+                    + '" data-notification-id="' + Number(item.id || 0) + '" data-read="' + (isRead ? '1' : '0') + '">'
+                    + '<div class="text-sm text-gray-900 font-medium flex items-center">' + readDot + title + '</div>'
+                    + '<div class="text-xs text-gray-600 mt-1">' + content + '</div>'
+                    + '<div class="text-[11px] text-gray-400 mt-2">' + escapeHtml(createdAt) + '</div>'
+                    + '</button>';
+            }).join('');
+        }
+
+        function loadNotifications() {
+            return window.taskApiFetch('/api/v2/notifications?limit=20', {
+                method: 'GET'
+            }).then(function(resp) {
+                return resp.json().then(function(data) {
+                    if (!resp.ok || !data || !data.result) {
+                        return;
+                    }
+                    renderList(data.result.list || []);
+                    updateBadge(data.result.unread_count || 0);
+                });
+            }).catch(function() {});
+        }
+
+        listEl.addEventListener('click', function(e) {
+            var item = e.target.closest('[data-notification-id]');
+            if (!item) {
+                return;
+            }
+            var isRead = item.getAttribute('data-read') === '1';
+            if (isRead) {
+                return;
+            }
+            var id = Number(item.getAttribute('data-notification-id') || 0);
+            if (!id) {
+                return;
+            }
+
+            window.taskApiFetch('/api/v2/notifications/' + id + '/read', {
+                method: 'POST'
+            }).then(function() {
+                return loadNotifications();
+            }).catch(function() {});
+        });
+
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.taskApiFetch('/api/v2/notifications/read-all', {
+                    method: 'POST'
+                }).then(function() {
+                    return loadNotifications();
+                }).catch(function() {});
+            });
+        }
+
+        loadNotifications();
+        window.setInterval(loadNotifications, 30000);
     })();
 
     (function() {

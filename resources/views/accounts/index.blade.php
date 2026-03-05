@@ -26,108 +26,8 @@
 
             <div class="p-6">
                 <!-- 授权服务列表 -->
-                <div class="space-y-6">
-                    @foreach ($oauths as $key => $oauth)
-                        @php
-                            // 服务信息映射
-                            $serviceInfo = [
-                                'github' => [
-                                    'name' => 'GitHub',
-                                    'icon' => 'fab fa-github',
-                                    'color' => 'text-gray-900',
-                                    'bgColor' => 'bg-gray-900',
-                                    'description' => '代码仓库和开发者服务',
-                                    'connected' => !empty($oauth)
-                                ],
-                                'google' => [
-                                    'name' => 'Google',
-                                    'icon' => 'fab fa-google',
-                                    'color' => 'text-red-500',
-                                    'bgColor' => 'bg-red-500',
-                                    'description' => '谷歌账户和云服务',
-                                    'connected' => !empty($oauth)
-                                ],
-                                'weibo' => [
-                                    'name' => '微博',
-                                    'icon' => 'fab fa-weibo',
-                                    'color' => 'text-red-400',
-                                    'bgColor' => 'bg-red-400',
-                                    'description' => '微博社交账户',
-                                    'connected' => !empty($oauth)
-                                ],
-                                'qq' => [
-                                    'name' => 'QQ',
-                                    'icon' => 'fab fa-qq',
-                                    'color' => 'text-blue-500',
-                                    'bgColor' => 'bg-blue-500',
-                                    'description' => 'QQ社交账户',
-                                    'connected' => !empty($oauth)
-                                ],
-                                'wechat' => [
-                                    'name' => '微信',
-                                    'icon' => 'fab fa-weixin',
-                                    'color' => 'text-green-500',
-                                    'bgColor' => 'bg-green-500',
-                                    'description' => '微信账户',
-                                    'connected' => !empty($oauth)
-                                ],
-                                'microsoft' => [
-                                    'name' => 'Microsoft',
-                                    'icon' => 'fab fa-microsoft',
-                                    'color' => 'text-blue-600',
-                                    'bgColor' => 'bg-blue-600',
-                                    'description' => '微软账户和Office服务',
-                                    'connected' => !empty($oauth)
-                                ],
-                            ];
-
-                            $service = $serviceInfo[$key] ?? [
-                                'name' => ucfirst($key),
-                                'icon' => 'fas fa-link',
-                                'color' => 'text-gray-500',
-                                'bgColor' => 'bg-gray-500',
-                                'description' => '第三方服务',
-                                'connected' => !empty($oauth)
-                            ];
-                        @endphp
-
-                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                            <!-- 服务信息 -->
-                            <div class="flex items-center space-x-4">
-                                <div class="w-12 h-12 rounded-lg {{ $service['bgColor'] }} bg-opacity-10 flex items-center justify-center">
-                                    <i class="{{ $service['icon'] }} text-xl {{ $service['color'] }}"></i>
-                                </div>
-
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">{{ $service['name'] }}</h3>
-                                    <p class="text-sm text-gray-600">{{ $service['description'] }}</p>
-
-                                    <!-- 连接状态 -->
-                                    @if($service['connected'])
-                                        <div class="flex items-center mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-check-circle mr-1"></i>
-                                            已授权
-                                        </span>
-                                            <span class="text-xs text-gray-500 ml-2">
-                                            最后更新：{{ $oauth->updated_at->format('Y-m-d H:i') ?? '未知' }}
-                                        </span>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- 操作按钮 -->
-                            <div>
-                                <a href="/login/third/{{ $key }}"
-                                   class="btn {{ $service['connected'] ? 'btn-outline' : 'btn-primary' }} flex items-center"
-                                   title="{{ $service['connected'] ? '重新授权' : '连接账户' }}">
-                                    <i class="{{ $service['connected'] ? 'fas fa-sync-alt' : 'fas fa-link' }} mr-2"></i>
-                                    {{ $service['connected'] ? '重新授权' : '立即连接' }}
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
+                <div id="oauthServiceList" class="space-y-6">
+                    <div class="text-sm text-gray-500 py-3">加载授权状态中...</div>
                 </div>
 
                 <!-- 授权说明 -->
@@ -264,6 +164,63 @@
     </div>
 
         <script>
+            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                ? window.TaskApiBridge.requestWithFallback
+                : null;
+
+            function renderOauthServices(oauths) {
+                var listEl = document.getElementById('oauthServiceList');
+                if (!listEl) {
+                    return;
+                }
+
+                var serviceInfo = {
+                    github: { name: 'GitHub', icon: 'fab fa-github', color: 'text-gray-900', bgColor: 'bg-gray-900', description: '代码仓库和开发者服务' },
+                    google: { name: 'Google', icon: 'fab fa-google', color: 'text-red-500', bgColor: 'bg-red-500', description: '谷歌账户和云服务' },
+                    weibo: { name: '微博', icon: 'fab fa-weibo', color: 'text-red-400', bgColor: 'bg-red-400', description: '微博社交账户' },
+                    qq: { name: 'QQ', icon: 'fab fa-qq', color: 'text-blue-500', bgColor: 'bg-blue-500', description: 'QQ社交账户' },
+                    wechat: { name: '微信', icon: 'fab fa-weixin', color: 'text-green-500', bgColor: 'bg-green-500', description: '微信账户' },
+                    microsoft: { name: 'Microsoft', icon: 'fab fa-microsoft', color: 'text-blue-600', bgColor: 'bg-blue-600', description: '微软账户和Office服务' }
+                };
+                var keys = Object.keys(serviceInfo);
+
+                listEl.innerHTML = keys.map(function(key) {
+                    var service = serviceInfo[key];
+                    var connected = !!(oauths && oauths[key] && Object.keys(oauths[key]).length > 0);
+                    var btnClass = connected ? 'btn-outline' : 'btn-primary';
+                    var btnIcon = connected ? 'fas fa-sync-alt' : 'fas fa-link';
+                    var btnText = connected ? '重新授权' : '立即连接';
+                    var statusHtml = connected
+                        ? '<div class="flex items-center mt-1"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><i class="fas fa-check-circle mr-1"></i>已授权</span></div>'
+                        : '';
+
+                    return ''
+                        + '<div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">'
+                        + '<div class="flex items-center space-x-4">'
+                        + '<div class="w-12 h-12 rounded-lg ' + service.bgColor + ' bg-opacity-10 flex items-center justify-center">'
+                        + '<i class="' + service.icon + ' text-xl ' + service.color + '"></i></div>'
+                        + '<div><h3 class="font-semibold text-gray-900">' + service.name + '</h3>'
+                        + '<p class="text-sm text-gray-600">' + service.description + '</p>' + statusHtml + '</div></div>'
+                        + '<div><a href="/login/third/' + key + '" class="btn ' + btnClass + ' flex items-center" title="' + btnText + '">'
+                        + '<i class="' + btnIcon + ' mr-2"></i>' + btnText + '</a></div>'
+                        + '</div>';
+                }).join('');
+            }
+
+            function loadOauthServicesFromApi() {
+                if (!apiRequest) {
+                    return;
+                }
+                apiRequest('GET', '/accounts', {}).then(function(resp) {
+                    if (resp.code !== 9999 || !resp.result) {
+                        return;
+                    }
+                    renderOauthServices(resp.result.oauths || {});
+                }).catch(function(err) {
+                    console.error('load account oauths failed:', err);
+                });
+            }
+
             // 删除账户确认
             function showDeleteConfirm() {
                 if (confirm('⚠️ 警告：此操作将永久删除您的账户及所有数据，且无法恢复！\n\n确定要删除账户吗？')) {
@@ -271,19 +228,6 @@
                     alert('账户删除功能需要进一步确认。');
                 }
             }
-
-            // 授权状态更新提示
-            @if(session('oauth_success'))
-            document.addEventListener('DOMContentLoaded', function() {
-                showToast('success', '{{ session('oauth_success') }}');
-            });
-            @endif
-
-            @if(session('oauth_error'))
-            document.addEventListener('DOMContentLoaded', function() {
-                showToast('error', '{{ session('oauth_error') }}');
-            });
-            @endif
 
             // 显示提示消息
             function showToast(type, message) {
@@ -308,5 +252,9 @@
                     }
                 }, 5000);
             }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                loadOauthServicesFromApi();
+            });
         </script>
     @endsection

@@ -28,7 +28,7 @@
                         </div>
                         <span class="text-sm text-gray-500">
                         <i class="far fa-clock mr-1"></i>
-                        最后更新：{{ $draftVersion->updated_at->format('Y-m-d H:i') ?? '暂无' }}
+                        最后更新：<span id="draft-updated-at">暂无</span>
                     </span>
                     </div>
                 </div>
@@ -58,21 +58,19 @@
                             <i class="fas fa-robot text-blue-600 text-xl"></i>
                         </div>
                         <div class="flex-1">
-                            <h2 class="text-xl font-bold text-gray-900">{{ $agent->name }}</h2>
-                            <p class="text-gray-600 mt-1">{{ $agent->description ?? '暂无描述' }}</p>
+                            <h2 class="text-xl font-bold text-gray-900" id="agent-name-title">智能体</h2>
+                            <p class="text-gray-600 mt-1" id="agent-desc-text">暂无描述</p>
                             <div class="flex items-center mt-2 space-x-3 text-sm">
-                            <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full">
+                            <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full" id="draft-version-badge">
                                 <i class="fas fa-code-branch mr-1"></i>
-                                版本：v{{ $draftVersion->version ?? '新版本' }}
+                                版本：v新版本
                             </span>
-                                @if($agent->published_version)
-                                    <span class="px-2 py-1 bg-green-50 text-green-700 rounded-full">
+                                <span class="px-2 py-1 bg-green-50 text-green-700 rounded-full hidden" id="published-version-badge">
                                 <i class="fas fa-check-circle mr-1"></i>
-                                已发布：v{{ $agent->published_version }}
+                                已发布：v-
                             </span>
-                                @endif
-                                <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                                ID：{{ $agent->id }}
+                                <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full" id="agent-id-badge">
+                                ID：-
                             </span>
                             </div>
                         </div>
@@ -140,10 +138,10 @@
                                     class="input w-full resize-none"
                                     placeholder="例如：你是一个专业的写作助手，擅长各种文体创作..."
                                     required
-                            >{{ $draftVersion->system_prompt ?? '' }}</textarea>
+                            ></textarea>
                                 <div class="absolute bottom-3 right-3">
                                 <span id="prompt-char-count" class="text-xs text-gray-400">
-                                    {{ strlen($draftVersion->system_prompt ?? '') }} 字符
+                                    0 字符
                                 </span>
                                 </div>
                             </div>
@@ -176,7 +174,7 @@
                                         温度 (Temperature)
                                     </label>
                                     <span class="text-sm font-medium text-primary-color" id="temperature-value">
-                                    {{ $draftVersion->temperature ?? 0.7 }}
+                                    0.7
                                 </span>
                                 </div>
                                 <div class="space-y-2">
@@ -186,7 +184,7 @@
                                             min="0"
                                             max="2"
                                             step="0.1"
-                                            value="{{ $draftVersion->temperature ?? 0.7 }}"
+                                            value="0.7"
                                             class="w-full"
                                     >
                                     <div class="flex justify-between text-xs text-gray-500">
@@ -206,7 +204,7 @@
                                         Top P
                                     </label>
                                     <span class="text-sm font-medium text-primary-color" id="top-p-value">
-                                    {{ $draftVersion->top_p ?? 0.9 }}
+                                    0.9
                                 </span>
                                 </div>
                                 <div class="space-y-2">
@@ -216,7 +214,7 @@
                                             min="0"
                                             max="1"
                                             step="0.1"
-                                            value="{{ $draftVersion->top_p ?? 0.9 }}"
+                                            value="0.9"
                                             class="w-full"
                                     >
                                     <div class="flex justify-between text-xs text-gray-500">
@@ -241,7 +239,7 @@
                                         id="max-tokens"
                                         min="1"
                                         max="32000"
-                                        value="{{ $draftVersion->max_tokens ?? 2000 }}"
+                                        value="2000"
                                         class="input w-full"
                                 >
                                 <p class="text-xs text-gray-500 mt-2">
@@ -259,7 +257,7 @@
                                         id="context-length"
                                         min="1"
                                         max="128000"
-                                        value="{{ $draftVersion->context_length ?? 4000 }}"
+                                        value="4000"
                                         class="input w-full"
                                 >
                                 <p class="text-xs text-gray-500 mt-2">
@@ -336,7 +334,7 @@
                                     rows="6"
                                     class="input w-full font-mono text-sm resize-none"
                                     placeholder='[{"type": "function", "function": { "name": "get_weather", ... }}]'
-                            >{{ $draftVersion->tools_config ? json_encode($draftVersion->tools_config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '' }}</textarea>
+                            ></textarea>
                                 <div class="absolute bottom-3 right-3">
                                 <span id="json-valid-badge" class="hidden px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
                                     <i class="fas fa-check-circle mr-1"></i>格式正确
@@ -386,9 +384,9 @@
                                 </div>
                                 <div class="flex-1">
                                     <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3">
-                                        <div class="font-medium text-gray-900 mb-1">{{ $agent->name }}</div>
+                                        <div class="font-medium text-gray-900 mb-1" id="chat-agent-name">智能体</div>
                                         <div class="text-gray-700">
-                                            您好！我是 <span class="font-semibold text-primary-color">{{ $agent->name }}</span>，已准备好为您服务。
+                                            您好！我是 <span class="font-semibold text-primary-color" id="chat-agent-name-inline">智能体</span>，已准备好为您服务。
                                             <div class="mt-2 text-sm text-gray-500">
                                                 <i class="fas fa-info-circle mr-1"></i>
                                                 您可以在这里测试我的功能和响应
@@ -473,7 +471,7 @@
                                     </div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="is-public" class="sr-only peer" {{ $agent->is_public ? 'checked' : '' }}>
+                                    <input type="checkbox" id="is-public" class="sr-only peer">
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-color"></div>
                                 </label>
                             </div>
@@ -490,7 +488,7 @@
                                         </div>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="is-active" class="sr-only peer" {{ $agent->is_active ? 'checked' : '' }}>
+                                        <input type="checkbox" id="is-active" class="sr-only peer">
                                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-color"></div>
                                     </label>
                                 </div>
@@ -584,19 +582,96 @@
     </div>
 
     <!-- 当前版本和模型信息 -->
-    <input type="hidden" id="current-agent-id" value="{{ $agent->id }}">
-    <input type="hidden" id="draft-version-model-id" value="{{ $draftVersion && isset($draftVersion->model_id) ? $draftVersion->model_id : 0 }}">
+    <input type="hidden" id="current-agent-id" value="0">
+    <input type="hidden" id="draft-version-model-id" value="0">
 
     @section('scripts')
         <script>
             // 全局变量
             let chatHistory = [];
-            let currentAgentId = {{ $agent->id }};
-            let agentName = '{{ addslashes($agent->name ?? "") }}';
+            let currentAgentId = 0;
+            let agentName = '智能体';
+
+            function getAgentIdFromPath() {
+                const parts = window.location.pathname.split('/').filter(Boolean);
+                for (let i = 0; i < parts.length; i++) {
+                    if (parts[i] === 'agents' && parts[i + 1]) {
+                        const id = Number(parts[i + 1]);
+                        if (!isNaN(id) && id > 0) return id;
+                    }
+                }
+                return 0;
+            }
+
+            async function loadDraftData() {
+                currentAgentId = getAgentIdFromPath();
+                document.getElementById('current-agent-id').value = String(currentAgentId || 0);
+                if (!currentAgentId) {
+                    throw new Error('智能体ID无效');
+                }
+
+                const resp = await window.taskApiFetch(`/api/v2/llm/agents/${currentAgentId}/draft`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+                if (!data.success || !data.result) {
+                    throw new Error(data.message || '加载草稿失败');
+                }
+
+                const agent = data.result.agent || {};
+                const draft = data.result.draft_version || {};
+
+                agentName = agent.name || '智能体';
+                document.getElementById('agent-name-title').textContent = agentName;
+                document.getElementById('agent-desc-text').textContent = agent.description || '暂无描述';
+                document.getElementById('chat-agent-name').textContent = agentName;
+                document.getElementById('chat-agent-name-inline').textContent = agentName;
+                document.getElementById('agent-id-badge').textContent = 'ID：' + (agent.id || currentAgentId);
+
+                const versionNum = draft.version_number || draft.version || '新版本';
+                document.getElementById('draft-version-badge').innerHTML = '<i class="fas fa-code-branch mr-1"></i>版本：v' + versionNum;
+                if (agent.published_version) {
+                    const pub = document.getElementById('published-version-badge');
+                    pub.classList.remove('hidden');
+                    pub.innerHTML = '<i class="fas fa-check-circle mr-1"></i>已发布：v' + agent.published_version;
+                }
+
+                document.getElementById('draft-updated-at').textContent = draft.updated_at ? String(draft.updated_at).replace('T', ' ').slice(0, 16) : '暂无';
+                document.getElementById('system-prompt').value = draft.system_prompt || '';
+                document.getElementById('temperature').value = draft.temperature != null ? draft.temperature : 0.7;
+                document.getElementById('temperature-value').textContent = String(draft.temperature != null ? draft.temperature : 0.7);
+                document.getElementById('top-p').value = draft.top_p != null ? draft.top_p : 0.9;
+                document.getElementById('top-p-value').textContent = String(draft.top_p != null ? draft.top_p : 0.9);
+                document.getElementById('max-tokens').value = draft.max_tokens != null ? draft.max_tokens : 2000;
+                document.getElementById('context-length').value = draft.context_length != null ? draft.context_length : 4000;
+                document.getElementById('draft-version-model-id').value = String(draft.model_id || 0);
+                document.getElementById('is-public').checked = !!agent.is_public;
+                document.getElementById('is-active').checked = !!agent.is_active;
+                if (draft.tools_config) {
+                    try {
+                        document.getElementById('tools-config').value = JSON.stringify(draft.tools_config, null, 2);
+                    } catch (e) {
+                        document.getElementById('tools-config').value = '';
+                    }
+                } else {
+                    document.getElementById('tools-config').value = '';
+                }
+            }
 
             // 初始化
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', async function() {
                 console.log('智能体编辑页面初始化...');
+
+                try {
+                    await loadDraftData();
+                } catch (e) {
+                    console.error('加载草稿失败:', e);
+                    showToast('加载草稿失败: ' + (e.message || '未知错误'), 'error');
+                }
 
                 // 加载初始数据
                 loadModels();

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', $course->title . ' - 蒙太奇课程')
-@section('description', $course->description ?: '蒙太奇在线课程学习平台')
+@section('title', '课程详情 - 蒙太奇课程')
+@section('description', '蒙太奇在线课程学习平台')
 
 
 
@@ -577,57 +577,16 @@
         <!-- 课程头部 -->
         <div class="course-header animate-fadeIn">
             <div class="course-title-section">
-                <h1 class="course-title">{{ $course->title }}</h1>
-                <div class="course-status">
-                <span class="status-badge {{
-                    $course->public_status == 1 ? 'private' :
-                    ($course->public_status == 2 ? 'pending' : 'public')
-                }}">
-                    @if($course->public_status == 1)
-                        <i class="fas fa-lock"></i> 私有
-                    @elseif($course->public_status == 2)
-                        <i class="fas fa-clock"></i> 待审核
-                    @elseif($course->public_status == 3)
-                        <i class="fas fa-check-circle"></i> 已审核
-                    @else
-                        <i class="fas fa-question-circle"></i> 未知状态
-                    @endif
-                </span>
+                <h1 class="course-title" id="course_title_text">课程详情</h1>
+                <div class="course-status" id="course_status_box">
                 </div>
             </div>
 
-            <div class="course-actions">
-                @if(auth()->id() == $course->created_by)
-                    <a href="{{ url('/admin/courses/' . $course->id . '/edit') }}" class="btn btn-course btn-course-primary">
-                        <i class="fas fa-edit mr-2"></i>
-                        编辑课程
-                    </a>
-                    <a href="{{ url('/courses/' . $course->id . '/items') }}" class="btn btn-course btn-course-primary">
-                        <i class="fas fa-cog mr-2"></i>
-                        管理章节
-                    </a>
-                    <a href="{{ url('/courses') }}" class="btn btn-course btn-course-secondary">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        返回课程列表
-                    </a>
-                @elseif(!auth()->guest() && !$is_joined)
-                    <form action="{{ url('/api/v2/courses/' . $course->id . '/join') }}" method="POST" class="d-inline">
-                        {{ csrf_field() }}
-                        <button type="submit" class="btn btn-course btn-course-success">
-                            <i class="fas fa-user-plus mr-2"></i>
-                            加入课程
-                        </button>
-                    </form>
-                @elseif(!auth()->guest() && $is_joined)
-                    <button class="btn btn-course btn-course-success" disabled>
-                        <i class="fas fa-check-circle mr-2"></i>
-                        已加入课程
-                    </button>
-                    <a href="{{ url('/study') }}" class="btn btn-course btn-course-primary">
-                        <i class="fas fa-graduation-cap mr-2"></i>
-                        前往学习中心
-                    </a>
-                @endif
+            <div class="course-actions" id="course_actions_box">
+                <a href="{{ url('/courses') }}" class="btn btn-course btn-course-secondary">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    返回课程列表
+                </a>
             </div>
         </div>
 
@@ -635,14 +594,12 @@
             <!-- 主内容区域 -->
             <div class="lg:col-span-2">
                 <!-- 课程封面 -->
-                @if($course->cover_image_url)
-                    <img src="{{ $course->cover_image_url }}" class="course-cover" alt="{{ $course->title }}">
-                @else
+                <div id="course_cover_box">
                     <div class="no-cover">
                         <i class="fas fa-book-open mr-2"></i>
                         暂无课程封面
                     </div>
-                @endif
+                </div>
 
                 <!-- 课程信息网格 -->
                 <div class="course-info-grid">
@@ -658,61 +615,7 @@
                             </button>
                         </div>
                         <div class="card-body" id="infoBasic">
-                            <table class="info-table">
-                                <tr class="info-row">
-                                    <td class="info-label">讲师</td>
-                                    <td class="info-value">{{ $course->instructor ?: '未知' }}</td>
-                                </tr>
-                                <tr class="info-row">
-                                    <td class="info-label">平台</td>
-                                    <td class="info-value">{{ $course->platform ?: '未知' }}</td>
-                                </tr>
-                                <tr class="info-row">
-                                    <td class="info-label">难度</td>
-                                    <td class="info-value">
-                                        @switch($course->difficulty)
-                                            @case('beginner')
-                                                <span class="difficulty-badge difficulty-beginner">
-                                                <i class="fas fa-seedling mr-1"></i> 初级
-                                            </span>
-                                                @break
-                                            @case('intermediate')
-                                                <span class="difficulty-badge difficulty-intermediate">
-                                                <i class="fas fa-tree mr-1"></i> 中级
-                                            </span>
-                                                @break
-                                            @case('advanced')
-                                                <span class="difficulty-badge difficulty-advanced">
-                                                <i class="fas fa-mountain mr-1"></i> 高级
-                                            </span>
-                                                @break
-                                            @default
-                                                <span class="difficulty-badge">
-                                                <i class="fas fa-question-circle mr-1"></i> 未知
-                                            </span>
-                                        @endswitch
-                                    </td>
-                                </tr>
-                                <tr class="info-row">
-                                    <td class="info-label">预计时长</td>
-                                    <td class="info-value">
-                                        <i class="far fa-clock text-gray-400 mr-2"></i>
-                                        {{ $course->estimated_hours ?: 0 }} 小时
-                                    </td>
-                                </tr>
-                                @if($course->tags && is_array($course->tags))
-                                    <tr class="info-row">
-                                        <td class="info-label">标签</td>
-                                        <td class="info-value">
-                                            <div class="tag-list">
-                                                @foreach($course->tags as $tag)
-                                                    <span class="tag-item">{{ $tag }}</span>
-                                                @endforeach
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endif
-                            </table>
+                            <table class="info-table" id="course_info_table"></table>
                         </div>
                     </div>
 
@@ -728,15 +631,11 @@
                             </button>
                         </div>
                         <div class="card-body" id="infoDescription">
-                            <div class="text-gray-600 leading-relaxed">
-                                @if($course->description)
-                                    {!! nl2br(e($course->description)) !!}
-                                @else
-                                    <div class="text-center text-gray-400 py-8">
-                                        <i class="fas fa-file-alt text-3xl mb-4"></i>
-                                        <p>暂无课程描述</p>
-                                    </div>
-                                @endif
+                            <div class="text-gray-600 leading-relaxed" id="course_description_box">
+                                <div class="text-center text-gray-400 py-8">
+                                    <i class="fas fa-file-alt text-3xl mb-4"></i>
+                                    <p>暂无课程描述</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -754,76 +653,13 @@
                         </button>
                     </div>
                     <div class="card-body" id="courseStructure">
-                        @if($structure && count($structure) > 0)
-                            <div class="structure-list">
-                                @foreach($structure as $item)
-                                    <div class="chapter-item" data-chapter-id="{{ $item->id }}">
-                                        <div class="chapter-header" onclick="toggleChapter({{ $item->id }})">
-                                            <div>
-                                                <h4 class="chapter-title">
-                                                    <i class="fas fa-folder text-yellow-500"></i>
-                                                    {{ $item->title }}
-                                                </h4>
-                                                @if($item->description)
-                                                    <p class="text-gray-500 text-sm mt-1">{{ $item->description }}</p>
-                                                @endif
-                                            </div>
-                                            <div class="chapter-meta">
-                                            <span class="text-gray-500 text-sm">
-                                                {{ count($item->children ?? []) }} 个课时
-                                                @if($item->duration)
-                                                    · {{ $item->duration }} 分钟
-                                                @endif
-                                            </span>
-                                                <i class="fas fa-chevron-down text-gray-400 transition-transform" id="icon-{{ $item->id }}"></i>
-                                            </div>
-                                        </div>
-
-                                        @if($item->children && count($item->children) > 0)
-                                            <ul class="lesson-list" id="lessons-{{ $item->id }}">
-                                                @foreach($item->children as $child)
-                                                    <li class="lesson-item">
-                                                        <div class="lesson-content">
-                                                            <div class="lesson-icon {{ $child->item_type }}">
-                                                                @if($child->item_type == 'video')
-                                                                    <i class="fas fa-play"></i>
-                                                                @elseif($child->item_type == 'quiz')
-                                                                    <i class="fas fa-question-circle"></i>
-                                                                @elseif($child->item_type == 'assignment')
-                                                                    <i class="fas fa-file-alt"></i>
-                                                                @elseif($child->item_type == 'reading')
-                                                                    <i class="fas fa-book"></i>
-                                                                @else
-                                                                    <i class="fas fa-file"></i>
-                                                                @endif
-                                                            </div>
-                                                            <div class="lesson-text">
-                                                                <div class="lesson-name">{{ $child->title }}</div>
-                                                                @if($child->duration)
-                                                                    <div class="lesson-duration">
-                                                                        <i class="far fa-clock mr-1"></i>
-                                                                        {{ $child->duration }} 分钟
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                        <span class="lesson-type">
-                                                        {{ ucfirst($child->item_type) }}
-                                                    </span>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
+                        <div id="course_structure_box">
                             <div class="no-structure">
                                 <i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i>
                                 <h4 class="text-gray-600 mb-2">暂无课程内容</h4>
                                 <p class="text-gray-400 text-sm">课程管理员尚未添加章节内容</p>
                             </div>
-                        @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -855,8 +691,136 @@
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
             : null;
+        var CURRENT_USER_ID = Number('{{ auth()->id() ?: 0 }}');
+        var COURSE_DETAIL_ID = (function() {
+            var parts = (window.location.pathname || '').split('/').filter(Boolean);
+            var last = parts.length ? parts[parts.length - 1] : '';
+            var parsed = parseInt(last, 10);
+            return Number.isFinite(parsed) ? parsed : 0;
+        })();
+        var COURSE_DETAIL_DATA = null;
+
+        function escapeHtml(str) {
+            return $('<div>').text(str || '').html();
+        }
+
+        function getResultData(resp) {
+            if (!resp) return {};
+            return resp.result || resp.data || {};
+        }
+
+        function getStatusBadgeHtml(publicStatus) {
+            if (Number(publicStatus) === 1) return '<span class="status-badge private"><i class="fas fa-lock"></i> 私有</span>';
+            if (Number(publicStatus) === 2) return '<span class="status-badge pending"><i class="fas fa-clock"></i> 待审核</span>';
+            if (Number(publicStatus) === 3) return '<span class="status-badge public"><i class="fas fa-check-circle"></i> 已审核</span>';
+            return '<span class="status-badge"><i class="fas fa-question-circle"></i> 未知状态</span>';
+        }
+
+        function getDifficultyHtml(difficulty) {
+            if (difficulty === 'beginner') return '<span class="difficulty-badge difficulty-beginner"><i class="fas fa-seedling mr-1"></i> 初级</span>';
+            if (difficulty === 'intermediate') return '<span class="difficulty-badge difficulty-intermediate"><i class="fas fa-tree mr-1"></i> 中级</span>';
+            if (difficulty === 'advanced') return '<span class="difficulty-badge difficulty-advanced"><i class="fas fa-mountain mr-1"></i> 高级</span>';
+            return '<span class="difficulty-badge"><i class="fas fa-question-circle mr-1"></i> 未知</span>';
+        }
+
+        function renderCourseActions(course, isJoined) {
+            var box = $('#course_actions_box');
+            if (!box.length) return;
+            var html = '';
+            if (CURRENT_USER_ID > 0 && Number(course.created_by || 0) === CURRENT_USER_ID) {
+                html += '<a href="/admin/courses/' + Number(course.id) + '/edit" class="btn btn-course btn-course-primary"><i class="fas fa-edit mr-2"></i>编辑课程</a>';
+                html += '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-course btn-course-primary"><i class="fas fa-cog mr-2"></i>管理章节</a>';
+                html += '<a href="/courses" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程列表</a>';
+            } else if (CURRENT_USER_ID > 0 && !isJoined) {
+                html += '<button type="button" class="btn btn-course btn-course-success join-course-btn" data-course-id="' + Number(course.id) + '"><i class="fas fa-user-plus mr-2"></i>加入课程</button>';
+            } else if (CURRENT_USER_ID > 0 && isJoined) {
+                html += '<button class="btn btn-course btn-course-success" disabled><i class="fas fa-check-circle mr-2"></i>已加入课程</button>';
+                html += '<a href="/courses" class="btn btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>返回课程中心</a>';
+            } else {
+                html += '<a href="/courses" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程列表</a>';
+            }
+            box.html(html);
+        }
+
+        function renderCourseInfo(course) {
+            $('#course_title_text').text(course.title || '课程详情');
+            $('#course_status_box').html(getStatusBadgeHtml(course.public_status));
+            document.title = (course.title || '课程详情') + ' - 蒙太奇课程';
+
+            if (course.cover_image_url) {
+                $('#course_cover_box').html('<img src="' + escapeHtml(course.cover_image_url) + '" class="course-cover" alt="' + escapeHtml(course.title || 'course') + '">');
+            } else {
+                $('#course_cover_box').html('<div class="no-cover"><i class="fas fa-book-open mr-2"></i>暂无课程封面</div>');
+            }
+
+            var tagsHtml = '';
+            if (Array.isArray(course.tags) && course.tags.length) {
+                tagsHtml = '<tr class="info-row"><td class="info-label">标签</td><td class="info-value"><div class="tag-list">' + course.tags.map(function(tag){ return '<span class="tag-item">' + escapeHtml(tag) + '</span>'; }).join('') + '</div></td></tr>';
+            }
+            $('#course_info_table').html(
+                '<tr class="info-row"><td class="info-label">讲师</td><td class="info-value">' + escapeHtml(course.instructor || '未知') + '</td></tr>' +
+                '<tr class="info-row"><td class="info-label">平台</td><td class="info-value">' + escapeHtml(course.platform || '未知') + '</td></tr>' +
+                '<tr class="info-row"><td class="info-label">难度</td><td class="info-value">' + getDifficultyHtml(course.difficulty) + '</td></tr>' +
+                '<tr class="info-row"><td class="info-label">预计时长</td><td class="info-value"><i class="far fa-clock text-gray-400 mr-2"></i>' + Number(course.estimated_hours || 0) + ' 小时</td></tr>' +
+                tagsHtml
+            );
+
+            if (course.description) {
+                $('#course_description_box').html(String(escapeHtml(course.description)).replace(/\n/g, '<br>'));
+            } else {
+                $('#course_description_box').html('<div class="text-center text-gray-400 py-8"><i class="fas fa-file-alt text-3xl mb-4"></i><p>暂无课程描述</p></div>');
+            }
+        }
+
+        function renderCourseStructure(structure) {
+            if (!Array.isArray(structure) || !structure.length) {
+                $('#course_structure_box').html('<div class="no-structure"><i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i><h4 class="text-gray-600 mb-2">暂无课程内容</h4><p class="text-gray-400 text-sm">课程管理员尚未添加章节内容</p></div>');
+                return;
+            }
+            var html = '<div class="structure-list">';
+            structure.forEach(function(item) {
+                var lessons = Array.isArray(item.children) ? item.children : [];
+                html += '<div class="chapter-item" data-chapter-id="' + Number(item.id) + '"><div class="chapter-header" onclick="toggleChapter(' + Number(item.id) + ')"><div><h4 class="chapter-title"><i class="fas fa-folder text-yellow-500"></i>' + escapeHtml(item.title || '') + '</h4>' + (item.description ? '<p class="text-gray-500 text-sm mt-1">' + escapeHtml(item.description) + '</p>' : '') + '</div><div class="chapter-meta"><span class="text-gray-500 text-sm">' + lessons.length + ' 个课时' + (item.duration ? (' · ' + Number(item.duration) + ' 分钟') : '') + '</span><i class="fas fa-chevron-down text-gray-400 transition-transform" id="icon-' + Number(item.id) + '"></i></div></div>';
+                if (lessons.length) {
+                    html += '<ul class="lesson-list" id="lessons-' + Number(item.id) + '">';
+                    lessons.forEach(function(child) {
+                        var icon = 'fa-file';
+                        if (child.item_type === 'video') icon = 'fa-play';
+                        else if (child.item_type === 'quiz') icon = 'fa-question-circle';
+                        else if (child.item_type === 'assignment') icon = 'fa-file-alt';
+                        else if (child.item_type === 'reading') icon = 'fa-book';
+                        html += '<li class="lesson-item"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><span class="lesson-type">' + escapeHtml((child.item_type || '').toUpperCase()) + '</span></li>';
+                    });
+                    html += '</ul>';
+                }
+                html += '</div>';
+            });
+            html += '</div>';
+            $('#course_structure_box').html(html);
+        }
+
+        function loadCourseDetail() {
+            if (!apiRequest || !COURSE_DETAIL_ID) return;
+            apiRequest('GET', '/courses/' + COURSE_DETAIL_ID, {}).then(function(resp) {
+                if (!resp || resp.code !== 9999) {
+                    throw new Error((resp && resp.msg) ? resp.msg : '加载失败');
+                }
+                var result = getResultData(resp);
+                var course = result.course || {};
+                var structure = Array.isArray(result.structure) ? result.structure : [];
+                var isJoined = !!result.is_joined;
+                COURSE_DETAIL_DATA = { course: course, structure: structure, is_joined: isJoined };
+                renderCourseInfo(course);
+                renderCourseActions(course, isJoined);
+                renderCourseStructure(structure);
+            }).catch(function() {
+                alert('课程加载失败，请稍后重试');
+            });
+        }
 
         $(document).ready(function() {
+            loadCourseDetail();
+
             // 卡片折叠功能
             $('.toggle-btn').click(function() {
                 var target = $(this).data('toggle');
@@ -899,26 +863,24 @@
             );
 
             // 加入课程走v2接口
-            $('form[action*="/courses/"][action$="/join"]').on('submit', function(e) {
+            $(document).on('click', '.join-course-btn', function(e) {
                 e.preventDefault();
                 if (!apiRequest) {
                     alert('API客户端未初始化');
                     return;
                 }
-                var action = $(this).attr('action');
-                var match = action.match(/\/courses\/(\d+)\/join$/);
-                if (!match) {
-                    this.submit();
+                var courseId = Number($(this).data('course-id') || 0);
+                if (!courseId) {
+                    alert('课程ID错误');
                     return;
                 }
-                var courseId = match[1];
-                var $btn = $(this).find('button[type="submit"]');
+                var $btn = $(this);
                 var original = $btn.html();
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>加入中...');
 
                 apiRequest('POST', '/courses/' + courseId + '/join', {}).then(function(resp) {
                     if (resp && resp.code === 9999) {
-                        window.location.reload();
+                        loadCourseDetail();
                         return;
                     }
                     alert((resp && resp.msg) ? resp.msg : '加入课程失败');

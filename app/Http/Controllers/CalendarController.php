@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Utils\CommonUtil;
 use App\Services\CalendarService;
 use Illuminate\Http\Request;
 
@@ -48,22 +47,7 @@ class CalendarController extends Controller
      */
     public function index(Request $request)
     {
-        // 处理个人日历提醒相关内容
-        $personCalUrl = $this->calendarService->getPersonCalUrl();
-
-        $host = CommonUtil::getUrlHost ( config ( 'app.url' ) );
-        // 处理公共日历相关内容
-        $cals = array(
-            array(
-                'theme' => '2018 世界杯',
-                'url' => 'webcal://'.$host.'/calics/worldcup'
-            )
-        );
-
-        return view('cals.index', [
-            'person_cal_url' => $personCalUrl,
-            'cals' => $cals
-        ]);
+        return view('cals.index');
     }
 
     /**

@@ -38,7 +38,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|string',
             'client_type' => 'nullable|string|max:32',
-            'device_id' => 'nullable|string|max:128',
+            'device_id' => 'nullable|string|max:2048',
         ));
 
         $pair = $this->userTokenService->login(
@@ -85,7 +85,7 @@ class AuthController extends Controller
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'client_type' => 'nullable|string|max:32',
-            'device_id' => 'nullable|string|max:128',
+            'device_id' => 'nullable|string|max:2048',
         ));
 
         $user = User::create(array(

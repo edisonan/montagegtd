@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', $article->subject . ' - 蒙太奇')
+@section('title', '文章阅读 - 蒙太奇')
 
-@section('description', mb_substr(strip_tags($article->content), 0, 100, 'UTF-8') . '...')
+@section('description', '文章阅读详情页')
 
 <style>
     /* 文章阅读页面专用样式 */
@@ -512,9 +512,9 @@
                 <div class="article-header">
                     <div class="article-meta-bar">
                         <div class="source-info">
-                            <a href="{{ url('article/list') }}?feed_id={{$article->feed->id}}" class="source-link">
+                            <a href="#" id="article_feed_link" class="source-link">
                                 <i class="fas fa-rss"></i>
-                                {{$article->feed->feed_name}}
+                                <span id="article_feed_name">来源</span>
                             </a>
                         </div>
 
@@ -529,9 +529,9 @@
                                     <div class="share-options">
                                         <a href="javascript:void(0);"
                                            class="share-option icon-heart"
-                                           data-title="{{ $article->subject }} From:{{ url('/article/view/'.$article->id) }}"
-                                           data-url="{{ url('/article/view/'.$article->id) }}"
-                                           data-id="{{ $article->id }}">
+                                           data-title=""
+                                           data-url=""
+                                           data-id="">
                                             <i class="fas fa-heart"></i>
                                             <span>记录想法</span>
                                         </a>
@@ -540,14 +540,13 @@
                                 </div>
                             </div>
 
-                            @if(!$is_feed)
-                                <a href="javascript:void(0);"
-                                   feed_id="{{ $article->feed->id }}"
-                                   class="header-action-btn feed_quick_sub">
-                                    <i class="fas fa-plus"></i>
-                                    添加订阅
-                                </a>
-                            @endif
+                            <a href="javascript:void(0);"
+                               id="article_quick_sub"
+                               feed_id=""
+                               class="header-action-btn feed_quick_sub hidden">
+                                <i class="fas fa-plus"></i>
+                                添加订阅
+                            </a>
 
                             <a href="{{ url('/articles') }}" class="header-action-btn">
                                 <i class="fas fa-arrow-right"></i>
@@ -556,27 +555,23 @@
                         </div>
                     </div>
 
-                    @if(!empty($article->subject))
-                        <h1 class="article-title">{{ $article->subject }}</h1>
-                    @endif
+                    <h1 class="article-title" id="article_subject">文章标题</h1>
 
                     <div class="publish-info">
                     <span>
                         <i class="far fa-calendar-alt mr-1"></i>
-                        {{ $article->published }}
+                        <span id="article_published">-</span>
                     </span>
                         <span>
                         <i class="fas fa-external-link-alt mr-1"></i>
-                        <a href="{{ $article->url }}" target="_blank" class="text-white hover:underline">
+                        <a href="#" id="article_origin_top" target="_blank" class="text-white hover:underline">
                             原文链接
                         </a>
                     </span>
                         <span>
                         <i class="fas fa-globe mr-1"></i>
-                        <a href="{{ App\Http\Utils\CommonUtil::hostUrl($article->feed->url) }}"
-                           target="_blank"
-                           class="text-white hover:underline">
-                            {{ parse_url($article->feed->url, PHP_URL_HOST) }}
+                        <a href="#" id="article_feed_host_link" target="_blank" class="text-white hover:underline">
+                            <span id="article_feed_host">-</span>
                         </a>
                     </span>
                     </div>
@@ -585,14 +580,14 @@
                 <!-- 文章内容 -->
                 <div class="article-content-wrapper">
                     <div class="article-content" id="articleContent">
-                            <?php echo App\Http\Utils\CommonUtil::formatContentHtml($article->content); ?>
+                        <div class="text-gray-500">加载中...</div>
                     </div>
                 </div>
 
                 <!-- 文章底部 -->
                 <div class="article-footer">
                     <div class="footer-actions">
-                        <a href="{{ $article->url }}" target="_blank" class="original-link">
+                        <a href="#" id="article_origin_bottom" target="_blank" class="original-link">
                             <i class="fas fa-external-link-alt"></i>
                             查看原文
                         </a>
@@ -605,6 +600,11 @@
                                 </a>
                             </div>
                         </div>
+
+                        <a href="javascript:void(0);" id="article_mindmap_btn" class="share-btn">
+                            <i class="fas fa-project-diagram"></i>
+                            AI生成导图
+                        </a>
 
                         <a href="{{ url('/articles') }}" class="continue-reading">
                             <i class="fas fa-book-reader"></i>
@@ -628,12 +628,390 @@
     <script src="/js/lazyload.min.js"></script>
     <script src="/js/social-share.js"></script>
     <script src="/js/qrcode.js"></script>
+    <div id="articleMindmapModal" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/50" id="articleMindmapBackdrop"></div>
+        <div class="absolute inset-0 p-3 sm:p-6 overflow-y-auto">
+            <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-2xl border border-gray-200">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">AI生成思维导图</h3>
+                        <p class="text-xs text-gray-500 mt-1" id="articleMindmapTitle">-</p>
+                    </div>
+                    <button type="button" class="header-action-btn" id="articleMindmapCloseBtn" title="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
+                    <div class="text-sm text-gray-600" id="articleMindmapStatus">准备生成导图...</div>
+                </div>
+                <div class="p-5">
+                    <div id="articleMindmapLoading" class="text-center py-10 hidden">
+                        <i class="fas fa-spinner fa-spin text-gray-500 text-2xl"></i>
+                        <p class="text-sm text-gray-500 mt-2">AI正在分析文章并生成结构...</p>
+                    </div>
+                    <div id="articleMindmapPreviewWrap" class="hidden">
+                        <div class="article-mind-root" id="articleMindmapPreview"></div>
+                    </div>
+                    <div id="articleMindmapError" class="hidden text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                    <div class="text-xs text-gray-500">保存后可在思维导图页继续编辑</div>
+                    <div class="flex items-center gap-2">
+                        <a href="javascript:void(0);" id="articleMindmapEditLink" class="share-btn hidden" target="_blank">
+                            <i class="fas fa-pen mr-1"></i>打开编辑
+                        </a>
+                        <a href="javascript:void(0);" class="share-btn" id="articleMindmapRegenerateBtn">
+                            <i class="fas fa-sync-alt mr-1"></i>重新生成
+                        </a>
+                        <a href="javascript:void(0);" class="continue-reading" id="articleMindmapSaveBtn">
+                            <i class="fas fa-save mr-1"></i>一键保存
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .article-mind-root {
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f8fafc;
+            max-height: 60vh;
+            overflow: auto;
+        }
+        .article-mind-node {
+            margin: 8px 0;
+            padding-left: 14px;
+            border-left: 2px dashed #cbd5e1;
+        }
+        .article-mind-topic {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            color: #1f2937;
+            font-size: 13px;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .article-mind-node.level-0 > .article-mind-topic {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .article-mind-children {
+            margin-top: 6px;
+            margin-left: 10px;
+        }
+    </style>
 
     <script type="text/javascript">
         $(document).ready(function() {
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : function() { return Promise.reject(new Error("API客户端未初始化")); };
+            var currentArticleId = '';
+            var currentArticle = null;
+            var articleMindState = {
+                title: '',
+                referText: '',
+                tree: null,
+                isGenerating: false,
+                isSaving: false
+            };
+
+            function getArticleIdFromPath() {
+                var parts = window.location.pathname.split('/').filter(Boolean);
+                return parts.length ? parts[parts.length - 1] : '';
+            }
+
+            function escapeHtml(text) {
+                var div = document.createElement('div');
+                div.textContent = text == null ? '' : String(text);
+                return div.innerHTML;
+            }
+
+            function getHostFromUrl(url) {
+                try {
+                    return new URL(url).host || '-';
+                } catch (e) {
+                    return '-';
+                }
+            }
+
+            function populateArticle(article, isFeed) {
+                currentArticle = article;
+                currentArticleId = article && article.id ? String(article.id) : '';
+
+                var subject = (article && article.subject) ? article.subject : '文章标题';
+                document.title = subject + ' - 蒙太奇';
+                $('#article_subject').text(subject);
+                $('#article_published').text(article && article.published ? article.published : '-');
+
+                var articleUrl = article && article.url ? article.url : '#';
+                $('#article_origin_top').attr('href', articleUrl);
+                $('#article_origin_bottom').attr('href', articleUrl);
+
+                var feed = article && article.feed ? article.feed : {};
+                var feedId = feed.id || '';
+                var feedName = feed.feed_name || '来源';
+                var feedUrl = feed.url || '#';
+                var feedHost = getHostFromUrl(feedUrl);
+
+                $('#article_feed_name').text(feedName);
+                $('#article_feed_link').attr('href', '/article/list?feed_id=' + encodeURIComponent(feedId));
+                $('#article_feed_host').text(feedHost);
+                $('#article_feed_host_link').attr('href', feedUrl);
+
+                var articleViewUrl = window.location.origin + '/article/view/' + currentArticleId;
+                $('.icon-heart')
+                    .attr('data-title', subject + ' From:' + articleViewUrl)
+                    .attr('data-url', articleViewUrl)
+                    .attr('data-id', currentArticleId);
+
+                var contentHtml = article && article.formatted_content
+                    ? article.formatted_content
+                    : (article && article.content ? article.content : '<div class="text-gray-500">暂无内容</div>');
+                $('#articleContent').html(contentHtml);
+
+                if (isFeed) {
+                    $('#article_quick_sub').addClass('hidden').attr('feed_id', '');
+                } else {
+                    $('#article_quick_sub').removeClass('hidden').attr('feed_id', feedId);
+                }
+            }
+
+            function loadArticle() {
+                var articleId = getArticleIdFromPath();
+                if (!articleId) {
+                    showNotification('未找到文章ID', 'error');
+                    return;
+                }
+                apiRequest('GET', '/articles/' + articleId, {}).then(function(resp) {
+                    if (!(resp && resp.code === 9999 && resp.result && resp.result.article)) {
+                        showNotification((resp && resp.msg) || '加载文章失败', 'error');
+                        return;
+                    }
+                    populateArticle(resp.result.article, !!resp.result.is_feed);
+                }).catch(function() {
+                    showNotification('加载文章失败，请稍后重试', 'error');
+                });
+            }
+
+            function setMindmapStatus(message) {
+                $('#articleMindmapStatus').text(message || '');
+            }
+
+            function showMindmapModal() {
+                $('#articleMindmapModal').removeClass('hidden');
+            }
+
+            function hideMindmapModal() {
+                $('#articleMindmapModal').addClass('hidden');
+            }
+
+            function sanitizeTopic(text, fallbackText) {
+                var topic = String(text || '').replace(/\s+/g, ' ').trim();
+                if (!topic) topic = String(fallbackText || '导图节点');
+                if (topic.length > 36) topic = topic.slice(0, 36);
+                return topic || '导图节点';
+            }
+
+            function normalizeMindTree(input, depth) {
+                var currentDepth = Number(depth || 0);
+                if (currentDepth > 3) return null;
+                if (typeof input === 'string') return { topic: sanitizeTopic(input), children: [] };
+                if (!input || typeof input !== 'object') return null;
+                var topic = sanitizeTopic(input.topic || input.title || input.name || input.text, '导图节点');
+                var rawChildren = input.children || input.nodes || input.items || [];
+                var children = [];
+                if (Array.isArray(rawChildren)) {
+                    for (var i = 0; i < rawChildren.length; i++) {
+                        var childNode = normalizeMindTree(rawChildren[i], currentDepth + 1);
+                        if (childNode) children.push(childNode);
+                        if (children.length >= 8) break;
+                    }
+                }
+                return { topic: topic, children: children };
+            }
+
+            function extractJsonObject(text) {
+                var raw = String(text || '').trim();
+                if (!raw) return null;
+                raw = raw.replace(/```json/ig, '').replace(/```/g, '').trim();
+                var start = raw.indexOf('{');
+                var end = raw.lastIndexOf('}');
+                if (start === -1 || end === -1 || end <= start) return null;
+                try { return JSON.parse(raw.slice(start, end + 1)); } catch (e) { return null; }
+            }
+
+            function buildFallbackMindTree(title, referText) {
+                var cleanTitle = sanitizeTopic(title, '文章导图');
+                var text = String(referText || '').replace(/\s+/g, ' ').trim();
+                var parts = text.split(/[。！？；\n]/).map(function(item) { return item.trim(); }).filter(Boolean);
+                var children = [];
+                for (var i = 0; i < Math.min(5, parts.length); i++) {
+                    children.push({ topic: sanitizeTopic(parts[i], '要点' + (i + 1)), children: [] });
+                }
+                if (children.length === 0) {
+                    children.push({ topic: '核心观点', children: [] });
+                    children.push({ topic: '关键细节', children: [] });
+                    children.push({ topic: '可行动事项', children: [] });
+                }
+                return { topic: cleanTitle, children: children };
+            }
+
+            function renderMindTree(node, depth) {
+                var level = Number(depth || 0);
+                var html = '<div class="article-mind-node level-' + level + '"><div class="article-mind-topic">' + escapeHtml(node.topic || '') + '</div>';
+                if (Array.isArray(node.children) && node.children.length > 0) {
+                    html += '<div class="article-mind-children">';
+                    for (var i = 0; i < node.children.length; i++) {
+                        html += renderMindTree(node.children[i], level + 1);
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+                return html;
+            }
+
+            function updateMindmapPreview(tree) {
+                if (!tree) {
+                    $('#articleMindmapPreviewWrap').addClass('hidden');
+                    $('#articleMindmapPreview').empty();
+                    return;
+                }
+                $('#articleMindmapPreview').html(renderMindTree(tree, 0));
+                $('#articleMindmapPreviewWrap').removeClass('hidden');
+            }
+
+            async function ensureAiSession() {
+                if (typeof window.createNewSession === 'function') {
+                    return await window.createNewSession('builtin_common');
+                }
+                const response = await window.taskApiFetch('/api/v2/llm/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agent_id: 'builtin_common', title: '文章导图生成' })
+                });
+                const result = await response.json();
+                if (!response.ok || !result || result.success !== true || !result.data || !result.data.id) {
+                    throw new Error((result && result.message) ? result.message : '创建AI会话失败');
+                }
+                return result.data.id;
+            }
+
+            async function requestMindTreeFromAi(title, referText) {
+                var query = [
+                    '请根据我提供的文章标题和内容，生成思维导图。',
+                    '只返回JSON，不要解释，不要markdown。',
+                    '格式: {"topic":"根节点","children":[{"topic":"一级节点","children":[{"topic":"二级节点","children":[]}]}]}',
+                    '要求: 中文；层级不超过3层；一级节点3-6个；topic简洁。'
+                ].join('\n');
+                var sessionId = await ensureAiSession();
+                var response = await window.taskApiFetch('/api/v2/llm/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        refer_text: ('文章标题：' + title + '\n\n文章内容：\n' + String(referText || '')).slice(0, 6000),
+                        query: query
+                    })
+                });
+                if (!response.ok) throw new Error('AI请求失败，状态码: ' + response.status);
+                if (!String(response.headers.get('content-type') || '').includes('text/event-stream')) {
+                    throw new Error('AI返回格式异常');
+                }
+                var reader = response.body.getReader();
+                var decoder = new TextDecoder();
+                var buffer = '';
+                var finalText = '';
+                var doneSignal = false;
+                while (!doneSignal) {
+                    var chunk = await reader.read();
+                    if (chunk.done) break;
+                    buffer += decoder.decode(chunk.value, { stream: true });
+                    var lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = String(lines[i] || '').trim();
+                        if (!line || line.indexOf('data:') !== 0) continue;
+                        var payload = line.slice(5).trim();
+                        if (payload === '[DONE]') { doneSignal = true; break; }
+                        if (!payload || payload.charAt(0) !== '{') continue;
+                        try {
+                            var data = JSON.parse(payload);
+                            var delta = data && data.choices && data.choices[0] && data.choices[0].delta ? data.choices[0].delta : {};
+                            var piece = '';
+                            if (typeof delta.content === 'string' && delta.content) piece = delta.content;
+                            else if (typeof delta.reasoning === 'string' && delta.reasoning) piece = delta.reasoning;
+                            if (piece) finalText += piece;
+                        } catch (e) {}
+                    }
+                }
+                var parsed = extractJsonObject(finalText);
+                if (!parsed) throw new Error('AI输出无法解析为导图JSON');
+                var normalized = normalizeMindTree(parsed, 0);
+                if (!normalized || !Array.isArray(normalized.children) || normalized.children.length === 0) {
+                    throw new Error('AI导图结构为空');
+                }
+                if (!normalized.topic || normalized.topic === '导图节点') {
+                    normalized.topic = sanitizeTopic(title, '文章导图');
+                }
+                return normalized;
+            }
+
+            async function createMindNode(name, parentMindId) {
+                var payload = { name: sanitizeTopic(name, '导图节点') };
+                if (parentMindId) payload.parent_mind_id = parentMindId;
+                var result = await apiRequest('POST', '/minds', payload);
+                if (!result || result.code !== 9999 || !result.result || !result.result.id) {
+                    throw new Error((result && result.msg) ? result.msg : '保存导图节点失败');
+                }
+                return Number(result.result.id);
+            }
+
+            async function saveMindTreeToServer(tree) {
+                var rootId = await createMindNode(tree.topic || '文章导图', 0);
+                async function createChildren(parentId, children) {
+                    if (!Array.isArray(children) || children.length === 0) return;
+                    for (var i = 0; i < children.length; i++) {
+                        var child = children[i];
+                        var childId = await createMindNode(child.topic || ('节点' + (i + 1)), parentId);
+                        await createChildren(childId, child.children || []);
+                    }
+                }
+                await createChildren(rootId, tree.children || []);
+                return rootId;
+            }
+
+            async function generateArticleMindmap() {
+                if (articleMindState.isGenerating) return;
+                articleMindState.isGenerating = true;
+                $('#articleMindmapEditLink').addClass('hidden').attr('href', 'javascript:void(0);');
+                $('#articleMindmapError').addClass('hidden').text('');
+                $('#articleMindmapLoading').removeClass('hidden');
+                updateMindmapPreview(null);
+                setMindmapStatus('AI生成中，请稍候...');
+                try {
+                    var tree = await requestMindTreeFromAi(articleMindState.title, articleMindState.referText);
+                    articleMindState.tree = tree;
+                    updateMindmapPreview(tree);
+                    setMindmapStatus('导图生成完成，可保存后继续编辑。');
+                } catch (error) {
+                    var fallbackTree = buildFallbackMindTree(articleMindState.title, articleMindState.referText);
+                    articleMindState.tree = fallbackTree;
+                    updateMindmapPreview(fallbackTree);
+                    $('#articleMindmapError').removeClass('hidden').text('AI生成失败，已使用降级结构。失败原因：' + (error && error.message ? error.message : '未知错误'));
+                    setMindmapStatus('已展示降级导图，可直接保存后再补充。');
+                } finally {
+                    $('#articleMindmapLoading').addClass('hidden');
+                    articleMindState.isGenerating = false;
+                }
+            }
 
             // 图片懒加载
             if (typeof $.fn.lazyload === 'function') {
@@ -642,6 +1020,8 @@
                     threshold: 200
                 });
             }
+
+            loadArticle();
 
             // 快速订阅
             $(".feed_quick_sub").click(function() {
@@ -729,7 +1109,7 @@
 
                 if (selectedText.length >= 10) {
                     apiRequest('POST', '/articles/mark', {
-                        "article_id": {{ $article->id }},
+                        "article_id": currentArticleId,
                         "content": selectedText
                     }).then(function(result_arr) {
                         if (result_arr.code != 9999) {
@@ -785,6 +1165,58 @@
             $(window).scroll(function() {
                 $('.share-menu').removeClass('active');
                 hideMarkerTool();
+            });
+
+            $('#article_mindmap_btn').on('click', function() {
+                var title = (currentArticle && currentArticle.subject) ? String(currentArticle.subject) : $('#article_subject').text().trim();
+                var referText = $('#articleContent').text().replace(/\s+/g, ' ').trim();
+                if (!referText) {
+                    showNotification('未找到可用于生成导图的文章内容', 'error');
+                    return;
+                }
+                articleMindState.title = title || '文章导图';
+                articleMindState.referText = referText.slice(0, 12000);
+                articleMindState.tree = null;
+                $('#articleMindmapTitle').text(articleMindState.title);
+                showMindmapModal();
+                generateArticleMindmap();
+            });
+
+            $('#articleMindmapBackdrop, #articleMindmapCloseBtn').on('click', function() {
+                hideMindmapModal();
+            });
+
+            $('#articleMindmapRegenerateBtn').on('click', function() {
+                if (!articleMindState.title || !articleMindState.referText) {
+                    showNotification('缺少文章内容，无法生成导图', 'error');
+                    return;
+                }
+                generateArticleMindmap();
+            });
+
+            $('#articleMindmapSaveBtn').on('click', async function() {
+                if (articleMindState.isSaving) return;
+                if (!articleMindState.tree) {
+                    showNotification('请先生成导图', 'error');
+                    return;
+                }
+                articleMindState.isSaving = true;
+                var $btn = $(this);
+                var originalHtml = $btn.html();
+                $btn.html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中');
+                setMindmapStatus('正在保存导图节点...');
+                try {
+                    var rootMindId = await saveMindTreeToServer(articleMindState.tree);
+                    $('#articleMindmapEditLink').removeClass('hidden').attr('href', '/mind/' + rootMindId);
+                    setMindmapStatus('保存成功，已可继续编辑。');
+                    showNotification('导图已保存，可继续编辑', 'success');
+                } catch (error) {
+                    setMindmapStatus('保存失败，请重试。');
+                    showNotification((error && error.message) ? error.message : '保存导图失败', 'error');
+                } finally {
+                    articleMindState.isSaving = false;
+                    $btn.html(originalHtml);
+                }
             });
 
             // ESC键关闭分享菜单

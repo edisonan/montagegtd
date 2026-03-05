@@ -42,18 +42,18 @@
                         </div>
 
                         <div class="text-center">
-                            <div class="text-5xl font-bold text-yellow-600 mb-2">{{ number_format($account->gp_balance) }}</div>
+                            <div id="gpBalanceValue" class="text-5xl font-bold text-yellow-600 mb-2">0</div>
                             <div class="text-sm text-gray-500 mb-6">持续积累，见证成长</div>
 
                             <!-- 积分进度条 -->
                             <div class="mb-6">
                                 <div class="flex items-center justify-between text-sm mb-2">
                                     <span class="text-gray-600">当前等级进度</span>
-                                    <span class="font-medium text-gray-900">{{ round($account->gp_balance / 1000 * 100) }}%</span>
+                                    <span id="gpProgressText" class="font-medium text-gray-900">0%</span>
                                 </div>
                                 <div class="progress h-2">
-                                    <div class="progress-bar bg-gradient-to-r from-yellow-400 to-yellow-600"
-                                         style="width: {{ min($account->gp_balance / 1000 * 100, 100) }}%"></div>
+                                    <div id="gpProgressBar" class="progress-bar bg-gradient-to-r from-yellow-400 to-yellow-600"
+                                         style="width: 0%"></div>
                                 </div>
                                 <div class="flex justify-between text-xs text-gray-500 mt-2">
                                     <span>初级</span>
@@ -90,7 +90,7 @@
                         </div>
 
                         <div class="text-center">
-                            <div class="text-5xl font-bold text-green-600 mb-2">{{ number_format($account->ap_balance) }}</div>
+                            <div id="apBalanceValue" class="text-5xl font-bold text-green-600 mb-2">0</div>
                             <div class="text-sm text-gray-500 mb-6">随时兑换，享受特权</div>
 
                             <!-- 兑换按钮 -->
@@ -124,7 +124,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">连续打卡</p>
-                                <p class="text-xl font-bold text-gray-900">{{ $continuous_days ?? 0 }}天</p>
+                                <p id="continuousDaysValue" class="text-xl font-bold text-gray-900">0天</p>
                             </div>
                         </div>
                     </div>
@@ -138,7 +138,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">任务完成</p>
-                                <p class="text-xl font-bold text-gray-900">{{ $completed_tasks ?? 0 }}个</p>
+                                <p id="completedTasksValue" class="text-xl font-bold text-gray-900">0个</p>
                             </div>
                         </div>
                     </div>
@@ -152,7 +152,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">本月获得</p>
-                                <p class="text-xl font-bold text-gray-900">+{{ $monthly_points ?? 0 }}</p>
+                                <p id="monthlyPointsValue" class="text-xl font-bold text-gray-900">+0</p>
                             </div>
                         </div>
                     </div>
@@ -166,7 +166,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">当前排名</p>
-                                <p class="text-xl font-bold text-gray-900">#{{ $user_rank ?? '-' }}</p>
+                                <p id="userRankValue" class="text-xl font-bold text-gray-900">#-</p>
                             </div>
                         </div>
                     </div>
@@ -208,173 +208,25 @@
                 </div>
 
                 <div class="p-6">
-                    @if($records->isEmpty())
-                        <!-- 空状态 -->
-                        <div class="text-center py-12">
-                            <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-history text-gray-400 text-2xl"></i>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">暂无积分记录</h3>
-                            <p class="text-gray-600 mb-6">开始使用蒙太奇各项功能，积累您的第一笔积分吧</p>
-                            <div class="flex flex-wrap gap-3 justify-center">
-                                <a href="{{ url('/tasks') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-tasks mr-2"></i>
-                                    完成任务
-                                </a>
-                                <a href="{{ url('/articles') }}" class="btn btn-outline btn-sm">
-                                    <i class="fas fa-newspaper mr-2"></i>
-                                    阅读文章
-                                </a>
-                                <a href="{{ url('/') }}" class="btn btn-outline btn-sm">
-                                    <i class="fas fa-clock mr-2"></i>
-                                    番茄专注
-                                </a>
-                            </div>
-                        </div>
-                    @else
-                        <!-- 积分记录表格 -->
-                        <div class="custom-scrollbar overflow-x-auto">
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                    <th style="width: 100px;">类型</th>
-                                    <th style="width: 120px;">积分变动</th>
-                                    <th style="min-width: 200px;">说明</th>
-                                    <th style="width: 140px;">余额</th>
-                                    <th style="width: 160px;">时间</th>
-                                    <th style="width: 80px;">操作</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @foreach($records as $record)
-                                    <tr class="hover:bg-gray-50 transition-colors">
-                                        <td>
-                                            <div class="flex items-center gap-2">
-                                                @php
-                                                    $typeConfig = [
-                                                        'task_complete' => ['color' => 'blue', 'icon' => 'fa-tasks'],
-                                                        'daily_checkin' => ['color' => 'green', 'icon' => 'fa-calendar-check'],
-                                                        'article_read' => ['color' => 'purple', 'icon' => 'fa-newspaper'],
-                                                        'pomo_complete' => ['color' => 'red', 'icon' => 'fa-clock'],
-                                                        'system_grant' => ['color' => 'yellow', 'icon' => 'fa-gift'],
-                                                        'exchange_use' => ['color' => 'gray', 'icon' => 'fa-exchange-alt'],
-                                                        'other' => ['color' => 'gray', 'icon' => 'fa-circle'],
-                                                    ];
-
-                                                    $config = $typeConfig[$record->point_type] ?? $typeConfig['other'];
-                                                @endphp
-                                                <div class="w-8 h-8 bg-{{ $config['color'] }}-100 rounded-lg flex items-center justify-center">
-                                                    <i class="fas {{ $config['icon'] }} text-{{ $config['color'] }}-600 text-sm"></i>
-                                                </div>
-                                                <span class="text-sm font-medium text-gray-900">
-                                                {{ $record->point_type }}
-                                            </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            @if($record->change_amount > 0)
-                                                <div class="flex items-center gap-1 text-success-color font-semibold">
-                                                    <i class="fas fa-plus-circle text-xs"></i>
-                                                    +{{ $record->change_amount }}
-                                                </div>
-                                            @else
-                                                <div class="flex items-center gap-1 text-danger-color font-semibold">
-                                                    <i class="fas fa-minus-circle text-xs"></i>
-                                                    {{ $record->change_amount }}
-                                                </div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="text-gray-700">{{ $record->description }}</div>
-                                            @if($record->related_info)
-                                                <div class="text-xs text-gray-500 mt-1">{{ $record->related_info }}</div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="text-sm">
-                                                <div class="text-gray-600">GP: {{ $record->gp_balance ?? 0 }}</div>
-                                                <div class="text-gray-600">AP: {{ $record->ap_balance ?? 0 }}</div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="text-sm text-gray-600">
-                                                <div>{{ $record->created_at->format('Y-m-d') }}</div>
-                                                <div class="text-gray-500">{{ $record->created_at->format('H:i:s') }}</div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <button onclick="showRecordDetail({{ $record->id }})"
-                                                    class="text-blue-600 hover:text-blue-800 text-sm">
-                                                详情
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- 分页 -->
-                        @if($records->hasPages())
-                            <div class="mt-6 pt-6 border-t border-gray-200">
-                                <div class="flex items-center justify-between">
-                                    <div class="text-sm text-gray-600">
-                                        显示 {{ $records->firstItem() }} - {{ $records->lastItem() }}
-                                        共 {{ $records->total() }} 条记录
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        {{-- 上一页 --}}
-                                        @if($records->onFirstPage())
-                                            <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                                            <i class="fas fa-chevron-left"></i>
-                                        </span>
-                                        @else
-                                            <a href="{{ $records->previousPageUrl() }}"
-                                               class="nav-link px-3 py-2 hover:bg-gray-100 rounded-lg">
-                                                <i class="fas fa-chevron-left"></i>
-                                            </a>
-                                        @endif
-
-                                        {{-- 页码 --}}
-                                        <div class="flex items-center gap-1">
-                                            @foreach(range(1, min(5, $records->lastPage())) as $page)
-                                                @if($page == $records->currentPage())
-                                                    <span class="px-3 py-1 bg-blue-100 text-blue-600 font-semibold rounded-lg">
-                                                    {{ $page }}
-                                                </span>
-                                                @else
-                                                    <a href="{{ $records->url($page) }}"
-                                                       class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                                        {{ $page }}
-                                                    </a>
-                                                @endif
-                                            @endforeach
-
-                                            @if($records->lastPage() > 5)
-                                                <span class="px-2 text-gray-400">...</span>
-                                                <a href="{{ $records->url($records->lastPage()) }}"
-                                                   class="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                                    {{ $records->lastPage() }}
-                                                </a>
-                                            @endif
-                                        </div>
-
-                                        {{-- 下一页 --}}
-                                        @if($records->hasMorePages())
-                                            <a href="{{ $records->nextPageUrl() }}"
-                                               class="nav-link px-3 py-2 hover:bg-gray-100 rounded-lg">
-                                                <i class="fas fa-chevron-right"></i>
-                                            </a>
-                                        @else
-                                            <span class="px-3 py-2 text-gray-400 cursor-not-allowed">
-                                            <i class="fas fa-chevron-right"></i>
-                                        </span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    @endif
+                    <div class="custom-scrollbar overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th style="width: 100px;">类型</th>
+                                <th style="width: 120px;">积分变动</th>
+                                <th style="min-width: 200px;">说明</th>
+                                <th style="width: 140px;">余额</th>
+                                <th style="width: 160px;">时间</th>
+                                <th style="width: 80px;">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="pointRecordsBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-gray-500">加载积分记录中...</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -492,7 +344,7 @@
                         当前可用积分
                     </label>
                     <div class="flex items-center gap-2">
-                        <div class="input w-full bg-gray-50">{{ $account->ap_balance }} AP</div>
+                        <div id="currentApBalanceValue" class="input w-full bg-gray-50">0 AP</div>
                         <div class="text-sm text-gray-500">可用</div>
                     </div>
                 </div>
@@ -519,139 +371,236 @@
     </div>
 
     <script>
-        $(document).ready(function() {
-            // 初始化筛选器
-            const timeRange = $('#timeRange');
-            const typeFilter = $('#typeFilter');
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+        var allPointRecords = [];
+        var currentApBalance = 0;
 
-            timeRange.change(function() {
-                filterRecords();
-            });
-
-            typeFilter.change(function() {
-                filterRecords();
-            });
-
-            // 兑换按钮点击
-            $('.btn-exchange').click(function() {
-                showExchangeModal();
-            });
-
-            // 初始化统计图表（预留）
-            initStatsCharts();
-        });
-
-        // 筛选记录
-        function filterRecords() {
-            const timeRange = $('#timeRange').val();
-            const typeFilter = $('#typeFilter').val();
-
-            // 这里可以添加AJAX请求或直接页面跳转
-            // 示例：window.location.href = `?time_range=${timeRange}&type=${typeFilter}`;
-
-            // 临时提示
-            showNotification('筛选功能开发中，即将上线');
+        function formatNumber(n) {
+            try {
+                return Number(n || 0).toLocaleString('zh-CN');
+            } catch (e) {
+                return String(n || 0);
+            }
         }
 
-        // 显示兑换模态框
+        function updateAccountView(account) {
+            var gp = Number(account && account.gp_balance ? account.gp_balance : 0);
+            var ap = Number(account && account.ap_balance ? account.ap_balance : 0);
+            var percent = Math.min(100, Math.round((gp / 1000) * 100));
+            currentApBalance = ap;
+
+            var gpEl = document.getElementById('gpBalanceValue');
+            var apEl = document.getElementById('apBalanceValue');
+            var gpProgressText = document.getElementById('gpProgressText');
+            var gpProgressBar = document.getElementById('gpProgressBar');
+            var apModalEl = document.getElementById('currentApBalanceValue');
+
+            if (gpEl) gpEl.textContent = formatNumber(gp);
+            if (apEl) apEl.textContent = formatNumber(ap);
+            if (gpProgressText) gpProgressText.textContent = percent + '%';
+            if (gpProgressBar) gpProgressBar.style.width = percent + '%';
+            if (apModalEl) apModalEl.textContent = ap + ' AP';
+        }
+
+        function updateStatsView(records) {
+            var list = Array.isArray(records) ? records : [];
+            var now = new Date();
+            var currentYear = now.getFullYear();
+            var currentMonth = now.getMonth();
+            var monthlyGain = 0;
+            var completedTasks = 0;
+
+            list.forEach(function(record) {
+                var amount = Number(record.change_amount || 0);
+                var created = new Date(String(record.created_at || '').replace(' ', 'T'));
+                if (!isNaN(created.getTime()) && created.getFullYear() === currentYear && created.getMonth() === currentMonth && amount > 0) {
+                    monthlyGain += amount;
+                }
+                if (String(record.point_type || '') === 'task_complete' && amount > 0) {
+                    completedTasks += 1;
+                }
+            });
+
+            var continuousEl = document.getElementById('continuousDaysValue');
+            var completedEl = document.getElementById('completedTasksValue');
+            var monthlyEl = document.getElementById('monthlyPointsValue');
+            var rankEl = document.getElementById('userRankValue');
+
+            if (continuousEl) continuousEl.textContent = '0天';
+            if (completedEl) completedEl.textContent = completedTasks + '个';
+            if (monthlyEl) monthlyEl.textContent = '+' + monthlyGain;
+            if (rankEl) rankEl.textContent = '#-';
+        }
+
+        function normalizeResponseArray(payload) {
+            if (!payload) return [];
+            if (Array.isArray(payload)) return payload;
+            if (Array.isArray(payload.data)) return payload.data;
+            return [];
+        }
+
+        function typeStyle(pointType) {
+            var map = {
+                task_complete: { color: 'blue', icon: 'fa-tasks' },
+                daily_checkin: { color: 'green', icon: 'fa-calendar-check' },
+                article_read: { color: 'purple', icon: 'fa-newspaper' },
+                pomo_complete: { color: 'red', icon: 'fa-clock' },
+                system_grant: { color: 'yellow', icon: 'fa-gift' },
+                exchange_use: { color: 'gray', icon: 'fa-exchange-alt' }
+            };
+            return map[pointType] || { color: 'gray', icon: 'fa-circle' };
+        }
+
+        function formatDateTime(raw) {
+            if (!raw) return { date: '-', time: '-' };
+            var text = String(raw).replace('T', ' ');
+            return {
+                date: text.slice(0, 10),
+                time: text.slice(11, 19) || '-'
+            };
+        }
+
+        function renderRecords(records) {
+            var tbody = document.getElementById('pointRecordsBody');
+            if (!tbody) return;
+
+            if (!records.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">暂无积分记录</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = records.map(function(record) {
+                var cfg = typeStyle(record.point_type);
+                var amount = Number(record.change_amount || 0);
+                var amountClass = amount > 0 ? 'text-success-color' : 'text-danger-color';
+                var amountIcon = amount > 0 ? 'fa-plus-circle' : 'fa-minus-circle';
+                var amountText = amount > 0 ? ('+' + amount) : String(amount);
+                var time = formatDateTime(record.created_at);
+                var description = record.description || '';
+
+                return ''
+                    + '<tr class="hover:bg-gray-50 transition-colors">'
+                    + '<td><div class="flex items-center gap-2">'
+                    + '<div class="w-8 h-8 bg-' + cfg.color + '-100 rounded-lg flex items-center justify-center">'
+                    + '<i class="fas ' + cfg.icon + ' text-' + cfg.color + '-600 text-sm"></i></div>'
+                    + '<span class="text-sm font-medium text-gray-900">' + (record.point_type || '-') + '</span>'
+                    + '</div></td>'
+                    + '<td><div class="flex items-center gap-1 ' + amountClass + ' font-semibold">'
+                    + '<i class="fas ' + amountIcon + ' text-xs"></i>' + amountText + '</div></td>'
+                    + '<td><div class="text-gray-700">' + $('<div>').text(description).html() + '</div></td>'
+                    + '<td><div class="text-sm text-gray-600">余额: ' + Number(record.balance_after || 0) + '</div></td>'
+                    + '<td><div class="text-sm text-gray-600"><div>' + time.date + '</div><div class="text-gray-500">' + time.time + '</div></div></td>'
+                    + '<td><button onclick="showRecordDetail(' + Number(record.id || 0) + ')" class="text-blue-600 hover:text-blue-800 text-sm">详情</button></td>'
+                    + '</tr>';
+            }).join('');
+        }
+
+        function isInTimeRange(record, range) {
+            if (range === 'all') return true;
+            var created = new Date(String(record.created_at || '').replace(' ', 'T'));
+            if (isNaN(created.getTime())) return false;
+            var now = new Date();
+            var start = new Date(now);
+
+            if (range === 'today') {
+                start.setHours(0, 0, 0, 0);
+            } else if (range === 'week') {
+                start.setDate(now.getDate() - 7);
+            } else if (range === 'month') {
+                start.setMonth(now.getMonth() - 1);
+            }
+            return created >= start;
+        }
+
+        function filterRecords() {
+            var range = $('#timeRange').val();
+            var type = $('#typeFilter').val();
+            var filtered = allPointRecords.filter(function(record) {
+                if (!isInTimeRange(record, range)) return false;
+                var amount = Number(record.change_amount || 0);
+                if (type === 'gain' && amount <= 0) return false;
+                if (type === 'consume' && amount >= 0) return false;
+                return true;
+            });
+            renderRecords(filtered);
+        }
+
+        function loadPointData() {
+            if (!apiRequest) {
+                return;
+            }
+            apiRequest('GET', '/points', {}).then(function(resp) {
+                if (resp.code !== 9999 || !resp.result) {
+                    throw new Error(resp.msg || '加载失败');
+                }
+                updateAccountView(resp.result.account || {});
+                allPointRecords = normalizeResponseArray(resp.result.records);
+                updateStatsView(allPointRecords);
+                filterRecords();
+            }).catch(function(error) {
+                console.error('load points failed:', error);
+            });
+        }
+
         function showExchangeModal() {
-            if ({{ $account->ap_balance }} <= 0) {
+            if (currentApBalance <= 0) {
                 showNotification('可用积分不足，请先积累更多积分', 'warning');
                 return;
             }
             $('#exchange_modal').addClass('show');
         }
 
-        // 确认兑换
         function confirmExchange() {
-            const item = $('#exchange_item').val();
+            var item = $('#exchange_item').val();
             if (!item) {
                 showNotification('请选择兑换项目', 'warning');
                 return;
             }
-
-            // 这里可以添加AJAX请求
             showNotification('兑换功能开发中，即将上线', 'info');
             closeModal('exchange_modal');
         }
 
-        // 显示记录详情
         function showRecordDetail(recordId) {
-            // 这里可以添加AJAX请求加载详情
             showNotification('详情功能开发中，即将上线', 'info');
-
-            // 示例代码：
-            /*
-            $.ajax({
-                url: `/points/records/${recordId}`,
-                type: 'GET',
-                success: function(data) {
-                    $('#record_detail_modal .modal-content').html(data);
-                    $('#record_detail_modal').addClass('show');
-                }
-            });
-            */
         }
 
-        // 显示奖励列表
         function showRewards() {
-            // 这里可以跳转到奖励页面或显示模态框
             showNotification('奖励列表功能开发中，即将上线', 'info');
         }
 
-        // 关闭模态框
         function closeModal(modalId) {
             $('#' + modalId).removeClass('show');
         }
 
-        // 显示通知
-        function showNotification(message, type = 'info') {
-            const colors = {
-                success: 'green',
-                error: 'red',
-                warning: 'yellow',
-                info: 'blue'
-            };
+        function showNotification(message, type) {
+            var level = type || 'info';
+            var colors = { success: 'green', error: 'red', warning: 'yellow', info: 'blue' };
+            var icon = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
 
-            const icon = {
-                success: 'check-circle',
-                error: 'exclamation-circle',
-                warning: 'exclamation-triangle',
-                info: 'info-circle'
-            };
-
-            const notification = $(`
-        <div class="fixed top-4 right-4 z-50 fade-in">
-            <div class="card shadow-lg border-l-4 border-${colors[type]}-500">
-                <div class="p-4 flex items-start gap-3">
-                    <i class="fas fa-${icon[type]} text-${colors[type]}-500 text-lg"></i>
-                    <p class="text-sm text-gray-800">${message}</p>
-                    <button class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `);
+            var notification = $(
+                '<div class="fixed top-4 right-4 z-50 fade-in">' +
+                '<div class="card shadow-lg border-l-4 border-' + colors[level] + '-500">' +
+                '<div class="p-4 flex items-start gap-3">' +
+                '<i class="fas fa-' + icon[level] + ' text-' + colors[level] + '-500 text-lg"></i>' +
+                '<p class="text-sm text-gray-800">' + $('<div>').text(message).html() + '</p>' +
+                '<button class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>' +
+                '</div></div></div>'
+            );
 
             $('body').append(notification);
-
-            notification.find('button').click(function() {
-                notification.remove();
-            });
-
-            setTimeout(() => {
-                notification.fadeOut(300, function() {
-                    $(this).remove();
-                });
+            notification.find('button').click(function() { notification.remove(); });
+            setTimeout(function() {
+                notification.fadeOut(300, function() { $(this).remove(); });
             }, 3000);
         }
 
-        // 初始化统计图表（预留）
-        function initStatsCharts() {
-            // 这里可以添加积分趋势图、分类统计图等
-            // 可以使用Chart.js或ECharts
-        }
+        $(document).ready(function() {
+            $('#timeRange').change(filterRecords);
+            $('#typeFilter').change(filterRecords);
+            loadPointData();
+        });
     </script>
 
     <style>

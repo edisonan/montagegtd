@@ -12,6 +12,7 @@ use App\Models\FeedSub;
 use App\Services\FeedService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FeedController extends Controller
 {
@@ -28,6 +29,123 @@ class FeedController extends Controller
         if ($user) {
             Auth::setUser($user);
         }
+    }
+
+    public function index(Request $request)
+    {
+        $this->bootstrapAuthContext($request);
+
+        $url = (string)$request->input('url', '');
+        $indexInfo = $this->feedService->getIndexInfo($url);
+        $feedSubs = $indexInfo['feedSubs'];
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'url' => $indexInfo['url'],
+            'title' => $indexInfo['title'],
+            'categorys' => $indexInfo['categorys'],
+            'feed_subs' => $feedSubs->items(),
+            'pagination' => array(
+                'total' => $feedSubs->total(),
+                'current_page' => $feedSubs->currentPage(),
+                'per_page' => $feedSubs->perPage(),
+                'last_page' => $feedSubs->lastPage(),
+                'next_page_url' => $feedSubs->nextPageUrl(),
+                'prev_page_url' => $feedSubs->previousPageUrl(),
+                'has_more_pages' => $feedSubs->hasMorePages(),
+            ),
+        )));
+    }
+
+    public function navinfo(Request $request)
+    {
+        $this->bootstrapAuthContext($request);
+        $navInfos = $this->feedService->getNavInfo();
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'nav_infos' => array_values($navInfos),
+        )));
+    }
+
+    public function explorer(Request $request)
+    {
+        $this->bootstrapAuthContext($request);
+
+        $explorerInfo = $this->feedService->getExplorerInfo();
+        $feeds = $explorerInfo['feeds'];
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'feeds' => $feeds->items(),
+            'categorys' => $explorerInfo['categorys'],
+            'recommend_categorys' => $explorerInfo['recommend_categorys'],
+            'pagination' => array(
+                'total' => $feeds->total(),
+                'current_page' => $feeds->currentPage(),
+                'per_page' => $feeds->perPage(),
+                'last_page' => $feeds->lastPage(),
+                'next_page_url' => $feeds->nextPageUrl(),
+                'prev_page_url' => $feeds->previousPageUrl(),
+                'has_more_pages' => $feeds->hasMorePages(),
+            ),
+        )));
+    }
+
+    public function search(Request $request)
+    {
+        $this->bootstrapAuthContext($request);
+
+        $recommendCategoryId = (string)$request->input('recommend_category_id', '');
+        $name = (string)$request->input('name', '');
+        if ($recommendCategoryId === '' && $name === '') {
+            throw new CustomException('error params');
+        }
+
+        $feeds = $this->feedService->getSearchFeeds($recommendCategoryId, $name);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'feeds' => $feeds->items(),
+            'pagination' => array(
+                'total' => $feeds->total(),
+                'current_page' => $feeds->currentPage(),
+                'per_page' => $feeds->perPage(),
+                'last_page' => $feeds->lastPage(),
+                'next_page_url' => $feeds->nextPageUrl(),
+                'prev_page_url' => $feeds->previousPageUrl(),
+                'has_more_pages' => $feeds->hasMorePages(),
+            ),
+        )));
+    }
+
+    public function show(Request $request, FeedSub $feedSub)
+    {
+        $this->authorize('destroy', $feedSub);
+
+        $userId = $this->getAuthUserId($request);
+        $this->bootstrapAuthContext($request);
+        $feedSub->load(['feed', 'category']);
+
+        $categories = Category::where('user_id', $userId)
+            ->where('status', 1)
+            ->orderBy('category_order', 'asc')
+            ->get();
+
+        $feedId = (int)$feedSub->feed_id;
+        $totalCount = ArticleSub::where('user_id', $userId)->where('feed_id', $feedId)->count();
+        $unreadCount = ArticleSub::where('user_id', $userId)->where('feed_id', $feedId)->where('status', 'unread')->count();
+        $starredCount = DB::table('article_subs')
+            ->where('user_id', $userId)
+            ->where('feed_id', $feedId)
+            ->where('mark', 1)
+            ->count();
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'feed_sub' => $feedSub,
+            'categories' => $categories,
+            'stats' => array(
+                'total_articles' => (int)$totalCount,
+                'unread_articles' => (int)$unreadCount,
+                'starred_articles' => (int)$starredCount,
+            ),
+        )));
     }
 
     public function store(Request $request)
@@ -142,6 +260,7 @@ class FeedController extends Controller
         $this->validate($request, array(
             'feed_name' => 'required',
             'category_id' => 'required',
+            'feed_order' => 'sometimes|integer|min:0',
         ));
 
         $userId = $this->getAuthUserId($request);
@@ -155,6 +274,9 @@ class FeedController extends Controller
 
         $feedSub->feed_name = (string)$request->input('feed_name');
         $feedSub->category_id = (int)$request->input('category_id');
+        if ($request->has('feed_order')) {
+            $feedSub->feed_order = (int)$request->input('feed_order', 0);
+        }
         $feedSub->save();
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($feedSub->fresh()));

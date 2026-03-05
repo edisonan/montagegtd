@@ -281,10 +281,50 @@ class LlmAgentController extends Controller
                 $draftVersion = $agent->currentVersion;
             }
 
-            return view('llm.agent-editor', compact('agent', 'draftVersion'));
+            return view('llm.agent-editor');
         } catch (\Exception $e) {
             \Log::error('Error showing draft editor: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to load draft editor'], 500);
+        }
+    }
+
+    /**
+     * 获取智能体草稿详情（供前端编辑器初始化）
+     */
+    public function getDraft($agentId)
+    {
+        try {
+            $agent = \App\Models\LlmAgent::with(['versions', 'currentVersion.model'])->findOrFail($agentId);
+
+            if ($agent->user_id != Auth::id()) {
+                return response()->json([
+                    'message' => '智能体不存在或无权访问',
+                    'success' => false
+                ], 404);
+            }
+
+            $draftVersion = $agent->versions()
+                ->where('version_name', 'draft')
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if (!$draftVersion) {
+                $draftVersion = $agent->currentVersion;
+            }
+
+            return response()->json([
+                'result' => [
+                    'agent' => $agent,
+                    'draft_version' => $draftVersion,
+                ],
+                'success' => true,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('LlmAgentController@getDraft error: ' . $e->getMessage());
+            return response()->json([
+                'message' => '获取草稿详情失败: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
         }
     }
 
@@ -498,36 +538,6 @@ class LlmAgentController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => '测试失败: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * 获取智能体列表
-     */
-    public function getAgents()
-    {
-        try {
-            $userId = Auth::id();
-
-            // 获取所有公开激活的智能体以及当前用户的智能体
-            $agents = LlmAgent::where('is_active', true)
-                ->where(function ($query) use ($userId) {
-                    $query->where('is_public', true)
-                        ->orWhere('user_id', $userId);
-                })
-                ->select('id', 'name', 'description', 'avatar')
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $agents
-            ]);
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'success' => false,
-                'message' => '获取智能体列表失败: ' . $e->getMessage()
             ], 500);
         }
     }

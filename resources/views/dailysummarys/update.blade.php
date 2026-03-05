@@ -22,16 +22,11 @@
                 <div class="card card-elevated">
                     <div class="p-6 border-b border-gray-200">
                         <h2 class="text-lg font-semibold text-gray-900">日报信息</h2>
-                        <p class="text-sm text-gray-500 mt-1">修改日期：{{ $dailysummary->summary_date }}</p>
+                        <p class="text-sm text-gray-500 mt-1">修改日期：<span id="summaryDateLabel">加载中...</span></p>
                     </div>
 
                     <div class="p-6">
-                        <!-- 显示验证错误 -->
-                        @include('common.errors')
-
-                        <form action="{{ url('/api/v2/daily-summaries/'.$dailysummary->id) }}" method="POST" class="space-y-6" id="dailysummary-form">
-                            {{ csrf_field() }}
-                            {{ method_field('PUT') }}
+                        <form action="#" method="POST" class="space-y-6" id="dailysummary-form">
 
                             <!-- 总结日期 -->
                             <div>
@@ -43,7 +38,7 @@
                                            name="summary_date"
                                            id="dailysummary-summarydate"
                                            class="input w-full pr-10 date-picker"
-                                           value="{{ $dailysummary->summary_date }}"
+                                           value=""
                                            max="{{ date('Y-m-d') }}"
                                            required>
                                     <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -71,7 +66,7 @@
                                           id="dailysummary-workcontent"
                                           rows="4"
                                           placeholder="记录今天的工作内容、进展、遇到的问题和解决方案..."
-                                          maxlength="1000">{{ $dailysummary->work_content }}</textarea>
+                                          maxlength="1000"></textarea>
                                 <div class="mt-2 text-sm text-gray-500 space-y-1">
                                     <p class="flex items-center"><i class="fas fa-check-circle text-success-color text-xs mr-2"></i>完成了什么重要任务？</p>
                                     <p class="flex items-center"><i class="fas fa-question-circle text-warning-color text-xs mr-2"></i>遇到了什么问题？如何解决？</p>
@@ -92,7 +87,7 @@
                                           id="dailysummary-lifecontent"
                                           rows="4"
                                           placeholder="记录今天的生活感悟、学习收获、健康状态和心情变化..."
-                                          maxlength="1000">{{ $dailysummary->life_content }}</textarea>
+                                          maxlength="1000"></textarea>
                                 <div class="mt-2 text-sm text-gray-500 space-y-1">
                                     <p class="flex items-center"><i class="fas fa-book text-success-color text-xs mr-2"></i>学到了什么新知识？</p>
                                     <p class="flex items-center"><i class="fas fa-smile text-warning-color text-xs mr-2"></i>今天的心情如何？为什么？</p>
@@ -170,14 +165,45 @@
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
             : null;
+        var currentDailySummaryId = null;
+
+        function getDailySummaryIdFromPath() {
+            var match = window.location.pathname.match(/\/dailysummary\/(\d+)/);
+            return match ? Number(match[1]) : 0;
+        }
+
+        function loadDailySummary() {
+            if (!currentDailySummaryId || !apiRequest) {
+                return;
+            }
+
+            apiRequest('GET', '/daily-summaries/' + currentDailySummaryId, {}).then(function(data) {
+                if (!data || data.code !== 9999 || !data.result) {
+                    throw new Error((data && data.msg) || '加载失败');
+                }
+                var summary = data.result || {};
+                document.getElementById('summaryDateLabel').textContent = summary.summary_date || '-';
+                document.getElementById('dailysummary-summarydate').value = summary.summary_date || '';
+                document.getElementById('dailysummary-workcontent').value = summary.work_content || '';
+                document.getElementById('dailysummary-lifecontent').value = summary.life_content || '';
+                document.getElementById('tipdate').textContent = formatDate(summary.summary_date || '');
+                getInfos(summary.summary_date || '');
+
+                var workCounter = document.getElementById('work-content-counter');
+                var lifeCounter = document.getElementById('life-content-counter');
+                workCounter.textContent = (summary.work_content || '').length + '/1000';
+                lifeCounter.textContent = (summary.life_content || '').length + '/1000';
+            }).catch(function() {
+                showToast('日报加载失败，请稍后重试', 'error');
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始化日期显示
-            const summaryDate = document.getElementById('dailysummary-summarydate').value;
-            document.getElementById('tipdate').textContent = formatDate(summaryDate);
-
-            // 加载初始提示
-            getInfos(summaryDate);
+            currentDailySummaryId = getDailySummaryIdFromPath();
+            if (!currentDailySummaryId) {
+                showToast('日报ID无效', 'error');
+                return;
+            }
 
             // 日期选择器事件
             const dateInput = document.getElementById('dailysummary-summarydate');
@@ -217,6 +243,7 @@
             // 初始化计数器
             updateCounter(workContent, workCounter);
             updateCounter(lifeContent, lifeCounter);
+            loadDailySummary();
 
             // 表单提交处理
             const form = document.getElementById('dailysummary-form');
@@ -237,7 +264,7 @@
                     return;
                 }
 
-                apiRequest('PUT', '/daily-summaries/{{ $dailysummary->id }}', {
+                apiRequest('PUT', '/daily-summaries/' + currentDailySummaryId, {
                     work_content: document.getElementById('dailysummary-workcontent').value || '',
                     life_content: document.getElementById('dailysummary-lifecontent').value || ''
                 }).then(function(data) {

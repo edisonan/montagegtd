@@ -39,9 +39,8 @@
                         <!-- 显示验证错误 -->
                         @include('common.errors')
 
-                        <form action="{{ url('/api/v2/settings/'.$setting->id) }}" method="POST" class="space-y-8" id="settings-form">
+                        <form action="javascript:void(0)" method="POST" class="space-y-8" id="settings-form">
                             {{ csrf_field() }}
-                            {{ method_field('PUT') }}
 
                             <!-- 番茄工作法设置 -->
                             <div>
@@ -67,7 +66,7 @@
                                                        name="pomo_time"
                                                        id="pomo_time"
                                                        class="input w-full pr-12"
-                                                       value="{{ empty($setting->pomo_time) ? 25 : $setting->pomo_time }}"
+                                                       value="25"
                                                        min="10"
                                                        max="60"
                                                        step="1">
@@ -90,7 +89,7 @@
                                                        name="pomo_rest_time"
                                                        id="pomo_rest_time"
                                                        class="input w-full pr-12"
-                                                       value="{{ empty($setting->pomo_rest_time) ? 5 : $setting->pomo_rest_time }}"
+                                                       value="5"
                                                        min="1"
                                                        max="10"
                                                        step="1">
@@ -117,7 +116,7 @@
                                                        name="day_pomo_goal"
                                                        id="day_pomo_goal"
                                                        class="input w-full text-center"
-                                                       value="{{ empty($setting->day_pomo_goal) ? 8 : $setting->day_pomo_goal }}"
+                                                       value="8"
                                                        min="1"
                                                        step="1">
                                                 <p class="text-xs text-gray-500 mt-2 text-center">个番茄/天</p>
@@ -131,7 +130,7 @@
                                                        name="week_pomo_goal"
                                                        id="week_pomo_goal"
                                                        class="input w-full text-center"
-                                                       value="{{ empty($setting->week_pomo_goal) ? 40 : $setting->week_pomo_goal }}"
+                                                       value="40"
                                                        min="1"
                                                        step="1">
                                                 <p class="text-xs text-gray-500 mt-2 text-center">个番茄/周</p>
@@ -145,7 +144,7 @@
                                                        name="month_pomo_goal"
                                                        id="month_pomo_goal"
                                                        class="input w-full text-center"
-                                                       value="{{ empty($setting->month_pomo_goal) ? 160 : $setting->month_pomo_goal }}"
+                                                       value="160"
                                                        min="1"
                                                        step="1">
                                                 <p class="text-xs text-gray-500 mt-2 text-center">个番茄/月</p>
@@ -177,7 +176,7 @@
                                                name="kindle_email"
                                                id="kindle_email"
                                                class="input w-full"
-                                               value="{{ $setting->kindle_email }}"
+                                               value=""
                                                placeholder="yourname@kindle.cn">
                                         <div class="mt-2 flex items-center">
                                             <i class="fas fa-info-circle text-blue-500 text-sm mr-2"></i>
@@ -197,7 +196,7 @@
                                                            name="is_start_kindle"
                                                            value="0"
                                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                                            {{ empty($setting->is_start_kindle) ? 'checked' : '' }}>
+                                                            checked>
                                                     <span class="ml-2 text-sm text-gray-700">关闭推送</span>
                                                 </label>
                                                 <label class="flex items-center cursor-pointer">
@@ -205,7 +204,7 @@
                                                            name="is_start_kindle"
                                                            value="1"
                                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                                            {{ $setting->is_start_kindle == 1 ? 'checked' : '' }}>
+                                                            >
                                                     <span class="ml-2 text-sm text-gray-700">开启推送</span>
                                                 </label>
                                             </div>
@@ -221,7 +220,7 @@
                                                            name="with_image_push"
                                                            value="0"
                                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                                            {{ empty($setting->with_image_push) ? 'checked' : '' }}>
+                                                            checked>
                                                     <span class="ml-2 text-sm text-gray-700">纯文本</span>
                                                 </label>
                                                 <label class="flex items-center cursor-pointer">
@@ -229,7 +228,7 @@
                                                            name="with_image_push"
                                                            value="1"
                                                            class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                                                            {{ $setting->with_image_push == 1 ? 'checked' : '' }}>
+                                                            >
                                                     <span class="ml-2 text-sm text-gray-700">图文推送</span>
                                                 </label>
                                             </div>
@@ -259,7 +258,7 @@
                                                name="ifttt_notify"
                                                id="ifttt_notify"
                                                class="input w-full pr-10"
-                                               value="{{ $setting->ifttt_notify }}"
+                                               value=""
                                                placeholder="输入您的IFTTT Webhook密钥">
                                         <button type="button"
                                                 onclick="togglePasswordVisibility('ifttt_notify')"
@@ -378,16 +377,16 @@
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-gray-600">当前番茄时长</span>
-                                    <span class="text-sm font-medium text-gray-900">{{ empty($setting->pomo_time) ? 25 : $setting->pomo_time }}分钟</span>
+                                    <span class="text-sm font-medium text-gray-900" id="stats_pomo_time">25分钟</span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-gray-600">今日目标完成</span>
-                                    <span class="text-sm font-medium text-green-600">0/{{ empty($setting->day_pomo_goal) ? 8 : $setting->day_pomo_goal }}</span>
+                                    <span class="text-sm font-medium text-green-600" id="stats_day_goal">0/8</span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-gray-600">Kindle推送状态</span>
-                                    <span class="text-xs px-2 py-1 rounded-full {{ $setting->is_start_kindle ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                    {{ $setting->is_start_kindle ? '已开启' : '已关闭' }}
+                                    <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800" id="stats_kindle_status">
+                                    已关闭
                                 </span>
                                 </div>
                             </div>
@@ -403,6 +402,53 @@
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : null;
+            function getResultData(resp) {
+                if (!resp) return {};
+                return resp.result || resp.data || {};
+            }
+
+            function setRadioValue(name, value, fallback) {
+                var target = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
+                if (target) {
+                    target.checked = true;
+                    return;
+                }
+                var fb = document.querySelector('input[name="' + name + '"][value="' + fallback + '"]');
+                if (fb) fb.checked = true;
+            }
+
+            function applySetting(setting) {
+                if (!setting) return;
+                document.getElementById('pomo_time').value = setting.pomo_time || 25;
+                document.getElementById('pomo_rest_time').value = setting.pomo_rest_time || 5;
+                document.getElementById('day_pomo_goal').value = setting.day_pomo_goal || 8;
+                document.getElementById('week_pomo_goal').value = setting.week_pomo_goal || 40;
+                document.getElementById('month_pomo_goal').value = setting.month_pomo_goal || 160;
+                document.getElementById('kindle_email').value = setting.kindle_email || '';
+                document.getElementById('ifttt_notify').value = setting.ifttt_notify || '';
+                setRadioValue('is_start_kindle', String(setting.is_start_kindle || 0), '0');
+                setRadioValue('with_image_push', String(setting.with_image_push || 0), '0');
+
+                var statsPomo = document.getElementById('stats_pomo_time');
+                var statsDay = document.getElementById('stats_day_goal');
+                var statsKindle = document.getElementById('stats_kindle_status');
+                if (statsPomo) statsPomo.textContent = (setting.pomo_time || 25) + '分钟';
+                if (statsDay) statsDay.textContent = '0/' + (setting.day_pomo_goal || 8);
+                if (statsKindle) {
+                    var on = parseInt(setting.is_start_kindle || 0, 10) === 1;
+                    statsKindle.textContent = on ? '已开启' : '已关闭';
+                    statsKindle.className = 'text-xs px-2 py-1 rounded-full ' + (on ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800');
+                }
+            }
+
+            if (apiRequest) {
+                apiRequest('GET', '/settings', {}).then(function(resp) {
+                    if (!resp || resp.code !== 9999) return;
+                    var result = getResultData(resp);
+                    applySetting(result.setting || {});
+                }).catch(function() {});
+            }
+
             // 表单提交处理
             const form = document.getElementById('settings-form');
             form.addEventListener('submit', async function(e) {
@@ -439,7 +485,7 @@
                     formData.forEach((value, key) => {
                         payload[key] = value;
                     });
-                    const data = await apiRequest('POST', '/settings/{{ $setting->id }}', payload);
+                    const data = await apiRequest('POST', '/settings/current', payload);
 
                     if (data.success || (data.code && data.code === 9999)) {
                         showToast('设置保存成功！', 'success');

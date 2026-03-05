@@ -66,6 +66,9 @@
             if (/^https?:\/\//i.test(path)) {
                 return path;
             }
+            if (path.indexOf(baseURL) === 0) {
+                return path;
+            }
             if (path.charAt(0) !== '/') {
                 path = '/' + path;
             }
@@ -186,7 +189,10 @@
                     throw error;
                 });
             }).catch(function (error) {
-                var isAuthRoute = config.url === '/auth/login' || config.url === '/auth/refresh';
+                var isAuthRoute = config.url === '/auth/login'
+                    || config.url === '/auth/refresh'
+                    || config.url === '/api/v2/auth/login'
+                    || config.url === '/api/v2/auth/refresh';
                 if (error.status !== 401 || isAuthRoute || config.__isRetryRequest) {
                     throw error;
                 }
@@ -224,7 +230,7 @@
         function login(payload) {
             return request({
                 method: 'POST',
-                url: '/auth/login',
+                url: '/api/v2/auth/login',
                 body: payload || {},
                 skipAuth: true
             }).then(function (resp) {
@@ -238,7 +244,7 @@
         function logout() {
             return request({
                 method: 'POST',
-                url: '/auth/logout'
+                url: '/api/v2/auth/logout'
             }).then(function (resp) {
                 clearTokenPair();
                 return resp;

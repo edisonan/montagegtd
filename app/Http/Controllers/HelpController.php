@@ -40,9 +40,7 @@ class HelpController extends Controller {
 	 *
 	 */
 	public function feedback(Request $request) {
-		return view ( 'help.feedback', [ 
-				'from' => $request->input ( 'from', '' ) 
-		] );
+		return view ( 'help.feedback' );
 	}
 	
 	/**

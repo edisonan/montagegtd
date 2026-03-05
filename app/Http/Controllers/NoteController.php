@@ -57,18 +57,7 @@ class NoteController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$type = $request->input ( 'type', '' );
-		$addContent = $request->input ( 'add_content', '' );
-
-        $sourceType = $request->input ( 'source_type', 0 );
-        $sourceId = $request->input ( 'source_id', 0 );
-		
-		$tagId = $request->input ( 'tag_id', 0 );
-		$keyword = $request->input ( 'keyword', '' );
-		
-		$datas = $this->noteService->getIndexInfo ( $addContent, $type, $tagId, $keyword, $sourceType, $sourceId );
-		
-		return view ( 'notes.index', $datas );
+		return view ( 'notes.index', [ ] );
 	}
 	
 	/**
@@ -143,10 +132,7 @@ class NoteController extends Controller {
 	    $this->authorize ( 'destroy', $note );
 	    
 	    if ($request->method () == 'GET') {
-		$note->name = preg_replace('/<br\\s*?\/??>/i',"",$note->name);
-	        return view ( 'notes.update', array (
-	            'note' => $note,
-	        ) );
+	        return view ( 'notes.update', array () );
 	    }
 	    
 	    $this->validate ( $request, [

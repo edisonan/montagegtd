@@ -5,6 +5,7 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div id="doingTaskCard" class="mb-6 hidden"></div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左侧：番茄钟面板 -->
             <div class="space-y-6">
@@ -26,7 +27,7 @@
                                 </button>
                                 <a href="{{ url('pomos') }}"
                                    class="text-sm px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
-                                    <i class="fas fa-history mr-1"></i>历史
+                                    <i class="fas fa-history mr-1"></i>番茄历史
                                 </a>
                                 <button onclick="showThingCreateModal()"
                                         class="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">
@@ -39,43 +40,35 @@
                     <div class="p-6">
                         <!-- 番茄按钮区域 -->
                         <div class="mb-6">
-                            @if($current_pomo_status == 1)
-                                <!-- 开始番茄按钮 -->
+                            <!-- 开始番茄按钮 -->
+                            <div id="pomoStartSection" class="hidden">
                                 <button id="pomoBtn"
                                         class="btn btn-outline w-full py-2 text-lg font-semibold hover:scale-[1.02] transition-transform">
                                     <i class="fas fa-play-circle mr-3 text-xl"></i>
                                     开始新的番茄钟
                                 </button>
-                            @elseif($current_pomo_status == 2 || $current_pomo_status == 4)
-                                <!-- 倒计时显示 -->
+                            </div>
+
+                            <!-- 倒计时显示 -->
+                            <div id="pomoTimerSection" class="hidden">
                                 <div class="relative">
                                     <div id="pomoTimerContainer" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
                                         <div class="text-center">
-                                            <div id="pomoTimer" class="text-4xl font-bold text-gray-900 mb-2">
-                                                <!-- 倒计时动态显示 -->
-                                            </div>
-                                            <div id="pomoStatus" class="text-sm text-gray-600">
-                                                {{ $current_pomo_status == 2 ? '专注进行中' : '休息时间' }}
-                                            </div>
+                                            <div id="pomoTimer" class="text-4xl font-bold text-gray-900 mb-2"></div>
+                                            <div id="pomoStatus" class="text-sm text-gray-600"></div>
                                         </div>
                                     </div>
 
-                                    <!-- 简洁的进度条 -->
                                     <div class="relative">
                                         <svg class="w-full h-48" viewBox="0 0 100 100">
-                                            <!-- 背景圆 - 很淡的绿色 -->
                                             <circle cx="50" cy="50" r="45" fill="none"
                                                     stroke="#e8f5e9" stroke-width="2"/>
-
-                                            <!-- 进度圆 - 简洁的绿色 -->
                                             <circle id="progressCircle" cx="50" cy="50" r="45" fill="none"
                                                     stroke="#00b894" stroke-width="2"
                                                     stroke-linecap="round"
                                                     transform="rotate(-90 50 50)"
                                                     stroke-dasharray="283"
                                                     stroke-dashoffset="283"/>
-
-                                            <!-- 中心文字（纯净模式下显示剩余分钟） -->
                                             <text id="centerTimeText" x="50" y="55" text-anchor="middle"
                                                   fill="#2e7d32" font-size="14" font-weight="bold" class="hidden">
                                                 25
@@ -88,46 +81,46 @@
                                         </button>
                                     </div>
                                 </div>
-                            @elseif($current_pomo_status == 3)
-                                <!-- 记录番茄内容 -->
-                                <div id="recordPomo" class="space-y-4">
-                                    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                        <div class="flex items-center gap-3">
-                                            <i class="fas fa-check-circle text-green-500 text-lg"></i>
-                                            <div>
-                                                <div class="font-medium text-green-800">番茄完成！</div>
-                                                <div class="text-sm text-green-700">记录您的成果吧</div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            </div>
 
-                                    <div class="space-y-3">
-                                        <div class="flex items-center justify-between text-sm text-gray-600">
-                                            <span id="pomo_start_time_show"></span>
-                                            <span class="text-gray-400">→</span>
-                                            <span id="pomo_end_time_show"></span>
-                                        </div>
-
-                                        <input type="text"
-                                               name="name"
-                                               id="pomo_name"
-                                               value=""
-                                               placeholder="记录刚完成的番茄内容（点击任务名快速添加）..."
-                                               class="input w-full">
-
-                                        <div class="flex gap-2">
-                                            <button onclick="discard()"
-                                                    class="btn btn-outline flex-1">
-                                                <i class="fas fa-times mr-2"></i>放弃记录
-                                            </button>
-                                            <button onclick="savePomoRecord()"
-                                                    class="btn btn-primary flex-1">
-                                                <i class="fas fa-save mr-2"></i>保存记录
-                                            </button>
+                            <!-- 记录番茄内容 -->
+                            <div id="recordPomo" class="space-y-4 hidden">
+                                <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-check-circle text-green-500 text-lg"></i>
+                                        <div>
+                                            <div class="font-medium text-green-800">番茄完成！</div>
+                                            <div class="text-sm text-green-700">记录您的成果吧</div>
                                         </div>
                                     </div>
                                 </div>
-                            @endif
+
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between text-sm text-gray-600">
+                                        <span id="pomo_start_time_show"></span>
+                                        <span class="text-gray-400">→</span>
+                                        <span id="pomo_end_time_show"></span>
+                                    </div>
+
+                                    <input type="text"
+                                           name="name"
+                                           id="pomo_name"
+                                           value=""
+                                           placeholder="记录刚完成的番茄内容（点击任务名快速添加）..."
+                                           class="input w-full">
+
+                                    <div class="flex gap-2">
+                                        <button onclick="discard()"
+                                                class="btn btn-outline flex-1">
+                                            <i class="fas fa-times mr-2"></i>放弃记录
+                                        </button>
+                                        <button onclick="savePomoRecord()"
+                                                class="btn btn-primary flex-1">
+                                            <i class="fas fa-save mr-2"></i>保存记录
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- 今日番茄统计 -->
@@ -157,7 +150,7 @@
                         </div>
                     </div>
                 </div>
-                <input type="hidden" value="{{ $active_pomo->id }}" id="pomo_id">
+                <input type="hidden" value="" id="pomo_id">
             </div>
 
             <!-- 右侧：待办事项面板 -->
@@ -434,26 +427,126 @@
 
 @section('scripts')
     <script>
+        var INDEX_DEBUG_ENABLED = (function() {
+            try {
+                if (window.location.search.indexOf('index_debug=1') !== -1) {
+                    return true;
+                }
+                return window.localStorage && window.localStorage.getItem('index_debug') === '1';
+            } catch (e) {
+                return false;
+            }
+        })();
+
+        function indexDebug(message, extra) {
+            if (window.console && typeof window.console.log === 'function') {
+                if (typeof extra !== 'undefined') {
+                    console.log('[INDEX_DEBUG]', message, extra);
+                } else {
+                    console.log('[INDEX_DEBUG]', message);
+                }
+            }
+            if (!INDEX_DEBUG_ENABLED) {
+                return;
+            }
+            var panel = document.getElementById('indexDebugPanel');
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.id = 'indexDebugPanel';
+                panel.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;max-height:38vh;overflow:auto;background:rgba(17,24,39,0.9);color:#e5e7eb;padding:8px;border-radius:8px;font:12px/1.4 monospace;';
+                document.body.appendChild(panel);
+            }
+            var line = document.createElement('div');
+            line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message + (typeof extra !== 'undefined' ? (' ' + JSON.stringify(extra)) : '');
+            panel.appendChild(line);
+            panel.scrollTop = panel.scrollHeight;
+        }
+
+        window.addEventListener('error', function(e) {
+            indexDebug('window.error', {
+                message: e.message,
+                file: e.filename,
+                line: e.lineno,
+                col: e.colno
+            });
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+            var reason = e && e.reason ? (e.reason.message || String(e.reason)) : 'unknown';
+            indexDebug('unhandledrejection', { reason: reason });
+        });
+
         // 初始化变量
-        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
-            ? window.TaskApiBridge.requestWithFallback
-            : null;
+        var apiRequest = function(method, apiPath, payload, fallback) {
+            indexDebug('apiRequest call', {
+                method: method,
+                path: apiPath,
+                hasBridge: !!(window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'),
+                hasTaskApiFetch: typeof window.taskApiFetch === 'function'
+            });
+            if (window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function') {
+                return window.TaskApiBridge.requestWithFallback(method, apiPath, payload, fallback).then(function(resp) {
+                    indexDebug('apiRequest done(bridge)', { path: apiPath, code: resp && resp.code });
+                    return resp;
+                }).catch(function(err) {
+                    indexDebug('apiRequest error(bridge)', { path: apiPath, err: err && err.message ? err.message : String(err) });
+                    throw err;
+                });
+            }
+
+            if (typeof window.taskApiFetch === 'function') {
+                var url = '/api/v2' + (apiPath && apiPath.charAt(0) === '/' ? apiPath : ('/' + (apiPath || '')));
+                var opts = { method: (method || 'GET').toUpperCase() };
+                var data = payload || {};
+
+                if (opts.method === 'GET') {
+                    var queryParts = [];
+                    for (var key in data) {
+                        if (!Object.prototype.hasOwnProperty.call(data, key)) continue;
+                        if (data[key] === undefined || data[key] === null) continue;
+                        queryParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(data[key])));
+                    }
+                    if (queryParts.length > 0) {
+                        url += (url.indexOf('?') >= 0 ? '&' : '?') + queryParts.join('&');
+                    }
+                } else {
+                    opts.headers = { 'Content-Type': 'application/json' };
+                    opts.body = JSON.stringify(data);
+                }
+
+                return window.taskApiFetch(url, opts).then(function(resp) {
+                    indexDebug('apiRequest response(fetch)', { url: url, status: resp && resp.status });
+                    return resp.json();
+                }).then(function(respJson) {
+                    indexDebug('apiRequest done(fetch)', { path: apiPath, code: respJson && respJson.code });
+                    return respJson;
+                }).catch(function(err) {
+                    indexDebug('apiRequest error(fetch)', { path: apiPath, err: err && err.message ? err.message : String(err) });
+                    throw err;
+                });
+            }
+
+            indexDebug('apiRequest unavailable', { path: apiPath });
+            return Promise.reject(new Error('API client unavailable'));
+        };
         let timer;
         let calibrationTimer;
         let mode = 1;
         const interval = 1000;
         const calibrationInterval = 60000;
-        let remain = {{ $current_pomo_remain }};
-        const status = {{ $current_pomo_status }};
+        let remain = 0;
+        let status = 1;
         const title = '蒙太奇 - 专注效率工具';
-        const totalTime = {{ $current_pomo_status == 2 ? 25*60 : ($current_pomo_status == 4 ? 5*60 : 1500) }};
+        let totalTime = 1500;
         let originalRemain = remain; // 保存原始剩余时间
+        let activePomoStartTime = '';
+        let activePomoEndTime = '';
 
         // 添加纯净模式状态
         let pureMode = false;
         let isCreatingTask = false;
         let lastCreatedTaskName = '';
         let lastCreatedTaskAt = 0;
+        let isSwitchingDoing = false;
 
         // 设置cookie
         function setCookie(c_name, value, expiredays) {
@@ -501,6 +594,7 @@
 
         // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
+            indexDebug('DOMContentLoaded');
             initializePage();
 
             // 设置模式
@@ -514,16 +608,10 @@
             }
 
             // 加载数据
-
+            loadIndexState();
+            indexDebug('about to load lists');
             showtasks();
             showpomos();
-
-            // 启动番茄倒计时
-            if (status == 2 || status == 4) {
-                startPomoTimer();
-                updateProgressCircle();
-                updateDisplay();
-            }
 
             // 启动校准定时器
             calibrationTimer = setInterval(calibratePomoStatus, calibrationInterval);
@@ -540,17 +628,65 @@
             bindEvents();
         });
 
+        function renderPomoPanel() {
+            var startSection = document.getElementById('pomoStartSection');
+            var timerSection = document.getElementById('pomoTimerSection');
+            var recordSection = document.getElementById('recordPomo');
+
+            if (startSection) startSection.classList.add('hidden');
+            if (timerSection) timerSection.classList.add('hidden');
+            if (recordSection) recordSection.classList.add('hidden');
+
+            if (status === 1) {
+                if (startSection) startSection.classList.remove('hidden');
+            } else if (status === 2 || status === 4) {
+                if (timerSection) timerSection.classList.remove('hidden');
+            } else if (status === 3) {
+                if (recordSection) recordSection.classList.remove('hidden');
+                if (activePomoStartTime) showPomoTime('pomo_start_time_show', activePomoStartTime);
+                if (activePomoEndTime) showPomoTime('pomo_end_time_show', activePomoEndTime);
+            }
+        }
+
         function initializePage() {
-            // 设置通知权限
-            if (Notification.permission !== "granted") {
+            if (typeof Notification !== 'undefined' && Notification.permission !== "granted") {
                 Notification.requestPermission();
             }
 
-            // 如果番茄完成，显示时间
-            if (status == 3) {
-                showPomoTime('pomo_start_time_show', "{{ $active_pomo->start_time }}");
-                showPomoTime('pomo_end_time_show', "{{ $active_pomo->end_time }}");
+            renderPomoPanel();
+
+            if (status == 2 || status == 4) {
+                startPomoTimer();
+                updateProgressCircle();
+                updateDisplay();
             }
+        }
+
+        function loadIndexState() {
+            if (!apiRequest) {
+                indexDebug('loadIndexState skipped: apiRequest missing');
+                return;
+            }
+
+            indexDebug('loadIndexState start');
+            apiRequest('GET', '/index', {}).then(function(response) {
+                if (response && response.code === 9999 && response.result) {
+                    var result = response.result;
+                    status = Number(result.current_pomo_status || 1);
+                    remain = Number(result.current_pomo_remain || 0);
+                    originalRemain = remain;
+                    totalTime = status === 2 ? 1500 : (status === 4 ? 300 : 1500);
+                    activePomoStartTime = result.active_pomo && result.active_pomo.start_time ? result.active_pomo.start_time : '';
+                    activePomoEndTime = result.active_pomo && result.active_pomo.end_time ? result.active_pomo.end_time : '';
+                    if (result.active_pomo && result.active_pomo.id) {
+                        document.getElementById('pomo_id').value = result.active_pomo.id;
+                    }
+                    initializePage();
+                    indexDebug('loadIndexState success', { status: status, remain: remain });
+                }
+            }).catch(function() {
+                indexDebug('loadIndexState failed');
+            });
         }
 
         function showPomoTime(elementId, timeString) {
@@ -687,11 +823,14 @@
 
         // 浏览器通知
         function notify(message) {
+            if (typeof Notification === 'undefined') {
+                return;
+            }
             if (Notification.permission !== "granted") {
                 Notification.requestPermission();
             } else {
                 const notification = new Notification('蒙太奇', {
-                    icon: '{{'/favicon.ico'}}',
+                    icon: '/favicon.ico',
                     body: message,
                 });
 
@@ -761,7 +900,7 @@
                 }
                 apiRequest('POST', '/pomos/' + pomoId, { name: pomoName }).then(function(response) {
                         if (response.code == 9999) {
-                            window.location.href = '{{url('/index')}}';
+                            window.location.href = '/index';
                         } else {
                             showNotification('error', '保存失败');
                         }
@@ -805,10 +944,12 @@
         }
 
         // 创建任务列表项
-        function createTaskListItem(data) {
+        function createTaskListItem(data, listType) {
             const isChild = data.parent_task_id !== null;
             const isTop = data.is_top == 1;
             const isCompleted = data.status == 3;
+            const isDoing = Number(data.is_doing || 0) === 1;
+            const isDoingList = listType === 'doing';
 
             return `
     <li id="task${data.id}" class="task-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors ${isChild ? 'child-task ml-8' : ''}">
@@ -825,6 +966,7 @@
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
                     ${isTop ? '<span class="priority-badge priority-high">置顶</span>' : ''}
+                    ${isDoing ? '<span class="priority-badge bg-emerald-100 text-emerald-700">正在做</span>' : ''}
                     <span class="font-medium text-gray-800 ${isCompleted ? 'line-through text-gray-400' : ''}">
                         ${escapeHtml(data.name)}
                     </span>
@@ -836,11 +978,17 @@
         <div class="task-actions">
             ${data.parent_task_id === null ? `
                 <button class="action-button text-gray-400 hover:text-green-500"
-                        onclick="addChildTask(${data.id}, '${escapeHtml(data.name)}')"
+                        onclick='addChildTask(${data.id}, ${JSON.stringify(String(data.name || ''))})'
                         title="添加子任务">
                     <i class="fas fa-plus-circle"></i>
                 </button>
             ` : ''}
+
+            <button class="action-button text-gray-400 hover:text-emerald-500"
+                    onclick="toggleTaskDoing(${data.id}, ${isDoing ? 1 : 0})"
+                    title="${isDoing ? '取消正在做' : '设为正在做'}">
+                <i class="fas fa-bolt ${isDoing || isDoingList ? 'text-emerald-500' : ''}"></i>
+            </button>
 
             <button class="action-button text-gray-400 hover:text-yellow-500"
                     onclick="toggleTaskTop(${data.id}, ${isTop})"
@@ -871,6 +1019,43 @@
     `;
         }
 
+        function createDoingTaskCard(task) {
+            const taskName = escapeHtml(task.name || '未命名任务');
+            return `
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+                <div class="text-xs text-emerald-700 mb-1">当前专注任务</div>
+                <div class="font-semibold text-gray-900 break-words">${taskName}</div>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <button class="action-button text-gray-400 hover:text-emerald-500"
+                        onclick="toggleTaskDoing(${task.id}, 1)"
+                        title="取消正在做">
+                    <i class="fas fa-bolt text-emerald-500"></i>
+                </button>
+                <button class="action-button text-gray-400 hover:text-blue-500"
+                        onclick="editTask(${task.id})"
+                        title="编辑">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-button text-gray-400 hover:text-red-500"
+                        onclick="deleteTask(${task.id})"
+                        title="删除">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    `;
+        }
+
+        function updateTaskDoing(taskId, targetDoing) {
+            return apiRequest('PUT', '/tasks/' + taskId, {
+                is_doing: targetDoing ? 1 : 0
+            });
+        }
+
         // 任务操作函数
         function toggleTaskStatus(taskId, element) {
             const isCurrentlyCompleted = element.classList.contains('checked');
@@ -883,11 +1068,7 @@
                 type: action
             }).then(function(response) {
                     if (response.code == 9999) {
-                        element.classList.toggle('checked');
-                        const taskText = document.querySelector(`#task${taskId} .font-medium`);
-                        taskText.classList.toggle('line-through');
-                        taskText.classList.toggle('text-gray-400');
-
+                        showtasks();
                         showNotification('success', `任务已${isCurrentlyCompleted ? '恢复' : '完成'}`);
                     } else {
                         showNotification('error', '操作失败');
@@ -907,9 +1088,8 @@
                     type: 'delete'
                 }).then(function(response) {
                         if (response.code == 9999) {
-                            document.getElementById(`task${taskId}`).remove();
+                            showtasks();
                             showNotification('success', '任务删除成功');
-                            updateTaskCount();
                         } else {
                             showNotification('error', '删除失败');
                         }
@@ -929,13 +1109,92 @@
                 is_top: newStatus
             }).then(function(response) {
                     if (response.code == 9999) {
-                        window.location.reload();
+                        showtasks();
                     } else {
                         showNotification('error', '操作失败');
                     }
                 }).catch(function() {
                     showNotification('error', '请求失败');
                 });
+        }
+
+        function toggleTaskDoing(taskId, isDoing) {
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            if (isSwitchingDoing) {
+                return;
+            }
+            isSwitchingDoing = true;
+
+            if (isDoing) {
+                updateTaskDoing(taskId, 0).then(function(response) {
+                    if (response.code == 9999) {
+                        showtasks();
+                        showNotification('success', '已取消正在做');
+                    } else {
+                        showNotification('error', response.msg || '操作失败');
+                    }
+                }).catch(function() {
+                    showNotification('error', '请求失败');
+                }).finally(function() {
+                    isSwitchingDoing = false;
+                });
+                return;
+            }
+
+            apiRequest('GET', '/tasks/all', {
+                status: 1,
+                mode: mode
+            }).then(function(listResp) {
+                if (!listResp || listResp.code != 9999) {
+                    throw new Error('load_tasks_failed');
+                }
+                const list = Array.isArray(listResp.result) ? listResp.result : Object.keys(listResp.result || {}).map(function(k) {
+                    return listResp.result[k];
+                });
+                const existingDoing = list.filter(function(task) {
+                    return Number(task.is_doing || 0) === 1 && Number(task.status || 1) === 1 && Number(task.id) !== Number(taskId);
+                });
+
+                if (existingDoing.length > 0) {
+                    const oldTask = existingDoing[0];
+                    const oldName = String(oldTask.name || '未命名任务');
+                    const shouldReplace = confirm('当前正在做："' + oldName + '"，是否替换为新任务？');
+                    if (!shouldReplace) {
+                        throw new Error('replace_cancelled');
+                    }
+                }
+
+                let chain = Promise.resolve();
+                existingDoing.forEach(function(task) {
+                    chain = chain.then(function() {
+                        return updateTaskDoing(task.id, 0).then(function(resp) {
+                            if (!resp || resp.code != 9999) {
+                                throw new Error('clear_doing_failed');
+                            }
+                        });
+                    });
+                });
+
+                return chain.then(function() {
+                    return updateTaskDoing(taskId, 1);
+                }).then(function(setResp) {
+                    if (!setResp || setResp.code != 9999) {
+                        throw new Error('set_doing_failed');
+                    }
+                    showtasks();
+                    showNotification('success', existingDoing.length > 0 ? '已替换正在做任务' : '已设为正在做');
+                });
+            }).catch(function(err) {
+                if (err && err.message === 'replace_cancelled') {
+                    return;
+                }
+                showNotification('error', '操作失败，请稍后重试');
+            }).finally(function() {
+                isSwitchingDoing = false;
+            });
         }
 
         function addChildTask(taskId, taskName) {
@@ -951,30 +1210,7 @@
                     parent_task_id: taskId
                 }).then(function(response) {
                         if (response.code == 9999) {
-                            const taskItem = createTaskListItem(response.result);
-                            const parentElement = document.getElementById(`task${taskId}`);
-
-                            // 找到父任务后面的位置插入
-                            if (parentElement) {
-                                // 如果父任务已经有子任务，找到最后一个子任务后面插入
-                                let nextElement = parentElement.nextElementSibling;
-                                let lastChildElement = parentElement;
-
-                                // 找到父任务下的最后一个子任务元素
-                                while (nextElement && nextElement.classList.contains('child-task')) {
-                                    lastChildElement = nextElement;
-                                    nextElement = nextElement.nextElementSibling;
-                                }
-
-                                // 在最后一个子任务后面插入新子任务
-                                lastChildElement.insertAdjacentHTML('afterend', taskItem);
-                            } else {
-                                // 如果找不到父任务，就添加到列表末尾
-                                const tasksList = document.getElementById('tasks');
-                                tasksList.insertAdjacentHTML('beforeend', taskItem);
-                            }
-
-                            updateTaskCount();
+                            showtasks();
                             showNotification('success', '子任务添加成功');
                         } else {
                             showNotification('error', '添加失败');
@@ -1006,64 +1242,150 @@
 
         // 显示待办列表
         function showtasks() {
+            indexDebug('showtasks start');
+            const tasksList = document.getElementById('tasks');
+            const doingCard = document.getElementById('doingTaskCard');
+            const loading = document.getElementById('tasksLoading');
+            const empty = document.getElementById('tasksEmpty');
+            function finishLoading() {
+                if (loading) loading.classList.add('hidden');
+            }
+            function toList(data) {
+                if (!data) return [];
+                if (Array.isArray(data)) return data;
+                const list = [];
+                for (var k in data) {
+                    if (Object.prototype.hasOwnProperty.call(data, k)) {
+                        list.push(data[k]);
+                    }
+                }
+                return list;
+            }
+
             if (!apiRequest) {
+                finishLoading();
+                if (tasksList) tasksList.classList.add('hidden');
+                if (empty) empty.classList.remove('hidden');
                 return;
             }
             apiRequest('GET', '/tasks/all', {
                 status: 1,
                 mode: mode
             }).then(function(response) {
-                    if (response.code == 9999) {
-                        const tasksList = document.getElementById('tasks');
-                        const loading = document.getElementById('tasksLoading');
-                        const empty = document.getElementById('tasksEmpty');
+                    if (response && response.code == 9999) {
+                        indexDebug('showtasks success', { size: (response.result && response.result.length) ? response.result.length : 'obj' });
+                        const list = toList(response.result);
+                        const doingTasksRaw = list.filter(function(task) {
+                            return Number(task.is_doing || 0) === 1 && Number(task.status || 1) === 1;
+                        });
+                        const primaryDoingTask = doingTasksRaw.length > 0 ? doingTasksRaw[0] : null;
+                        const normalTasks = list.filter(function(task) {
+                            if (!primaryDoingTask) {
+                                return true;
+                            }
+                            return Number(task.id) !== Number(primaryDoingTask.id);
+                        });
 
-                        tasksList.innerHTML = '';
-                        loading.classList.add('hidden');
+                        if (tasksList) tasksList.innerHTML = '';
+                        if (doingCard) {
+                            doingCard.innerHTML = '';
+                            doingCard.classList.add('hidden');
+                        }
 
-                        if (response.result && Object.keys(response.result).length > 0) {
-                            Object.values(response.result).forEach(data => {
+                        if (doingCard && primaryDoingTask) {
+                            doingCard.innerHTML = createDoingTaskCard(primaryDoingTask);
+                            doingCard.classList.remove('hidden');
+                        }
+
+                        if (tasksList && normalTasks.length > 0) {
+                            normalTasks.forEach(function(data) {
                                 tasksList.insertAdjacentHTML('beforeend', createTaskListItem(data));
                             });
                             tasksList.classList.remove('hidden');
-                            empty.classList.add('hidden');
+                            if (empty) empty.classList.add('hidden');
                         } else {
-                            tasksList.classList.add('hidden');
-                            empty.classList.remove('hidden');
+                            if (tasksList) tasksList.classList.add('hidden');
+                            if (empty) {
+                                if (primaryDoingTask) {
+                                    empty.classList.add('hidden');
+                                } else {
+                                    empty.classList.remove('hidden');
+                                }
+                            }
                         }
-
-                        updateTaskCount();
+                    } else {
+                        indexDebug('showtasks non-9999', { code: response && response.code, msg: response && response.msg });
+                        if (doingCard) {
+                            doingCard.innerHTML = '';
+                            doingCard.classList.add('hidden');
+                        }
+                        if (tasksList) tasksList.classList.add('hidden');
+                        if (empty) empty.classList.remove('hidden');
                     }
                 }).catch(function() {
+                    indexDebug('showtasks failed');
+                    if (doingCard) {
+                        doingCard.innerHTML = '';
+                        doingCard.classList.add('hidden');
+                    }
+                    if (tasksList) tasksList.classList.add('hidden');
+                    if (empty) empty.classList.remove('hidden');
+                }).finally(function() {
+                    finishLoading();
+                    updateTaskCount();
                 });
         }
 
         // 显示番茄列表
         function showpomos() {
+            indexDebug('showpomos start');
+            const pomosList = document.getElementById('pomos');
+            const loading = document.getElementById('pomosLoading');
+            function finishLoading() {
+                if (loading) loading.classList.add('hidden');
+            }
+            function toList(data) {
+                if (!data) return [];
+                if (Array.isArray(data)) return data;
+                const list = [];
+                for (var k in data) {
+                    if (Object.prototype.hasOwnProperty.call(data, k)) {
+                        list.push(data[k]);
+                    }
+                }
+                return list;
+            }
+
             if (!apiRequest) {
+                finishLoading();
+                if (pomosList) pomosList.classList.remove('hidden');
                 return;
             }
             apiRequest('GET', '/pomos/today', {
                 type: 'time'
             }).then(function(response) {
-                    if (response.code == 9999) {
-                        const pomosList = document.getElementById('pomos');
-                        const loading = document.getElementById('pomosLoading');
-
-                        pomosList.innerHTML = '';
-                        loading.classList.add('hidden');
-
-                        if (response.result && Object.keys(response.result).length > 0) {
-                            Object.values(response.result).forEach(data => {
+                    if (response && response.code == 9999) {
+                        indexDebug('showpomos success', { size: (response.result && response.result.length) ? response.result.length : 'obj' });
+                        const list = toList(response.result);
+                        if (pomosList) pomosList.innerHTML = '';
+                        if (pomosList && list.length > 0) {
+                            list.forEach(function(data) {
                                 pomosList.insertAdjacentHTML('beforeend', createPomoListItem(data));
                             });
-                            pomosList.classList.remove('hidden');
                         }
-
-                        document.getElementById('pomoCount').textContent =
-                            Object.keys(response.result).length;
+                        if (pomosList) pomosList.classList.remove('hidden');
+                        document.getElementById('pomoCount').textContent = list.length;
+                    } else {
+                        indexDebug('showpomos non-9999', { code: response && response.code, msg: response && response.msg });
+                        if (pomosList) pomosList.classList.remove('hidden');
+                        document.getElementById('pomoCount').textContent = '0';
                     }
                 }).catch(function() {
+                    indexDebug('showpomos failed');
+                    if (pomosList) pomosList.classList.remove('hidden');
+                    document.getElementById('pomoCount').textContent = '0';
+                }).finally(function() {
+                    finishLoading();
                 });
         }
 
@@ -1096,17 +1418,7 @@
             }).then(function(response) {
                     if (response.code == 9999) {
                         document.getElementById('task_name').value = '';
-                        const tasksList = document.getElementById('tasks');
-                        const empty = document.getElementById('tasksEmpty');
-
-                        if (empty && !empty.classList.contains('hidden')) {
-                            tasksList.innerHTML = '';
-                            tasksList.classList.remove('hidden');
-                            empty.classList.add('hidden');
-                        }
-
-                        tasksList.insertAdjacentHTML('afterbegin', createTaskListItem(response.result));
-                        updateTaskCount();
+                        showtasks();
                         showNotification('success', '任务添加成功');
                     } else {
                         showNotification('error', '添加失败');
@@ -1136,7 +1448,9 @@
         }
 
         function updateTaskCount() {
-            const taskCount = document.querySelectorAll('#tasks .task-item').length;
+            const taskCount =
+                document.querySelectorAll('#tasks .task-item').length +
+                (document.getElementById('doingTaskCard') && document.getElementById('doingTaskCard').innerHTML.trim() ? 1 : 0);
             document.getElementById('taskCount').textContent = taskCount;
         }
 
@@ -1214,8 +1528,8 @@
         document.addEventListener('dblclick', function(e) {
             if (e.target.closest('.task-item') || e.target.closest('.task-content')) {
                 const taskElement = e.target.closest('.task-item') || e.target.closest('.task-content');
-                const taskText = taskElement.querySelector('.font-medium')?.textContent ||
-                    taskElement.textContent;
+                const taskTextElement = taskElement ? taskElement.querySelector('.font-medium') : null;
+                const taskText = taskTextElement ? taskTextElement.textContent : taskElement.textContent;
                 const pomoInput = document.getElementById('pomo_name');
 
                 if (pomoInput && taskText) {

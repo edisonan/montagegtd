@@ -46,10 +46,41 @@ class TaskRepository {
         if (isset($filters['user_id'])){
             $tasks = $tasks->where ( 'user_id', $filters['user_id'] );
         }
-        if (isset($filters['status']) && !empty($filters['status'])){
+        if (isset($filters['status']) && !empty($filters['status']) && $filters['status'] != 'all'){
             $tasks = $tasks->where ( 'status', $filters['status'] );
         }
-        return $tasks->paginate ($pageSize);
+        return $tasks->simplePaginate($pageSize);
+	}
+
+	/**
+	 * 获取用户任务状态计数
+	 *
+	 * @param int $userId
+	 * @return array
+	 */
+	public function getUserStatusCounts($userId) {
+		$rows = Task::select('status', DB::raw('count(*) as total'))
+			->where('user_id', $userId)
+			->groupBy('status')
+			->get();
+
+		$counts = array(
+			'1' => 0,
+			'2' => 0,
+			'3' => 0,
+			'all' => 0,
+		);
+
+		foreach ($rows as $row) {
+			$key = (string)$row->status;
+			$val = (int)$row->total;
+			if (array_key_exists($key, $counts)) {
+				$counts[$key] = $val;
+			}
+			$counts['all'] += $val;
+		}
+
+		return $counts;
 	}
 	
 	/**

@@ -19,6 +19,7 @@ class Task extends Model {
 			'parent_task_id',
 			'goal_id',
 			'is_top',
+			'is_doing',
 			'mode' 
 	];
 	

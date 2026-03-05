@@ -53,17 +53,17 @@
                     <div class="flex items-center gap-6 text-sm text-gray-600">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
-                            <span>公开课程: <span class="font-medium">{{ count($public_courses ?? []) }}</span></span>
+                            <span>公开课程: <span class="font-medium" id="count_public_courses">0</span></span>
                         </div>
                         @auth
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-                                <span>我创建的: <span class="font-medium">{{ count($user_created_courses ?? []) }}</span></span>
+                                <span>我创建的: <span class="font-medium" id="count_created_courses">0</span></span>
                             </div>
                         @endauth
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
-                            <span>已加入: <span class="font-medium">{{ count($user_course_ids ?? []) }}</span></span>
+                            <span>已加入: <span class="font-medium" id="count_joined_courses">0</span></span>
                         </div>
                     </div>
 
@@ -107,7 +107,7 @@
                                 <i class="fas fa-user-circle mr-2"></i>
                                 我创建的课程
                                 <span class="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
-                            {{ count($user_created_courses ?? []) }}
+                            <span id="badge_created_courses">0</span>
                         </span>
                             </button>
                         @endauth
@@ -119,7 +119,7 @@
                             <i class="fas fa-globe mr-2"></i>
                             公开课程
                             <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full">
-                            {{ count($public_courses ?? []) }}
+                            <span id="badge_public_courses">0</span>
                         </span>
                         </button>
 
@@ -131,7 +131,7 @@
                                 <i class="fas fa-bookmark mr-2"></i>
                                 已加入课程
                                 <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                            {{ count($user_course_ids ?? []) }}
+                            <span id="badge_joined_courses">0</span>
                         </span>
                             </button>
                         @endauth
@@ -144,128 +144,8 @@
                     <div class="tab-pane {{ auth()->guest() ? 'active' : 'hidden' }}"
                          id="public-courses"
                          role="tabpanel">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            @forelse($public_courses as $course)
-                                <div class="course-card group">
-                                    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all duration-200">
-                                        <!-- 课程封面 -->
-                                        <div class="relative h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-                                            @if($course->cover_image_url)
-                                                <img src="{{ $course->cover_image_url }}"
-                                                     alt="{{ $course->title }}"
-                                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                            @else
-                                                <div class="w-full h-full flex items-center justify-center">
-                                                    <div class="text-center">
-                                                        <i class="fas fa-book-open text-gray-400 text-4xl mb-2"></i>
-                                                        <p class="text-sm text-gray-500">{{ $course->title }}</p>
-                                                    </div>
-                                                </div>
-                                            @endif
-
-                                            <!-- 难度标签 -->
-                                            <div class="absolute top-3 right-3">
-                                                @php
-                                                    $difficultyConfig = [
-                                                        'beginner' => ['color' => 'green', 'text' => '初级'],
-                                                        'intermediate' => ['color' => 'yellow', 'text' => '中级'],
-                                                        'advanced' => ['color' => 'red', 'text' => '高级'],
-                                                    ];
-                                                    $config = $difficultyConfig[$course->difficulty] ?? ['color' => 'gray', 'text' => '未知'];
-                                                @endphp
-                                                <span class="px-3 py-1 bg-{{ $config['color'] }}-100 text-{{ $config['color'] }}-800 text-xs font-semibold rounded-full">
-                                            {{ $config['text'] }}
-                                        </span>
-                                            </div>
-
-                                            <!-- 平台标识 -->
-                                            @if($course->platform)
-                                                <div class="absolute top-3 left-3">
-                                        <span class="px-2 py-1 bg-gray-900/70 text-white text-xs rounded">
-                                            {{ $course->platform }}
-                                        </span>
-                                                </div>
-                                            @endif
-                                        </div>
-
-                                        <!-- 课程内容 -->
-                                        <div class="p-5">
-                                            <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">
-                                                {{ $course->title }}
-                                            </h3>
-
-                                            <p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">
-                                                {{ $course->description ?: '暂无描述' }}
-                                            </p>
-
-                                            <!-- 课程元数据 -->
-                                            <div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4">
-                                        <span class="flex items-center gap-1">
-                                            <i class="fas fa-user text-xs"></i>
-                                            {{ $course->instructor ?: '未知讲师' }}
-                                        </span>
-                                                <span class="flex items-center gap-1">
-                                            <i class="fas fa-clock text-xs"></i>
-                                            {{ $course->estimated_hours ?: 0 }}小时
-                                        </span>
-                                                <span class="flex items-center gap-1">
-                                            <i class="fas fa-layer-group text-xs"></i>
-                                            {{ $course->chapters_count ?? 0 }}章
-                                        </span>
-                                            </div>
-
-                                            <!-- 操作按钮 -->
-                                            <div class="flex items-center justify-between">
-                                                <a href="{{ url('/courses/' . $course->id) }}"
-                                                   class="btn btn-primary btn-sm">
-                                                    查看详情
-                                                </a>
-
-                                                <div class="flex items-center gap-2">
-                                                    @if(!auth()->guest() && !in_array($course->id, $user_course_ids ?? []))
-                                                        <form action="{{ url('/api/v2/courses/' . $course->id . '/join') }}"
-                                                              method="POST"
-                                                              class="inline">
-                                                            {!! csrf_field() !!}
-                                                            <button type="submit"
-                                                                    class="btn btn-success btn-sm hover:shadow-md transition-shadow">
-                                                                加入课程
-                                                            </button>
-                                                        </form>
-                                                    @elseif(auth()->id() == $course->created_by)
-                                                        <span class="px-3 py-1.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                                创建的课程
-                                            </span>
-                                                    @elseif(in_array($course->id, $user_course_ids ?? []))
-                                                        <span class="px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                                                已加入
-                                            </span>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <!-- 空状态 -->
-                                <div class="col-span-full">
-                                    <div class="text-center py-16">
-                                        <div class="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-graduation-cap text-gray-400 text-3xl"></i>
-                                        </div>
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-3">暂无公开课程</h3>
-                                        <p class="text-gray-600 mb-8 max-w-md mx-auto">
-                                            暂时还没有公开课程，您可以创建第一个课程
-                                        </p>
-                                        @auth
-                                            <a href="{{ url('/courses/create') }}" class="btn btn-primary">
-                                                <i class="fas fa-plus-circle mr-2"></i>
-                                                创建课程
-                                            </a>
-                                        @endauth
-                                    </div>
-                                </div>
-                            @endforelse
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="public-courses-grid">
+                            <div class="col-span-full text-center py-16 text-gray-500">加载课程中...</div>
                         </div>
                     </div>
 
@@ -274,116 +154,8 @@
                         <div class="tab-pane active hidden"
                              id="my-courses"
                              role="tabpanel">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                @forelse($user_created_courses as $course)
-                                    <div class="course-card group">
-                                        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-green-300 hover:shadow-lg transition-all duration-200">
-                                            <!-- 课程封面 -->
-                                            <div class="relative h-48 overflow-hidden bg-gradient-to-br from-green-50 to-green-100">
-                                                @if($course->cover_image_url)
-                                                    <img src="{{ $course->cover_image_url }}"
-                                                         alt="{{ $course->title }}"
-                                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                                @else
-                                                    <div class="w-full h-full flex items-center justify-center">
-                                                        <div class="text-center">
-                                                            <i class="fas fa-user-edit text-green-400 text-4xl mb-2"></i>
-                                                            <p class="text-sm text-gray-500">{{ $course->title }}</p>
-                                                        </div>
-                                                    </div>
-                                                @endif
-
-                                                <!-- 状态标签 -->
-                                                <div class="absolute top-3 right-3">
-                                                    @php
-                                                        $statusConfig = [
-                                                            1 => ['color' => 'gray', 'icon' => 'fa-lock', 'text' => '私有'],
-                                                            2 => ['color' => 'yellow', 'icon' => 'fa-clock', 'text' => '待审核'],
-                                                            3 => ['color' => 'green', 'icon' => 'fa-check-circle', 'text' => '已审核'],
-                                                        ];
-                                                        $config = $statusConfig[$course->public_status] ?? ['color' => 'gray', 'icon' => 'fa-question-circle', 'text' => '未知'];
-                                                    @endphp
-                                                    <span class="px-3 py-1 bg-{{ $config['color'] }}-100 text-{{ $config['color'] }}-800 text-xs font-semibold rounded-full flex items-center gap-1">
-                                            <i class="fas {{ $config['icon'] }} text-xs"></i>
-                                            {{ $config['text'] }}
-                                        </span>
-                                                </div>
-
-                                                <!-- 编辑按钮 -->
-                                                <div class="absolute bottom-3 right-3">
-                                                    <a href="{{ url('/courses/' . $course->id . '/edit') }}"
-                                                       class="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
-                                                       title="编辑课程">
-                                                        <i class="fas fa-edit text-gray-600 text-sm"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
-
-                                            <!-- 课程内容 -->
-                                            <div class="p-5">
-                                                <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">
-                                                    {{ $course->title }}
-                                                </h3>
-
-                                                <p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">
-                                                    {{ $course->description ?: '暂无描述' }}
-                                                </p>
-
-                                                <!-- 课程元数据 -->
-                                                <div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4">
-                                        <span class="flex items-center gap-1">
-                                            <i class="fas fa-chart-line text-xs"></i>
-                                            学习人数: {{ $course->enrollment_count ?? 0 }}
-                                        </span>
-                                                    <span class="flex items-center gap-1">
-                                            <i class="fas fa-clock text-xs"></i>
-                                            {{ $course->estimated_hours ?: 0 }}小时
-                                        </span>
-                                                    <span class="flex items-center gap-1">
-                                            <i class="fas fa-calendar text-xs"></i>
-                                            {{ $course->created_at->format('Y-m-d') }}
-                                        </span>
-                                                </div>
-
-                                                <!-- 操作按钮 -->
-                                                <div class="flex items-center justify-between">
-                                                    <a href="{{ url('/courses/' . $course->id) }}"
-                                                       class="btn btn-primary btn-sm">
-                                                        查看详情
-                                                    </a>
-
-                                                    <div class="flex items-center gap-2">
-                                                        <button onclick="showCourseStats({{ $course->id }})"
-                                                                class="btn btn-outline btn-sm">
-                                                            <i class="fas fa-chart-bar"></i>
-                                                        </button>
-                                                        <button onclick="manageCourse({{ $course->id }})"
-                                                                class="btn btn-outline btn-sm">
-                                                            <i class="fas fa-cog"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <!-- 空状态 -->
-                                    <div class="col-span-full">
-                                        <div class="text-center py-16">
-                                            <div class="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-user-edit text-green-400 text-3xl"></i>
-                                            </div>
-                                            <h3 class="text-lg font-semibold text-gray-900 mb-3">您还没有创建课程</h3>
-                                            <p class="text-gray-600 mb-8 max-w-md mx-auto">
-                                                创建您的第一个课程，分享知识和经验
-                                            </p>
-                                            <a href="{{ url('/courses/create') }}" class="btn btn-primary">
-                                                <i class="fas fa-plus-circle mr-2"></i>
-                                                创建课程
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endforelse
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="my-courses-grid">
+                                <div class="col-span-full text-center py-16 text-gray-500">加载课程中...</div>
                             </div>
                         </div>
 
@@ -391,110 +163,8 @@
                         <div class="tab-pane hidden"
                              id="joined-courses"
                              role="tabpanel">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                @php
-                                    $joinedCourses = collect($public_courses)->filter(function($course) use ($user_course_ids) {
-                                        return in_array($course->id, $user_course_ids ?? []);
-                                    });
-                                @endphp
-
-                                @forelse($joinedCourses as $course)
-                                    <div class="course-card group">
-                                        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-purple-300 hover:shadow-lg transition-all duration-200">
-                                            <!-- 课程封面 -->
-                                            <div class="relative h-48 overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100">
-                                                @if($course->cover_image_url)
-                                                    <img src="{{ $course->cover_image_url }}"
-                                                         alt="{{ $course->title }}"
-                                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                                @else
-                                                    <div class="w-full h-full flex items-center justify-center">
-                                                        <div class="text-center">
-                                                            <i class="fas fa-bookmark text-purple-400 text-4xl mb-2"></i>
-                                                            <p class="text-sm text-gray-500">{{ $course->title }}</p>
-                                                        </div>
-                                                    </div>
-                                                @endif
-
-                                                <!-- 进度标签 -->
-                                                <div class="absolute top-3 right-3">
-                                                    @php
-                                                        $progress = $course->user_progress ?? 0;
-                                                        $progressColor = $progress >= 80 ? 'green' : ($progress >= 50 ? 'blue' : 'yellow');
-                                                    @endphp
-                                                    <span class="px-3 py-1 bg-{{ $progressColor }}-100 text-{{ $progressColor }}-800 text-xs font-semibold rounded-full">
-                                            {{ $progress }}%
-                                        </span>
-                                                </div>
-                                            </div>
-
-                                            <!-- 课程内容 -->
-                                            <div class="p-5">
-                                                <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">
-                                                    {{ $course->title }}
-                                                </h3>
-
-                                                <!-- 进度条 -->
-                                                <div class="mb-4">
-                                                    <div class="flex items-center justify-between text-sm mb-1">
-                                                        <span class="text-gray-600">学习进度</span>
-                                                        <span class="font-medium text-gray-900">{{ $progress }}%</span>
-                                                    </div>
-                                                    <div class="progress h-2">
-                                                        <div class="progress-bar bg-gradient-to-r from-purple-500 to-purple-600"
-                                                             style="width: {{ $progress }}%"></div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- 课程元数据 -->
-                                                <div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4">
-                                        <span class="flex items-center gap-1">
-                                            <i class="fas fa-user text-xs"></i>
-                                            {{ $course->instructor ?: '未知讲师' }}
-                                        </span>
-                                                    <span class="flex items-center gap-1">
-                                            <i class="fas fa-clock text-xs"></i>
-                                            已学 {{ $course->study_minutes ?? 0 }}分钟
-                                        </span>
-                                                    <span class="flex items-center gap-1">
-                                            <i class="fas fa-calendar text-xs"></i>
-                                            上次学习: {{ $course->last_studied_at ? $course->last_studied_at->format('m-d') : '未开始' }}
-                                        </span>
-                                                </div>
-
-                                                <!-- 操作按钮 -->
-                                                <div class="flex items-center justify-between">
-                                                    <a href="{{ url('/courses/' . $course->id) }}"
-                                                       class="btn btn-primary btn-sm">
-                                                        {{ $progress >= 100 ? '复习课程' : '继续学习' }}
-                                                    </a>
-
-                                                    <button onclick="showCourseProgress({{ $course->id }})"
-                                                            class="btn btn-outline btn-sm">
-                                                        <i class="fas fa-chart-line"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
-                                    <!-- 空状态 -->
-                                    <div class="col-span-full">
-                                        <div class="text-center py-16">
-                                            <div class="w-20 h-20 mx-auto mb-6 bg-purple-100 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-bookmark text-purple-400 text-3xl"></i>
-                                            </div>
-                                            <h3 class="text-lg font-semibold text-gray-900 mb-3">您还没有加入课程</h3>
-                                            <p class="text-gray-600 mb-8 max-w-md mx-auto">
-                                                浏览公开课程，选择您感兴趣的加入学习
-                                            </p>
-                                            <button onclick="switchTab('public-courses')" class="btn btn-primary">
-                                                <i class="fas fa-compass mr-2"></i>
-                                                浏览课程
-                                            </button>
-                                        </div>
-                                    </div>
-                                @endforelse
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="joined-courses-grid">
+                                <div class="col-span-full text-center py-16 text-gray-500">加载课程中...</div>
                             </div>
                         </div>
                     @endauth
@@ -565,8 +235,110 @@
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
             : null;
+        var CURRENT_USER_ID = Number('{{ auth()->id() ?: 0 }}');
+        var courseMgmtState = {
+            publicCourses: [],
+            createdCourses: [],
+            userCourseIds: []
+        };
+
+        function getResultData(resp) {
+            if (!resp) return {};
+            return resp.result || resp.data || {};
+        }
+
+        function escapeHtml(str) {
+            return $('<div>').text(str || '').html();
+        }
+
+        function renderPublicCourseCard(course) {
+            var title = escapeHtml(course.title || '');
+            var description = escapeHtml(course.description || '暂无描述');
+            var cover = course.cover_image_url
+                ? '<img src="' + escapeHtml(course.cover_image_url) + '" alt="' + title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">'
+                : '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><i class="fas fa-book-open text-gray-400 text-4xl mb-2"></i><p class="text-sm text-gray-500">' + title + '</p></div></div>';
+            var isJoined = courseMgmtState.userCourseIds.indexOf(Number(course.id)) >= 0;
+            var isOwner = CURRENT_USER_ID > 0 && Number(course.created_by || 0) === CURRENT_USER_ID;
+            var joinAction = '';
+            if (CURRENT_USER_ID > 0 && !isJoined && !isOwner) {
+                joinAction = '<button type="button" class="btn btn-success btn-sm hover:shadow-md transition-shadow join-course-btn" data-course-id="' + Number(course.id) + '">加入课程</button>';
+            } else if (isOwner) {
+                joinAction = '<span class="px-3 py-1.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">创建的课程</span>';
+            } else if (isJoined) {
+                joinAction = '<span class="px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">已加入</span>';
+            }
+            return '<div class="course-card group" data-difficulty="' + escapeHtml(course.difficulty || '') + '" data-platform="' + escapeHtml(course.platform || '') + '" data-hours="' + Number(course.estimated_hours || 0) + '" data-created="' + escapeHtml(course.created_at || '') + '" data-enrollment="' + Number(course.enrollment_count || 0) + '">' +
+                '<div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all duration-200">' +
+                '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">' + cover + '</div>' +
+                '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
+                '<div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-user text-xs"></i>' + escapeHtml(course.instructor || '未知讲师') + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>' + Number(course.chapters_count || 0) + '章</span></div>' +
+                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a><div class="flex items-center gap-2">' + joinAction + '</div></div></div></div></div>';
+        }
+
+        function renderCreatedCourseCard(course) {
+            var title = escapeHtml(course.title || '');
+            var description = escapeHtml(course.description || '暂无描述');
+            var cover = course.cover_image_url
+                ? '<img src="' + escapeHtml(course.cover_image_url) + '" alt="' + title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">'
+                : '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><i class="fas fa-user-edit text-green-400 text-4xl mb-2"></i><p class="text-sm text-gray-500">' + title + '</p></div></div>';
+            return '<div class="course-card group" data-difficulty="' + escapeHtml(course.difficulty || '') + '" data-platform="' + escapeHtml(course.platform || '') + '" data-hours="' + Number(course.estimated_hours || 0) + '" data-created="' + escapeHtml(course.created_at || '') + '" data-enrollment="' + Number(course.enrollment_count || 0) + '">' +
+                '<div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-green-300 hover:shadow-lg transition-all duration-200">' +
+                '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-green-50 to-green-100">' + cover + '</div>' +
+                '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
+                '<div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i>学习人数: ' + Number(course.enrollment_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span></div>' +
+                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a><div class="flex items-center gap-2"><button onclick="showCourseStats(' + Number(course.id) + ')" class="btn btn-outline btn-sm"><i class="fas fa-chart-bar"></i></button><button onclick="manageCourse(' + Number(course.id) + ')" class="btn btn-outline btn-sm"><i class="fas fa-cog"></i></button></div></div></div></div></div>';
+        }
+
+        function renderJoinedCourseCard(course) {
+            var title = escapeHtml(course.title || '');
+            var progress = Number(course.user_progress || 0);
+            var cover = course.cover_image_url
+                ? '<img src="' + escapeHtml(course.cover_image_url) + '" alt="' + title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">'
+                : '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><i class="fas fa-bookmark text-purple-400 text-4xl mb-2"></i><p class="text-sm text-gray-500">' + title + '</p></div></div>';
+            return '<div class="course-card group" data-difficulty="' + escapeHtml(course.difficulty || '') + '" data-platform="' + escapeHtml(course.platform || '') + '" data-hours="' + Number(course.estimated_hours || 0) + '" data-created="' + escapeHtml(course.created_at || '') + '" data-enrollment="' + Number(course.enrollment_count || 0) + '">' +
+                '<div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-purple-300 hover:shadow-lg transition-all duration-200"><div class="relative h-48 overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100">' + cover + '</div>' +
+                '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><div class="mb-4"><div class="flex items-center justify-between text-sm mb-1"><span class="text-gray-600">学习进度</span><span class="font-medium text-gray-900">' + progress + '%</span></div><div class="progress h-2"><div class="progress-bar bg-gradient-to-r from-purple-500 to-purple-600" style="width:' + progress + '%"></div></div></div>' +
+                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">' + (progress >= 100 ? '复习课程' : '继续学习') + '</a><button onclick="showCourseProgress(' + Number(course.id) + ')" class="btn btn-outline btn-sm"><i class="fas fa-chart-line"></i></button></div></div></div></div>';
+        }
+
+        function renderCourseManagement() {
+            $('#count_public_courses').text(courseMgmtState.publicCourses.length);
+            $('#count_created_courses').text(courseMgmtState.createdCourses.length);
+            $('#count_joined_courses').text(courseMgmtState.userCourseIds.length);
+            $('#badge_public_courses').text(courseMgmtState.publicCourses.length);
+            $('#badge_created_courses').text(courseMgmtState.createdCourses.length);
+            $('#badge_joined_courses').text(courseMgmtState.userCourseIds.length);
+
+            var publicGrid = $('#public-courses-grid');
+            if (publicGrid.length) {
+                publicGrid.html(courseMgmtState.publicCourses.length ? courseMgmtState.publicCourses.map(renderPublicCourseCard).join('') : '<div class="col-span-full text-center py-16 text-gray-500">暂无公开课程</div>');
+            }
+            var createdGrid = $('#my-courses-grid');
+            if (createdGrid.length) {
+                createdGrid.html(courseMgmtState.createdCourses.length ? courseMgmtState.createdCourses.map(renderCreatedCourseCard).join('') : '<div class="col-span-full text-center py-16 text-gray-500">您还没有创建课程</div>');
+            }
+            var joined = courseMgmtState.publicCourses.filter(function(c) { return courseMgmtState.userCourseIds.indexOf(Number(c.id)) >= 0; });
+            var joinedGrid = $('#joined-courses-grid');
+            if (joinedGrid.length) {
+                joinedGrid.html(joined.length ? joined.map(renderJoinedCourseCard).join('') : '<div class="col-span-full text-center py-16 text-gray-500">您还没有加入课程</div>');
+            }
+        }
+
+        function loadCourseManagementData() {
+            if (!apiRequest) return;
+            apiRequest('GET', '/courses/management', {}).then(function(resp) {
+                if (!resp || resp.code !== 9999) return;
+                var result = getResultData(resp);
+                courseMgmtState.publicCourses = Array.isArray(result.public_courses) ? result.public_courses : [];
+                courseMgmtState.createdCourses = Array.isArray(result.user_created_courses) ? result.user_created_courses : [];
+                courseMgmtState.userCourseIds = Array.isArray(result.user_course_ids) ? result.user_course_ids.map(function(id){ return Number(id); }) : [];
+                renderCourseManagement();
+            }).catch(function() {});
+        }
 
         $(document).ready(function() {
+            loadCourseManagementData();
+
             // 初始化标签页切换
             initTabSwitching();
 
@@ -580,26 +352,24 @@
             initSorting();
 
             // 加入课程走v2接口
-            $('form[action*="/courses/"][action$="/join"]').on('submit', function(e) {
+            $(document).on('click', '.join-course-btn', function(e) {
                 e.preventDefault();
                 if (!apiRequest) {
                     showNotification('API客户端未初始化', 'error');
                     return;
                 }
-                var action = $(this).attr('action');
-                var match = action.match(/\/courses\/(\d+)\/join$/);
-                if (!match) {
-                    this.submit();
+                var courseId = Number($(this).data('course-id') || 0);
+                if (!courseId) {
+                    showNotification('课程ID错误', 'error');
                     return;
                 }
-                var courseId = match[1];
-                var $btn = $(this).find('button[type="submit"]');
+                var $btn = $(this);
                 var original = $btn.html();
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>加入中...');
 
                 apiRequest('POST', '/courses/' + courseId + '/join', {}).then(function(resp) {
                     if (resp && resp.code === 9999) {
-                        window.location.reload();
+                        loadCourseManagementData();
                         return;
                     }
                     showNotification((resp && resp.msg) ? resp.msg : '加入课程失败', 'error');
@@ -738,8 +508,8 @@
 
                 // 难度筛选
                 if (filters.difficulty) {
-                    const difficultyBadge = card.querySelector('[class*="bg-"]').textContent;
-                    if (!difficultyBadge.includes(filters.difficulty)) {
+                    const difficulty = (card.getAttribute('data-difficulty') || '').toLowerCase();
+                    if (difficulty !== filters.difficulty) {
                         shouldShow = false;
                     }
                 }
@@ -760,8 +530,11 @@
 
         // 排序课程
         function sortCourses(tabId, sortBy) {
-            const container = document.getElementById(tabId);
-            const courseCards = Array.from(container.querySelectorAll('.course-card'));
+            const pane = document.getElementById(tabId);
+            if (!pane) return;
+            const grid = pane.querySelector('.grid');
+            if (!grid) return;
+            const courseCards = Array.from(grid.querySelectorAll('.course-card'));
 
             courseCards.sort((a, b) => {
                 switch(sortBy) {
@@ -780,7 +553,7 @@
 
             // 重新排序DOM
             courseCards.forEach(card => {
-                container.appendChild(card);
+                grid.appendChild(card);
             });
         }
 

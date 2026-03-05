@@ -371,7 +371,7 @@
                         </div>
 
                         <div class="form-body">
-                            <form method="POST" action="{{ url('/login') }}" id="loginForm">
+                            <form method="POST" action="javascript:void(0)" id="loginForm">
                                 {{ csrf_field() }}
 
                                 <div class="form-group">
@@ -476,7 +476,7 @@
                         </div>
 
                         <div class="form-body">
-                            <form method="POST" action="{{ url('/register') }}" id="registerForm">
+                            <form method="POST" action="javascript:void(0)" id="registerForm">
                                 {{ csrf_field() }}
 
                                 <div class="form-group">
@@ -764,7 +764,6 @@
 
                 e.preventDefault();
                 const $form = $(this);
-                const formEl = this;
                 clearApiError($form);
                 setButtonLoading($form, '登录中...');
 
@@ -780,13 +779,6 @@
                 }).then(function() {
                     window.location.href = '{{ url('/index') }}';
                 }).catch(function(error) {
-                    var token = (window.TaskApiClient && typeof window.TaskApiClient.getAccessToken === 'function')
-                        ? window.TaskApiClient.getAccessToken()
-                        : '';
-                    if (token && formEl && typeof formEl.submit === 'function') {
-                        formEl.submit();
-                        return;
-                    }
                     showApiError($form, extractErrorMessage(error));
                     restoreButton($form);
                 });
@@ -813,7 +805,7 @@
 
                 window.TaskApiClient.request({
                     method: 'POST',
-                    url: '/auth/register',
+                    url: '/api/v2/auth/register',
                     body: payload,
                     skipAuth: true
                 }).then(function(resp) {

@@ -151,9 +151,8 @@
                 <!-- 错误消息 -->
                 @include('common.errors')
 
-                <form action="{{ url('/api/v2/settings/'.$setting->id) }}" method="POST" class="space-y-6">
+                <form action="javascript:void(0)" method="POST" class="space-y-6" id="kindle-settings-form">
                     {!! csrf_field() !!}
-                    <input type="hidden" name="_method" value="PUT">
                     <input type="hidden" name="page_info" value="kindle_page">
 
                     <!-- Kindle邮箱地址 -->
@@ -174,7 +173,7 @@
                             <input type="email"
                                    name="kindle_email"
                                    id="kindle_email"
-                                   value="{{ old('kindle_email', $setting->kindle_email) }}"
+                                   value=""
                                    placeholder="例如：username_12345@kindle.cn"
                                    class="input w-full pl-10"
                                    required>
@@ -202,7 +201,7 @@
                                 <input type="radio"
                                        name="is_start_kindle"
                                        value="0"
-                                       {{ empty($setting->is_start_kindle) ? 'checked' : '' }}
+                                       checked
                                        class="peer sr-only">
                                 <div class="p-4 rounded-lg border-2 border-gray-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
                                     <div class="flex items-center gap-3">
@@ -221,7 +220,7 @@
                                 <input type="radio"
                                        name="is_start_kindle"
                                        value="1"
-                                       {{ $setting->is_start_kindle == 1 ? 'checked' : '' }}
+
                                        class="peer sr-only">
                                 <div class="p-4 rounded-lg border-2 border-gray-200 peer-checked:border-green-500 peer-checked:bg-green-50 transition-all duration-200">
                                     <div class="flex items-center gap-3">
@@ -249,7 +248,7 @@
                                 <input type="radio"
                                        name="with_image_push"
                                        value="0"
-                                       {{ empty($setting->with_image_push) ? 'checked' : '' }}
+                                       checked
                                        class="peer sr-only">
                                 <div class="p-4 rounded-lg border-2 border-gray-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all duration-200">
                                     <div class="flex items-center gap-3">
@@ -268,7 +267,7 @@
                                 <input type="radio"
                                        name="with_image_push"
                                        value="1"
-                                       {{ $setting->with_image_push == 1 ? 'checked' : '' }}
+
                                        class="peer sr-only">
                                 <div class="p-4 rounded-lg border-2 border-gray-200 peer-checked:border-purple-500 peer-checked:bg-purple-50 transition-all duration-200">
                                     <div class="flex items-center gap-3">
@@ -303,28 +302,28 @@
                             <div class="space-y-1">
                                 <label class="text-xs text-gray-600">每日推送时间</label>
                                 <select name="push_time" class="input w-full">
-                                    <option value="morning" {{ ($setting->push_time ?? '') == 'morning' ? 'selected' : '' }}>早上 (6:00-8:00)</option>
-                                    <option value="noon" {{ ($setting->push_time ?? '') == 'noon' ? 'selected' : '' }}>中午 (12:00-14:00)</option>
-                                    <option value="evening" {{ ($setting->push_time ?? '') == 'evening' ? 'selected' : '' }}>晚上 (18:00-20:00)</option>
-                                    <option value="night" {{ ($setting->push_time ?? '') == 'night' ? 'selected' : '' }}>夜间 (22:00-24:00)</option>
+                                    <option value="morning">早上 (6:00-8:00)</option>
+                                    <option value="noon">中午 (12:00-14:00)</option>
+                                    <option value="evening">晚上 (18:00-20:00)</option>
+                                    <option value="night">夜间 (22:00-24:00)</option>
                                 </select>
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-xs text-gray-600">推送频率</label>
                                 <select name="push_frequency" class="input w-full">
-                                    <option value="daily" {{ ($setting->push_frequency ?? '') == 'daily' ? 'selected' : '' }}>每日推送</option>
-                                    <option value="weekly" {{ ($setting->push_frequency ?? '') == 'weekly' ? 'selected' : '' }}>每周推送</option>
-                                    <option value="manual" {{ ($setting->push_frequency ?? '') == 'manual' ? 'selected' : '' }}>手动推送</option>
+                                    <option value="daily">每日推送</option>
+                                    <option value="weekly">每周推送</option>
+                                    <option value="manual">手动推送</option>
                                 </select>
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-xs text-gray-600">推送格式</label>
                                 <select name="push_format" class="input w-full">
-                                    <option value="mobi" {{ ($setting->push_format ?? '') == 'mobi' ? 'selected' : '' }}>MOBI格式</option>
-                                    <option value="epub" {{ ($setting->push_format ?? '') == 'epub' ? 'selected' : '' }}>EPUB格式</option>
-                                    <option value="pdf" {{ ($setting->push_format ?? '') == 'pdf' ? 'selected' : '' }}>PDF格式</option>
+                                    <option value="mobi">MOBI格式</option>
+                                    <option value="epub">EPUB格式</option>
+                                    <option value="pdf">PDF格式</option>
                                 </select>
                             </div>
                         </div>
@@ -344,9 +343,9 @@
                                     返回阅读
                                 </a>
 
-                                <a href="{{ url('kindle/test') }}"
-                                   class="btn btn-outline flex-1 {{ empty($setting->kindle_email) ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                        {{ empty($setting->kindle_email) ? 'disabled' : '' }}>
+                                <a href="{{ url('kindle/test') }}" id="kindle-test-button"
+                                   class="btn btn-outline flex-1 opacity-50 cursor-not-allowed"
+                                   disabled>
                                     <i class="fas fa-paper-plane mr-2"></i>
                                     测试推送
                                 </a>
@@ -451,9 +450,53 @@
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : null;
+            function getResultData(resp) {
+                if (!resp) return {};
+                return resp.result || resp.data || {};
+            }
             // 邮箱格式验证
             const emailInput = document.getElementById('kindle_email');
-            const testButton = document.querySelector('a[href="{{ url("kindle/test") }}"]');
+            const testButton = document.getElementById('kindle-test-button');
+
+            function setRadioValue(name, value, fallback) {
+                const target = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
+                if (target) {
+                    target.checked = true;
+                    return;
+                }
+                const fb = document.querySelector('input[name="' + name + '"][value="' + fallback + '"]');
+                if (fb) fb.checked = true;
+            }
+
+            function applySetting(setting) {
+                if (!setting) return;
+                emailInput.value = setting.kindle_email || '';
+                setRadioValue('is_start_kindle', String(setting.is_start_kindle || 0), '0');
+                setRadioValue('with_image_push', String(setting.with_image_push || 0), '0');
+                const pushTime = document.querySelector('select[name="push_time"]');
+                const pushFrequency = document.querySelector('select[name="push_frequency"]');
+                const pushFormat = document.querySelector('select[name="push_format"]');
+                if (pushTime) pushTime.value = setting.push_time || 'morning';
+                if (pushFrequency) pushFrequency.value = setting.push_frequency || 'daily';
+                if (pushFormat) pushFormat.value = setting.push_format || 'mobi';
+                if (testButton) {
+                    if ((setting.kindle_email || '').trim()) {
+                        testButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                        testButton.removeAttribute('disabled');
+                    } else {
+                        testButton.classList.add('opacity-50', 'cursor-not-allowed');
+                        testButton.setAttribute('disabled', 'disabled');
+                    }
+                }
+            }
+
+            if (apiRequest) {
+                apiRequest('GET', '/settings', {}).then(function(resp) {
+                    if (!resp || resp.code !== 9999) return;
+                    const result = getResultData(resp);
+                    applySetting(result.setting || {});
+                }).catch(function() {});
+            }
 
             if (emailInput && testButton) {
                 function validateEmail(email) {
@@ -481,7 +524,7 @@
                 updateTestButton();
 
                 // 表单提交验证
-                const form = document.querySelector('form[action="{{ url("setting/'.$setting->id.'") }}"]');
+                const form = document.getElementById('kindle-settings-form');
                 const submitBtn = form?.querySelector('button[type="submit"]');
 
                 if (form && submitBtn) {
@@ -515,7 +558,7 @@
                         submitBtn.disabled = true;
                         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
 
-                        apiRequest('POST', '/settings/{{ $setting->id }}', {
+                        apiRequest('POST', '/settings/current', {
                             kindle_email: emailInput.value.trim(),
                             is_start_kindle: document.querySelector('input[name="is_start_kindle"]:checked') ? document.querySelector('input[name="is_start_kindle"]:checked').value : 0,
                             with_image_push: document.querySelector('input[name="with_image_push"]:checked') ? document.querySelector('input[name="with_image_push"]:checked').value : 0,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V2;
 
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
+use App\Http\Utils\CommonUtil;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Article;
 use App\Models\ArticleSub;
@@ -259,10 +260,12 @@ class ArticleController extends Controller
                     'url' => $article->url,
                     'image_url' => $article->image_url,
                     'content' => $article->content,
+                    'formatted_content' => CommonUtil::formatContentHtml($article->content),
                     'published' => $article->published,
                     'feed' => $article->feed ? array(
                         'id' => $article->feed->id,
                         'feed_name' => $article->feed->feed_name,
+                        'url' => $article->feed->url,
                         'category_id' => $article->feed->category_id,
                     ) : null,
                 ) : null,

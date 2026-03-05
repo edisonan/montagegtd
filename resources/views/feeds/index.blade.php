@@ -22,10 +22,6 @@
                         <i class="fas fa-compass mr-2"></i>
                         探索发现
                     </a>
-                    <a href="{{ url('articles') }}" class="btn btn-primary">
-                        <i class="fas fa-newspaper mr-2"></i>
-                        查看文章
-                    </a>
                 </div>
             </div>
         </div>
@@ -62,16 +58,8 @@
             </div>
 
             <div class="p-6">
-                <!-- 成功消息 -->
-                @include('common.success')
-
-                <!-- 错误消息 -->
-                @include('common.errors')
-
                 <!-- 添加订阅表单 -->
-                <form action="{{ url('/api/v2/feeds') }}" method="POST" id="addFeedForm" class="space-y-6">
-                    {!! csrf_field() !!}
-
+                <form action="javascript:void(0)" method="POST" id="addFeedForm" class="space-y-6">
                     <div class="space-y-6">
                         <!-- 订阅地址 -->
                         <div class="space-y-3">
@@ -86,7 +74,7 @@
                                             type="url"
                                             name="url"
                                             id="url"
-                                            value="{{ $url }}"
+                                            value=""
                                             class="input w-full pl-10"
                                             placeholder="请输入RSS或Atom订阅地址，例如：https://example.com/feed"
                                             required
@@ -138,7 +126,7 @@
                                                     type="text"
                                                     name="feed_name"
                                                     id="feed_name"
-                                                    value="{{ $title }}"
+                                                    value=""
                                                     class="input w-full pl-10"
                                                     placeholder="订阅名称"
                                                     required
@@ -157,60 +145,26 @@
                                             <span class="text-red-500 ml-1">*</span>
                                         </label>
 
-                                        @if(count($categorys) == 0)
-                                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
-                                                    <div>
-                                                        <p class="text-yellow-800 font-medium">需要先创建分类</p>
-                                                        <p class="text-yellow-700 text-sm mt-1">
-                                                            所有订阅必须属于一个分类，请先创建分类后再添加订阅。
-                                                        </p>
-                                                        <a href="{{ url('categorys') }}" target="_blank" class="btn btn-sm btn-outline mt-3">
-                                                            <i class="fas fa-plus mr-1"></i>
-                                                            前往创建分类
-                                                        </a>
-                                                    </div>
+                                        <div id="categoryRadioList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                                        <div id="categoryEmptyTips" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
+                                                <div>
+                                                    <p class="text-yellow-800 font-medium">需要先创建分类</p>
+                                                    <p class="text-yellow-700 text-sm mt-1">所有订阅必须属于一个分类，请先创建分类后再添加订阅。</p>
+                                                    <a href="{{ url('categorys') }}" target="_blank" class="btn btn-sm btn-outline mt-3">
+                                                        <i class="fas fa-plus mr-1"></i>前往创建分类
+                                                    </a>
                                                 </div>
                                             </div>
-                                        @else
-                                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                                                @foreach ($categorys as $category)
-                                                    <label class="relative cursor-pointer">
-                                                        <input
-                                                                type="radio"
-                                                                name="category_id"
-                                                                value="{{ $category->id }}"
-                                                                class="sr-only peer"
-                                                                {{ $loop->first ? 'checked' : '' }}
-                                                        >
-                                                        <div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50
-                                                              peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm
-                                                              transition-all duration-200">
-                                                            <div class="flex items-center space-x-3">
-                                                                <div class="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center">
-                                                                    <i class="fas fa-folder text-blue-600"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <div class="font-medium text-gray-900">{{ $category->name }}</div>
-                                                                    <div class="text-xs text-gray-500">
-                                                                        订阅数：{{ $category->feeds_count ?? 0 }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </label>
-                                                @endforeach
-                                            </div>
+                                        </div>
 
-                                            <!-- 新建分类快捷入口 -->
-                                            <div class="mt-3 text-center">
-                                                <a href="{{ url('categorys') }}" target="_blank" class="text-sm text-primary-color hover:underline inline-flex items-center">
-                                                    <i class="fas fa-plus-circle mr-1"></i>
-                                                    创建新分类
-                                                </a>
-                                            </div>
-                                        @endif
+                                        <div class="mt-3 text-center">
+                                            <a href="{{ url('categorys') }}" target="_blank" class="text-sm text-primary-color hover:underline inline-flex items-center">
+                                                <i class="fas fa-plus-circle mr-1"></i>
+                                                创建新分类
+                                            </a>
+                                        </div>
                                     </div>
 
                                     <!-- 其他设置（可选） -->
@@ -264,205 +218,220 @@
         </div>
 
         <!-- 订阅列表卡片 -->
-        @if(count($feedSubs) > 0)
-            <div class="card">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                                <i class="fas fa-list text-primary-color mr-2"></i>
-                                我的订阅
-                                <span class="ml-2 badge badge-primary">{{ $feedSubs->total() }} 个</span>
-                            </h2>
-                            <p class="text-sm text-gray-600 mt-1">管理您的所有订阅源</p>
-                        </div>
-
-                        <!-- 统计信息 -->
-                        <div class="text-sm text-gray-600">
-                            活跃订阅：{{ $feedSubs->where('status', 'active')->count() }} 个
-                        </div>
+        <div class="card">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-list text-primary-color mr-2"></i>
+                            我的订阅
+                            <span id="feedTotalBadge" class="ml-2 badge badge-primary">0 个</span>
+                        </h2>
+                        <p class="text-sm text-gray-600 mt-1">管理您的所有订阅源</p>
                     </div>
-                </div>
-
-                <div class="p-6">
-                    <!-- 搜索和筛选 -->
-                    <div class="mb-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-                            <div class="relative flex-1">
-                                <input
-                                        type="text"
-                                        id="searchFeeds"
-                                        class="input w-full pl-10"
-                                        placeholder="搜索订阅名称或网址..."
-                                >
-                                <div class="absolute left-3 top-3 text-gray-400">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <select id="filterCategory" class="input w-40">
-                                    <option value="">所有分类</option>
-                                    @foreach($categorys as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @endforeach
-                                </select>
-                                <select id="filterStatus" class="input w-32">
-                                    <option value="">所有状态</option>
-                                    <option value="active">活跃</option>
-                                    <option value="inactive">未激活</option>
-                                    <option value="error">错误</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 订阅列表 -->
-                    <div class="space-y-4" id="feedList">
-                        @foreach($feedSubs as $feedSub)
-                            @if(!empty($feedSub->feed))
-                                <div id="{{ $feedSub->id }}" class="group flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200">
-                                    <!-- 订阅信息 -->
-                                    <div class="flex items-start space-x-4">
-                                        <!-- 订阅图标 -->
-                                        <div class="relative">
-                                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-gray-200 flex items-center justify-center">
-                                                @if($feedSub->feed->icon)
-                                                    <img src="{{ $feedSub->feed->icon }}" alt="" class="w-8 h-8 rounded">
-                                                @else
-                                                    <i class="fas fa-rss text-blue-500 text-xl"></i>
-                                                @endif
-                                            </div>
-
-                                            <!-- 状态指示器 -->
-                                            @if($feedSub->status === 'active')
-                                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border border-white"></div>
-                                            @elseif($feedSub->status === 'error')
-                                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border border-white"></div>
-                                            @endif
-                                        </div>
-
-                                        <!-- 订阅详情 -->
-                                        <div class="flex-1">
-                                            <div class="flex items-start justify-between mb-2">
-                                                <div>
-                                                    <a href="{{ $feedSub->feed->url }}"
-                                                       target="_blank"
-                                                       class="text-lg font-semibold text-gray-900 hover:text-primary-color transition-colors duration-200">
-                                                        {{ $feedSub->feed->feed_name }}
-                                                    </a>
-
-                                                    @if($feedSub->category)
-                                                        <a href="?category_id={{ $feedSub->category->id }}"
-                                                           class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200">
-                                                            <i class="fas fa-folder mr-1 text-xs"></i>
-                                                            {{ $feedSub->category->name }}
-                                                        </a>
-                                                    @endif
-                                                </div>
-
-                                                <div class="text-sm text-gray-500">
-                                                    文章：{{ $feedSub->feed->articles_count ?? 0 }}
-                                                </div>
-                                            </div>
-
-                                            <!-- 描述和网址 -->
-                                            <p class="text-sm text-gray-600 mb-2 line-clamp-2" title="{{ $feedSub->feed->feed_desc }}">
-                                                {{ $feedSub->feed->feed_desc ?: '暂无描述' }}
-                                            </p>
-
-                                            <div class="flex items-center text-sm text-gray-500 space-x-4">
-                                    <span class="truncate max-w-xs" title="{{ $feedSub->feed->url }}">
-                                        <i class="fas fa-link mr-1 text-xs"></i>
-                                        {{ App\Http\Utils\CommonUtil::strLimit($feedSub->feed->url, 50) }}
-                                    </span>
-                                                <span>
-                                        <i class="far fa-clock mr-1 text-xs"></i>
-                                        更新于 {{ $feedSub->updated_at->diffForHumans() }}
-                                    </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 操作按钮 -->
-                                    <div class="flex items-center space-x-2 ml-4">
-                                        <!-- 查看文章 -->
-                                        <a href="{{ url('articles?feed_id=' . $feedSub->feed->id) }}"
-                                           class="btn btn-sm btn-outline flex items-center"
-                                           title="查看文章">
-                                            <i class="fas fa-eye mr-1"></i>
-                                            <span class="hidden sm:inline">文章</span>
-                                        </a>
-
-                                        <!-- 编辑按钮 -->
-                                        <a href="{{ url('feed/'.$feedSub->id) }}"
-                                           class="btn btn-sm btn-outline flex items-center"
-                                           title="编辑订阅">
-                                            <i class="fas fa-edit mr-1"></i>
-                                            <span class="hidden sm:inline">编辑</span>
-                                        </a>
-
-                                        <!-- 删除按钮 -->
-                                        <button onclick="confirmDeleteFeed('{{ $feedSub->id }}', '{{ addslashes($feedSub->feed->feed_name) }}')"
-                                                class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center"
-                                                title="删除订阅">
-                                            <i class="fas fa-trash-alt mr-1"></i>
-                                            <span class="hidden sm:inline">删除</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-
-                    <!-- 分页 -->
-                    @if($feedSubs->hasPages())
-                        <div class="mt-8 pt-6 border-t border-gray-200">
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm text-gray-700">
-                                    显示第 {{ $feedSubs->firstItem() }} 到 {{ $feedSubs->lastItem() }} 条，共 {{ $feedSubs->total() }} 个订阅
-                                </div>
-                                <div class="flex space-x-2">
-                                    {!! $feedSubs->links('vendor.pagination.tailwind') !!}
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                    <div id="feedActiveCountText" class="text-sm text-gray-600">活跃订阅：0 个</div>
                 </div>
             </div>
-        @else
-            <!-- 空状态 -->
-            <div class="card">
-                <div class="text-center py-16">
-                    <div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center mb-6">
-                        <i class="fas fa-rss text-blue-400 text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-medium text-gray-900 mb-3">开始您的第一个订阅</h3>
-                    <p class="text-gray-600 mb-8 max-w-md mx-auto">
-                        订阅您喜欢的博客、新闻和资讯源，轻松获取最新内容，不错过任何重要更新
-                    </p>
-                    <div class="space-y-4">
-                        <button onclick="document.getElementById('url').focus()" class="btn btn-primary text-lg px-8 py-3">
-                            <i class="fas fa-plus mr-3"></i>
-                            添加第一个订阅
-                        </button>
-                        <div class="space-x-4">
-                            <a href="{{ url('feeds/explorer') }}" class="text-sm text-primary-color hover:underline">
-                                <i class="fas fa-compass mr-1"></i>探索推荐订阅
-                            </a>
-                            <a href="{{ url('feeds/opml') }}" class="text-sm text-primary-color hover:underline">
-                                <i class="fas fa-file-import mr-1"></i>导入OPML文件
-                            </a>
+
+            <div class="p-6">
+                <div class="mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                        <div class="relative flex-1">
+                            <input type="text" id="searchFeeds" class="input w-full pl-10" placeholder="搜索订阅名称或网址...">
+                            <div class="absolute left-3 top-3 text-gray-400"><i class="fas fa-search"></i></div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <select id="filterCategory" class="input w-40">
+                                <option value="">所有分类</option>
+                            </select>
+                            <select id="filterStatus" class="input w-32">
+                                <option value="">所有状态</option>
+                                <option value="active">活跃</option>
+                                <option value="inactive">未激活</option>
+                                <option value="error">错误</option>
+                            </select>
                         </div>
                     </div>
                 </div>
+
+                <div class="space-y-4" id="feedList">
+                    <div class="text-center py-12 text-gray-500">加载订阅中...</div>
+                </div>
+
+                <div id="feedPagination" class="mt-8 pt-6 border-t border-gray-200 hidden"></div>
             </div>
-        @endif
+        </div>
     </div>
 
         <script>
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : function() { return Promise.reject(new Error("API客户端未初始化")); };
+            var feedIndexState = {
+                categorys: [],
+                feedSubs: [],
+                pagination: null,
+                currentPage: 1
+            };
+
+            function escapeHtml(text) {
+                return String(text || '').replace(/[&<>"']/g, function(c) {
+                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
+                });
+            }
+
+            function normalizeStatus(rawStatus) {
+                if (rawStatus === 'active' || Number(rawStatus) === 1) return 'active';
+                if (rawStatus === 'error' || Number(rawStatus) === 3) return 'error';
+                return 'inactive';
+            }
+
+            function shortText(text, maxLen) {
+                var s = String(text || '');
+                return s.length > maxLen ? s.slice(0, maxLen - 3) + '...' : s;
+            }
+
+            function renderCategoryOptions(categorys) {
+                var $radioList = $('#categoryRadioList');
+                var $emptyTips = $('#categoryEmptyTips');
+                var $filterCategory = $('#filterCategory');
+
+                $radioList.html('');
+                $filterCategory.html('<option value="">所有分类</option>');
+
+                if (!categorys.length) {
+                    $emptyTips.removeClass('hidden');
+                    return;
+                }
+
+                $emptyTips.addClass('hidden');
+                var radioHtml = '';
+                categorys.forEach(function(category, idx) {
+                    var id = Number(category.id || 0);
+                    var checked = idx === 0 ? 'checked' : '';
+                    var name = escapeHtml(category.name || '未命名分类');
+                    radioHtml += ''
+                        + '<label class="relative cursor-pointer">'
+                        + '<input type="radio" name="category_id" value="' + id + '" class="sr-only peer" ' + checked + '>'
+                        + '<div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm transition-all duration-200">'
+                        + '<div class="flex items-center space-x-3"><div class="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center"><i class="fas fa-folder text-blue-600"></i></div>'
+                        + '<div><div class="font-medium text-gray-900">' + name + '</div></div></div></div></label>';
+                    $filterCategory.append('<option value="' + id + '">' + name + '</option>');
+                });
+                $radioList.html(radioHtml);
+            }
+
+            function renderFeedList(feedSubs) {
+                var $list = $('#feedList');
+                if (!feedSubs.length) {
+                    $list.html(
+                        '<div class="text-center py-16">'
+                        + '<div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center mb-6"><i class="fas fa-rss text-blue-400 text-3xl"></i></div>'
+                        + '<h3 class="text-xl font-medium text-gray-900 mb-3">开始您的第一个订阅</h3>'
+                        + '<p class="text-gray-600 mb-8 max-w-md mx-auto">订阅您喜欢的博客、新闻和资讯源，轻松获取最新内容，不错过任何重要更新</p>'
+                        + '<button onclick="document.getElementById(\\'url\\').focus()" class="btn btn-primary text-lg px-8 py-3"><i class="fas fa-plus mr-3"></i>添加第一个订阅</button>'
+                        + '</div>'
+                    );
+                    return;
+                }
+
+                var html = '';
+                feedSubs.forEach(function(feedSub) {
+                    if (!feedSub.feed) return;
+                    var subId = Number(feedSub.id || 0);
+                    var categoryId = feedSub.category ? Number(feedSub.category.id || 0) : 0;
+                    var status = normalizeStatus(feedSub.status);
+                    var statusDot = status === 'active' ? 'bg-green-500' : (status === 'error' ? 'bg-red-500' : 'bg-gray-400');
+                    var feedName = escapeHtml(feedSub.feed.feed_name || feedSub.feed_name || '未命名订阅');
+                    var feedUrl = escapeHtml(feedSub.feed.url || '#');
+                    var feedDesc = escapeHtml(feedSub.feed.feed_desc || '暂无描述');
+                    var icon = feedSub.feed.icon ? '<img src="' + escapeHtml(feedSub.feed.icon) + '" alt="" class="w-8 h-8 rounded">' : '<i class="fas fa-rss text-blue-500 text-xl"></i>';
+                    var categoryTag = feedSub.category
+                        ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"><i class="fas fa-folder mr-1 text-xs"></i>' + escapeHtml(feedSub.category.name) + '</span>'
+                        : '';
+                    var articlesCount = Number(feedSub.feed.articles_count || 0);
+                    var updatedAt = escapeHtml(String(feedSub.updated_at || '').replace('T', ' ').slice(0, 16));
+                    html += ''
+                        + '<div id="' + subId + '" class="group flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200" data-category-id="' + categoryId + '" data-status="' + status + '">'
+                        + '<div class="flex items-start space-x-4"><div class="relative"><div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 border border-gray-200 flex items-center justify-center">' + icon + '</div><div class="absolute -top-1 -right-1 w-4 h-4 ' + statusDot + ' rounded-full border border-white"></div></div>'
+                        + '<div class="flex-1"><div class="flex items-start justify-between mb-2"><div><a href="' + feedUrl + '" target="_blank" class="text-lg font-semibold text-gray-900 hover:text-primary-color transition-colors duration-200 feed-name">' + feedName + '</a>' + categoryTag + '</div><div class="text-sm text-gray-500">文章：' + articlesCount + '</div></div>'
+                        + '<p class="text-sm text-gray-600 mb-2 line-clamp-2 feed-desc" title="' + feedDesc + '">' + feedDesc + '</p>'
+                        + '<div class="flex items-center text-sm text-gray-500 space-x-4"><span class="truncate max-w-xs feed-url" title="' + feedUrl + '"><i class="fas fa-link mr-1 text-xs"></i>' + shortText(feedUrl, 50) + '</span><span><i class="far fa-clock mr-1 text-xs"></i>更新于 ' + updatedAt + '</span></div></div></div>'
+                        + '<div class="flex items-center space-x-2 ml-4"><a href="/articles?feed_id=' + Number(feedSub.feed.id || 0) + '" class="btn btn-sm btn-outline flex items-center" title="查看文章"><i class="fas fa-eye mr-1"></i><span class="hidden sm:inline">文章</span></a>'
+                        + '<a href="/feed/' + subId + '" class="btn btn-sm btn-outline flex items-center" title="编辑订阅"><i class="fas fa-edit mr-1"></i><span class="hidden sm:inline">编辑</span></a>'
+                        + '<button onclick="confirmDeleteFeed(' + subId + ', \'' + feedName.replace(/'/g, "\\'") + '\')" class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center" title="删除订阅"><i class="fas fa-trash-alt mr-1"></i><span class="hidden sm:inline">删除</span></button></div></div>';
+                });
+                $list.html(html || '<div class="text-center py-12 text-gray-500">暂无订阅</div>');
+            }
+
+            function renderFeedStats() {
+                var total = (feedIndexState.pagination && Number(feedIndexState.pagination.total)) || feedIndexState.feedSubs.length;
+                var active = feedIndexState.feedSubs.filter(function(item) {
+                    return normalizeStatus(item.status) === 'active';
+                }).length;
+                $('#feedTotalBadge').text(total + ' 个');
+                $('#feedActiveCountText').text('活跃订阅：' + active + ' 个');
+            }
+
+            function renderFeedPagination() {
+                var p = feedIndexState.pagination || {};
+                var $wrap = $('#feedPagination');
+                if (!p.total || Number(p.last_page || 1) <= 1) {
+                    $wrap.addClass('hidden').html('');
+                    return;
+                }
+                var prevDisabled = !p.prev_page_url ? 'disabled opacity-50 cursor-not-allowed' : '';
+                var nextDisabled = !p.next_page_url ? 'disabled opacity-50 cursor-not-allowed' : '';
+                var html = ''
+                    + '<div class="flex items-center justify-between">'
+                    + '<div class="text-sm text-gray-700">共 ' + Number(p.total || 0) + ' 个订阅</div>'
+                    + '<div class="flex items-center space-x-2">'
+                    + '<button class="btn btn-secondary ' + prevDisabled + '" id="feedPrevPage"><i class="fas fa-chevron-left mr-2"></i>上一页</button>'
+                    + '<span class="text-sm text-gray-600">第 ' + Number(p.current_page || 1) + ' / ' + Number(p.last_page || 1) + ' 页</span>'
+                    + '<button class="btn btn-secondary ' + nextDisabled + '" id="feedNextPage">下一页<i class="fas fa-chevron-right ml-2"></i></button>'
+                    + '</div></div>';
+                $wrap.removeClass('hidden').html(html);
+                $('#feedPrevPage').off('click').on('click', function() {
+                    if (p.prev_page_url) {
+                        loadFeedIndexData(Math.max(1, Number(p.current_page || 1) - 1));
+                    }
+                });
+                $('#feedNextPage').off('click').on('click', function() {
+                    if (p.next_page_url) {
+                        loadFeedIndexData(Number(p.current_page || 1) + 1);
+                    }
+                });
+            }
+
+            function loadFeedIndexData(page) {
+                if (!apiRequest) {
+                    showToast('error', 'API客户端未初始化');
+                    return;
+                }
+                var currentUrl = ($('#url').val() || '').trim();
+                var params = { page: page || 1 };
+                if (currentUrl) params.url = currentUrl;
+                apiRequest('GET', '/feeds', params).then(function(resp) {
+                    if (!resp || resp.code !== 9999 || !resp.result) {
+                        throw new Error((resp && resp.msg) || '加载失败');
+                    }
+                    var data = resp.result || {};
+                    feedIndexState.categorys = Array.isArray(data.categorys) ? data.categorys : [];
+                    feedIndexState.feedSubs = Array.isArray(data.feed_subs) ? data.feed_subs : [];
+                    feedIndexState.pagination = data.pagination || null;
+                    feedIndexState.currentPage = Number((data.pagination && data.pagination.current_page) || 1);
+
+                    if (data.url) $('#url').val(data.url);
+                    if (data.title) $('#feed_name').val(data.title);
+                    renderCategoryOptions(feedIndexState.categorys);
+                    renderFeedList(feedIndexState.feedSubs);
+                    renderFeedStats();
+                    renderFeedPagination();
+                    filterFeeds();
+                }).catch(function() {
+                    $('#feedList').html('<div class="text-center py-12 text-gray-500">订阅加载失败，请稍后重试</div>');
+                });
+            }
 
             // 检测订阅地址
             document.getElementById('check_url').addEventListener('click', function() {
@@ -576,11 +545,7 @@
                             $(`#${feedId}`).fadeOut(300, function() {
                                 $(this).remove();
                                 showToast('success', '订阅删除成功');
-
-                                // 检查是否还有订阅
-                                if ($('#feedList .group').length === 0) {
-                                    location.reload();
-                                }
+                                loadFeedIndexData(feedIndexState.currentPage || 1);
                             });
                         } else {
                             showToast('error', response.msg || '删除失败');
@@ -607,6 +572,11 @@
                 const searchInput = document.getElementById('searchFeeds');
                 const filterCategory = document.getElementById('filterCategory');
                 const filterStatus = document.getElementById('filterStatus');
+                const presetUrl = new URLSearchParams(window.location.search).get('url');
+                if (presetUrl) {
+                    document.getElementById('url').value = presetUrl;
+                }
+                loadFeedIndexData(1);
 
                 // 搜索功能
                 if (searchInput) {
@@ -667,9 +637,8 @@
                         }).then(function(resp) {
                             if (resp && resp.code === 9999) {
                                 showToast('success', '订阅添加成功');
-                                setTimeout(function() {
-                                    window.location.reload();
-                                }, 300);
+                                resetForm();
+                                loadFeedIndexData(1);
                                 return;
                             }
                             showToast('error', (resp && resp.msg) ? resp.msg : '添加失败');
@@ -693,12 +662,11 @@
                 let hasVisibleItems = false;
 
                 items.forEach(item => {
-                    const feedName = item.querySelector('a.text-lg').textContent.toLowerCase();
-                    const feedDesc = item.querySelector('p.text-gray-600').textContent.toLowerCase();
-                    const feedUrl = item.querySelector('span.truncate').textContent.toLowerCase();
-                    const categoryId = item.querySelector('a[href*="category_id"]')?.getAttribute('href')?.match(/category_id=(\d+)/)?.[1] || '';
-                    const status = item.querySelector('.absolute.-top-1')?.classList.contains('bg-green-500') ? 'active' :
-                        item.querySelector('.absolute.-top-1')?.classList.contains('bg-red-500') ? 'error' : 'inactive';
+                    const feedName = (item.querySelector('.feed-name')?.textContent || '').toLowerCase();
+                    const feedDesc = (item.querySelector('.feed-desc')?.textContent || '').toLowerCase();
+                    const feedUrl = (item.querySelector('.feed-url')?.textContent || '').toLowerCase();
+                    const categoryId = item.getAttribute('data-category-id') || '';
+                    const status = item.getAttribute('data-status') || 'inactive';
 
                     const matchesSearch = feedName.includes(searchTerm) || feedDesc.includes(searchTerm) || feedUrl.includes(searchTerm);
                     const matchesCategory = !categoryFilter || categoryId === categoryFilter;

@@ -47,7 +47,7 @@
                         </div>
                         <div>
                             <div class="text-sm text-blue-700">今日日期</div>
-                            <div class="text-lg font-semibold text-blue-900">{{ date('Y年m月d日') }}</div>
+                            <div id="todayLabel" class="text-lg font-semibold text-blue-900">-</div>
                         </div>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                         </div>
                         <div>
                             <div class="text-sm text-green-700">本月日报</div>
-                            <div class="text-lg font-semibold text-green-900">{{ $monthlyCount ?? 0 }} 篇</div>
+                            <div class="text-lg font-semibold text-green-900">0 篇</div>
                         </div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                         </div>
                         <div>
                             <div class="text-sm text-purple-700">连续记录</div>
-                            <div class="text-lg font-semibold text-purple-900">{{ $streakDays ?? 0 }} 天</div>
+                            <div class="text-lg font-semibold text-purple-900">0 天</div>
                         </div>
                     </div>
                 </div>
@@ -89,26 +89,8 @@
                     </div>
 
                     <div class="p-6">
-                        <!-- 错误消息 -->
-                        @include('common.errors')
-
-                        <!-- 成功消息 -->
-                        @if(session('success'))
-                            <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <div class="flex items-center">
-                                    <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                                    <div>
-                                        <h4 class="font-medium text-green-800">保存成功</h4>
-                                        <p class="text-green-700 text-sm mt-1">{{ session('success') }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
                         <!-- 日报表单 -->
-                        <form action="{{ url('/api/v2/daily-summaries') }}" method="POST" class="space-y-6" id="dailySummaryForm">
-                            {!! csrf_field() !!}
-
+                        <form action="javascript:void(0)" method="POST" class="space-y-6" id="dailySummaryForm">
                             <div class="space-y-6">
                                 <!-- 总结日期 -->
                                 <div class="space-y-3">
@@ -123,7 +105,7 @@
                                                     type="date"
                                                     name="summary_date"
                                                     id="dailysummary-summarydate"
-                                                    value="{{ $summary_date }}"
+                                                    value=""
                                                     class="input w-full pl-10"
                                                     max="{{ date('Y-m-d') }}"
                                                     required
@@ -168,7 +150,7 @@
                                             class="input w-full resize-none"
                                             placeholder="记录今日工作成果、遇到的问题、学习收获等..."
                                             data-counter-id="workCounter"
-                                    >{{ old('work_content') }}</textarea>
+                                    ></textarea>
                                         <div class="absolute bottom-3 right-3">
                                             <span id="workCounter" class="text-xs text-gray-400">0/1000</span>
                                         </div>
@@ -207,7 +189,7 @@
                                             class="input w-full resize-none"
                                             placeholder="记录今日生活点滴、心情变化、感悟收获等..."
                                             data-counter-id="lifeCounter"
-                                    >{{ old('life_content') }}</textarea>
+                                    ></textarea>
                                         <div class="absolute bottom-3 right-3">
                                             <span id="lifeCounter" class="text-xs text-gray-400">0/1000</span>
                                         </div>
@@ -225,17 +207,41 @@
                                         今日心情（可选）
                                     </label>
                                     <div class="flex flex-wrap gap-3">
-                                        @foreach(['非常棒' => '😄', '还不错' => '🙂', '一般般' => '😐', '不太好' => '😔', '很糟糕' => '😢'] as $label => $emoji)
-                                            <label class="relative cursor-pointer">
-                                                <input type="radio" name="mood" value="{{ $label }}" class="sr-only peer">
-                                                <div class="px-4 py-3 border border-gray-200 rounded-lg flex flex-col items-center
-                                                  peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm
-                                                  hover:bg-gray-50 transition-all duration-200">
-                                                    <span class="text-2xl mb-1">{{ $emoji }}</span>
-                                                    <span class="text-sm text-gray-700">{{ $label }}</span>
-                                                </div>
-                                            </label>
-                                        @endforeach
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="mood" value="非常棒" class="sr-only peer">
+                                            <div class="px-4 py-3 border border-gray-200 rounded-lg flex flex-col items-center peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                                <span class="text-2xl mb-1">😄</span>
+                                                <span class="text-sm text-gray-700">非常棒</span>
+                                            </div>
+                                        </label>
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="mood" value="还不错" class="sr-only peer">
+                                            <div class="px-4 py-3 border border-gray-200 rounded-lg flex flex-col items-center peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                                <span class="text-2xl mb-1">🙂</span>
+                                                <span class="text-sm text-gray-700">还不错</span>
+                                            </div>
+                                        </label>
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="mood" value="一般般" class="sr-only peer">
+                                            <div class="px-4 py-3 border border-gray-200 rounded-lg flex flex-col items-center peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                                <span class="text-2xl mb-1">😐</span>
+                                                <span class="text-sm text-gray-700">一般般</span>
+                                            </div>
+                                        </label>
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="mood" value="不太好" class="sr-only peer">
+                                            <div class="px-4 py-3 border border-gray-200 rounded-lg flex flex-col items-center peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                                <span class="text-2xl mb-1">😔</span>
+                                                <span class="text-sm text-gray-700">不太好</span>
+                                            </div>
+                                        </label>
+                                        <label class="relative cursor-pointer">
+                                            <input type="radio" name="mood" value="很糟糕" class="sr-only peer">
+                                            <div class="px-4 py-3 border border-gray-200 rounded-lg flex flex-col items-center peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:shadow-sm hover:bg-gray-50 transition-all duration-200">
+                                                <span class="text-2xl mb-1">😢</span>
+                                                <span class="text-sm text-gray-700">很糟糕</span>
+                                            </div>
+                                        </label>
                                     </div>
                                 </div>
 
@@ -261,11 +267,12 @@
                                         </button>
                                     </div>
                                     <div class="flex flex-wrap gap-2 mt-2">
-                                        @foreach(['工作突破', '学习成长', '家庭时光', '朋友聚会', '运动健康', '阅读思考'] as $tag)
-                                            <button type="button" onclick="quickAddTag('{{ $tag }}')" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">
-                                                {{ $tag }}
-                                            </button>
-                                        @endforeach
+                                        <button type="button" onclick="quickAddTag('工作突破')" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">工作突破</button>
+                                        <button type="button" onclick="quickAddTag('学习成长')" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">学习成长</button>
+                                        <button type="button" onclick="quickAddTag('家庭时光')" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">家庭时光</button>
+                                        <button type="button" onclick="quickAddTag('朋友聚会')" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">朋友聚会</button>
+                                        <button type="button" onclick="quickAddTag('运动健康')" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">运动健康</button>
+                                        <button type="button" onclick="quickAddTag('阅读思考')" class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200">阅读思考</button>
                                     </div>
                                 </div>
                             </div>
@@ -396,7 +403,11 @@
                 // 设置默认日期
                 const dateInput = document.getElementById('dailysummary-summarydate');
                 if (!dateInput.value) {
-                    dateInput.value = "{{ date('Y-m-d') }}";
+                    dateInput.value = new Date().toISOString().slice(0, 10);
+                }
+                const todayLabel = document.getElementById('todayLabel');
+                if (todayLabel) {
+                    todayLabel.textContent = formatDateForDisplay(dateInput.value);
                 }
 
                 // 初始化字符计数器
@@ -408,6 +419,10 @@
                 // 日期变化时重新获取提示
                 dateInput.addEventListener('change', function() {
                     getInfos(this.value);
+                    const todayLabel = document.getElementById('todayLabel');
+                    if (todayLabel) {
+                        todayLabel.textContent = formatDateForDisplay(this.value);
+                    }
                 });
 
                 // 标签输入框回车添加标签

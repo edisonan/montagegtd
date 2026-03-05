@@ -6,11 +6,8 @@ use Illuminate\Http\Request;
 use App\Services\PointAccountService;
 use App\Services\PointRecordService;
 
-/**
- * 用户积分控制器
- */
-class PointController extends Controller {
-
+class PointController extends Controller
+{
     protected $pointAccountService;
     protected $pointRecordService;
 
@@ -20,21 +17,11 @@ class PointController extends Controller {
     ) {
         $this->middleware('auth');
         $this->pointAccountService = $pointAccountService;
-        $this->pointRecordService  = $pointRecordService;
+        $this->pointRecordService = $pointRecordService;
     }
 
-    /**
-     * 积分首页
-     */
-    public function index(Request $request) {
-        $userId = \Auth::id();
-
-        $account = $this->pointAccountService->getOrCreateAccount($userId);
-        $records = $this->pointRecordService->getUserPointRecords($userId);
-
-        return view('points.index', [
-            'account' => $account,
-            'records' => $records,
-        ]);
+    public function index(Request $request)
+    {
+        return view('points.index');
     }
 }

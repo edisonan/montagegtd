@@ -9,7 +9,7 @@
                     <div class="card-header">Reset Password</div>
                     <div class="card-body">
 
-                        <form class="form-horizontal" role="form" method="POST" action="{{ url('/password/email') }}" id="passwordEmailForm">
+                        <form class="form-horizontal" role="form" method="POST" action="javascript:void(0)" id="passwordEmailForm">
                             {!! csrf_field() !!}
 
                             <div class="form-group{{ $errors->has('email') ? ' has-error' : '' }}">
@@ -62,7 +62,7 @@
 
                 window.TaskApiClient.request({
                     method: 'POST',
-                    url: '/auth/password/email',
+                    url: '/api/v2/auth/password/email',
                     body: {
                         email: form.querySelector('input[name="email"]').value
                     },
@@ -72,8 +72,11 @@
                         ? resp.data.result.message
                         : 'Password reset link sent.';
                     alert(msg);
-                }).catch(function() {
-                    form.submit();
+                }).catch(function(error) {
+                    var msg = (error && error.data && (error.data.msg || error.data.message))
+                        ? (error.data.msg || error.data.message)
+                        : '发送失败，请稍后重试';
+                    alert(msg);
                 }).finally(function() {
                     if (submitBtn) {
                         submitBtn.disabled = false;

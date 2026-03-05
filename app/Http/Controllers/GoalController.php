@@ -44,19 +44,7 @@ class GoalController extends Controller
      */
     public function index(Request $request)
     {
-        $status = $request->input('status', 1);
-        if (!in_array($status, array(
-            1,
-            2
-        ))) {
-            throw new CustomException ("状态不合法");
-        }
-
-        $goals = $this->goalService->getList($status);
-
-        return view('goals.index', [
-            'goals' => $goals
-        ]);
+        return view('goals.index');
     }
 
     /**
@@ -110,9 +98,7 @@ class GoalController extends Controller
         $this->authorize('destroy', $goal);
 
         if ($request->method() == 'GET') {
-            return view('goals.update', array(
-                'goal' => $goal
-            ));
+            return view('goals.update');
         }
 
         $this->validate($request, [

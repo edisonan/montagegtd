@@ -146,6 +146,9 @@
             padding: 48px 24px;
             text-align: center;
         }
+        .empty-state.hidden {
+            display: none !important;
+        }
 
         .empty-state img {
             margin-bottom: 24px;
@@ -203,33 +206,8 @@
             border-top: 1px solid #e2e8f0;
         }
 
-        /* 卡片样式 */
-        .thing-card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .thing-card-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #f8fafc;
-        }
-
-        .thing-card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin: 0;
-        }
-
-        .thing-card-body {
-            padding: 24px;
+        .section-body {
+            padding: 0 8px;
         }
 
         /* 按钮组 */
@@ -300,7 +278,7 @@
                 margin-top: 8px;
             }
 
-            .thing-card-body {
+            .section-body {
                 padding: 16px;
             }
         }
@@ -323,6 +301,7 @@
             <h1 class="page-title">
                 <i class="fas fa-check-circle"></i>
                 事情列表
+                <span class="badge badge-primary" id="thing_count_badge">0 项</span>
             </h1>
             <div class="btn-group">
                 <button type="button" class="btn btn-primary" data-toggle="modal"  onclick="showThingCreateModal()">
@@ -337,174 +316,60 @@
         </div>
 
         <!-- 成功消息提示 -->
-        @if(session('success'))
-            <div class="alert-success fade-in">
-                <i class="fas fa-check-circle mr-2"></i>
-                {{ session('success') }}
-            </div>
-        @endif
+        <div id="thing_success_alert" class="alert-success fade-in hidden">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="thing_success_text"></span>
+        </div>
 
         <!-- 主内容区域 -->
-        <div class="thing-card fade-in">
-            <div class="thing-card-header">
-                <h2 class="thing-card-title">已完成的事情</h2>
-                <span class="badge badge-primary">
-                {{ count($things) }} 项
-            </span>
-            </div>
+        <div class="fade-in">
+            <div class="section-body">
+                <!-- 桌面端表格 -->
+                <div class="hidden md:block" id="things_desktop_wrap">
+                    <div class="thing-table-container">
+                        <table class="thing-table">
+                            <thead>
+                            <tr>
+                                <th style="width: 200px;">时间信息</th>
+                                <th>完成的事情</th>
+                                <th style="width: 150px; text-align: right;">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="things_desktop_body"></tbody>
+                        </table>
+                    </div>
+                </div>
 
-            <div class="thing-card-body">
-                @if (count($things) > 0)
-                    <!-- 桌面端表格 -->
-                    <div class="hidden md:block">
-                        <div class="thing-table-container">
-                            <table class="thing-table">
-                                <thead>
-                                <tr>
-                                    <th style="width: 200px;">时间信息</th>
-                                    <th>完成的事情</th>
-                                    <th style="width: 150px; text-align: right;">操作</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @php $lastDate = ''; @endphp
-                                @foreach ($things as $thing)
-                                    @php
-                                        $currentDate = date('m-d', strtotime($thing->start_time));
-                                        $showDate = $currentDate != $lastDate;
-                                        $lastDate = $currentDate;
-                                    @endphp
-                                    <tr id="{{ $thing->id }}">
-                                        <td>
-                                            <div class="time-display">
-                                                @if ($showDate)
-                                                    <span class="date-badge">{{ $currentDate }}</span>
-                                                @else
-                                                    <span class="date-badge" style="background: transparent; color: transparent;">{{ $currentDate }}</span>
-                                                @endif
-                                                <span class="time-range">
-                                                    {{ date('H:i', strtotime($thing->start_time)) }} - {{ date('H:i', strtotime($thing->end_time)) }}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="thing-content">
-                                                <img src="/img/icon/thing{{ $thing->type }}.png"
-                                                     alt="事情类型图标"
-                                                     class="thing-icon">
-                                                <span class="thing-name" title="{{ $thing->name }}">
-                                                    {{ $thing->name }}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="/notes?source_type=4&source_id={{ $thing->id }}"
-                                                   class="action-link"
-                                                   title="记录更多当时的想法">
-                                                    <i class="fas fa-sticky-note" style="font-size: 1rem;"></i>
-                                                </a>
-                                                <a href="{{ url('thing/'.$thing->id) }}"
-                                                   class="action-link"
-                                                   title="编辑事情">
-                                                    <i class="fas fa-edit" style="font-size: 1rem;"></i>
-                                                </a>
-                                                <button type="button"
-                                                        class="action-link delete delete_thing"
-                                                        thing_type="delete"
-                                                        thing_value="{{ $thing->id }}"
-                                                        thing_token="{{ csrf_token() }}"
-                                                        title="删除事情">
-                                                    <i class="fas fa-trash-alt" style="font-size: 1rem;"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <!-- 移动端卡片视图 -->
+                <div class="md:hidden space-y-3" id="things_mobile_list"></div>
 
-                    <!-- 移动端卡片视图 -->
-                    <div class="md:hidden space-y-3">
-                        @php $lastDate = ''; @endphp
-                        @foreach ($things as $thing)
-                            @php
-                                $currentDate = date('m-d', strtotime($thing->start_time));
-                                $showDate = $currentDate != $lastDate;
-                                $lastDate = $currentDate;
-                            @endphp
-                            <div class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150" id="mobile-{{ $thing->id }}">
-                                <div class="p-4">
-                                    @if ($showDate)
-                                        <div class="mb-3">
-                                            <span class="date-badge">{{ $currentDate }}</span>
-                                        </div>
-                                    @endif
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1 pr-4">
-                                            <div class="flex items-center gap-2 mb-2">
-                                                <img src="/img/icon/thing{{ $thing->type }}.png"
-                                                     alt="事情类型图标"
-                                                     class="w-5 h-5 flex-shrink-0">
-                                                <span class="font-medium text-gray-800 text-sm truncate" title="{{ $thing->name }}">
-                                                {{ $thing->name }}
-                                            </span>
-                                            </div>
-                                            <div class="text-xs text-gray-600">
-                                                <i class="far fa-clock mr-1"></i>
-                                                {{ date('H:i', strtotime($thing->start_time)) }} - {{ date('H:i', strtotime($thing->end_time)) }}
-                                            </div>
-                                        </div>
-                                        <div class="flex gap-1">
-                                            <a href="/notes?source_type=4&source_id={{ $thing->id }}"
-                                               class="action-link"
-                                               title="记录想法">
-                                                <i class="fas fa-sticky-note"></i>
-                                            </a>
-                                            <a href="{{ url('thing/'.$thing->id) }}"
-                                               class="action-link"
-                                               title="编辑">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-2 pt-3 mt-3 border-t border-gray-100">
-                                        <button type="button"
-                                                class="flex-1 py-2 px-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors duration-150 delete_thing"
-                                                thing_type="delete"
-                                                thing_value="{{ $thing->id }}"
-                                                thing_token="{{ csrf_token() }}">
-                                            <i class="fas fa-trash-alt mr-1"></i>
-                                            删除
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+                <!-- 分页 -->
+                <div class="pagination-wrapper" id="things_pagination">
+                    <div class="flex items-center gap-3">
+                        <button type="button" class="btn btn-outline btn-sm" id="things_prev_page">
+                            <i class="fas fa-chevron-left mr-1"></i>上一页
+                        </button>
+                        <span class="text-sm text-gray-600" id="things_page_text">第 1 页</span>
+                        <button type="button" class="btn btn-outline btn-sm" id="things_next_page">
+                            下一页<i class="fas fa-chevron-right ml-1"></i>
+                        </button>
                     </div>
+                </div>
 
-                    <!-- 分页 -->
-                    <div class="pagination-wrapper">
-                        {!! $things->links() !!}
-                    </div>
-                @else
-                    <!-- 空状态 -->
-                    <div class="empty-state">
-                        <img src="/img/new/love.png" alt="暂无事情" width="120">
-                        <p class="empty-state-text mb-4">
-                            暂时还没有记录完成的事情哦～
-                        </p>
-                        <p class="text-gray-500 mb-6 text-sm">
-                            快去开始做点番茄或者考虑一下待办事项吧！
-                        </p>
-                        <a href="{{ url('/index') }}" class="btn btn-primary">
-                            <i class="fas fa-play mr-2"></i>
-                            开始工作
-                        </a>
-                    </div>
-                @endif
+                <!-- 空状态 -->
+                <div class="empty-state hidden" id="things_empty_state">
+                    <img src="/img/new/love.png" alt="暂无事情" width="120">
+                    <p class="empty-state-text mb-4">
+                        暂时还没有记录完成的事情哦～
+                    </p>
+                    <p class="text-gray-500 mb-6 text-sm">
+                        快去开始做点番茄或者考虑一下待办事项吧！
+                    </p>
+                    <a href="{{ url('/index') }}" class="btn btn-primary">
+                        <i class="fas fa-play mr-2"></i>
+                        开始工作
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -518,16 +383,140 @@
             ? window.TaskApiBridge.requestWithFallback
             : null;
 
+        var thingPageState = {
+            currentPage: 1,
+            lastPage: 1,
+            perPage: 10,
+            total: 0,
+            things: []
+        };
+
+        function escapeHtml(text) {
+            var div = document.createElement('div');
+            div.textContent = text == null ? '' : String(text);
+            return div.innerHTML;
+        }
+
+        function formatDateParts(dateTime) {
+            if (!dateTime) {
+                return {md: '-', hm: '-'};
+            }
+            var d = new Date(String(dateTime).replace(' ', 'T'));
+            if (isNaN(d.getTime())) {
+                return {md: '-', hm: '-'};
+            }
+            var mm = String(d.getMonth() + 1).padStart(2, '0');
+            var dd = String(d.getDate()).padStart(2, '0');
+            var hh = String(d.getHours()).padStart(2, '0');
+            var mi = String(d.getMinutes()).padStart(2, '0');
+            return {md: mm + '-' + dd, hm: hh + ':' + mi};
+        }
+
+        function renderThingsList() {
+            var things = thingPageState.things || [];
+            $('#thing_count_badge').text((thingPageState.total || 0) + ' 项');
+
+            if (!things.length) {
+                $('#things_desktop_wrap').addClass('hidden');
+                $('#things_mobile_list').addClass('hidden');
+                $('#things_pagination').addClass('hidden');
+                $('#things_empty_state').removeClass('hidden');
+                return;
+            }
+
+            $('#things_desktop_wrap').removeClass('hidden');
+            $('#things_mobile_list').removeClass('hidden');
+            $('#things_pagination').removeClass('hidden');
+            $('#things_empty_state').addClass('hidden');
+
+            var desktopBody = $('#things_desktop_body');
+            var mobileList = $('#things_mobile_list');
+            desktopBody.empty();
+            mobileList.empty();
+
+            var lastDate = '';
+            things.forEach(function(thing) {
+                var start = formatDateParts(thing.start_time);
+                var end = formatDateParts(thing.end_time);
+                var showDate = start.md !== lastDate;
+                lastDate = start.md;
+
+                desktopBody.append(
+                    '<tr id="thing-row-' + thing.id + '">' +
+                    '<td><div class="time-display">' +
+                    '<span class="date-badge"' + (showDate ? '' : ' style="background: transparent; color: transparent;"') + '>' + start.md + '</span>' +
+                    '<span class="time-range">' + start.hm + ' - ' + end.hm + '</span>' +
+                    '</div></td>' +
+                    '<td><div class="thing-content">' +
+                    '<img src="/img/icon/thing' + (thing.type || 1) + '.png" alt="事情类型图标" class="thing-icon">' +
+                    '<span class="thing-name" title="' + escapeHtml(thing.name || '') + '">' + escapeHtml(thing.name || '') + '</span>' +
+                    '</div></td>' +
+                    '<td><div class="action-buttons">' +
+                    '<a href="/notes?source_type=4&source_id=' + thing.id + '" class="action-link" title="记录更多当时的想法"><i class="fas fa-sticky-note" style="font-size: 1rem;"></i></a>' +
+                    '<a href="/thing/' + thing.id + '" class="action-link" title="编辑事情"><i class="fas fa-edit" style="font-size: 1rem;"></i></a>' +
+                    '<button type="button" class="action-link delete delete_thing" thing_value="' + thing.id + '" title="删除事情"><i class="fas fa-trash-alt" style="font-size: 1rem;"></i></button>' +
+                    '</div></td>' +
+                    '</tr>'
+                );
+
+                mobileList.append(
+                    '<div class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150" id="mobile-thing-' + thing.id + '">' +
+                    '<div class="p-4">' +
+                    (showDate ? '<div class="mb-3"><span class="date-badge">' + start.md + '</span></div>' : '') +
+                    '<div class="flex justify-between items-start">' +
+                    '<div class="flex-1 pr-4">' +
+                    '<div class="flex items-center gap-2 mb-2">' +
+                    '<img src="/img/icon/thing' + (thing.type || 1) + '.png" alt="事情类型图标" class="w-5 h-5 flex-shrink-0">' +
+                    '<span class="font-medium text-gray-800 text-sm truncate" title="' + escapeHtml(thing.name || '') + '">' + escapeHtml(thing.name || '') + '</span>' +
+                    '</div>' +
+                    '<div class="text-xs text-gray-600"><i class="far fa-clock mr-1"></i>' + start.hm + ' - ' + end.hm + '</div>' +
+                    '</div>' +
+                    '<div class="flex gap-1">' +
+                    '<a href="/notes?source_type=4&source_id=' + thing.id + '" class="action-link" title="记录想法"><i class="fas fa-sticky-note"></i></a>' +
+                    '<a href="/thing/' + thing.id + '" class="action-link" title="编辑"><i class="fas fa-edit"></i></a>' +
+                    '</div></div>' +
+                    '<div class="flex gap-2 pt-3 mt-3 border-t border-gray-100">' +
+                    '<button type="button" class="flex-1 py-2 px-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors duration-150 delete_thing" thing_value="' + thing.id + '">' +
+                    '<i class="fas fa-trash-alt mr-1"></i>删除</button>' +
+                    '</div></div></div>'
+                );
+            });
+
+            $('#things_page_text').text('第 ' + thingPageState.currentPage + ' / ' + thingPageState.lastPage + ' 页');
+            $('#things_prev_page').prop('disabled', thingPageState.currentPage <= 1);
+            $('#things_next_page').prop('disabled', thingPageState.currentPage >= thingPageState.lastPage);
+        }
+
+        function loadThings(page) {
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+            var targetPage = page || thingPageState.currentPage || 1;
+            apiRequest('GET', '/things?page=' + targetPage + '&page_size=' + thingPageState.perPage, {}).then(function(resultArr) {
+                if (!resultArr || resultArr.code != 9999) {
+                    alert((resultArr && resultArr.msg) ? resultArr.msg : '加载失败');
+                    return;
+                }
+                var pagination = (resultArr.result && resultArr.result.pagination) ? resultArr.result.pagination : {};
+                thingPageState.things = (resultArr.result && resultArr.result.things) ? resultArr.result.things : [];
+                thingPageState.currentPage = Number(pagination.current_page || targetPage || 1);
+                thingPageState.lastPage = Number(pagination.last_page || 1);
+                thingPageState.total = Number(pagination.total || thingPageState.things.length || 0);
+                renderThingsList();
+            }).catch(function() {
+                alert('加载失败，请重试');
+            });
+        }
+
         $(document).ready(function () {
             // 删除功能
-            $(".delete_thing").click(function (e) {
+            $(document).on('click', '.delete_thing', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                var thing_value = $(this).attr("thing_value");
-                var thing_type = $(this).attr("thing_type");
-
-                if (thing_type == 'delete' && !confirm("确认要删除此事情吗？")) {
+                var thingValue = $(this).attr('thing_value');
+                if (!confirm("确认要删除此事情吗？")) {
                     return false;
                 }
 
@@ -536,49 +525,26 @@
                     return false;
                 }
 
-                apiRequest('DELETE', '/things/' + thing_value, {}).then(function(result_arr) {
-                        if (result_arr.code != 9999) {
-                            alert(result_arr.msg);
-                        } else {
-                            // 桌面端移除对应行
-                            $('#' + thing_value).fadeOut(300, function() {
-                                $(this).remove();
-                            });
-                            // 移动端移除对应卡片
-                            $('#mobile-' + thing_value).fadeOut(300, function() {
-                                $(this).remove();
-                            });
-
-                            // 如果列表为空，刷新页面
-                            if ($('.thing-table tbody tr').length === 0 && $('.md\\:hidden .bg-white').length === 0) {
-                                setTimeout(function() {
-                                    location.reload();
-                                }, 500);
-                            }
-                        }
-                    }).catch(function() {
-                        alert('删除失败，请重试');
+                apiRequest('DELETE', '/things/' + thingValue, {}).then(function(resultArr) {
+                    if (resultArr.code != 9999) {
+                        alert(resultArr.msg || '删除失败');
+                    } else {
+                        loadThings(thingPageState.currentPage);
+                    }
+                }).catch(function() {
+                    alert('删除失败，请重试');
                 });
             });
 
-            // 表格行悬停效果
-            $('.thing-table tbody tr').hover(
-                function() {
-                    $(this).css('background-color', '#f8fafc');
-                },
-                function() {
-                    $(this).css('background-color', '');
+            $('#things_prev_page').on('click', function() {
+                if (thingPageState.currentPage > 1) {
+                    loadThings(thingPageState.currentPage - 1);
                 }
-            );
+            });
 
-            // 移动端卡片点击效果
-            $('.md\\:hidden .bg-white').click(function(e) {
-                // 如果不是点击链接或按钮，添加点击效果
-                if (!$(e.target).closest('a, button').length) {
-                    $(this).toggleClass('shadow-md');
-                    setTimeout(() => {
-                        $(this).toggleClass('shadow-md');
-                    }, 300);
+            $('#things_next_page').on('click', function() {
+                if (thingPageState.currentPage < thingPageState.lastPage) {
+                    loadThings(thingPageState.currentPage + 1);
                 }
             });
 
@@ -595,6 +561,8 @@
                     });
                 }, 500);
             }
+
+            loadThings(1);
         });
 
         // 简单的通知函数

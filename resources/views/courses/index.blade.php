@@ -40,7 +40,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">总课程数</p>
-                                <p class="text-xl font-bold text-gray-900">{{ count($user_courses ?? []) }}</p>
+                                <p id="courseCountValue" class="text-xl font-bold text-gray-900">0</p>
                             </div>
                         </div>
                     </div>
@@ -54,9 +54,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">已完成</p>
-                                <p class="text-xl font-bold text-gray-900">
-                                    {{ collect($user_courses ?? [])->where('status', 'completed')->count() }}
-                                </p>
+                                <p id="courseCompletedValue" class="text-xl font-bold text-gray-900">0</p>
                             </div>
                         </div>
                     </div>
@@ -70,9 +68,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">学习中</p>
-                                <p class="text-xl font-bold text-gray-900">
-                                    {{ collect($user_courses ?? [])->where('status', 'active')->count() }}
-                                </p>
+                                <p id="courseActiveValue" class="text-xl font-bold text-gray-900">0</p>
                             </div>
                         </div>
                     </div>
@@ -86,14 +82,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">平均进度</p>
-                                <p class="text-xl font-bold text-gray-900">
-                                    @php
-                                        $totalProgress = collect($user_courses ?? [])->sum('progress_percent');
-                                        $courseCount = count($user_courses ?? []);
-                                        $avgProgress = $courseCount > 0 ? round($totalProgress / $courseCount) : 0;
-                                    @endphp
-                                    {{ $avgProgress }}%
-                                </p>
+                                <p id="courseAvgProgressValue" class="text-xl font-bold text-gray-900">0%</p>
                             </div>
                         </div>
                     </div>
@@ -137,157 +126,9 @@
                 </div>
 
                 <div class="p-6">
-                    @forelse($user_courses ?? [] as $userCourse)
-                        <div class="mb-6 last:mb-0 course-card"
-                             data-status="{{ $userCourse->status }}"
-                             data-progress="{{ $userCourse->progress_percent }}"
-                             data-name="{{ strtolower($userCourse->title) }}">
-                            <div class="flex flex-col lg:flex-row gap-6 p-5 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200">
-                                <!-- 课程封面 -->
-                                <div class="lg:w-1/4">
-                                    <div class="aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                        @if($userCourse->course->cover_image)
-                                            <img src="{{ $userCourse->course->cover_image }}"
-                                                 alt="{{ $userCourse->title }}"
-                                                 class="w-full h-full object-cover">
-                                        @else
-                                            <div class="text-center p-4">
-                                                <i class="fas fa-book-open text-gray-400 text-3xl mb-2"></i>
-                                                <p class="text-xs text-gray-500">{{ $userCourse->title }}</p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <!-- 课程信息 -->
-                                <div class="lg:w-2/4">
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div>
-                                            <h3 class="text-lg font-semibold text-gray-900 mb-1">
-                                                <a href="{{ url('/courses/' . $userCourse->course->id) }}"
-                                                   class="hover:text-blue-600 transition-colors">
-                                                    {{ $userCourse->title }}
-                                                </a>
-                                            </h3>
-                                            <p class="text-sm text-gray-500 line-clamp-2">
-                                                {{ $userCourse->course->description ?? '暂无描述' }}
-                                            </p>
-                                        </div>
-
-                                        <div class="flex flex-col items-end gap-2">
-                                            <!-- 课程状态 -->
-                                            @php
-                                                $statusConfig = [
-                                                    'planned' => ['color' => 'gray', 'icon' => 'fa-clock', 'text' => '计划中'],
-                                                    'active' => ['color' => 'blue', 'icon' => 'fa-play-circle', 'text' => '学习中'],
-                                                    'completed' => ['color' => 'green', 'icon' => 'fa-check-circle', 'text' => '已完成'],
-                                                    'paused' => ['color' => 'yellow', 'icon' => 'fa-pause-circle', 'text' => '暂停'],
-                                                    'dropped' => ['color' => 'red', 'icon' => 'fa-times-circle', 'text' => '已放弃'],
-                                                ];
-                                                $config = $statusConfig[$userCourse->status] ?? $statusConfig['planned'];
-                                            @endphp
-                                            <span class="px-3 py-1 bg-{{ $config['color'] }}-100 text-{{ $config['color'] }}-800 text-xs font-semibold rounded-full flex items-center gap-1">
-                                        <i class="fas {{ $config['icon'] }} text-xs"></i>
-                                        {{ $config['text'] }}
-                                    </span>
-
-                                            <!-- 课程进度 -->
-                                            <div class="text-right">
-                                                <div class="flex items-center gap-2 text-sm text-gray-600">
-                                                    <span>进度</span>
-                                                    <span class="font-semibold text-gray-900">{{ $userCourse->progress_percent }}%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 进度条 -->
-                                    <div class="mb-4">
-                                        <div class="flex items-center justify-between text-sm mb-1">
-                                            <span class="text-gray-600">学习进度</span>
-                                            <span class="font-medium text-gray-900">{{ $userCourse->progress_percent }}%</span>
-                                        </div>
-                                        <div class="progress h-2">
-                                            <div class="progress-bar bg-gradient-to-r from-blue-500 to-purple-600"
-                                                 style="width: {{ $userCourse->progress_percent }}%"></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 课程元数据 -->
-                                    <div class="flex flex-wrap gap-4 text-sm text-gray-500">
-                                <span class="flex items-center gap-1">
-                                    <i class="fas fa-layer-group text-xs"></i>
-                                    章节: {{ $userCourse->course->chapters_count ?? 0 }}
-                                </span>
-                                        <span class="flex items-center gap-1">
-                                    <i class="fas fa-clock text-xs"></i>
-                                    时长: {{ $userCourse->course->duration ?? '未设置' }}
-                                </span>
-                                        <span class="flex items-center gap-1">
-                                    <i class="fas fa-calendar-alt text-xs"></i>
-                                    最后学习: {{ $userCourse->last_studied_at ? $userCourse->last_studied_at->format('m-d') : '未开始' }}
-                                </span>
-                                    </div>
-                                </div>
-
-                                <!-- 课程操作 -->
-                                <div class="lg:w-1/4 flex flex-col gap-3">
-                                    <a href="{{ url('/courses/' . $userCourse->course->id) }}"
-                                       class="btn btn-primary w-full justify-center">
-                                        <i class="fas fa-play-circle mr-2"></i>
-                                        {{ $userCourse->status === 'completed' ? '复习课程' : '继续学习' }}
-                                    </a>
-
-                                    <div class="flex gap-2">
-                                        <button onclick="showCourseSettings({{ $userCourse->id }})"
-                                                class="btn btn-outline flex-1">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-
-                                        <button onclick="showProgressDetails({{ $userCourse->id }})"
-                                                class="btn btn-outline flex-1">
-                                            <i class="fas fa-chart-bar"></i>
-                                        </button>
-
-                                        <button onclick="toggleCourseStatus({{ $userCourse->id }})"
-                                                class="btn btn-outline flex-1">
-                                            <i class="fas fa-exchange-alt"></i>
-                                        </button>
-                                    </div>
-
-                                    @if($userCourse->status === 'active')
-                                        <div class="text-center">
-                                            <small class="text-gray-500">
-                                                <i class="fas fa-hourglass-half mr-1"></i>
-                                                已学习 {{ $userCourse->study_minutes ?? 0 }} 分钟
-                                            </small>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <!-- 空状态 -->
-                        <div class="text-center py-16">
-                            <div class="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-book-open text-gray-400 text-3xl"></i>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">暂无课程</h3>
-                            <p class="text-gray-600 mb-8 max-w-md mx-auto">
-                                您还没有加入任何课程，开始您的学习之旅吧！
-                            </p>
-                            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                                <a href="{{ url('/courses') }}" class="btn btn-primary">
-                                    <i class="fas fa-compass mr-2"></i>
-                                    浏览课程
-                                </a>
-                                <a href="{{ url('/courses/explore') }}" class="btn btn-outline">
-                                    <i class="fas fa-search mr-2"></i>
-                                    探索推荐
-                                </a>
-                            </div>
-                        </div>
-                    @endforelse
+                    <div id="courseListContainer">
+                        <div class="text-center py-16 text-gray-500">加载课程中...</div>
+                    </div>
                 </div>
             </div>
 
@@ -471,74 +312,128 @@
 
 @section('scripts')
     <script>
-        $(document).ready(function() {
-            // 初始化筛选器
-            const sortSelect = $('#sortCourses');
-            const filterSelect = $('#filterStatus');
+        var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            ? window.TaskApiBridge.requestWithFallback
+            : null;
+        var allCourses = [];
 
-            sortSelect.change(function() {
-                sortCourses($(this).val());
-            });
-
-            filterSelect.change(function() {
-                filterCourses($(this).val());
-            });
-
-            // 初始化工具提示
-            initTooltips();
-        });
-
-        // 排序课程
-        function sortCourses(sortType) {
-            const $cards = $('.course-card');
-            const cardsArray = $cards.toArray();
-
-            cardsArray.sort((a, b) => {
-                const $a = $(a);
-                const $b = $(b);
-
-                switch(sortType) {
-                    case 'progress_desc':
-                        return parseFloat($b.data('progress')) - parseFloat($a.data('progress'));
-                    case 'progress_asc':
-                        return parseFloat($a.data('progress')) - parseFloat($b.data('progress'));
-                    case 'name':
-                        return $a.data('name').localeCompare($b.data('name'));
-                    default: // recent
-                        return 0; // 保持原顺序
-                }
-            });
-
-            // 重新排序DOM
-            const $container = $('.course-card').first().parent();
-            cardsArray.forEach(card => {
-                $container.append(card);
-            });
-
-            showNotification('已按' + sortSelect.find('option:selected').text() + '排序');
+        function escapeHtml(str) {
+            return $('<div>').text(str || '').html();
         }
 
-        // 筛选课程
-        function filterCourses(status) {
-            const $cards = $('.course-card');
+        function getStatusConfig(status) {
+            var map = {
+                planned: { color: 'gray', icon: 'fa-clock', text: '计划中' },
+                active: { color: 'blue', icon: 'fa-play-circle', text: '学习中' },
+                completed: { color: 'green', icon: 'fa-check-circle', text: '已完成' },
+                paused: { color: 'yellow', icon: 'fa-pause-circle', text: '暂停' },
+                dropped: { color: 'red', icon: 'fa-times-circle', text: '已放弃' }
+            };
+            return map[status] || map.planned;
+        }
 
-            $cards.each(function() {
-                const $card = $(this);
-                const cardStatus = $card.data('status');
+        function updateSummary(courses) {
+            var total = courses.length;
+            var completed = courses.filter(function(c) { return c.status === 'completed'; }).length;
+            var active = courses.filter(function(c) { return c.status === 'active'; }).length;
+            var avg = total > 0
+                ? Math.round(courses.reduce(function(sum, c) { return sum + Number(c.progress_percent || 0); }, 0) / total)
+                : 0;
 
-                if (status === 'all' || cardStatus === status) {
-                    $card.show();
-                } else {
-                    $card.hide();
-                }
+            $('#courseCountValue').text(total);
+            $('#courseCompletedValue').text(completed);
+            $('#courseActiveValue').text(active);
+            $('#courseAvgProgressValue').text(avg + '%');
+        }
+
+        function sortedAndFilteredCourses() {
+            var status = $('#filterStatus').val();
+            var sortType = $('#sortCourses').val();
+
+            var filtered = allCourses.filter(function(item) {
+                return status === 'all' || item.status === status;
             });
 
-            const visibleCount = $cards.filter(':visible').length;
-            if (visibleCount === 0) {
-                showNotification('没有符合条件的课程', 'info');
-            } else {
-                showNotification(`显示了 ${visibleCount} 个课程`, 'success');
+            filtered.sort(function(a, b) {
+                if (sortType === 'progress_desc') {
+                    return Number(b.progress_percent || 0) - Number(a.progress_percent || 0);
+                }
+                if (sortType === 'progress_asc') {
+                    return Number(a.progress_percent || 0) - Number(b.progress_percent || 0);
+                }
+                if (sortType === 'name') {
+                    return String(a.title || '').localeCompare(String(b.title || ''));
+                }
+                var aTime = a.last_studied_at ? new Date(a.last_studied_at).getTime() : 0;
+                var bTime = b.last_studied_at ? new Date(b.last_studied_at).getTime() : 0;
+                return bTime - aTime;
+            });
+            return filtered;
+        }
+
+        function renderCourseList() {
+            var list = sortedAndFilteredCourses();
+            var container = $('#courseListContainer');
+
+            if (!list.length) {
+                container.html(
+                    '<div class="text-center py-16">'
+                    + '<div class="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">'
+                    + '<i class="fas fa-book-open text-gray-400 text-3xl"></i></div>'
+                    + '<h3 class="text-lg font-semibold text-gray-900 mb-3">暂无课程</h3>'
+                    + '<p class="text-gray-600 mb-8 max-w-md mx-auto">您还没有加入任何课程，开始您的学习之旅吧！</p>'
+                    + '<div class="flex flex-col sm:flex-row gap-4 justify-center">'
+                    + '<a href="/courses/management" class="btn btn-primary"><i class="fas fa-compass mr-2"></i>浏览课程</a>'
+                    + '</div></div>'
+                );
+                return;
             }
+
+            container.html(list.map(function(item) {
+                var status = getStatusConfig(item.status);
+                var course = item.course || {};
+                var progress = Number(item.progress_percent || 0);
+                var detailUrl = '/courses/' + (course.id || item.course_id || '');
+                var title = escapeHtml(item.title || course.title || '未命名课程');
+                var description = escapeHtml(course.description || '暂无描述');
+                var cover = course.cover_image ? '<img src="' + escapeHtml(course.cover_image) + '" alt="' + title + '" class="w-full h-full object-cover">' : '<div class="text-center p-4"><i class="fas fa-book-open text-gray-400 text-3xl mb-2"></i><p class="text-xs text-gray-500">' + title + '</p></div>';
+                var lastStudied = item.last_studied_at ? String(item.last_studied_at).slice(5, 10) : '未开始';
+                var studyMin = Number(item.study_minutes || 0);
+
+                return ''
+                    + '<div class="mb-6 last:mb-0 course-card">'
+                    + '<div class="flex flex-col lg:flex-row gap-6 p-5 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200">'
+                    + '<div class="lg:w-1/4"><div class="aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">' + cover + '</div></div>'
+                    + '<div class="lg:w-2/4">'
+                    + '<div class="flex items-start justify-between mb-3"><div><h3 class="text-lg font-semibold text-gray-900 mb-1"><a href="' + detailUrl + '" class="hover:text-blue-600 transition-colors">' + title + '</a></h3><p class="text-sm text-gray-500 line-clamp-2">' + description + '</p></div>'
+                    + '<div class="flex flex-col items-end gap-2"><span class="px-3 py-1 bg-' + status.color + '-100 text-' + status.color + '-800 text-xs font-semibold rounded-full flex items-center gap-1"><i class="fas ' + status.icon + ' text-xs"></i>' + status.text + '</span>'
+                    + '<div class="text-right"><div class="flex items-center gap-2 text-sm text-gray-600"><span>进度</span><span class="font-semibold text-gray-900">' + progress + '%</span></div></div></div></div>'
+                    + '<div class="mb-4"><div class="flex items-center justify-between text-sm mb-1"><span class="text-gray-600">学习进度</span><span class="font-medium text-gray-900">' + progress + '%</span></div><div class="progress h-2"><div class="progress-bar bg-gradient-to-r from-blue-500 to-purple-600" style="width:' + progress + '%"></div></div></div>'
+                    + '<div class="flex flex-wrap gap-4 text-sm text-gray-500"><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>章节: ' + Number(course.chapters_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>时长: ' + escapeHtml(course.duration || '未设置') + '</span><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-xs"></i>最后学习: ' + lastStudied + '</span></div>'
+                    + '</div>'
+                    + '<div class="lg:w-1/4 flex flex-col gap-3"><a href="' + detailUrl + '" class="btn btn-primary w-full justify-center"><i class="fas fa-play-circle mr-2"></i>' + (item.status === 'completed' ? '复习课程' : '继续学习') + '</a>'
+                    + '<div class="flex gap-2"><button onclick="showCourseSettings(' + Number(item.id || 0) + ')" class="btn btn-outline flex-1"><i class="fas fa-cog"></i></button><button onclick="showProgressDetails(' + Number(item.id || 0) + ')" class="btn btn-outline flex-1"><i class="fas fa-chart-bar"></i></button><button onclick="toggleCourseStatus(' + Number(item.id || 0) + ')" class="btn btn-outline flex-1"><i class="fas fa-exchange-alt"></i></button></div>'
+                    + (item.status === 'active' ? '<div class="text-center"><small class="text-gray-500"><i class="fas fa-hourglass-half mr-1"></i>已学习 ' + studyMin + ' 分钟</small></div>' : '')
+                    + '</div></div></div>';
+            }).join(''));
+        }
+
+        function loadCourses() {
+            if (!apiRequest) {
+                $('#courseListContainer').html('<div class="text-center py-16 text-gray-500">API客户端未初始化</div>');
+                return;
+            }
+            apiRequest('GET', '/courses', {}).then(function(resp) {
+                if (resp.code !== 9999 || !resp.result) {
+                    throw new Error(resp.msg || '加载课程失败');
+                }
+                allCourses = Array.isArray(resp.result.user_courses) ? resp.result.user_courses : [];
+                updateSummary(allCourses);
+                renderCourseList();
+            }).catch(function(err) {
+                console.error('load courses failed:', err);
+                $('#courseListContainer').html('<div class="text-center py-16 text-gray-500">课程加载失败，请稍后重试</div>');
+            });
         }
 
         // 显示课程设置
@@ -651,10 +546,7 @@
 
         // 初始化工具提示
         function initTooltips() {
-            $('[title]').tooltip({
-                placement: 'top',
-                trigger: 'hover'
-            });
+            // no-op
         }
 
         // 搜索课程
@@ -673,6 +565,16 @@
                 }
             });
         }
+
+        $(document).ready(function() {
+            $('#sortCourses').change(function() {
+                renderCourseList();
+            });
+            $('#filterStatus').change(function() {
+                renderCourseList();
+            });
+            loadCourses();
+        });
     </script>
 
     <style>

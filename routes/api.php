@@ -66,12 +66,14 @@ Route::prefix('v2')->group(function () {
         Route::get('/tasks', 'Api\\V2\\TaskController@index');
         Route::get('/index', 'Api\\V2\\IndexController@show');
         Route::get('/tasks/all', 'Api\\V2\\TaskController@getAllList');
+        Route::get('/tasks/tab-counts', 'Api\\V2\\TaskController@tabCounts');
         Route::get('/tasks/priority', 'Api\\V2\\TaskController@priority');
         Route::get('/tasks/parent-tasks', 'Api\\V2\\TaskController@getParentTasks');
         Route::get('/tasks/{task}', 'Api\\V2\\TaskController@show');
 
         Route::get('/pomos', 'Api\\V2\\PomoController@index');
         Route::get('/pomos/today', 'Api\\V2\\PomoController@today');
+        Route::get('/pomos/tab-counts', 'Api\\V2\\PomoController@tabCounts');
         Route::get('/pomos/status', 'Api\\V2\\PomoController@pomostatus');
 
         Route::get('/notes', 'Api\\V2\\NoteController@index');
@@ -84,6 +86,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/daily-summaries/tips', 'Api\\V2\\DailySummaryController@getTipInfos');
         Route::get('/daily-summaries/{dailySummary}', 'Api\\V2\\DailySummaryController@show');
         Route::get('/achievements', 'Api\\V2\\AchievementController@index');
+        Route::get('/notifications', 'Api\\V2\\NotificationController@index');
         Route::get('/points', 'Api\\V2\\PointController@index');
         Route::get('/statistics', 'Api\\V2\\StatisticsController@index');
         Route::get('/accounts', 'Api\\V2\\AccountController@index');
@@ -101,6 +104,11 @@ Route::prefix('v2')->group(function () {
         Route::get('/auth/verify', 'Api\\V2\\AuthController@verify');
         Route::get('/auth/me', 'Api\\V2\\AuthController@me');
         Route::get('/feeds/check-feed-url', 'Api\\V2\\FeedController@checkFeedUrl');
+        Route::get('/feeds', 'Api\\V2\\FeedController@index');
+        Route::get('/feeds/explorer', 'Api\\V2\\FeedController@explorer');
+        Route::get('/feeds/navinfo', 'Api\\V2\\FeedController@navinfo');
+        Route::get('/feeds/search', 'Api\\V2\\FeedController@search');
+        Route::get('/feeds/{feedSub}', 'Api\\V2\\FeedController@show');
         Route::get('/articles/navinfo', 'Api\\V2\\ArticleController@navinfo');
         Route::get('/articles/navcountinfo', 'Api\\V2\\ArticleController@navcountinfo');
         Route::get('/articles/{article}', 'Api\\V2\\ArticleController@show');
@@ -122,6 +130,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/llm/sessions/{id}', 'Api\\V2\\LlmSessionController@getSession');
         Route::get('/llm/agents', 'Api\\V2\\LlmAgentController@index');
         Route::get('/llm/agents/{id}', 'Api\\V2\\LlmAgentController@show');
+        Route::get('/llm/agents/{id}/draft', 'Api\\V2\\LlmAgentController@getDraft');
         Route::get('/llm/providers', 'Api\\V2\\LlmController@getProviders');
         Route::get('/llm/providers/{id}', 'Api\\V2\\LlmController@getProvider');
         Route::get('/llm/models', 'Api\\V2\\LlmController@getModels');
@@ -181,6 +190,8 @@ Route::prefix('v2')->group(function () {
         Route::put('/daily-summaries/{dailySummary}', 'Api\\V2\\DailySummaryController@update');
         Route::delete('/daily-summaries/{dailySummary}', 'Api\\V2\\DailySummaryController@destroy');
         Route::post('/achievements/claim', 'Api\\V2\\AchievementController@claim');
+        Route::post('/notifications/read-all', 'Api\\V2\\NotificationController@markAllRead');
+        Route::post('/notifications/{id}/read', 'Api\\V2\\NotificationController@markRead');
         Route::post('/personal-access-tokens', 'Api\\V2\\PersonalAccessTokenController@store');
         Route::delete('/personal-access-tokens/{id}', 'Api\\V2\\PersonalAccessTokenController@destroy');
         Route::post('/help/feedback', 'Api\\V2\\HelpController@feedbackStore');
@@ -240,6 +251,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/llm/agents/{id}/publish', 'Api\\V2\\LlmAgentController@publishDraft');
         Route::post('/llm/agents/{id}/test-chat', 'Api\\V2\\LlmAgentController@testChat');
         Route::post('/llm/credentials/{id}/test', 'Api\\V2\\LlmController@testCredential');
+        Route::post('/llm/models/{id}/test', 'Api\\V2\\LlmController@testModel');
     });
 
     // admin capability: 高权限管理接口（按需开放）

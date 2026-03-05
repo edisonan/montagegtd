@@ -168,7 +168,7 @@
                 @include('common.errors')
 
                 <!-- 反馈表单 -->
-                <form action="{{ url('/api/v2/help/feedback') }}" method="POST" class="space-y-6" id="feedbackForm">
+                <form action="javascript:void(0)" method="POST" class="space-y-6" id="feedbackForm">
                     {!! csrf_field() !!}
 
                     <div class="space-y-6">
@@ -183,7 +183,7 @@
                                         type="text"
                                         name="from"
                                         id="from"
-                                        value="{{ old('from', $from) }}"
+                                        value="{{ old('from') }}"
                                         class="input w-full pl-10"
                                         placeholder="请输入您的名称或邮箱（可选）"
                                         maxlength="50"
@@ -412,6 +412,14 @@
 
             // 初始化函数
             document.addEventListener('DOMContentLoaded', function() {
+                var fromInput = document.getElementById('from');
+                if (fromInput && !fromInput.value) {
+                    var qsFrom = new URLSearchParams(window.location.search).get('from');
+                    if (qsFrom) {
+                        fromInput.value = qsFrom;
+                    }
+                }
+
                 // 初始化字符计数器
                 initCharCounter();
 

@@ -25,9 +25,6 @@
                 </div>
             </div>
 
-            <!-- 成功消息提示 -->
-            @include('common.success')
-
             <!-- 订阅微博卡片 -->
             <div class="card card-elevated">
                 <div class="p-6 border-b border-gray-200">
@@ -69,8 +66,7 @@
                     </div>
 
                     <!-- 订阅表单 -->
-                    <form action="/api/v2/feeds" method="post" id="weiboSubscriptionForm" class="space-y-6">
-                        {!! csrf_field() !!}csrf
+                    <form action="javascript:void(0)" method="post" id="weiboSubscriptionForm" class="space-y-6">
 
                         <!-- 微博用户ID -->
                         <div class="space-y-2">
@@ -86,17 +82,12 @@
                                 <input type="text"
                                        id="weibo_user_id"
                                        name="weibo_user_id"
-                                       value="{{ old('weibo_user_id') }}"
                                        required
                                        pattern="\d+"
                                        placeholder="请输入微博用户数字ID，例如：1669879400"
-                                       class="input pl-10 w-full {{ $errors->has('weibo_user_id') ? 'border-red-300' : '' }}"
+                                       class="input pl-10 w-full"
                                        aria-describedby="weiboUserIdHelp">
                             </div>
-
-                            @error('weibo_user_id')
-                            <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
 
                             <div id="weiboUserIdHelp" class="text-sm text-gray-500">
                                 必须是纯数字的用户ID，可以在微博用户主页通过开发者工具获取
@@ -117,21 +108,12 @@
                                 <select id="category_id"
                                         name="category_id"
                                         class="input pl-10 w-full appearance-none bg-white cursor-pointer">
-                                    @foreach ($categorys as $category)
-                                        <option value="{{ $category->id }}"
-                                                {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
-                                    @endforeach
+                                    <option value="">加载分类中...</option>
                                 </select>
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <i class="fas fa-chevron-down text-gray-400"></i>
                                 </div>
                             </div>
-
-                            @error('category_id')
-                            <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                            @enderror
                         </div>
 
                         <!-- 隐藏字段 -->
@@ -263,6 +245,24 @@
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : null;
+            if (apiRequest) {
+                apiRequest('GET', '/categories', {}).then(function(resp) {
+                    var select = document.getElementById('category_id');
+                    if (!select) return;
+                    if (!resp || resp.code !== 9999 || !Array.isArray(resp.result)) {
+                        select.innerHTML = '<option value=\"\">暂无分类</option>';
+                        return;
+                    }
+                    var html = '';
+                    resp.result.forEach(function(category) {
+                        html += '<option value=\"' + Number(category.id || 0) + '\">' + String(category.name || '未命名分类') + '</option>';
+                    });
+                    select.innerHTML = html || '<option value=\"\">暂无分类</option>';
+                }).catch(function() {
+                    var select = document.getElementById('category_id');
+                    if (select) select.innerHTML = '<option value=\"\">分类加载失败</option>';
+                });
+            }
             // 表单验证
             const form = document.getElementById('weiboSubscriptionForm');
             const submitButton = document.getElementById('submitButton');

@@ -20,7 +20,7 @@
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
                         <div class="text-sm text-gray-500">分类总数</div>
-                        <div class="text-2xl font-bold text-gray-900">{{ count($categorys) }}</div>
+                        <div id="categoryCountValue" class="text-2xl font-bold text-gray-900">0</div>
                     </div>
                 </div>
             </div>
@@ -36,16 +36,8 @@
             </div>
 
             <div class="p-6">
-                <!-- 成功消息 -->
-                @include('common.success')
-
-                <!-- 错误消息 -->
-                @include('common.errors')
-
                 <!-- 创建分类表单 -->
-                <form action="{{ url('/api/v2/categories') }}" method="POST" class="space-y-6" id="createCategoryForm">
-                    {!! csrf_field() !!}
-
+                <form action="javascript:void(0)" method="POST" class="space-y-6" id="createCategoryForm">
                     <div class="space-y-4">
                         <!-- 分类名称 -->
                         <div>
@@ -58,7 +50,7 @@
                                         type="text"
                                         name="name"
                                         id="name"
-                                        value="{{ old('name') }}"
+                                        value=""
                                         class="input w-full pl-10"
                                         placeholder="请输入分类名称"
                                         required
@@ -147,130 +139,142 @@
             </div>
         </div>
 
-        <!-- 分类列表卡片 -->
-        @if(count($categorys) > 0)
-            <div class="card">
-                <div class="p-6 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                        <i class="fas fa-list text-primary-color mr-2"></i>
-                        分类列表
-                        <span class="ml-2 badge badge-primary">{{ count($categorys) }} 个</span>
-                    </h2>
-                </div>
-
-                <div class="p-6">
-                    <!-- 搜索和筛选（扩展功能） -->
-                    <div class="mb-6">
-                        <div class="relative">
-                            <input
-                                    type="text"
-                                    id="searchCategories"
-                                    class="input w-full pl-10"
-                                    placeholder="搜索分类..."
-                            >
-                            <div class="absolute left-3 top-3 text-gray-400">
-                                <i class="fas fa-search"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 分类列表 -->
-                    <div class="space-y-4">
-                        @foreach($categorys as $category)
-                            <div id="{{ $category->id }}" class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200">
-                                <!-- 分类信息 -->
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                                        <i class="fas fa-folder text-blue-600 text-xl"></i>
-                                    </div>
-
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900">{{ $category->name }}</h3>
-                                        <div class="flex items-center mt-1 space-x-4 text-sm text-gray-500">
-                                <span class="flex items-center">
-                                    <i class="fas fa-calendar-alt mr-1 text-xs"></i>
-                                    创建于 {{ $category->created_at->format('Y-m-d') }}
-                                </span>
-                                            <span class="flex items-center">
-                                    <i class="fas fa-sync-alt mr-1 text-xs"></i>
-                                    更新于 {{ $category->updated_at->format('m-d H:i') }}
-                                </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- 操作按钮 -->
-                                <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    <!-- 编辑按钮 -->
-                                    <a
-                                            href="{{ url('category/'.$category->id) }}"
-                                            class="btn btn-sm btn-outline flex items-center"
-                                            title="编辑分类"
-                                    >
-                                        <i class="fas fa-edit mr-1"></i>
-                                        编辑
-                                    </a>
-
-                                    <!-- 删除按钮 -->
-                                    <button
-                                            type="button"
-                                            onclick="confirmDelete('{{ $category->id }}', '{{ $category->name }}')"
-                                            class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center"
-                                            title="删除分类"
-                                    >
-                                        <i class="fas fa-trash-alt mr-1"></i>
-                                        删除
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <!-- 空状态提示（搜索时） -->
-                    <div id="noResults" class="hidden text-center py-12">
-                        <div class="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                            <i class="fas fa-search text-gray-400 text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">未找到匹配的分类</h3>
-                        <p class="text-gray-600">尝试使用其他关键词搜索</p>
-                    </div>
-                </div>
+        <div class="card">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-list text-primary-color mr-2"></i>
+                    分类列表
+                    <span id="categoryCountBadge" class="ml-2 badge badge-primary hidden"></span>
+                </h2>
             </div>
-        @else
-            <!-- 空状态 -->
-            <div class="card">
-                <div class="text-center py-12">
+
+            <div class="p-6">
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="text" id="searchCategories" class="input w-full pl-10" placeholder="搜索分类...">
+                        <div class="absolute left-3 top-3 text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="categoryListContainer" class="space-y-4">
+                    <div class="text-center py-12 text-gray-500">加载分类中...</div>
+                </div>
+
+                <div id="noResults" class="hidden text-center py-12">
                     <div class="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <i class="fas fa-folder-open text-gray-400 text-2xl"></i>
+                        <i class="fas fa-search text-gray-400 text-2xl"></i>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">暂无分类</h3>
-                    <p class="text-gray-600 mb-6">创建您的第一个分类，开始组织内容吧</p>
-                    <a href="#create-form" class="btn btn-primary">
-                        <i class="fas fa-plus mr-2"></i>
-                        创建第一个分类
-                    </a>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">未找到匹配的分类</h3>
+                    <p class="text-gray-600">尝试使用其他关键词搜索</p>
                 </div>
             </div>
-        @endif
+        </div>
     </div>
 
         <script>
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : null;
+            var categoryState = {
+                items: []
+            };
 
-            // 重置表单
-            function resetForm() {
-                document.getElementById('name').value = '';
-                document.querySelectorAll('input[name="icon"]').forEach(radio => radio.checked = false);
-                document.querySelectorAll('input[name="color"]').forEach(radio => radio.checked = false);
+            function escapeHtml(text) {
+                return String(text || '').replace(/[&<>"']/g, function(c) {
+                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
+                });
             }
 
-            // 确认删除分类
-            function confirmDelete(categoryId, categoryName) {
+            function resetForm() {
+                document.getElementById('name').value = '';
+                document.querySelectorAll('input[name="icon"]').forEach(function(radio) { radio.checked = false; });
+                document.querySelectorAll('input[name="color"]').forEach(function(radio) { radio.checked = false; });
+            }
+
+            function showToast(type, message) {
+                var toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white animate-fade-in ' + (type === 'success' ? 'bg-green-500' : 'bg-red-500');
+                toast.innerHTML = '<div class="flex items-center"><i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + ' mr-3"></i><span>' + escapeHtml(message) + '</span><button class="ml-4 hover:opacity-80"><i class="fas fa-times"></i></button></div>';
+                document.body.appendChild(toast);
+                toast.querySelector('button').addEventListener('click', function() { toast.remove(); });
+                setTimeout(function() { if (toast.parentNode) toast.remove(); }, 3000);
+            }
+
+            function formatDate(value, shortTime) {
+                if (!value) return '-';
+                var d = new Date(value);
+                if (isNaN(d.getTime())) return '-';
+                if (shortTime) return d.toISOString().slice(5, 16).replace('T', ' ');
+                return d.toISOString().slice(0, 10);
+            }
+
+            function updateCategoryCount() {
+                var count = categoryState.items.length;
+                var countValue = document.getElementById('categoryCountValue');
+                var badge = document.getElementById('categoryCountBadge');
+                if (countValue) countValue.textContent = String(count);
+                if (badge) {
+                    if (count > 0) {
+                        badge.classList.remove('hidden');
+                        badge.textContent = count + ' 个';
+                    } else {
+                        badge.classList.add('hidden');
+                        badge.textContent = '';
+                    }
+                }
+            }
+
+            function renderCategoryList(searchTerm) {
+                var container = document.getElementById('categoryListContainer');
+                var noResults = document.getElementById('noResults');
+                if (!container) return;
+
+                var keyword = String(searchTerm || '').toLowerCase();
+                var list = categoryState.items.filter(function(item) {
+                    return !keyword || String(item.name || '').toLowerCase().indexOf(keyword) !== -1;
+                });
+
+                if (!list.length) {
+                    container.innerHTML = keyword
+                        ? ''
+                        : '<div class="text-center py-12"><div class="w-20 h-20 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4"><i class="fas fa-folder-open text-gray-400 text-2xl"></i></div><h3 class="text-lg font-medium text-gray-900 mb-2">暂无分类</h3><p class="text-gray-600 mb-6">创建您的第一个分类，开始组织内容吧</p></div>';
+                    if (noResults) noResults.style.display = keyword ? 'block' : 'none';
+                    return;
+                }
+
+                var html = '';
+                list.forEach(function(category) {
+                    html += '<div id="' + Number(category.id) + '" class="group flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200">'
+                        + '<div class="flex items-center space-x-4"><div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center"><i class="fas fa-folder text-blue-600 text-xl"></i></div><div><h3 class="font-semibold text-gray-900">' + escapeHtml(category.name) + '</h3><div class="flex items-center mt-1 space-x-4 text-sm text-gray-500"><span class="flex items-center"><i class="fas fa-calendar-alt mr-1 text-xs"></i>创建于 ' + formatDate(category.created_at, false) + '</span><span class="flex items-center"><i class="fas fa-sync-alt mr-1 text-xs"></i>更新于 ' + formatDate(category.updated_at, true) + '</span></div></div></div>'
+                        + '<div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"><a href="/category/' + Number(category.id) + '" class="btn btn-sm btn-outline flex items-center" title="编辑分类"><i class="fas fa-edit mr-1"></i>编辑</a><button type="button" data-category-id="' + Number(category.id) + '" data-category-name="' + escapeHtml(category.name) + '" class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center category-delete-btn" title="删除分类"><i class="fas fa-trash-alt mr-1"></i>删除</button></div>'
+                        + '</div>';
+                });
+                container.innerHTML = html;
+                if (noResults) noResults.style.display = 'none';
+            }
+
+            function loadCategories() {
+                var container = document.getElementById('categoryListContainer');
+                if (!apiRequest) {
+                    if (container) container.innerHTML = '<div class="text-center py-12 text-gray-500">API客户端未初始化</div>';
+                    return;
+                }
+                apiRequest('GET', '/categories', {}).then(function(resp) {
+                    if (!resp || resp.code !== 9999) throw new Error((resp && resp.msg) || '加载失败');
+                    categoryState.items = Array.isArray(resp.result) ? resp.result : [];
+                    updateCategoryCount();
+                    renderCategoryList('');
+                }).catch(function() {
+                    if (container) container.innerHTML = '<div class="text-center py-12 text-gray-500">分类加载失败，请稍后重试</div>';
+                });
+            }
+
+            function deleteCategory(categoryId, categoryName) {
                 Swal.fire({
                     title: '确认删除',
-                    html: `确定要删除分类 <strong>"${categoryName}"</strong> 吗？`,
+                    html: '确定要删除分类 <strong>"' + escapeHtml(categoryName) + '"</strong> 吗？',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: '确认删除',
@@ -278,124 +282,63 @@
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#6b7280',
                     reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        deleteCategory(categoryId);
+                }).then(function(result) {
+                    if (!result.isConfirmed) return;
+                    if (!apiRequest) {
+                        showToast('error', 'API客户端未初始化');
+                        return;
                     }
-                });
-            }
-
-            // 删除分类
-            function deleteCategory(categoryId) {
-                if (!apiRequest) {
-                    showToast('error', 'API客户端未初始化');
-                    return;
-                }
-                apiRequest('DELETE', '/categories/' + categoryId, {}).then(function(response) {
-                    if (response && response.code === 9999) {
-                        // 移除分类元素
-                        $(`#${categoryId}`).fadeOut(300, function() {
-                            $(this).remove();
+                    apiRequest('DELETE', '/categories/' + categoryId, {}).then(function(response) {
+                        if (response && response.code === 9999) {
+                            categoryState.items = categoryState.items.filter(function(item) { return String(item.id) !== String(categoryId); });
+                            updateCategoryCount();
+                            renderCategoryList(document.getElementById('searchCategories').value);
                             showToast('success', '分类删除成功');
-
-                            // 检查是否还有分类
-                            if ($('.group').length === 0) {
-                                location.reload();
-                            }
-                        });
-                    } else {
-                        showToast('error', (response && response.msg) ? response.msg : '删除失败');
-                    }
-                }).catch(function() {
-                    showToast('error', '操作失败，请稍后重试');
+                        } else {
+                            showToast('error', (response && response.msg) ? response.msg : '删除失败');
+                        }
+                    }).catch(function() {
+                        showToast('error', '操作失败，请稍后重试');
+                    });
                 });
             }
 
-            // 显示提示消息
-            function showToast(type, message) {
-                const toast = document.createElement('div');
-                toast.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg text-white animate-fade-in ${
-                    type === 'success' ? 'bg-green-500' : 'bg-red-500'
-                }`;
-                toast.innerHTML = `
-            <div class="flex items-center">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-3"></i>
-                <span>${message}</span>
-                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 hover:opacity-80">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-                document.body.appendChild(toast);
-
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.remove();
-                    }
-                }, 3000);
-            }
-
-            // 分类搜索功能
             document.addEventListener('DOMContentLoaded', function() {
-                const searchInput = document.getElementById('searchCategories');
-                const noResults = document.getElementById('noResults');
+                loadCategories();
 
+                var searchInput = document.getElementById('searchCategories');
                 if (searchInput) {
                     searchInput.addEventListener('input', function() {
-                        const searchTerm = this.value.toLowerCase();
-                        let hasVisibleItems = false;
-
-                        document.querySelectorAll('.group').forEach(item => {
-                            const categoryName = item.querySelector('h3').textContent.toLowerCase();
-                            if (categoryName.includes(searchTerm)) {
-                                item.style.display = 'flex';
-                                hasVisibleItems = true;
-                            } else {
-                                item.style.display = 'none';
-                            }
-                        });
-
-                        // 显示/隐藏无结果提示
-                        if (noResults) {
-                            noResults.style.display = hasVisibleItems || searchTerm === '' ? 'none' : 'block';
-                        }
+                        renderCategoryList(this.value);
                     });
                 }
 
-                // 表单提交验证
-                const form = document.getElementById('createCategoryForm');
+                var form = document.getElementById('createCategoryForm');
                 if (form) {
                     form.addEventListener('submit', function(e) {
-                        const nameInput = document.getElementById('name');
+                        e.preventDefault();
+                        var nameInput = document.getElementById('name');
                         if (!nameInput.value.trim()) {
-                            e.preventDefault();
                             showToast('error', '请输入分类名称');
                             nameInput.focus();
                             return;
                         }
                         if (!apiRequest) {
-                            e.preventDefault();
                             showToast('error', 'API客户端未初始化');
                             return;
                         }
-
-                        e.preventDefault();
-                        const submitBtn = form.querySelector('button[type="submit"]');
-                        const originalText = submitBtn.innerHTML;
+                        var submitBtn = form.querySelector('button[type="submit"]');
+                        var originalText = submitBtn.innerHTML;
                         submitBtn.disabled = true;
                         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>创建中...';
-
-                        apiRequest('POST', '/categories', {
-                            name: nameInput.value.trim()
-                        }).then(function(resp) {
+                        apiRequest('POST', '/categories', { name: nameInput.value.trim() }).then(function(resp) {
                             if (resp && resp.code === 9999) {
+                                resetForm();
+                                loadCategories();
                                 showToast('success', '分类创建成功');
-                                setTimeout(function() {
-                                    window.location.reload();
-                                }, 300);
-                                return;
+                            } else {
+                                showToast('error', (resp && resp.msg) ? resp.msg : '创建失败');
                             }
-                            showToast('error', (resp && resp.msg) ? resp.msg : '创建失败');
                         }).catch(function() {
                             showToast('error', '创建失败，请稍后重试');
                         }).finally(function() {
@@ -405,11 +348,14 @@
                     });
                 }
 
-                // 自动聚焦到名称输入框
-                const nameInput = document.getElementById('name');
-                if (nameInput) {
-                    nameInput.focus();
-                }
+                document.addEventListener('click', function(e) {
+                    var btn = e.target.closest('.category-delete-btn');
+                    if (!btn) return;
+                    deleteCategory(btn.getAttribute('data-category-id'), btn.getAttribute('data-category-name'));
+                });
+
+                var nameInput = document.getElementById('name');
+                if (nameInput) nameInput.focus();
             });
         </script>
 

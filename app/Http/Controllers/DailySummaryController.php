@@ -7,7 +7,6 @@ use App\Models\DailySummary;
 use App\Services\DailySummaryService;
 use Auth;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 
 
 /**
@@ -46,11 +45,7 @@ class DailySummaryController extends Controller
      */
     public function index(Request $request)
     {
-        $dailySummarys = $this->dailySummaryService->getList();
-
-        return view('dailysummarys.index', [
-            'dailysummarys' => $dailySummarys
-        ]);
+        return view('dailysummarys.index');
     }
 
     /**
@@ -90,9 +85,7 @@ class DailySummaryController extends Controller
         if (!empty ($dailySummary)) {
             return redirect('/dailysummary/' . $dailySummary->id)->with("message", "IT WORKS!");
         } else {
-            return view('dailysummarys.create', array(
-                'summary_date' => $summaryDate
-            ));
+            return view('dailysummarys.create');
         }
     }
 
@@ -150,9 +143,7 @@ class DailySummaryController extends Controller
         $this->authorize('destroy', $dailySummary);
 
         if ($request->method() == 'GET') {
-            return view('dailysummarys.update', array(
-                'dailysummary' => $dailySummary
-            ));
+            return view('dailysummarys.update');
         }
 
         $params = array();

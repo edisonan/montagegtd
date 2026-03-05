@@ -2,49 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Services\AchievementService;
+use Illuminate\Http\Request;
 
-/**
- * 成就控制器
- */
-class AchievementController extends Controller {
-
+class AchievementController extends Controller
+{
     protected $achievementService;
 
-    public function __construct(AchievementService $achievementService) {
+    public function __construct(AchievementService $achievementService)
+    {
         $this->middleware('auth');
         $this->achievementService = $achievementService;
     }
 
-    /**
-     * 成就列表
-     */
-    public function index(Request $request) {
-        $userId = \Auth::id();
-
-        $list = $this->achievementService->getUserAchievements($userId);
-
-        return view('achievement.index', [
-            'list' => $list,
-        ]);
+    public function index(Request $request)
+    {
+        return view('achievement.index');
     }
 
-    /**
-     * 手动领取勋章
-     */
-    public function claim(Request $request) {
-        $this->validate($request, [
+    public function claim(Request $request)
+    {
+        $this->validate($request, array(
             'achievement_code' => 'required|string',
-        ]);
+        ));
 
         $userId = \Auth::id();
+        $this->achievementService->claimBadge((int)$userId, (string)$request->input('achievement_code'));
 
-        $this->achievementService->claimBadge(
-            $userId,
-            $request->achievement_code
-        );
-
-        return redirect()->back()->with('success', '领取成功');
+        return redirect()->back()->with('success', '棰嗗彇鎴愬姛');
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Utils\PaginationHelper;
 use App\Models\Task;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
@@ -46,13 +45,7 @@ class TaskController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		$status = $request->input ( 'status', '' );
-		$pageSize = PaginationHelper::getPageSize($request);
-		$tasks = $this->taskService->getTaskListWithPagination ( $status, $pageSize );
-		
-		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
-				'tasks' => $tasks 
-		] ), 'tasks.index' );
+		return view('tasks.index');
 	}
 	
 	/**
@@ -76,14 +69,7 @@ class TaskController extends Controller {
 	 * @return unknown
 	 */
 	public function priority(Request $request) {
-		$status = $request->input ( 'status', 1 );
-		$mode = $request->input ( 'mode', 1 );
-		$tasks = $this->taskService->getPriorityList ( $status, $mode );
-		
-		// todo check
-		return $this->jsonAndViewAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( [ 
-				'tasks' => $tasks 
-		] ), 'tasks.priority' );
+		return view('tasks.priority');
 	}
 	
 	/**
@@ -155,9 +141,7 @@ class TaskController extends Controller {
 		$this->authorize ( 'destroy', $task );
 		
 		if ($request->method () == 'GET') {
-			return view ( 'tasks.update', array (
-					'task' => $task 
-			) );
+			return view ( 'tasks.update' );
 		}
 		
 		$flag = $task->update ( $request->all () );

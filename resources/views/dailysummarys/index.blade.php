@@ -404,101 +404,10 @@
                 </div>
             </div>
 
-            <!-- 成功消息 -->
-            @include('common.success')
-
-            <!-- 错误消息 -->
-            @include('common.errors')
-
-            @if (count($dailysummarys) > 0)
-                <!-- 日报列表 -->
-                <div id="dailySummaryList">
-                    @foreach ($dailysummarys as $dailysummary)
-                        <div class="summary-card animate-fadeInUp" id="summary-{{ $dailysummary->id }}">
-                            <!-- 日报头部 -->
-                            <div class="summary-card-header">
-                                <div class="summary-date">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <span>{{ $dailysummary->summary_date }}</span>
-                                    <span class="date-badge">
-                                    <i class="far fa-clock"></i>
-                                    {{ \Carbon\Carbon::parse($dailysummary->created_at)->format('H:i') }}
-                                </span>
-                                </div>
-                                <div class="summary-actions">
-                                    <a href="{{ url('dailysummary/'.$dailysummary->id) }}" class="summary-action-btn" title="编辑日报">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button"
-                                            class="summary-action-btn delete delete_dailysummary"
-                                            dailysummary_value="{{ $dailysummary->id }}"
-                                            title="删除日报">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- 日报内容 -->
-                            <div class="summary-card-body">
-                                <!-- 工作总结 -->
-                                @if(!empty($dailysummary->work_content))
-                                    <div class="content-section work">
-                                        <h3 class="section-title work">
-                                            <i class="fas fa-briefcase"></i>
-                                            工作总结
-                                        </h3>
-                                        <div class="section-content">
-                                            {{ $dailysummary->work_content }}
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <!-- 生活总结 -->
-                                @if(!empty($dailysummary->life_content))
-                                    <div class="content-section life">
-                                        <h3 class="section-title life">
-                                            <i class="fas fa-heart"></i>
-                                            生活总结
-                                        </h3>
-                                        <div class="section-content">
-                                            {{ $dailysummary->life_content }}
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <!-- 标签区域（如果有额外字段可以展示） -->
-                                @if($dailysummary->created_at != $dailysummary->updated_at)
-                                    <div class="summary-tags">
-                                    <span class="summary-tag">
-                                        <i class="fas fa-history"></i>
-                                        最后更新: {{ \Carbon\Carbon::parse($dailysummary->updated_at)->diffForHumans() }}
-                                    </span>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-
-                <!-- 分页 -->
-                <div class="pagination-wrapper">
-                    {!! $dailysummarys->links() !!}
-                </div>
-            @else
-                <!-- 空状态 -->
-                <div class="empty-state animate-fadeInUp">
-                    <img src="/img/new/love.png" alt="暂无日报" class="mx-auto">
-                    <h3 class="empty-state-title">今天发生了点什么呢？</h3>
-                    <p class="empty-state-text">
-                        记录下今天的收获与感悟，让每一天都有迹可循。<br>
-                        无论是工作中的成就，还是生活中的小确幸，都值得被记住。
-                    </p>
-                    <a href="{{ url('/dailycreate') }}" class="empty-state-action">
-                        <i class="fas fa-pen-alt"></i>
-                        开始记录日报
-                    </a>
-                </div>
-            @endif
+            <div id="dailySummaryList">
+                <div class="text-center py-12 text-gray-500">加载日报中...</div>
+            </div>
+            <div id="dailySummaryPagination" class="pagination-wrapper hidden"></div>
         </div>
     </div>
 
@@ -506,75 +415,158 @@
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
             : null;
+        var dailySummaryState = {
+            currentPage: 1,
+            hasMorePages: false,
+            nextPageUrl: '',
+            prevPageUrl: ''
+        };
+
+        function escapeHtml(text) {
+            return String(text || '').replace(/[&<>"']/g, function(c) {
+                return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
+            });
+        }
+
+        function showNotification(message, type) {
+            var bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            var notification = $(
+                '<div class="fixed top-4 right-4 z-50 max-w-sm w-full">' +
+                '<div class="' + bgColor + ' text-white p-4 rounded-lg shadow-lg flex items-center justify-between transform translate-x-full transition-transform duration-300">' +
+                '<div class="flex items-center"><i class="fas ' + icon + ' mr-3"></i><span>' + escapeHtml(message) + '</span></div>' +
+                '<button class="text-white hover:text-gray-200 ml-4" onclick="$(this).closest(\'.fixed\').remove()"><i class="fas fa-times"></i></button>' +
+                '</div></div>'
+            );
+            $('body').append(notification);
+            setTimeout(function() { notification.find('div:first').removeClass('translate-x-full'); }, 10);
+            setTimeout(function() {
+                notification.find('div:first').addClass('translate-x-full');
+                setTimeout(function() { notification.remove(); }, 300);
+            }, 3000);
+        }
+
+        function renderEmptyState() {
+            return ''
+                + '<div class="empty-state animate-fadeInUp">'
+                + '<img src="/img/new/love.png" alt="暂无日报" class="mx-auto">'
+                + '<h3 class="empty-state-title">今天发生了点什么呢？</h3>'
+                + '<p class="empty-state-text">记录下今天的收获与感悟，让每一天都有迹可循。<br>无论是工作中的成就，还是生活中的小确幸，都值得被记住。</p>'
+                + '<a href="/dailycreate" class="empty-state-action"><i class="fas fa-pen-alt"></i>开始记录日报</a>'
+                + '</div>';
+        }
+
+        function renderSummaryCard(item) {
+            var createdTime = item.created_at ? String(item.created_at).slice(11, 16) : '--:--';
+            var workContent = item.work_content ? '<div class="content-section work"><h3 class="section-title work"><i class="fas fa-briefcase"></i>工作总结</h3><div class="section-content">' + escapeHtml(item.work_content) + '</div></div>' : '';
+            var lifeContent = item.life_content ? '<div class="content-section life"><h3 class="section-title life"><i class="fas fa-heart"></i>生活总结</h3><div class="section-content">' + escapeHtml(item.life_content) + '</div></div>' : '';
+
+            return ''
+                + '<div class="summary-card animate-fadeInUp" id="summary-' + Number(item.id) + '">'
+                + '<div class="summary-card-header"><div class="summary-date"><i class="far fa-calendar-alt"></i><span>' + escapeHtml(item.summary_date) + '</span><span class="date-badge"><i class="far fa-clock"></i>' + createdTime + '</span></div>'
+                + '<div class="summary-actions"><a href="/dailysummary/' + Number(item.id) + '" class="summary-action-btn" title="编辑日报"><i class="fas fa-edit"></i></a>'
+                + '<button type="button" class="summary-action-btn delete delete_dailysummary" data-dailysummary-id="' + Number(item.id) + '" title="删除日报"><i class="fas fa-trash-alt"></i></button></div></div>'
+                + '<div class="summary-card-body">' + workContent + lifeContent + '</div>'
+                + '</div>';
+        }
+
+        function renderPagination() {
+            var $pagination = $('#dailySummaryPagination');
+            if (!dailySummaryState.prevPageUrl && !dailySummaryState.nextPageUrl) {
+                $pagination.addClass('hidden').html('');
+                return;
+            }
+
+            var html = '<div class="flex items-center gap-3">';
+            html += dailySummaryState.prevPageUrl
+                ? '<button class="btn btn-secondary" id="dailySummaryPrevPage"><i class="fas fa-chevron-left mr-2"></i>上一页</button>'
+                : '<button class="btn btn-secondary opacity-50 cursor-not-allowed" disabled><i class="fas fa-chevron-left mr-2"></i>上一页</button>';
+            html += '<span class="text-sm text-gray-600">第 ' + dailySummaryState.currentPage + ' 页</span>';
+            html += dailySummaryState.nextPageUrl
+                ? '<button class="btn btn-secondary" id="dailySummaryNextPage">下一页<i class="fas fa-chevron-right ml-2"></i></button>'
+                : '<button class="btn btn-secondary opacity-50 cursor-not-allowed" disabled>下一页<i class="fas fa-chevron-right ml-2"></i></button>';
+            html += '</div>';
+
+            $pagination.removeClass('hidden').html(html);
+            $('#dailySummaryPrevPage').off('click').on('click', function() {
+                if (dailySummaryState.prevPageUrl) {
+                    loadDailySummaryList(dailySummaryState.currentPage - 1);
+                }
+            });
+            $('#dailySummaryNextPage').off('click').on('click', function() {
+                if (dailySummaryState.nextPageUrl) {
+                    loadDailySummaryList(dailySummaryState.currentPage + 1);
+                }
+            });
+        }
+
+        function loadDailySummaryList(page) {
+            var $list = $('#dailySummaryList');
+            $list.html('<div class="text-center py-12 text-gray-500">加载日报中...</div>');
+            if (!apiRequest) {
+                $list.html('<div class="text-center py-12 text-gray-500">API客户端未初始化</div>');
+                return;
+            }
+
+            apiRequest('GET', '/daily-summaries', { page: page || 1 }).then(function(resp) {
+                if (!resp || resp.code !== 9999 || !resp.result) {
+                    throw new Error((resp && resp.msg) || '加载失败');
+                }
+                var items = Array.isArray(resp.result.daily_summarys) ? resp.result.daily_summarys : [];
+                var pagination = resp.result.pagination || {};
+                dailySummaryState.currentPage = Number(pagination.current_page || 1);
+                dailySummaryState.nextPageUrl = pagination.next_page_url || '';
+                dailySummaryState.prevPageUrl = pagination.prev_page_url || '';
+                dailySummaryState.hasMorePages = !!pagination.has_more_pages;
+
+                if (!items.length) {
+                    $list.html(renderEmptyState());
+                    renderPagination();
+                    return;
+                }
+                $list.html(items.map(renderSummaryCard).join(''));
+                renderPagination();
+            }).catch(function() {
+                $list.html('<div class="text-center py-12 text-gray-500">日报加载失败，请稍后重试</div>');
+                $('#dailySummaryPagination').addClass('hidden').html('');
+            });
+        }
 
         $(document).ready(function() {
-            // 删除功能
-            $(".delete_dailysummary").click(function(e) {
+            loadDailySummaryList(1);
+
+            $(document).on('click', '.delete_dailysummary', function(e) {
                 e.preventDefault();
-                e.stopPropagation();
-
-                const summary_value = $(this).attr("dailysummary_value");
-                if (!confirm("确认要删除此日报吗？")) {
-                    return false;
-                }
-
-                const $card = $('#summary-' + summary_value);
+                var summaryId = $(this).data('dailysummary-id');
+                if (!summaryId) return;
+                if (!confirm('确认要删除此日报吗？')) return;
                 if (!apiRequest) {
                     showNotification('API客户端未初始化', 'error');
-                    return false;
+                    return;
                 }
 
-                apiRequest('DELETE', '/daily-summaries/' + summary_value, {}).then(function(result_arr) {
-                    if (!result_arr || result_arr.code != 9999) {
+                var $card = $('#summary-' + summaryId);
+                apiRequest('DELETE', '/daily-summaries/' + summaryId, {}).then(function(resultArr) {
+                    if (!resultArr || resultArr.code !== 9999) {
                         showNotification('删除失败，请稍后再试', 'error');
                         return;
                     }
-
-                    // 添加删除动画
-                    $card.css({
-                        'transform': 'scale(0.95)',
-                        'opacity': '0.5'
-                    });
-
-                    setTimeout(() => {
-                        $card.css({
-                            'transform': 'translateX(100%)',
-                            'opacity': '0'
-                        });
-
-                        setTimeout(() => {
-                            $card.remove();
-                            showNotification('日报删除成功', 'success');
-
-                            // 如果没有日报了，显示空状态
-                            if ($('.summary-card').length === 0) {
-                                location.reload();
-                            }
-                        }, 300);
-                    }, 100);
+                    $card.css({'transform': 'translateX(100%)', 'opacity': '0'});
+                    setTimeout(function() {
+                        $card.remove();
+                        showNotification('日报删除成功', 'success');
+                        if ($('.summary-card').length === 0) {
+                            loadDailySummaryList(dailySummaryState.currentPage);
+                        }
+                    }, 300);
                 }).catch(function() {
                     showNotification('网络错误，删除失败', 'error');
                 });
             });
 
-            // 卡片悬停效果
             $('.summary-card').hover(
-                function() {
-                    $(this).css('transform', 'translateY(-5px)');
-                },
-                function() {
-                    $(this).css('transform', 'translateY(0)');
-                }
-            );
-
-            // 按钮悬停效果
-            $('.summary-action-btn').hover(
-                function() {
-                    $(this).css('transform', 'translateY(-2px)');
-                },
-                function() {
-                    $(this).css('transform', 'translateY(0)');
-                }
+                function() { $(this).css('transform', 'translateY(-5px)'); },
+                function() { $(this).css('transform', 'translateY(0)'); }
             );
 
             // 页面加载动画
@@ -590,41 +582,6 @@
                     'transform': 'translateY(0)'
                 });
             }, 100);
-
-            // 显示通知
-            function showNotification(message, type = 'success') {
-                const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-                const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-
-                const notification = $(
-                    '<div class="fixed top-4 right-4 z-50 max-w-sm w-full">' +
-                    '<div class="' + bgColor + ' text-white p-4 rounded-lg shadow-lg flex items-center justify-between transform translate-x-full transition-transform duration-300">' +
-                    '<div class="flex items-center">' +
-                    '<i class="fas ' + icon + ' mr-3"></i>' +
-                    '<span>' + message + '</span>' +
-                    '</div>' +
-                    '<button class="text-white hover:text-gray-200 ml-4" onclick="$(this).closest(\'.fixed\').remove()">' +
-                    '<i class="fas fa-times"></i>' +
-                    '</button>' +
-                    '</div>' +
-                    '</div>'
-                );
-
-                $('body').append(notification);
-
-                // 显示通知
-                setTimeout(() => {
-                    notification.find('div:first').removeClass('translate-x-full');
-                }, 10);
-
-                // 3秒后自动隐藏
-                setTimeout(() => {
-                    notification.find('div:first').addClass('translate-x-full');
-                    setTimeout(() => {
-                        notification.remove();
-                    }, 300);
-                }, 3000);
-            }
         });
     </script>
 @endsection

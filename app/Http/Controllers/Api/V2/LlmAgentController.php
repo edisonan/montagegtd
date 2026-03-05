@@ -57,6 +57,12 @@ class LlmAgentController extends \App\Http\Controllers\LlmAgentController
         return parent::createDraft($request);
     }
 
+    public function getDraft($id)
+    {
+        $this->bootstrapAuthContext(request());
+        return parent::getDraft($id);
+    }
+
     public function updateDraft(Request $request, $id)
     {
         $this->bootstrapAuthContext($request);

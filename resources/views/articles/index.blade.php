@@ -1051,31 +1051,21 @@
 
             <!-- 文章内容区域 -->
             <div class="lg:col-span-3">
-                <!-- 成功消息 -->
-                @include('common.success')
-
-                <!-- 错误消息 -->
-                @include('common.errors')
-
                 <div class="reading-content">
                     <!-- 内容头部 -->
                     <div class="content-header">
                         <div>
                             <div class="status-tabs">
-                                <a href="{{ url('articles?status=unread&feed_id='.$feed_id) }}"
-                                   class="status-tab @if($status == 'unread') active @endif">
+                                <a href="#" class="status-tab" data-status="unread">
                                     未读
                                 </a>
-                                <a href="{{ url('articles?status=read&feed_id='.$feed_id) }}"
-                                   class="status-tab @if($status == 'read') active @endif">
+                                <a href="#" class="status-tab" data-status="read">
                                     已读
                                 </a>
-                                <a href="{{ url('articles?status=star&feed_id='.$feed_id) }}"
-                                   class="status-tab @if($status == 'star') active @endif">
+                                <a href="#" class="status-tab" data-status="star">
                                     加星
                                 </a>
-                                <a href="{{ url('articles?status=read_later&feed_id='.$feed_id) }}"
-                                   class="status-tab @if($status == 'read_later') active @endif">
+                                <a href="#" class="status-tab" data-status="read_later">
                                     稍后阅读
                                 </a>
                             </div>
@@ -1085,7 +1075,7 @@
                             <div class="tool-item">
                                 <span class="tool-label">一目十行</span>
                                 <label class="tool-switch">
-                                    <input type="checkbox" id="unable_desc" {{ $unable_desc == "true" ? 'checked' : '' }}>
+                                    <input type="checkbox" id="unable_desc">
                                     <span class="tool-slider"></span>
                                 </label>
                             </div>
@@ -1093,19 +1083,17 @@
                             <div class="tool-item">
                                 <span class="tool-label">屏蔽图片</span>
                                 <label class="tool-switch">
-                                    <input type="checkbox" id="unable_img" {{ $unable_img == "true" ? 'checked' : '' }}>
+                                    <input type="checkbox" id="unable_img">
                                     <span class="tool-slider"></span>
                                 </label>
                             </div>
 
                             <div class="tool-actions">
-                                @if(!empty($feed_id))
-                                    <a href="{{ url('feeds/explorer') }}" class="tool-btn">
-                                        <i class="fas fa-compass"></i>
-                                        发现
-                                        <sup style="color: #ef4444; margin-left: 2px;">推荐</sup>
-                                    </a>
-                                @endif
+                                <a href="{{ url('feeds/explorer') }}" class="tool-btn" id="discoverBtn" style="display: none;">
+                                    <i class="fas fa-compass"></i>
+                                    发现
+                                    <sup style="color: #ef4444; margin-left: 2px;">推荐</sup>
+                                </a>
                                 <a href="{{ url('feeds') }}" class="tool-btn">
                                     <i class="fas fa-plus"></i>
                                     添加订阅
@@ -1116,214 +1104,37 @@
 
                     <!-- 文章列表 -->
                     <div class="p-6">
-                        @if (count($article_subs) > 0)
-                                <?php $article_sub_ids = []; ?>
-                            <div id="articleList">
-                                @foreach ($article_subs as $articleSub)
-                                        <?php
-                                        $article = $articleSub->article;
-                                        $isValidArticle = !empty($article) && !empty($article->feed);
-                                        $formattedContent = '';
-                                        $needsCollapse = false;
-                                        if ($isValidArticle) {
-                                            $article_sub_ids[] = $articleSub->id;
-
-                                            // 处理内容
-                                            $content = $article->content;
-                                            if ($unable_img == "true") {
-                                                $content = str_replace('src="', 'src="/img/unable_img.png" data-original="', $content);
-                                                $content = str_replace("src='", "src='/img/unable_img.png' data-original='", $content);
-                                            }
-                                            $formattedContent = App\Http\Utils\CommonUtil::formatContentHtml($content);
-
-                                            $contentText = strip_tags($formattedContent);
-                                            $needsCollapse = $unable_desc == "true" && (strlen($contentText) > 500 || substr_count($contentText, "\n") > 5);
-                                        }
-                                        ?>
-                                    @if($isValidArticle)
-                                    <div class="article-card" id="article-{{ $articleSub->id }}">
-                                        <!-- 文章头部 -->
-                                        <div class="article-header">
-                                            @if(!empty($article->subject))
-                                                <h3 class="article-title">
-                                                    <a href="{{ url('article/view/'.$article->id) }}" class="text-gray-900 hover:text-blue-600 transition-colors">
-                                                        {{ $article->subject }}
-                                                    </a>
-                                                </h3>
-                                            @endif
-
-                                            <div class="article-meta">
-                                                <div class="meta-item">
-                                                    <i class="fas fa-rss"></i>
-                                                    来源：
-                                                    <a href="{{ url('articles?status=unread&feed_id='.$article->feed->id) }}"
-                                                       class="source-link" target="_blank">
-                                                        {{ $article->feed->feed_name }}
-                                                    </a>
-                                                </div>
-
-                                                <div class="meta-item">
-                                                    <i class="far fa-clock"></i>
-                                                    {{ $article->published }}
-                                                </div>
-
-                                                <div class="meta-item">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                    <a href="{{ str_replace('www.v2ex.com', 'pretask.congcong.us/article/proxyview?type=v2ex&url=',$article->url) }}"
-                                                       class="source-link" target="_blank">
-                                                        原文
-                                                    </a>
-                                                </div>
-
-                                                @if($unable_desc == "true")
-                                                    <div class="quick-actions">
-                                                        <button type="button"
-                                                                class="quick-btn set_read_later_another {{ $articleSub->status == 'read_later' ? 'active' : '' }}"
-                                                                data-article-id="{{ $articleSub->id }}">
-                                                            稍后阅读
-                                                        </button>
-                                                        <button type="button"
-                                                                class="quick-btn expand-btn"
-                                                                data-article-id="{{ $articleSub->id }}">
-                                                            展开/收起
-                                                        </button>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-
-                                        <!-- 文章内容 -->
-                                        <div class="article-content" id="content{{ $articleSub->id }}" @if($unable_desc == "true") style="display:none" @endif>
-                                            <div id="desc{{ $articleSub->id }}"
-                                                 class="content-preview {{ $unable_desc == "true" && $needsCollapse ? '' : 'expanded' }}"
-                                                 data-article-id="{{ $articleSub->id }}">
-                                                {!! $formattedContent !!}
-
-                                                @if($unable_desc == "true" && $needsCollapse)
-                                                    <div class="content-fade" style="opacity: 1;"></div>
-                                                @endif
-                                            </div>
-
-                                            {{-- 只在需要时显示阅读更多按钮 --}}
-                                            @if($unable_desc == "true" && $needsCollapse)
-                                                <div class="read-more" style="display: block;">
-                                                    <button type="button"
-                                                            class="read-more-btn"
-                                                            data-article-id="{{ $articleSub->id }}">
-                                                        <i class="fas fa-chevron-down"></i>
-                                                        阅读更多
-                                                    </button>
-                                                </div>
-                                            @endif
-                                        </div>
-
-                                        <!-- 文章操作 -->
-                                        <div class="article-footer">
-                                            <div class="action-buttons" style="margin-left: auto;">
-                                                <button type="button"
-                                                        class="action-btn ai-assist-btn"
-                                                        data-content-id="desc{{ $articleSub->id }}"
-                                                        data-title="{{ $article->subject }}"
-                                                        title="AI助手">
-                                                    <i class="fas fa-robot"></i>
-                                                    <span class="action-label">AI助手</span>
-                                                </button>
-
-                                                <div class="share-container">
-                                                    <button type="button" class="action-btn share-btn" title="分享">
-                                                        <i class="fas fa-share-alt"></i>
-                                                        <span class="action-label">分享</span>
-                                                    </button>
-
-                                                    <div class="share-menu">
-                                                        <a href="javascript:void(0);"
-                                                           class="share-option icon-heart"
-                                                           data-title="{{ $article->subject }} From:{{url('/article/view/')}}{{$article->id}}"
-                                                           data-url="{{ url('article/view/') }}{{$article->id}}"
-                                                           data-id="{{ $article->id }}">
-                                                            <i class="fas fa-heart"></i>
-                                                            <span>记录想法</span>
-                                                        </a>
-                                                        <!-- 其他分享选项可以在这里添加 -->
-                                                    </div>
-                                                </div>
-
-                                                <button type="button"
-                                                        class="action-btn set_read {{ $articleSub->status == 'read' ? 'active' : '' }}"
-                                                        data-article-id="{{ $articleSub->id }}"
-                                                        title="标记已读">
-                                                    <i class="fas fa-check"></i>
-                                                    <span class="action-label">已读</span>
-                                                </button>
-
-                                                <button type="button"
-                                                        class="action-btn set_read_later {{ $articleSub->status == 'read_later' ? 'active' : '' }}"
-                                                        data-article-id="{{ $articleSub->id }}"
-                                                        title="稍后阅读">
-                                                    <i class="far fa-clock"></i>
-                                                    <span class="action-label">稍后</span>
-                                                </button>
-
-                                                <button type="button"
-                                                        class="action-btn set_star {{ $articleSub->status == 'star' ? 'active' : '' }}"
-                                                        data-article-id="{{ $articleSub->id }}"
-                                                        title="收藏">
-                                                    <i class="far fa-star"></i>
-                                                    <span class="action-label">收藏</span>
-                                                </button>
-
-                                                <button type="button"
-                                                        class="action-btn playaudio"
-                                                        data-article-id="{{ $articleSub->id }}"
-                                                        title="语音播放">
-                                                    <i class="fas fa-volume-up"></i>
-                                                    <span class="action-label">语音</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endif
-                                @endforeach
+                        <div id="articleLoading" class="text-center py-12 text-gray-500">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                        </div>
+                        <div id="articleList"></div>
+                        <div class="pagination-wrapper" id="articlePagination" style="display: none;"></div>
+                        <div class="mt-6 text-center" id="markAllWrap" style="display: none;">
+                            <button type="button"
+                                    class="btn btn-primary px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+                                    id="marked_all_read"
+                                    data-ids="">
+                                <i class="fas fa-check-double mr-2"></i>
+                                标记全部已读
+                            </button>
+                        </div>
+                        <div class="empty-state" id="articleEmptyState" style="display: none;">
+                            <img src="/img/new/love.png" alt="暂无文章" class="mx-auto">
+                            <h3 class="empty-state-title">好像没有更多文章了</h3>
+                            <p class="empty-state-text">
+                                您可以阅读一下其他的文章，或者开始新的订阅来获取更多精彩内容。
+                            </p>
+                            <div class="empty-state-actions">
+                                <a href="/articles" class="empty-state-btn">
+                                    <i class="fas fa-newspaper mr-2"></i>
+                                    浏览其他文章
+                                </a>
+                                <a href="/feeds/explorer" class="empty-state-btn primary">
+                                    <i class="fas fa-compass mr-2"></i>
+                                    发现新订阅
+                                </a>
                             </div>
-
-                            <!-- 分页 -->
-                            <div class="pagination-wrapper">
-                                {!! $article_subs->appends($page_params)->links() !!}
-                            </div>
-
-                            <!-- 一键标记已读 -->
-                            @if(!isset($_GET['status']) || $_GET['status'] == 'unread')
-                                <div class="mt-6 text-center">
-                                    <button type="button"
-                                            class="btn btn-primary px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
-                                            id="marked_all_read"
-                                            data-ids="{{ implode(',', $article_sub_ids) }}">
-                                        <i class="fas fa-check-double mr-2"></i>
-                                        标记全部已读
-                                    </button>
-                                </div>
-                            @endif
-
-                        @else
-                            <!-- 空状态 -->
-                            <div class="empty-state">
-                                <img src="/img/new/love.png" alt="暂无文章" class="mx-auto">
-                                <h3 class="empty-state-title">好像没有更多文章了</h3>
-                                <p class="empty-state-text">
-                                    您可以阅读一下其他的文章，或者开始新的订阅来获取更多精彩内容。
-                                </p>
-                                <div class="empty-state-actions">
-                                    <a href="/articles" class="empty-state-btn">
-                                        <i class="fas fa-newspaper mr-2"></i>
-                                        浏览其他文章
-                                    </a>
-                                    <a href="/feeds/explorer" class="empty-state-btn primary">
-                                        <i class="fas fa-compass mr-2"></i>
-                                        发现新订阅
-                                    </a>
-                                </div>
-                            </div>
-                        @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1353,6 +1164,85 @@
     <script src="/js/qrcode.js"></script>
 
     @include('components.ai-ask-modal')
+    <div id="articleMindmapModal" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/50" id="articleMindmapBackdrop"></div>
+        <div class="absolute inset-0 p-3 sm:p-6 overflow-y-auto">
+            <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-2xl border border-gray-200">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">AI生成思维导图</h3>
+                        <p class="text-xs text-gray-500 mt-1" id="articleMindmapTitle">-</p>
+                    </div>
+                    <button type="button" class="action-btn" id="articleMindmapCloseBtn" title="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="px-5 py-3 border-b border-gray-100 bg-gray-50">
+                    <div class="text-sm text-gray-600" id="articleMindmapStatus">准备生成导图...</div>
+                </div>
+                <div class="p-5">
+                    <div id="articleMindmapLoading" class="text-center py-10 hidden">
+                        <i class="fas fa-spinner fa-spin text-gray-500 text-2xl"></i>
+                        <p class="text-sm text-gray-500 mt-2">AI正在分析文章并生成结构...</p>
+                    </div>
+                    <div id="articleMindmapPreviewWrap" class="hidden">
+                        <div class="article-mind-root" id="articleMindmapPreview"></div>
+                    </div>
+                    <div id="articleMindmapError" class="hidden text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                    <div class="text-xs text-gray-500">保存后可在思维导图页继续编辑</div>
+                    <div class="flex items-center gap-2">
+                        <a href="javascript:void(0);" id="articleMindmapEditLink" class="btn btn-outline btn-sm hidden" target="_blank">
+                            <i class="fas fa-pen mr-1"></i>打开编辑
+                        </a>
+                        <button type="button" class="btn btn-outline btn-sm" id="articleMindmapRegenerateBtn">
+                            <i class="fas fa-sync-alt mr-1"></i>重新生成
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" id="articleMindmapSaveBtn">
+                            <i class="fas fa-save mr-1"></i>一键保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .article-mind-root {
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f8fafc;
+            max-height: 60vh;
+            overflow: auto;
+        }
+        .article-mind-node {
+            margin: 8px 0 8px 0;
+            padding-left: 14px;
+            border-left: 2px dashed #cbd5e1;
+        }
+        .article-mind-topic {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            color: #1f2937;
+            font-size: 13px;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .article-mind-node.level-0 > .article-mind-topic {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .article-mind-children {
+            margin-top: 6px;
+            margin-left: 10px;
+        }
+    </style>
 
     <script type="text/javascript">
         // 修复AI助手模态框闪动问题
@@ -1374,13 +1264,309 @@
         });
 
         $(document).ready(function () {
-            var status = '{{$status}}';
+            var qs = new URLSearchParams(window.location.search);
+            var status = qs.get('status') || 'unread';
+            var currentFeedId = qs.get('feed_id') || '';
+            var pageCount = Number(qs.get('page_count') || 20);
+            var currentPage = Number(qs.get('page') || 1);
             var processNavFlag = false;
-            var unableDesc = {{ $unable_desc == "true" ? 'true' : 'false' }};
+            var unableDesc = ($.cookie('unable_desc') || 'false') === 'true';
+            var unableImg = ($.cookie('unable_img') || 'false') === 'true';
 
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : function() { return Promise.reject(new Error("API客户端未初始化")); };
+            var articleMindState = {
+                title: '',
+                referText: '',
+                contentId: '',
+                articleSubId: '',
+                tree: null,
+                isGenerating: false,
+                isSaving: false,
+                savedMindId: null
+            };
+
+            function setMindmapStatus(message) {
+                $('#articleMindmapStatus').text(message || '');
+            }
+
+            function showMindmapModal() {
+                $('#articleMindmapModal').removeClass('hidden');
+            }
+
+            function hideMindmapModal() {
+                $('#articleMindmapModal').addClass('hidden');
+            }
+
+            function sanitizeTopic(text, fallbackText) {
+                var topic = String(text || '').replace(/\s+/g, ' ').trim();
+                if (!topic) {
+                    topic = String(fallbackText || '导图节点').trim();
+                }
+                if (topic.length > 36) {
+                    topic = topic.slice(0, 36);
+                }
+                return topic || '导图节点';
+            }
+
+            function normalizeMindTree(input, depth) {
+                var currentDepth = Number(depth || 0);
+                if (currentDepth > 3) return null;
+
+                if (typeof input === 'string') {
+                    return { topic: sanitizeTopic(input), children: [] };
+                }
+                if (!input || typeof input !== 'object') return null;
+
+                var topic = sanitizeTopic(input.topic || input.title || input.name || input.text, '导图节点');
+                var rawChildren = input.children || input.nodes || input.items || [];
+                var children = [];
+                if (Array.isArray(rawChildren)) {
+                    for (var i = 0; i < rawChildren.length; i++) {
+                        var childNode = normalizeMindTree(rawChildren[i], currentDepth + 1);
+                        if (childNode) children.push(childNode);
+                        if (children.length >= 8) break;
+                    }
+                }
+                return { topic: topic, children: children };
+            }
+
+            function extractJsonObject(text) {
+                var raw = String(text || '').trim();
+                if (!raw) return null;
+                raw = raw.replace(/```json/ig, '').replace(/```/g, '').trim();
+                var start = raw.indexOf('{');
+                var end = raw.lastIndexOf('}');
+                if (start === -1 || end === -1 || end <= start) return null;
+                try {
+                    return JSON.parse(raw.slice(start, end + 1));
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function buildFallbackMindTree(title, referText) {
+                var cleanTitle = sanitizeTopic(title, '文章导图');
+                var text = String(referText || '').replace(/\s+/g, ' ').trim();
+                var parts = text.split(/[。！？；\n]/).map(function(item) { return item.trim(); }).filter(Boolean);
+                var children = [];
+                var maxChildren = Math.min(5, parts.length);
+                for (var i = 0; i < maxChildren; i++) {
+                    children.push({ topic: sanitizeTopic(parts[i], '要点' + (i + 1)), children: [] });
+                }
+                if (children.length === 0) {
+                    children.push({ topic: '核心观点', children: [] });
+                    children.push({ topic: '关键细节', children: [] });
+                    children.push({ topic: '可行动事项', children: [] });
+                }
+                return { topic: cleanTitle, children: children };
+            }
+
+            function renderMindTree(node, depth) {
+                var level = Number(depth || 0);
+                var html = '<div class="article-mind-node level-' + level + '"><div class="article-mind-topic">' + escapeHtml(node.topic || '') + '</div>';
+                if (Array.isArray(node.children) && node.children.length > 0) {
+                    html += '<div class="article-mind-children">';
+                    for (var i = 0; i < node.children.length; i++) {
+                        html += renderMindTree(node.children[i], level + 1);
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+                return html;
+            }
+
+            function updateMindmapPreview(tree) {
+                if (!tree) {
+                    $('#articleMindmapPreviewWrap').addClass('hidden');
+                    $('#articleMindmapPreview').empty();
+                    return;
+                }
+                $('#articleMindmapPreview').html(renderMindTree(tree, 0));
+                $('#articleMindmapPreviewWrap').removeClass('hidden');
+            }
+
+            async function ensureAiSession() {
+                if (typeof window.createNewSession === 'function') {
+                    return await window.createNewSession('builtin_common');
+                }
+                const response = await window.taskApiFetch('/api/v2/llm/sessions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agent_id: 'builtin_common',
+                        title: '文章导图生成'
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result || result.success !== true || !result.data || !result.data.id) {
+                    throw new Error((result && result.message) ? result.message : '创建AI会话失败');
+                }
+                return result.data.id;
+            }
+
+            async function requestMindTreeFromAi(title, referText) {
+                var query = [
+                    '请根据我提供的文章标题和内容，生成思维导图。',
+                    '只返回JSON，不要解释，不要markdown。',
+                    '格式: {"topic":"根节点","children":[{"topic":"一级节点","children":[{"topic":"二级节点","children":[]}]}]}',
+                    '要求: 中文；层级不超过3层；一级节点3-6个；topic简洁。'
+                ].join('\n');
+
+                var sessionId = await ensureAiSession();
+                var response = await window.taskApiFetch('/api/v2/llm/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        refer_text: ('文章标题：' + title + '\n\n文章内容：\n' + String(referText || '')).slice(0, 6000),
+                        query: query
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('AI请求失败，状态码: ' + response.status);
+                }
+
+                var contentType = String(response.headers.get('content-type') || '');
+                if (!contentType.includes('text/event-stream')) {
+                    throw new Error('AI返回格式异常');
+                }
+
+                var reader = response.body.getReader();
+                var decoder = new TextDecoder();
+                var buffer = '';
+                var finalText = '';
+                var doneSignal = false;
+
+                while (!doneSignal) {
+                    var chunk = await reader.read();
+                    if (chunk.done) break;
+                    buffer += decoder.decode(chunk.value, { stream: true });
+                    var lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = String(lines[i] || '').trim();
+                        if (!line || line.indexOf('data:') !== 0) continue;
+                        var payload = line.slice(5).trim();
+                        if (payload === '[DONE]') {
+                            doneSignal = true;
+                            break;
+                        }
+                        if (!payload || payload.charAt(0) !== '{') continue;
+                        try {
+                            var data = JSON.parse(payload);
+                            var delta = data && data.choices && data.choices[0] && data.choices[0].delta ? data.choices[0].delta : {};
+                            var piece = '';
+                            if (typeof delta.content === 'string' && delta.content) {
+                                piece = delta.content;
+                            } else if (typeof delta.reasoning === 'string' && delta.reasoning) {
+                                piece = delta.reasoning;
+                            }
+                            if (piece) finalText += piece;
+                        } catch (e) {}
+                    }
+                }
+
+                var parsed = extractJsonObject(finalText);
+                if (!parsed) throw new Error('AI输出无法解析为导图JSON');
+
+                var normalized = normalizeMindTree(parsed, 0);
+                if (!normalized || !Array.isArray(normalized.children) || normalized.children.length === 0) {
+                    throw new Error('AI导图结构为空');
+                }
+                if (!normalized.topic || normalized.topic === '导图节点') {
+                    normalized.topic = sanitizeTopic(title, '文章导图');
+                }
+                return normalized;
+            }
+
+            async function createMindNode(name, parentMindId) {
+                var payload = { name: sanitizeTopic(name, '导图节点') };
+                if (parentMindId) payload.parent_mind_id = parentMindId;
+                var result = await apiRequest('POST', '/minds', payload);
+                if (!result || result.code !== 9999 || !result.result || !result.result.id) {
+                    throw new Error((result && result.msg) ? result.msg : '保存导图节点失败');
+                }
+                return Number(result.result.id);
+            }
+
+            async function saveMindTreeToServer(tree) {
+                var rootId = await createMindNode(tree.topic || '文章导图', 0);
+                async function createChildren(parentId, children) {
+                    if (!Array.isArray(children) || children.length === 0) return;
+                    for (var i = 0; i < children.length; i++) {
+                        var child = children[i];
+                        var childId = await createMindNode(child.topic || ('节点' + (i + 1)), parentId);
+                        await createChildren(childId, child.children || []);
+                    }
+                }
+                await createChildren(rootId, tree.children || []);
+                return rootId;
+            }
+
+            async function generateArticleMindmap() {
+                if (articleMindState.isGenerating) return;
+                articleMindState.isGenerating = true;
+                articleMindState.savedMindId = null;
+                $('#articleMindmapEditLink').addClass('hidden').attr('href', 'javascript:void(0);');
+                $('#articleMindmapError').addClass('hidden').text('');
+                $('#articleMindmapLoading').removeClass('hidden');
+                updateMindmapPreview(null);
+                setMindmapStatus('AI生成中，请稍候...');
+
+                try {
+                    var tree = await requestMindTreeFromAi(articleMindState.title, articleMindState.referText);
+                    articleMindState.tree = tree;
+                    updateMindmapPreview(tree);
+                    setMindmapStatus('导图生成完成，可保存后继续编辑。');
+                } catch (error) {
+                    var fallbackTree = buildFallbackMindTree(articleMindState.title, articleMindState.referText);
+                    articleMindState.tree = fallbackTree;
+                    updateMindmapPreview(fallbackTree);
+                    $('#articleMindmapError').removeClass('hidden').text('AI生成失败，已使用降级结构。失败原因：' + (error && error.message ? error.message : '未知错误'));
+                    setMindmapStatus('已展示降级导图，可直接保存后再补充。');
+                } finally {
+                    $('#articleMindmapLoading').addClass('hidden');
+                    articleMindState.isGenerating = false;
+                }
+            }
+
+            function escapeHtml(text) {
+                return String(text || '').replace(/[&<>"']/g, function(c) {
+                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
+                });
+            }
+
+            function renderStatusTabs() {
+                $('.status-tab').each(function() {
+                    var tabStatus = $(this).data('status');
+                    var url = '/articles?status=' + encodeURIComponent(tabStatus);
+                    if (currentFeedId) {
+                        url += '&feed_id=' + encodeURIComponent(currentFeedId);
+                    }
+                    if (pageCount && pageCount !== 20) {
+                        url += '&page_count=' + encodeURIComponent(String(pageCount));
+                    }
+                    $(this).attr('href', url);
+                    $(this).toggleClass('active', tabStatus === status);
+                });
+            }
+
+            function buildPageUrl(page) {
+                var params = new URLSearchParams(window.location.search);
+                params.set('status', status);
+                if (currentFeedId) {
+                    params.set('feed_id', currentFeedId);
+                } else {
+                    params.delete('feed_id');
+                }
+                params.set('page_count', String(pageCount));
+                params.set('page', String(page));
+                return '/articles?' + params.toString();
+            }
 
             // 存储的键名
             const NAV_STORAGE_KEY = 'nav_storage_data';
@@ -1407,18 +1593,27 @@
 
             // 主动请求文章列表接口，确保页面核心数据走 /api/v2/articles
             function loadArticleListByApi() {
+                $('#articleLoading').show();
+                $('#articleEmptyState').hide();
+                $('#articleList').empty();
+                $('#articlePagination').hide().empty();
+
                 var params = {
                     status: status,
-                    feed_id: '{{ $feed_id }}',
-                    page_count: '{{ isset($page_params["page_count"]) ? $page_params["page_count"] : 20 }}'
+                    feed_id: currentFeedId,
+                    page_count: pageCount,
+                    page: currentPage
                 };
 
                 apiRequest('GET', '/articles', params).then(function(result_arr) {
                     if (!result_arr || result_arr.code !== 9999 || !result_arr.result) {
-                        return;
+                        throw new Error((result_arr && result_arr.msg) ? result_arr.msg : '加载失败');
                     }
 
                     var articleSubs = result_arr.result.articles || [];
+                    renderArticleList(articleSubs);
+                    renderPagination(result_arr.result.pagination || null);
+
                     var ids = [];
                     for (var i = 0; i < articleSubs.length; i++) {
                         if (articleSubs[i] && articleSubs[i].id) {
@@ -1426,13 +1621,93 @@
                         }
                     }
 
-                    // 同步“一键标记已读”按钮参数，确保后续操作与接口列表一致
-                    if ($('#marked_all_read').length && ids.length > 0) {
+                    if (status === 'unread' && ids.length > 0) {
+                        $('#markAllWrap').show();
                         $('#marked_all_read').attr('data-ids', ids.join(','));
+                    } else {
+                        $('#markAllWrap').hide();
                     }
-                }).catch(function(error) {
-                    console.warn('加载文章列表接口失败', error);
+                    $('#articleLoading').hide();
+                }).catch(function() {
+                    $('#articleLoading').hide();
+                    $('#articleEmptyState').show();
+                    showNotification('加载文章列表失败，请稍后重试', 'error');
                 });
+            }
+
+            function renderArticleList(articleSubs) {
+                if (!Array.isArray(articleSubs) || articleSubs.length === 0) {
+                    $('#articleEmptyState').show();
+                    return;
+                }
+
+                var html = '';
+                articleSubs.forEach(function(articleSub) {
+                    if (!articleSub || !articleSub.article || !articleSub.article.feed) return;
+                    var article = articleSub.article;
+                    var subId = Number(articleSub.id || 0);
+                    var articleId = Number(article.id || 0);
+                    var contentHtml = String(article.formatted_content || article.content || '');
+
+                    if (unableImg) {
+                        contentHtml = contentHtml.replace(/src="([^"]*)"/g, 'src="/img/unable_img.png" data-original="$1"');
+                        contentHtml = contentHtml.replace(/src='([^']*)'/g, "src='/img/unable_img.png' data-original='$1'");
+                    }
+
+                    var textLen = $('<div>').html(contentHtml).text().trim().length;
+                    var needsCollapse = unableDesc && textLen > 500;
+                    var sourceHref = '/articles?status=unread&feed_id=' + encodeURIComponent(article.feed.id);
+                    var originUrl = String(article.url || '#');
+
+                    html += ''
+                        + '<div class="article-card" id="article-' + subId + '">'
+                        + '<div class="article-header">'
+                        + '<h3 class="article-title"><a href="/article/view/' + articleId + '" class="text-gray-900 hover:text-blue-600 transition-colors">' + escapeHtml(article.subject || '无标题') + '</a></h3>'
+                        + '<div class="article-meta">'
+                        + '<div class="meta-item"><i class="fas fa-rss"></i>来源：<a href="' + sourceHref + '" class="source-link" target="_blank">' + escapeHtml(article.feed.feed_name || '') + '</a></div>'
+                        + '<div class="meta-item"><i class="far fa-clock"></i>' + escapeHtml(article.published || '') + '</div>'
+                        + '<div class="meta-item"><i class="fas fa-external-link-alt"></i><a href="' + escapeHtml(originUrl) + '" class="source-link" target="_blank">原文</a></div>'
+                        + (unableDesc ? '<div class="quick-actions"><button type="button" class="quick-btn set_read_later_another ' + (articleSub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '">稍后阅读</button><button type="button" class="quick-btn expand-btn" data-article-id="' + subId + '">展开/收起</button></div>' : '')
+                        + '</div></div>'
+                        + '<div class="article-content" id="content' + subId + '"' + (unableDesc ? ' style="display:none"' : '') + '>'
+                        + '<div id="desc' + subId + '" class="content-preview ' + (needsCollapse ? '' : 'expanded') + '" data-article-id="' + subId + '">'
+                        + contentHtml
+                        + (needsCollapse ? '<div class="content-fade" style="opacity:1;"></div>' : '')
+                        + '</div>'
+                        + (needsCollapse ? '<div class="read-more" style="display:block;"><button type="button" class="read-more-btn" data-article-id="' + subId + '"><i class="fas fa-chevron-down"></i>阅读更多</button></div>' : '')
+                        + '</div>'
+                        + '<div class="article-footer"><div class="action-buttons" style="margin-left:auto;">'
+                        + '<button type="button" class="action-btn ai-assist-btn" data-content-id="desc' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI助手"><i class="fas fa-robot"></i><span class="action-label">AI助手</span></button>'
+                        + '<button type="button" class="action-btn article-mindmap-btn" data-content-id="desc' + subId + '" data-article-sub-id="' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI生成导图"><i class="fas fa-project-diagram"></i><span class="action-label">导图</span></button>'
+                        + '<div class="share-container"><button type="button" class="action-btn share-btn" title="分享"><i class="fas fa-share-alt"></i><span class="action-label">分享</span></button><div class="share-menu"><a href="javascript:void(0);" class="share-option icon-heart" data-id="' + articleId + '"><i class="fas fa-heart"></i><span>记录想法</span></a></div></div>'
+                        + '<button type="button" class="action-btn set_read ' + (articleSub.status === 'read' ? 'active' : '') + '" data-article-id="' + subId + '" title="标记已读"><i class="fas fa-check"></i><span class="action-label">已读</span></button>'
+                        + '<button type="button" class="action-btn set_read_later ' + (articleSub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '" title="稍后阅读"><i class="far fa-clock"></i><span class="action-label">稍后</span></button>'
+                        + '<button type="button" class="action-btn set_star ' + (articleSub.status === 'star' ? 'active' : '') + '" data-article-id="' + subId + '" title="收藏"><i class="far fa-star"></i><span class="action-label">收藏</span></button>'
+                        + '<button type="button" class="action-btn playaudio" data-article-id="' + subId + '" title="语音播放"><i class="fas fa-volume-up"></i><span class="action-label">语音</span></button>'
+                        + '</div></div></div>';
+                });
+
+                $('#articleList').html(html);
+                initExpandButtons();
+                initShareButtons();
+                if (unableDesc) {
+                    applyScanReadingMode();
+                }
+            }
+
+            function renderPagination(pagination) {
+                if (!pagination || (!pagination.next_page_url && !pagination.prev_page_url)) {
+                    $('#articlePagination').hide().empty();
+                    return;
+                }
+                var page = Number(pagination.current_page || 1);
+                var prev = pagination.prev_page_url
+                    ? '<a href="' + buildPageUrl(Math.max(1, page - 1)) + '" class="btn btn-secondary btn-sm"><i class="fas fa-chevron-left mr-1"></i>上一页</a>'
+                    : '<span class="px-3 py-2 text-gray-400 bg-gray-100 rounded-lg"><i class="fas fa-chevron-left mr-1"></i>上一页</span>';
+                var next = pagination.next_page_url
+                    ? '<a href="' + buildPageUrl(page + 1) + '" class="btn btn-secondary btn-sm">下一页<i class="fas fa-chevron-right ml-1"></i></a>'
+                    : '<span class="px-3 py-2 text-gray-400 bg-gray-100 rounded-lg">下一页<i class="fas fa-chevron-right ml-1"></i></span>';
+                $('#articlePagination').show().html('<div class="flex items-center justify-between w-full"><div class="text-sm text-gray-500">当前第 ' + page + ' 页</div><div class="flex gap-1">' + prev + next + '</div></div>');
             }
 
             // 从localStorage获取缓存的导航数据
@@ -1630,11 +1905,11 @@
                     if (itemCount > 0) {
                         $.each(navInfo.list, function (index, item) {
                             var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
-                            var isActive = '{{ $feed_id }}' == item.feed_id ? 'active' : '';
+                            var isActive = String(currentFeedId) === String(item.feed_id) ? 'active' : '';
 
                             li += `
                             <li class="feed-item ${isActive}">
-                                <a href="{{ url('articles') }}?feed_id=${item.feed_id}&status=${status}" class="feed-link">
+                                <a href="/articles?feed_id=${item.feed_id}&status=${status}" class="feed-link">
                                     <i class="fas fa-rss"></i>
                                     <span class="flex-1 text-truncate-1">${item.feed_name}</span>
                                     <span class="feed-count">${countInfo}</span>
@@ -1678,7 +1953,7 @@
 
             // 获取当前状态
             function getCurrentStatus() {
-                return '{{ $status }}' || 'unread';
+                return status || 'unread';
             }
 
             // 清空并重新加载的方法
@@ -1702,6 +1977,7 @@
                 // 强制从远程获取最新数据
                 fetchNavFromRemote(status, false);
             }
+            window.refreshNav = refreshNav;
 
             // 检查存储是否可用
             function isStorageAvailable() {
@@ -1728,22 +2004,23 @@
             }
 
             // 状态切换功能
-            $(".set_star, .set_read, .set_read_later, .set_read_later_another").on('click', function() {
+            $(document).on('click', ".set_star, .set_read, .set_read_later, .set_read_later_another", function() {
                 var article_sub_id = $(this).data('article-id');
                 var active = $(this).hasClass("active");
                 var button = $(this);
+                var nextStatus = '';
 
                 if ($(this).hasClass("set_star")) {
-                    status = active ? "read" : "star";
+                    nextStatus = active ? "read" : "star";
                 } else if ($(this).hasClass("set_read")) {
-                    status = active ? "unread" : "star";
+                    nextStatus = active ? "unread" : "read";
                 } else if ($(this).hasClass("set_read_later") || $(this).hasClass("set_read_later_another")) {
-                    status = active ? "unread" : "read_later";
+                    nextStatus = active ? "unread" : "read_later";
                 } else {
                     return '';
                 }
 
-                apiRequest('POST', "/articles/status/" + article_sub_id, {"status": status}).then(function(result_arr) {
+                apiRequest('POST', "/articles/status/" + article_sub_id, {"status": nextStatus}).then(function(result_arr) {
                     if (result_arr.code != 9999) {
                         showNotification('设置失败，请重试', 'error');
                     } else {
@@ -1958,7 +2235,7 @@
             }
 
             // 快速订阅
-            $(".feed_quick_sub").on('click', function() {
+            $(document).on('click', ".feed_quick_sub", function() {
                 var feed_id = $(this).data('feed-id');
                 apiRequest('POST', '/feeds/quickstore', {"feed_id": feed_id}).then(function(result_arr) {
                     if (result_arr.code != 9999) {
@@ -2054,7 +2331,7 @@
                 }
             };
 
-            $(".playaudio").on('click', function() {
+            $(document).on('click', ".playaudio", function() {
                 var $button = $(this);
                 var articleId = $button.data('article-id');
                 var $content = $("#content" + articleId);
@@ -2112,12 +2389,77 @@
             });
 
             // AI助手 - 修复refer_text参数
-            $(".ai-assist-btn").on('click', function() {
+            $(document).on('click', ".ai-assist-btn", function() {
                 console.log('AI助手 - 获取内容ID')
                 var contentId = $(this).data('content-id');
 
                 // 调用全局函数，传递refer_text
                 openAskAIModal(contentId);
+            });
+            $(document).on('click', '.article-mindmap-btn', function() {
+                var contentId = String($(this).data('content-id') || '');
+                var title = String($(this).data('title') || '文章导图').trim();
+                var articleSubId = String($(this).data('article-sub-id') || '');
+                var referText = '';
+
+                if (contentId) {
+                    var $ref = $('#' + contentId);
+                    referText = ($ref.text() || '').replace(/\s+/g, ' ').trim();
+                }
+                if (!referText) {
+                    showNotification('未找到可用于生成导图的文章内容', 'error');
+                    return;
+                }
+
+                articleMindState.title = title || '文章导图';
+                articleMindState.contentId = contentId;
+                articleMindState.articleSubId = articleSubId;
+                articleMindState.referText = referText.slice(0, 12000);
+                articleMindState.tree = null;
+                articleMindState.savedMindId = null;
+
+                $('#articleMindmapTitle').text(articleMindState.title);
+                showMindmapModal();
+                generateArticleMindmap();
+            });
+
+            $('#articleMindmapBackdrop, #articleMindmapCloseBtn').on('click', function() {
+                hideMindmapModal();
+            });
+
+            $('#articleMindmapRegenerateBtn').on('click', function() {
+                if (!articleMindState.title || !articleMindState.referText) {
+                    showNotification('缺少文章内容，无法生成导图', 'error');
+                    return;
+                }
+                generateArticleMindmap();
+            });
+
+            $('#articleMindmapSaveBtn').on('click', async function() {
+                if (articleMindState.isSaving) return;
+                if (!articleMindState.tree) {
+                    showNotification('请先生成导图', 'error');
+                    return;
+                }
+                articleMindState.isSaving = true;
+                var $btn = $(this);
+                var originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中');
+                setMindmapStatus('正在保存导图节点...');
+
+                try {
+                    var rootMindId = await saveMindTreeToServer(articleMindState.tree);
+                    articleMindState.savedMindId = rootMindId;
+                    $('#articleMindmapEditLink').removeClass('hidden').attr('href', '/mind/' + rootMindId);
+                    setMindmapStatus('保存成功，已可继续编辑。');
+                    showNotification('导图已保存，可继续编辑', 'success');
+                } catch (error) {
+                    setMindmapStatus('保存失败，请重试。');
+                    showNotification((error && error.message) ? error.message : '保存导图失败', 'error');
+                } finally {
+                    articleMindState.isSaving = false;
+                    $btn.prop('disabled', false).html(originalHtml);
+                }
             });
 
             // 通知函数
@@ -2156,6 +2498,12 @@
             }
 
             // 初始化
+            $('#unable_desc').prop('checked', unableDesc);
+            $('#unable_img').prop('checked', unableImg);
+            if (currentFeedId) {
+                $('#discoverBtn').show();
+            }
+            renderStatusTabs();
             loadArticleListByApi();
             checkMobile();
 

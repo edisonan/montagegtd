@@ -44,11 +44,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $categorys = $this->categoryService->getList();
-
-        return view('categorys.index', [
-            'categorys' => $categorys
-        ]);
+        return view('categorys.index');
     }
 
     /**
@@ -104,9 +100,7 @@ class CategoryController extends Controller
         $this->authorize('destroy', $category);
 
         if ($request->method() == 'GET') {
-            return view('categorys.update', array(
-                'category' => $category
-            ));
+            return view('categorys.update');
         }
 
         $this->validate($request, [

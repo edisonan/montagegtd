@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PomoService;
 use Illuminate\Http\Request;
 
 /**
@@ -14,23 +13,12 @@ use Illuminate\Http\Request;
 class IndexController extends Controller {
 	
 	/**
-	 * PomoService 实例.
-	 *
-	 * @var PomoService
-	 */
-	protected $pomoService;
-	
-	/**
 	 * 构造方法
-	 *
-	 * @param PomoService $pomoService        	
 	 *
 	 * @return void
 	 */
-	public function __construct(PomoService $pomoService) {
+	public function __construct() {
 		$this->middleware ( 'auth' );
-		
-		$this->pomoService = $pomoService;
 	}
 	
 	/**
@@ -39,13 +27,7 @@ class IndexController extends Controller {
 	 * @param Request $request        	
 	 */
 	public function index(Request $request) {
-		// 获取当前活动信息
-		$currentPomoInfo = $this->pomoService->getRecentFormatPomo ();
-		
-		// 标题栏相关提示
-		$tipInfo = $this->pomoService->getTipInfo ( $currentPomoInfo ['current_pomo_status'] );
-		
-		return view ( 'index.index', array_merge ( $currentPomoInfo, $tipInfo ) );
+		return view ( 'index.index' );
 	}
 
 	/**

@@ -75,6 +75,12 @@ class LlmController extends \App\Http\Controllers\LlmController
         return parent::testCredential($id);
     }
 
+    public function testModel($id)
+    {
+        $this->bootstrapAuthContext(request());
+        return parent::testModel($id);
+    }
+
     public function saveProvider(Request $request, $id = null)
     {
         $this->bootstrapAuthContext($request);

@@ -33,7 +33,7 @@
                 <div class="overflow-y-auto max-h-[calc(100vh-200px)] sm:max-h-[calc(100vh-240px)] p-4 sm:p-6">
                     @include('common.errors')
 
-                    <form id="thingCreateForm" action="{{ url('/api/v2/things') }}" method="POST" class="space-y-4 sm:space-y-6">
+                    <form id="thingCreateForm" action="javascript:void(0)" method="POST" class="space-y-4 sm:space-y-6">
                         {{ csrf_field() }}
 
                         <!-- 事情内容 -->

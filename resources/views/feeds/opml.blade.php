@@ -25,9 +25,6 @@
                 </div>
             </div>
 
-            <!-- 成功消息提示 -->
-            @include('common.success')
-
             <!-- OPML导入卡片 -->
             <div class="card card-elevated">
                 <div class="p-6 border-b border-gray-200">
@@ -72,8 +69,7 @@
                     </div>
 
                     <!-- 上传表单 -->
-                    <form action="/api/v2/feeds/import-opml" method="post" enctype="multipart/form-data" class="space-y-6" id="opmlImportForm">
-                        {!! csrf_field() !!}
+                    <form action="javascript:void(0)" method="post" enctype="multipart/form-data" class="space-y-6" id="opmlImportForm">
 
                         <div class="space-y-4">
                             <div>
@@ -119,9 +115,6 @@
                                     </div>
                                 </div>
 
-                                @error('opml_file')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
                             </div>
                         </div>
                     </form>

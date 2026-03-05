@@ -470,6 +470,81 @@ class LlmController extends Controller
         }
     }
 
+    public function testModel($id)
+    {
+        try {
+            $user = Auth::user();
+
+            $model = LlmModel::with('provider')
+                ->when(!$user->is_admin, function ($query) use ($user) {
+                    return $query->where(function ($q) use ($user) {
+                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
+                    });
+                })
+                ->find($id);
+
+            if (!$model) {
+                return response()->json([
+                    'code' => 1001,
+                    'msg' => '模型不存在',
+                    'result' => array(),
+                ], 404);
+            }
+
+            if ((int)$model->is_active !== 1) {
+                return response()->json([
+                    'code' => 1002,
+                    'msg' => '模型未启用',
+                    'result' => array(),
+                ]);
+            }
+
+            $provider = $model->provider;
+            if (!$provider || (int)$provider->is_active !== 1) {
+                return response()->json([
+                    'code' => 1003,
+                    'msg' => '模型供应商不可用',
+                    'result' => array(),
+                ]);
+            }
+
+            $credential = LlmProviderCredential::where('user_id', $user->id)
+                ->where('provider_id', $provider->id)
+                ->where('is_active', 1)
+                ->orderBy('is_default', 'desc')
+                ->orderBy('id', 'asc')
+                ->first();
+
+            if (!$credential) {
+                return response()->json([
+                    'code' => 1004,
+                    'msg' => '未找到可用凭据，请先添加并启用该供应商凭据',
+                    'result' => array(
+                        'provider_id' => $provider->id,
+                        'provider_name' => $provider->name,
+                    ),
+                ]);
+            }
+
+            return response()->json(ResponseDataUtil::genSimpleSucc(array(
+                'model_id' => $model->id,
+                'model_name' => $model->name,
+                'provider_id' => $provider->id,
+                'provider_name' => $provider->name,
+                'credential_id' => $credential->id,
+                'credential_name' => $credential->name,
+                'msg' => '模型可用性检查通过',
+            )));
+        } catch (\Exception $e) {
+            Log::error('测试模型失败: ' . $e->getMessage());
+            return response()->json([
+                'code' => 1005,
+                'msg' => '模型测试失败',
+                'result' => array(),
+            ], 500);
+        }
+    }
+
     public function chat(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -858,104 +933,4 @@ class LlmController extends Controller
         }
     }
 
-    public function getAgents()
-    {
-        try {
-            $user = Auth::user();
-            
-            $agents = \App\Models\LlmAgent::with('model')
-                ->where('user_id', $user->id) // 只获取当前用户的智能体
-                ->orderBy('created_at', 'desc')
-                ->get();
-            
-            return response()->json([
-                'result' => [
-                    'agents' => $agents
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('获取智能体失败: ' . $e->getMessage());
-            return response()->json(['message' => '获取智能体失败'], 500);
-        }
-    }
-
-    public function getAgent($id)
-    {
-        try {
-            $user = Auth::user();
-            
-            $agent = \App\Models\LlmAgent::with('model')
-                ->where('user_id', $user->id) // 确保只能访问自己的智能体
-                ->find($id);
-            
-            if (!$agent) {
-                return response()->json(['message' => '智能体不存在'], 404);
-            }
-            
-            return response()->json(['result' => $agent]);
-        } catch (\Exception $e) {
-            Log::error('获取智能体详情失败: ' . $e->getMessage());
-            return response()->json(['message' => '获取智能体详情失败'], 500);
-        }
-    }
-
-    public function saveAgent(Request $request, $id = null)
-    {
-        try {
-            $user = Auth::user();
-            
-            $this->validate($request, [
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'avatar' => 'nullable|url',
-                'model_id' => 'required|exists:llm_models,id',
-                'system_prompt' => 'required|string',
-                'temperature' => 'nullable|numeric|min:0|max:2',
-                'top_p' => 'nullable|numeric|min:0|max:1',
-                'max_tokens' => 'nullable|integer|min:1',
-                'context_length' => 'nullable|integer|min:1',
-                'tools_config' => 'nullable|array',
-                'is_active' => 'boolean'
-            ]);
-            
-            if ($id) {
-                $agent = LlmAgent::where('user_id', $user->id)->find($id);
-                
-                if (!$agent) {
-                    return response()->json(['message' => '智能体不存在'], 404);
-                }
-                
-                $agent->update($request->all());
-            } else {
-                $validatedData = $request->all();
-                $validatedData['user_id'] = $user->id;
-                $agent = LlmAgent::create($validatedData);
-            }
-            
-            return response()->json(['result' => $agent]);
-        } catch (\Exception $e) {
-            Log::error('保存智能体失败: ' . $e->getMessage());
-            return response()->json(['message' => '保存智能体失败'], 500);
-        }
-    }
-
-    public function deleteAgent($id)
-    {
-        try {
-            $user = Auth::user();
-            
-            $agent = \App\Models\LlmAgent::where('user_id', $user->id)->find($id);
-            
-            if (!$agent) {
-                return response()->json(['message' => '智能体不存在'], 404);
-            }
-            
-            $agent->delete();
-            
-            return response()->json(['message' => '删除成功']);
-        } catch (\Exception $e) {
-            Log::error('删除智能体失败: ' . $e->getMessage());
-            return response()->json(['message' => '删除智能体失败'], 500);
-        }
-    }
 }

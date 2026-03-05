@@ -1035,6 +1035,11 @@
                 </td>
                 <td class="py-3 px-4">
                     <div class="flex items-center space-x-2">
+                        <button onclick="testModel(${model.id})"
+                                class="btn btn-outline btn-sm"
+                                title="测试模型可用性">
+                            <i class="fas fa-plug"></i>
+                        </button>
                         <button onclick="editModel(${model.id})"
                                 class="btn btn-outline btn-sm">
                             <i class="fas fa-edit"></i>
@@ -1553,6 +1558,34 @@
             } catch (error) {
                 console.error('编辑凭据失败:', error);
                 showToast('加载凭据信息失败', 'error');
+            }
+        }
+
+        // 测试模型可用性
+        async function testModel(id) {
+            showToast('正在测试模型...', 'info');
+
+            try {
+                const response = await window.taskApiFetch(`/api/v2/llm/models/${id}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.code === 9999) {
+                    const result = data.result || {};
+                    const msg = `模型可用：${result.model_name || id}（凭据：${result.credential_name || '-'}）`;
+                    showToast(msg, 'success');
+                } else {
+                    throw new Error(data.msg || '测试失败');
+                }
+            } catch (error) {
+                console.error('测试模型失败:', error);
+                showToast('模型测试失败: ' + error.message, 'error');
             }
         }
 
