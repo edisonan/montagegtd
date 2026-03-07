@@ -99,6 +99,10 @@
                                     <i class="fas fa-exchange-alt mr-2"></i>
                                     积分兑换
                                 </button>
+                                <a href="/point-mall" class="btn btn-primary w-full" style="background: linear-gradient(135deg, #0f766e, #14b8a6);">
+                                    <i class="fas fa-store mr-2"></i>
+                                    进入积分商城
+                                </a>
                                 <button class="btn btn-outline w-full" onclick="showRewards()">
                                     <i class="fas fa-gift mr-2"></i>
                                     查看奖励

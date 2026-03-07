@@ -56,4 +56,10 @@ class LlmSessionController extends \App\Http\Controllers\LlmSessionController
         $this->bootstrapAuthContext(request());
         return parent::deleteSession($id);
     }
+
+    public function regenerateSession($id)
+    {
+        $this->bootstrapAuthContext(request());
+        return parent::regenerateSession($id);
+    }
 }

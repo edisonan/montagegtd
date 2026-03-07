@@ -249,6 +249,8 @@ class NoteService {
 					'note_id' => $note->id 
 			) );
 		}
+
+		return $note;
 	}
 	public function update($note, $name, $status) {
 	    $updateParams = array(); 

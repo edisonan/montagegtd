@@ -9,15 +9,19 @@ use App\Http\Utils\ResponseDataUtil;
 use App\Models\Article;
 use App\Models\ArticleSub;
 use App\Services\ArticleService;
+use App\Services\PointGrantService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ArticleController extends Controller
 {
     protected $articleService;
+    protected $pointGrantService;
 
-    public function __construct(ArticleService $articleService)
+    public function __construct(ArticleService $articleService, PointGrantService $pointGrantService)
     {
         $this->articleService = $articleService;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function index(Request $request)
@@ -114,7 +118,25 @@ class ArticleController extends Controller
             throw new CustomException('status状态上送错误');
         }
 
+        $oldStatus = (string)$articleSub->status;
         $processCount = $this->articleService->setArticleSubStatus($articleSub, $status);
+        $freshArticleSub = $articleSub->fresh();
+        if ($oldStatus !== 'read' && (string)$status === 'read' && $freshArticleSub) {
+            try {
+                $this->pointGrantService->grantByEvent(
+                    (int)$freshArticleSub->user_id,
+                    'article_finished',
+                    'article_sub',
+                    (int)$freshArticleSub->id
+                );
+            } catch (\Throwable $e) {
+                Log::warning('grant points on article read failed', array(
+                    'article_sub_id' => $freshArticleSub->id,
+                    'user_id' => $freshArticleSub->user_id,
+                    'error' => $e->getMessage(),
+                ));
+            }
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'article' => $articleSub->article,
@@ -151,7 +173,21 @@ class ArticleController extends Controller
             'article_id' => 'required',
         ));
 
-        $this->articleService->mark($request->input('article_id'), $request->input('content'));
+        $articleMark = $this->articleService->mark($request->input('article_id'), $request->input('content'));
+        try {
+            $this->pointGrantService->grantByEvent(
+                (int)$articleMark->user_id,
+                'article_mark_created',
+                'article_mark',
+                (int)$articleMark->id
+            );
+        } catch (\Throwable $e) {
+            Log::warning('grant points on article mark failed', array(
+                'article_id' => $request->input('article_id'),
+                'user_id' => $this->getAuthUserId($request),
+                'error' => $e->getMessage(),
+            ));
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
     }

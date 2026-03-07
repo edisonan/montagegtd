@@ -342,6 +342,10 @@
             background: #f8fafc;
         }
 
+        .lesson-item.completed {
+            background: #ecfdf5;
+        }
+
         .lesson-content {
             display: flex;
             align-items: center;
@@ -402,6 +406,35 @@
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 500;
+        }
+
+        .lesson-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 12px;
+        }
+
+        .lesson-complete-btn {
+            padding: 4px 10px;
+            border: 1px solid #10b981;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #047857;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .lesson-complete-btn:hover {
+            background: #ecfdf5;
+        }
+
+        .lesson-complete-btn.done {
+            border-color: #bbf7d0;
+            background: #10b981;
+            color: #ffffff;
+            cursor: default;
         }
 
         .no-structure {
@@ -772,7 +805,7 @@
             }
         }
 
-        function renderCourseStructure(structure) {
+        function renderCourseStructure(structure, isJoined) {
             if (!Array.isArray(structure) || !structure.length) {
                 $('#course_structure_box').html('<div class="no-structure"><i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i><h4 class="text-gray-600 mb-2">暂无课程内容</h4><p class="text-gray-400 text-sm">课程管理员尚未添加章节内容</p></div>');
                 return;
@@ -789,7 +822,7 @@
                         else if (child.item_type === 'quiz') icon = 'fa-question-circle';
                         else if (child.item_type === 'assignment') icon = 'fa-file-alt';
                         else if (child.item_type === 'reading') icon = 'fa-book';
-                        html += '<li class="lesson-item"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><span class="lesson-type">' + escapeHtml((child.item_type || '').toUpperCase()) + '</span></li>';
+                        html += '<li class="lesson-item" data-course-item-id="' + Number(child.id) + '"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><div class="lesson-actions"><span class="lesson-type">' + escapeHtml((child.item_type || '').toUpperCase()) + '</span>' + (isJoined ? '<button type="button" class="lesson-complete-btn complete-course-item-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-check mr-1"></i>标记完成</button>' : '') + '</div></li>';
                     });
                     html += '</ul>';
                 }
@@ -812,7 +845,7 @@
                 COURSE_DETAIL_DATA = { course: course, structure: structure, is_joined: isJoined };
                 renderCourseInfo(course);
                 renderCourseActions(course, isJoined);
-                renderCourseStructure(structure);
+                renderCourseStructure(structure, isJoined);
             }).catch(function() {
                 alert('课程加载失败，请稍后重试');
             });
@@ -887,6 +920,41 @@
                 }).catch(function() {
                     alert('网络错误，请稍后重试');
                 }).finally(function() {
+                    $btn.prop('disabled', false).html(original);
+                });
+            });
+
+            $(document).on('click', '.complete-course-item-btn', function(e) {
+                e.preventDefault();
+                if (!apiRequest) {
+                    alert('API客户端未初始化');
+                    return;
+                }
+
+                var $btn = $(this);
+                if ($btn.hasClass('done')) {
+                    return;
+                }
+
+                var itemId = Number($btn.data('course-item-id') || 0);
+                if (!itemId) {
+                    alert('课时ID错误');
+                    return;
+                }
+
+                var original = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>处理中');
+
+                apiRequest('POST', '/course-items/' + itemId + '/complete', {}).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        $btn.addClass('done').html('<i class="fas fa-check-circle mr-1"></i>已完成').prop('disabled', true);
+                        $btn.closest('.lesson-item').addClass('completed');
+                        return;
+                    }
+                    alert((resp && resp.msg) ? resp.msg : '标记完成失败');
+                    $btn.prop('disabled', false).html(original);
+                }).catch(function() {
+                    alert('网络错误，请稍后重试');
                     $btn.prop('disabled', false).html(original);
                 });
             });

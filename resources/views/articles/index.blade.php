@@ -279,6 +279,37 @@
             gap: 8px;
         }
 
+        .tool-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tool-icon-btn:hover {
+            border-color: #4a90e2;
+            color: #4a90e2;
+            background: #f8fbff;
+            transform: translateY(-1px);
+        }
+
+        .tool-icon-btn.active {
+            border-color: #4a90e2;
+            color: #4a90e2;
+            background: rgba(74, 144, 226, 0.1);
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
         .tool-label {
             color: #64748b;
             font-size: 0.875rem;
@@ -850,6 +881,10 @@
                 margin-top: 12px;
             }
 
+            .mobile-only {
+                display: inline-flex;
+            }
+
             .article-meta {
                 flex-direction: column;
                 align-items: flex-start;
@@ -1020,7 +1055,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reading-page">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <!-- 侧边栏导航 -->
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-1" id="sidebarColumn">
                 <div class="reading-sidebar">
                     <div class="sidebar-header">
                         <h3 class="sidebar-title">
@@ -1074,18 +1109,18 @@
                         <div class="content-tools">
                             <div class="tool-item">
                                 <span class="tool-label">一目十行</span>
-                                <label class="tool-switch">
-                                    <input type="checkbox" id="unable_desc">
-                                    <span class="tool-slider"></span>
-                                </label>
+                                <input type="checkbox" id="unable_desc" class="hidden">
+                                <button type="button" id="unable_desc_btn" class="tool-icon-btn" title="一目十行">
+                                    <i class="fas fa-align-left"></i>
+                                </button>
                             </div>
 
                             <div class="tool-item">
                                 <span class="tool-label">屏蔽图片</span>
-                                <label class="tool-switch">
-                                    <input type="checkbox" id="unable_img">
-                                    <span class="tool-slider"></span>
-                                </label>
+                                <input type="checkbox" id="unable_img" class="hidden">
+                                <button type="button" id="unable_img_btn" class="tool-icon-btn" title="屏蔽图片">
+                                    <i class="fas fa-image"></i>
+                                </button>
                             </div>
 
                             <div class="tool-actions">
@@ -1098,6 +1133,10 @@
                                     <i class="fas fa-plus"></i>
                                     添加订阅
                                 </a>
+                                <button type="button" class="tool-btn mobile-only" id="toggleCategoryBtn">
+                                    <i class="fas fa-folder-tree"></i>
+                                    订阅分类
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1310,16 +1349,26 @@
                 return topic || '导图节点';
             }
 
+            function sanitizeRemark(text) {
+                var remark = String(text || '').replace(/\s+/g, ' ').trim();
+                if (!remark) return '';
+                if (remark.length > 180) {
+                    remark = remark.slice(0, 180);
+                }
+                return remark;
+            }
+
             function normalizeMindTree(input, depth) {
                 var currentDepth = Number(depth || 0);
                 if (currentDepth > 3) return null;
 
                 if (typeof input === 'string') {
-                    return { topic: sanitizeTopic(input), children: [] };
+                    return { topic: sanitizeTopic(input), content: '', children: [] };
                 }
                 if (!input || typeof input !== 'object') return null;
 
                 var topic = sanitizeTopic(input.topic || input.title || input.name || input.text, '导图节点');
+                var content = sanitizeRemark(input.content || input.remark || input.note || input.summary || '');
                 var rawChildren = input.children || input.nodes || input.items || [];
                 var children = [];
                 if (Array.isArray(rawChildren)) {
@@ -1329,7 +1378,7 @@
                         if (children.length >= 8) break;
                     }
                 }
-                return { topic: topic, children: children };
+                return { topic: topic, content: content, children: children };
             }
 
             function extractJsonObject(text) {
@@ -1353,19 +1402,22 @@
                 var children = [];
                 var maxChildren = Math.min(5, parts.length);
                 for (var i = 0; i < maxChildren; i++) {
-                    children.push({ topic: sanitizeTopic(parts[i], '要点' + (i + 1)), children: [] });
+                    children.push({ topic: sanitizeTopic(parts[i], '要点' + (i + 1)), content: sanitizeRemark(parts[i]), children: [] });
                 }
                 if (children.length === 0) {
-                    children.push({ topic: '核心观点', children: [] });
-                    children.push({ topic: '关键细节', children: [] });
-                    children.push({ topic: '可行动事项', children: [] });
+                    children.push({ topic: '核心观点', content: '', children: [] });
+                    children.push({ topic: '关键细节', content: '', children: [] });
+                    children.push({ topic: '可行动事项', content: '', children: [] });
                 }
-                return { topic: cleanTitle, children: children };
+                return { topic: cleanTitle, content: '', children: children };
             }
 
             function renderMindTree(node, depth) {
                 var level = Number(depth || 0);
                 var html = '<div class="article-mind-node level-' + level + '"><div class="article-mind-topic">' + escapeHtml(node.topic || '') + '</div>';
+                if (node.content) {
+                    html += '<div class="text-xs text-gray-600 mt-1 leading-5">' + escapeHtml(node.content) + '</div>';
+                }
                 if (Array.isArray(node.children) && node.children.length > 0) {
                     html += '<div class="article-mind-children">';
                     for (var i = 0; i < node.children.length; i++) {
@@ -1410,8 +1462,8 @@
                 var query = [
                     '请根据我提供的文章标题和内容，生成思维导图。',
                     '只返回JSON，不要解释，不要markdown。',
-                    '格式: {"topic":"根节点","children":[{"topic":"一级节点","children":[{"topic":"二级节点","children":[]}]}]}',
-                    '要求: 中文；层级不超过3层；一级节点3-6个；topic简洁。'
+                    '格式: {"topic":"根节点","content":"节点备注","children":[{"topic":"一级节点","content":"备注","children":[{"topic":"二级节点","content":"备注","children":[]}]}]}',
+                    '要求: 中文；层级不超过3层；一级节点3-6个；topic简洁；关键节点要给content备注（20-80字，可为空字符串）。'
                 ].join('\n');
 
                 var sessionId = await ensureAiSession();
@@ -1438,6 +1490,7 @@
                 var decoder = new TextDecoder();
                 var buffer = '';
                 var finalText = '';
+                var reasoningText = '';
                 var doneSignal = false;
 
                 while (!doneSignal) {
@@ -1462,20 +1515,32 @@
                             var piece = '';
                             if (typeof delta.content === 'string' && delta.content) {
                                 piece = delta.content;
-                            } else if (typeof delta.reasoning === 'string' && delta.reasoning) {
-                                piece = delta.reasoning;
+                            } else if (typeof data.content === 'string' && data.content) {
+                                piece = data.content;
+                            } else if (data.message && typeof data.message.content === 'string' && data.message.content) {
+                                piece = data.message.content;
                             }
                             if (piece) finalText += piece;
+                            if (typeof delta.reasoning === 'string' && delta.reasoning) {
+                                reasoningText += delta.reasoning;
+                            }
                         } catch (e) {}
                     }
                 }
 
+                console.info('[ArticleMindmap] AI raw content output:', finalText);
+                if (reasoningText) {
+                    console.info('[ArticleMindmap] AI reasoning output:', reasoningText);
+                }
                 var parsed = extractJsonObject(finalText);
-                if (!parsed) throw new Error('AI输出无法解析为导图JSON');
+                if (!parsed) {
+                    var rawPreview = String(finalText || '').replace(/\s+/g, ' ').trim().slice(0, 800);
+                    throw new Error('AI输出无法解析为导图JSON。原始输出预览：' + (rawPreview || '[empty]'));
+                }
 
                 var normalized = normalizeMindTree(parsed, 0);
                 if (!normalized || !Array.isArray(normalized.children) || normalized.children.length === 0) {
-                    throw new Error('AI导图结构为空');
+                    throw new Error('AI导图结构为空。请检查AI输出结构是否包含children节点。');
                 }
                 if (!normalized.topic || normalized.topic === '导图节点') {
                     normalized.topic = sanitizeTopic(title, '文章导图');
@@ -1483,9 +1548,14 @@
                 return normalized;
             }
 
-            async function createMindNode(name, parentMindId) {
-                var payload = { name: sanitizeTopic(name, '导图节点') };
+            async function createMindNode(name, parentMindId, content, sourceType, sourceId) {
+                var payload = {
+                    name: sanitizeTopic(name, '导图节点'),
+                    content: sanitizeRemark(content || '')
+                };
                 if (parentMindId) payload.parent_mind_id = parentMindId;
+                if (sourceType) payload.source_type = sourceType;
+                if (sourceId) payload.source_id = Number(sourceId);
                 var result = await apiRequest('POST', '/minds', payload);
                 if (!result || result.code !== 9999 || !result.result || !result.result.id) {
                     throw new Error((result && result.msg) ? result.msg : '保存导图节点失败');
@@ -1494,12 +1564,14 @@
             }
 
             async function saveMindTreeToServer(tree) {
-                var rootId = await createMindNode(tree.topic || '文章导图', 0);
+                var sourceType = 'article';
+                var sourceId = Number(articleMindState.articleSubId || 0);
+                var rootId = await createMindNode(tree.topic || '文章导图', 0, tree.content || '', sourceType, sourceId);
                 async function createChildren(parentId, children) {
                     if (!Array.isArray(children) || children.length === 0) return;
                     for (var i = 0; i < children.length; i++) {
                         var child = children[i];
-                        var childId = await createMindNode(child.topic || ('节点' + (i + 1)), parentId);
+                        var childId = await createMindNode(child.topic || ('节点' + (i + 1)), parentId, child.content || '', sourceType, sourceId);
                         await createChildren(childId, child.children || []);
                     }
                 }
@@ -1678,7 +1750,7 @@
                         + '</div>'
                         + '<div class="article-footer"><div class="action-buttons" style="margin-left:auto;">'
                         + '<button type="button" class="action-btn ai-assist-btn" data-content-id="desc' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI助手"><i class="fas fa-robot"></i><span class="action-label">AI助手</span></button>'
-                        + '<button type="button" class="action-btn article-mindmap-btn" data-content-id="desc' + subId + '" data-article-sub-id="' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI生成导图"><i class="fas fa-project-diagram"></i><span class="action-label">导图</span></button>'
+                        + '<button type="button" class="action-btn article-mindmap-btn" data-content-id="desc' + subId + '" data-article-sub-id="' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI生成导图"><i class="fas fa-brain"></i><span class="action-label">导图</span></button>'
                         + '<div class="share-container"><button type="button" class="action-btn share-btn" title="分享"><i class="fas fa-share-alt"></i><span class="action-label">分享</span></button><div class="share-menu"><a href="javascript:void(0);" class="share-option icon-heart" data-id="' + articleId + '"><i class="fas fa-heart"></i><span>记录想法</span></a></div></div>'
                         + '<button type="button" class="action-btn set_read ' + (articleSub.status === 'read' ? 'active' : '') + '" data-article-id="' + subId + '" title="标记已读"><i class="fas fa-check"></i><span class="action-label">已读</span></button>'
                         + '<button type="button" class="action-btn set_read_later ' + (articleSub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '" title="稍后阅读"><i class="far fa-clock"></i><span class="action-label">稍后</span></button>'
@@ -2126,9 +2198,16 @@
                 });
             }
 
+            function syncToolButtons() {
+                $('#unable_desc_btn').toggleClass('active', $('#unable_desc').is(':checked'));
+                $('#unable_img_btn').toggleClass('active', $('#unable_img').is(':checked'));
+            }
+
             // 图片屏蔽功能
-            $("#unable_img").on('change', function() {
-                var isChecked = $(this).is(':checked');
+            $("#unable_img_btn").on('click', function() {
+                var isChecked = !$('#unable_img').is(':checked');
+                $('#unable_img').prop('checked', isChecked);
+                syncToolButtons();
                 $.cookie('unable_img', isChecked, { expires: 365, path: '/' });
 
                 showNotification(isChecked ? '已屏蔽图片' : '已显示图片', 'success');
@@ -2138,8 +2217,10 @@
             });
 
             // 一目十行功能
-            $("#unable_desc").on('change', function() {
-                var isChecked = $(this).is(':checked');
+            $("#unable_desc_btn").on('click', function() {
+                var isChecked = !$('#unable_desc').is(':checked');
+                $('#unable_desc').prop('checked', isChecked);
+                syncToolButtons();
                 $.cookie('unable_desc', isChecked, { expires: 365, path: '/' });
 
                 if (isChecked) {
@@ -2225,9 +2306,10 @@
                 var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
 
                 if (isMobile) {
-                    $("#navBody").hide();
+                    $("#sidebarColumn").hide();
                     $(".feed-list").hide();
                 } else {
+                    $("#sidebarColumn").show();
                     processNav(status);
                 }
 
@@ -2500,12 +2582,17 @@
             // 初始化
             $('#unable_desc').prop('checked', unableDesc);
             $('#unable_img').prop('checked', unableImg);
+            syncToolButtons();
             if (currentFeedId) {
                 $('#discoverBtn').show();
             }
             renderStatusTabs();
             loadArticleListByApi();
             checkMobile();
+
+            $('#toggleCategoryBtn').on('click', function() {
+                $('#sidebarColumn').stop(true, true).slideToggle(160);
+            });
 
             // 检查是否启用了一目十行
             if (unableDesc) {

@@ -99,12 +99,12 @@
                             ],
                             [
                                 'url'=>'/llm/index',
-                                'label'=>'AI助手',
-                                'icon'=>'fas fa-robot',
+                                'label'=>'智能助手',
+                                'icon'=>'fas fa-comments',
                                 'submenu' => [
-                                    ['url'=>'/llm/index', 'label'=>'AI助手', 'icon'=>'fas fa-comments'],
-                                    ['url'=>'/llm/llmmanagement', 'label'=>'LLM管理', 'icon'=>'fas fa-cogs'],
-                                    ['url'=>'/llm/agentmanagement', 'label'=>'智能体管理', 'icon'=>'fas fa-user-robot'],
+                                    ['url'=>'/llm/index', 'label'=>'智能助手', 'icon'=>'fas fa-comments'],
+                                    ['url'=>'/llm/llmmanagement', 'label'=>'模型管理', 'icon'=>'fas fa-cogs'],
+                                    ['url'=>'/llm/agentmanagement', 'label'=>'智能体管理', 'icon'=>'fas fa-robot'],
                                 ]
                             ],
                         ];
@@ -177,6 +177,10 @@
                                 <a href="{{ url('points') }}" class="dropdown-item">
                                     <i class="fas fa-medal text-yellow-500"></i>
                                     <span>积分中心</span>
+                                </a>
+                                <a href="{{ url('point-mall') }}" class="dropdown-item">
+                                    <i class="fas fa-store text-emerald-500"></i>
+                                    <span>积分商城</span>
                                 </a>
                                 <a href="{{ url('achievements') }}" class="dropdown-item">
                                     <i class="fas fa-trophy text-purple-500"></i>

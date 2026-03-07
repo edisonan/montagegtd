@@ -7,15 +7,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Goal;
 use App\Services\GoalService;
+use App\Services\PointGrantService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GoalController extends Controller
 {
     protected $goalService;
+    protected $pointGrantService;
 
-    public function __construct(GoalService $goalService)
+    public function __construct(GoalService $goalService, PointGrantService $pointGrantService)
     {
         $this->goalService = $goalService;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function index(Request $request)
@@ -56,8 +60,25 @@ class GoalController extends Controller
     {
         $this->authorize('destroy', $goal);
 
+        $oldStatus = (int)$goal->status;
         $status = $request->input('type') === 'finish' ? 2 : 3;
         $goal->update(array('status' => $status));
+        if ($oldStatus !== 2 && (int)$status === 2) {
+            try {
+                $this->pointGrantService->grantByEvent(
+                    (int)$goal->user_id,
+                    'goal_completed',
+                    'goal',
+                    (int)$goal->id
+                );
+            } catch (\Throwable $e) {
+                Log::warning('grant points on goal completion failed', array(
+                    'goal_id' => $goal->id,
+                    'user_id' => $goal->user_id,
+                    'error' => $e->getMessage(),
+                ));
+            }
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
     }

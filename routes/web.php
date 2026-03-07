@@ -39,8 +39,7 @@ Route::group([
     Route::post('/note', 'NoteController@store');
     Route::delete('/note/{note}', 'NoteController@destroy');
     Route::get('/note/getRecord/{note}', 'NoteController@getRecord');
-    Route::get('/noteupdate/{note}', 'NoteController@update');
-    Route::post('/noteupdate/{note}', 'NoteController@update');
+    Route::get('/notes/{note}/edit', 'NoteController@update');
 
     Route::get('/minds', 'MindController@index');
     Route::post('/mind', 'MindController@store');
@@ -150,6 +149,10 @@ Route::group([
     Route::post('/setting', 'SettingController@update');
 
     Route::get('/points', 'PointController@index');
+    Route::get('/point-mall', 'PointMallController@index');
+    Route::get('/point-mall/tree', 'PointMallController@tree');
+    Route::get('/point-mall/lottery', 'PointMallController@lottery');
+    Route::get('/point-mall/bus', 'PointMallController@bus');
     Route::get('/achievements', 'AchievementController@index');
     Route::post('/achievement/claim', 'AchievementController@claim');
 

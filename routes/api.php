@@ -88,6 +88,13 @@ Route::prefix('v2')->group(function () {
         Route::get('/achievements', 'Api\\V2\\AchievementController@index');
         Route::get('/notifications', 'Api\\V2\\NotificationController@index');
         Route::get('/points', 'Api\\V2\\PointController@index');
+        Route::get('/point-mall/entrances', 'Api\\V2\\PointMallController@entrances');
+        Route::get('/point-mall/goods', 'Api\\V2\\PointMallController@goods');
+        Route::get('/point-mall/orders', 'Api\\V2\\PointMallController@orders');
+        Route::get('/point-mall/tree/overview', 'Api\\V2\\PointMallGameplayController@treeOverview');
+        Route::get('/point-mall/tree/leaderboard', 'Api\\V2\\PointMallGameplayController@treeLeaderboard');
+        Route::get('/point-mall/lottery/overview', 'Api\\V2\\PointMallGameplayController@lotteryOverview');
+        Route::get('/point-mall/bus/overview', 'Api\\V2\\PointMallGameplayController@busOverview');
         Route::get('/statistics', 'Api\\V2\\StatisticsController@index');
         Route::get('/accounts', 'Api\\V2\\AccountController@index');
         Route::get('/personal-access-tokens', 'Api\\V2\\PersonalAccessTokenController@index');
@@ -190,6 +197,14 @@ Route::prefix('v2')->group(function () {
         Route::put('/daily-summaries/{dailySummary}', 'Api\\V2\\DailySummaryController@update');
         Route::delete('/daily-summaries/{dailySummary}', 'Api\\V2\\DailySummaryController@destroy');
         Route::post('/achievements/claim', 'Api\\V2\\AchievementController@claim');
+        Route::post('/point-mall/purchase', 'Api\\V2\\PointMallController@purchase');
+        Route::post('/point-mall/tree/plant', 'Api\\V2\\PointMallGameplayController@treePlant');
+        Route::post('/point-mall/tree/{treeId}/water', 'Api\\V2\\PointMallGameplayController@treeWater');
+        Route::post('/point-mall/tree/{treeId}/decorate', 'Api\\V2\\PointMallGameplayController@treeDecorate');
+        Route::post('/point-mall/lottery/draw', 'Api\\V2\\PointMallGameplayController@lotteryDraw');
+        Route::post('/point-mall/bus/buy-line', 'Api\\V2\\PointMallGameplayController@busBuyLine');
+        Route::post('/point-mall/bus/start-run', 'Api\\V2\\PointMallGameplayController@busStartRun');
+        Route::post('/point-mall/bus/run/{runId}/tick', 'Api\\V2\\PointMallGameplayController@busTickRun');
         Route::post('/notifications/read-all', 'Api\\V2\\NotificationController@markAllRead');
         Route::post('/notifications/{id}/read', 'Api\\V2\\NotificationController@markRead');
         Route::post('/personal-access-tokens', 'Api\\V2\\PersonalAccessTokenController@store');
@@ -229,6 +244,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/course-items', 'Api\\V2\\CourseItemController@storeFromModal');
         Route::post('/course-items/{id}', 'Api\\V2\\CourseItemController@updateFromModal');
         Route::put('/course-items/{id}', 'Api\\V2\\CourseItemController@updateFromModal');
+        Route::post('/course-items/{id}/complete', 'Api\\V2\\CourseItemController@complete');
         Route::delete('/course-items/{id}', 'Api\\V2\\CourseItemController@destroy');
         Route::post('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@store');
         Route::post('/courses/{courseId}/discussions/{id}/reply', 'Api\\V2\\DiscussionController@reply');
@@ -239,6 +255,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/llm/sessions', 'Api\\V2\\LlmSessionController@createSession');
         Route::put('/llm/sessions/{id}/title', 'Api\\V2\\LlmSessionController@updateSessionTitle');
         Route::post('/llm/sessions/{id}/clear', 'Api\\V2\\LlmSessionController@clearSession');
+        Route::post('/llm/sessions/{id}/regenerate', 'Api\\V2\\LlmSessionController@regenerateSession');
         Route::post('/llm/sessions/{id}/toggle-pin', 'Api\\V2\\LlmSessionController@togglePinSession');
         Route::delete('/llm/sessions/{id}', 'Api\\V2\\LlmSessionController@deleteSession');
 

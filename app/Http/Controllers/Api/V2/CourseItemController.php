@@ -5,16 +5,21 @@ namespace App\Http\Controllers\Api\V2;
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
+use App\Models\UserProgress;
 use App\Services\CourseService;
+use App\Services\PointGrantService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CourseItemController extends Controller
 {
     protected $courseService;
+    protected $pointGrantService;
 
-    public function __construct(CourseService $courseService)
+    public function __construct(CourseService $courseService, PointGrantService $pointGrantService)
     {
         $this->courseService = $courseService;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function index(Request $request, $courseId)
@@ -202,6 +207,65 @@ class CourseItemController extends Controller
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'msg' => '课程项目删除成功',
+        )));
+    }
+
+    public function complete(Request $request, $id)
+    {
+        $courseItem = $this->courseService->getCourseItemById($id);
+        if (!$courseItem) {
+            throw new CustomException('课程项目不存在');
+        }
+
+        $course = $this->courseService->getCourseById($courseItem->course_id);
+        if (!$course) {
+            throw new CustomException('课程不存在');
+        }
+
+        $userId = (int)$this->getAuthUserId($request);
+        if (!$userId) {
+            throw new CustomException('用户未认证');
+        }
+
+        $userCourse = $this->courseService->getUserCourseByUserIdAndCourseId($userId, $courseItem->course_id);
+        if (!$userCourse) {
+            throw new CustomException('请先加入课程后再标记课时完成');
+        }
+
+        $progress = UserProgress::updateOrCreate(
+            array(
+                'user_id' => $userId,
+                'course_item_id' => (int)$courseItem->id,
+            ),
+            array(
+                'user_course_id' => (int)$userCourse->id,
+                'status' => 'completed',
+                'completed_at' => now(),
+                'last_accessed_at' => now(),
+            )
+        );
+
+        try {
+            $this->pointGrantService->grantByEvent(
+                $userId,
+                'course_item_completed',
+                'course_item',
+                (int)$courseItem->id,
+                array(
+                    'event_key' => 'course_item_completed:user:' . $userId . ':item:' . (int)$courseItem->id,
+                )
+            );
+        } catch (\Throwable $e) {
+            Log::warning('grant points on course item completion failed', array(
+                'course_item_id' => $courseItem->id,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ));
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'user_progress' => $progress,
+            'msg' => '课程课时已标记为完成',
         )));
     }
 }

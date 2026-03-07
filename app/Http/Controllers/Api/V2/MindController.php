@@ -7,15 +7,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Mind;
 use App\Services\MindService;
+use App\Services\PointGrantService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MindController extends Controller
 {
     protected $mindService;
+    protected $pointGrantService;
 
-    public function __construct(MindService $mindService)
+    public function __construct(MindService $mindService, PointGrantService $pointGrantService)
     {
         $this->mindService = $mindService;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function index(Request $request)
@@ -33,11 +37,31 @@ class MindController extends Controller
     {
         $this->validate($request, array(
             'name' => 'required',
+            'content' => 'nullable|string',
+            'source_type' => 'nullable|string|max:50',
+            'source_id' => 'nullable|integer|min:1',
         ));
 
         $name = $request->input('name');
         $parentMindId = $request->input('parent_mind_id', 0);
-        $mind = $this->mindService->store($name, $parentMindId);
+        $content = $request->input('content', null);
+        $sourceType = $request->input('source_type', null);
+        $sourceId = $request->input('source_id', null);
+        $mind = $this->mindService->store($name, $parentMindId, $content, $sourceType, $sourceId);
+        try {
+            $this->pointGrantService->grantByEvent(
+                (int)$mind->user_id,
+                'mind_created',
+                'mind',
+                (int)$mind->id
+            );
+        } catch (\Throwable $e) {
+            Log::warning('grant points on mind store failed', array(
+                'mind_id' => $mind->id,
+                'user_id' => $mind->user_id,
+                'error' => $e->getMessage(),
+            ));
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'id' => $mind->id,

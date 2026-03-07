@@ -53,7 +53,7 @@ class MindService {
 	 * @throws CustomException
 	 * @return \App\Models\Mind
 	 */
-	public function store($name, $parentMindId) {
+	public function store($name, $parentMindId, $content = null, $sourceType = null, $sourceId = null) {
 		$isRoot = 1;
 		
 		if (! empty ( $parentMindId )) {
@@ -66,9 +66,18 @@ class MindService {
 		
 		$mind = new Mind ();
 		$mind->name = htmlspecialchars ( $name );
+		if (!empty($content)) {
+			$mind->content = str_replace ( array ( "\r\n", "\r", "\n" ), "\\r\\n", $content );
+		}
 		$mind->parent_mind_id = $parentMindId;
 		$mind->is_root = $isRoot;
 		$mind->user_id = \Auth::id ();
+		if (!empty($sourceType)) {
+			$mind->source_type = $sourceType;
+		}
+		if (!empty($sourceId)) {
+			$mind->source_id = intval($sourceId);
+		}
 		$mind->save ();
 		
 		return $mind;

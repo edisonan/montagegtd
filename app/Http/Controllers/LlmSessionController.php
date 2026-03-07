@@ -37,12 +37,14 @@ class LlmSessionController extends Controller
      */
     public function getSessions(Request $request)
     {
-        $sessions = $this->sessionRepository->getUserSessions(null, [], 'last_message_at', 'desc')
+        $sessions = $this->sessionRepository->getUserSessions(null, ['agent'], 'last_message_at', 'desc')
             ->map(function ($session) {
                 return [
                     'id' => $session->id,
                     'uuid' => $session->uuid,
                     'title' => $session->title ?: '未命名会话',
+                    'agent_id' => $session->agent_id,
+                    'agent_name' => optional($session->agent)->name,
                     'is_pinned' => $session->is_pinned,
                     'last_message_at' => $session->last_message_at ? $session->last_message_at->format('Y-m-d H:i:s') : null,
                     'updated_at' => $session->updated_at->format('Y-m-d H:i:s'),
@@ -186,6 +188,64 @@ class LlmSessionController extends Controller
     }
 
     /**
+     * 删除最后一轮对话并返回原问题，用于重新生成
+     */
+    public function regenerateSession($id)
+    {
+        $session = $this->sessionRepository->findById($id, null, ['agent']);
+
+        if (!$session) {
+            return response()->json([
+                'success' => false,
+                'message' => '会话不存在或无权限访问'
+            ], 404);
+        }
+
+        if (!$this->conversationSupportsSession()) {
+            return response()->json([
+                'success' => false,
+                'message' => '当前环境暂不支持会话重试'
+            ], 400);
+        }
+
+        $lastConversation = LlmConversation::where('session_id', $session->id)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if (!$lastConversation || empty($lastConversation->question)) {
+            return response()->json([
+                'success' => false,
+                'message' => '当前会话没有可重新生成的内容'
+            ], 400);
+        }
+
+        $question = $lastConversation->question;
+        $lastConversation->delete();
+
+        $latestConversation = LlmConversation::where('session_id', $session->id)
+            ->orderBy('answered_at', 'desc')
+            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $session->message_count = LlmConversation::where('session_id', $session->id)->count();
+        $session->last_message_at = $latestConversation
+            ? ($latestConversation->answered_at ?: $latestConversation->updated_at ?: $latestConversation->created_at)
+            : null;
+        $session->save();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'session_id' => $session->id,
+                'agent_id' => $session->agent_id,
+                'agent_name' => optional($session->agent)->name,
+                'query' => $question,
+            ]
+        ]);
+    }
+
+    /**
      * 清空指定会话的对话内容
      */
     public function clearSession($id)
@@ -262,8 +322,10 @@ class LlmSessionController extends Controller
                     'description' => $session->agent->description,
                     'prompt' => $session->agent->prompt,
                 ] : null,
+                'agent_name' => optional($session->agent)->name,
                 'is_pinned' => $session->is_pinned,
                 'last_message_at' => $session->last_message_at ? $session->last_message_at->format('Y-m-d H:i:s') : null,
+                'updated_at' => optional($session->updated_at)->format('Y-m-d H:i:s'),
                 'messages' => $messages,
             ]
         ]);

@@ -11,7 +11,7 @@
     <style>
         /* 整体布局优化 */
         .edit-note-container {
-            max-width: 768px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
@@ -459,7 +459,31 @@
     <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
-            : null;
+            : function(method, path, params) {
+                const upperMethod = String(method || 'GET').toUpperCase();
+                const fetcher = window.taskApiFetch || window.fetch;
+                let url = '/api/v2' + path;
+                const options = {
+                    method: upperMethod,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                };
+                if (upperMethod === 'GET' && params && typeof params === 'object') {
+                    const sp = new URLSearchParams();
+                    Object.keys(params).forEach(function(key) {
+                        const val = params[key];
+                        if (val !== undefined && val !== null && val !== '') sp.append(key, val);
+                    });
+                    const qs = sp.toString();
+                    if (qs) url += (url.indexOf('?') >= 0 ? '&' : '?') + qs;
+                } else if (params && typeof params === 'object') {
+                    options.headers['Content-Type'] = 'application/json';
+                    options.body = JSON.stringify(params);
+                }
+                return fetcher(url, options).then(function(resp) { return resp.json(); });
+            };
 
         function waitTokenReady() {
             if (window.__taskTokenBootstrapPromise && typeof window.__taskTokenBootstrapPromise.then === 'function') {
@@ -533,14 +557,15 @@
             }
 
             return apiRequest('GET', '/notes/' + noteIdFromPath, {}).then(function(response) {
-                if (!response || response.code != 9999 || !response.data) {
+                const payload = response && (response.result || response.data || null);
+                if (!response || Number(response.code) !== 9999 || !payload) {
                     throw new Error((response && response.msg) ? response.msg : '加载失败');
                 }
 
-                currentNote = response.data;
+                currentNote = payload;
                 const noteContentInput = document.getElementById('note-content');
                 if (noteContentInput) {
-                    noteContentInput.value = (currentNote.name || '').replace(/<br\s*\/?>/ig, '\n');
+                    noteContentInput.value = decodeNoteContent(currentNote.name || '');
                 }
 
                 const timeNode = document.getElementById('note-updated-time');
@@ -557,6 +582,13 @@
             });
         }
 
+        function decodeNoteContent(value) {
+            const html = String(value || '').replace(/<br\s*\/?>/ig, '\n');
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = html;
+            return textarea.value;
+        }
+
         // 全局变量
         let recorder = null;
         let easymde = null;
@@ -565,10 +597,18 @@
         let startTime = null;
         let currentNote = null;
         const noteIdFromPath = (function() {
+            const serverNoteId = Number('{{ isset($note_id) ? (int)$note_id : 0 }}' || 0);
+            if (serverNoteId > 0) {
+                return serverNoteId;
+            }
             const parts = (window.location.pathname || '').split('/').filter(Boolean);
-            const last = parts.length ? parts[parts.length - 1] : '';
-            const parsed = parseInt(last, 10);
-            return Number.isFinite(parsed) ? parsed : 0;
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const parsed = parseInt(parts[i], 10);
+                if (Number.isFinite(parsed) && parsed > 0) {
+                    return parsed;
+                }
+            }
+            return 0;
         })();
 
         // 初始化Markdown编辑器

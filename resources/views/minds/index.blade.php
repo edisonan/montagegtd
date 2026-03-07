@@ -155,7 +155,7 @@
                     var tag = map && map.tag ? map.tag : {};
                     return '<a href="/minds?tag_id=' + Number(tag.id || 0) + '" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors duration-200"><i class="fas fa-hashtag mr-0.5 text-xs"></i>' + escapeHtml(tag.name || '') + '</a>';
                 }).join('');
-                tagsHtml += '<button onclick="addTagToMind(\'' + Number(mind.id) + '\')" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200" title="添加标签"><i class="fas fa-plus mr-0.5 text-xs"></i>标签</button>';
+                tagsHtml += '<button class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors duration-200 add-mind-tag-btn" data-mind-id="' + Number(mind.id) + '" title="添加标签"><i class="fas fa-plus mr-0.5 text-xs"></i>标签</button>';
 
                 return (
                     '<div id="' + Number(mind.id) + '" class="group flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200">' +
@@ -178,7 +178,7 @@
                         '</div>' +
                         '<div class="flex items-center space-x-2">' +
                             '<a href="/mind/' + Number(mind.id) + '" class="btn btn-sm btn-outline flex items-center group-hover:opacity-100 sm:opacity-0 transition-opacity duration-200" title="编辑导图"><i class="fas fa-edit mr-1"></i><span class="hidden sm:inline">编辑</span></a>' +
-                            '<button onclick="confirmDeleteMind(\'' + Number(mind.id) + '\', \'' + escapeHtml(mind.name || '') + '\')" class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center group-hover:opacity-100 sm:opacity-0 transition-opacity duration-200" title="删除导图"><i class="fas fa-trash-alt mr-1"></i><span class="hidden sm:inline">删除</span></button>' +
+                            '<button class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center group-hover:opacity-100 sm:opacity-0 transition-opacity duration-200 delete-mind-btn" data-mind-id="' + Number(mind.id) + '" data-mind-name="' + encodeURIComponent(String(mind.name || '')) + '" title="删除导图"><i class="fas fa-trash-alt mr-1"></i><span class="hidden sm:inline">删除</span></button>' +
                             '<div class="relative dropdown">' +
                                 '<button class="btn btn-sm btn-secondary flex items-center"><i class="fas fa-ellipsis-h"></i></button>' +
                                 '<div class="dropdown-menu hidden" style="right: 0; left: auto; min-width: 160px;">' +
@@ -307,6 +307,36 @@
 
             // 添加标签到思维导图
             function addTagToMind(mindId) {
+                if (typeof Swal === 'undefined') {
+                    var tagName = prompt('请输入标签名称');
+                    if (!tagName) return;
+                    tagName = String(tagName).trim();
+                    if (!tagName) {
+                        showToast('error', '请输入标签名称');
+                        return;
+                    }
+                    if (tagName.length > 20) {
+                        showToast('error', '标签名称不能超过20个字符');
+                        return;
+                    }
+                    if (!apiRequest) {
+                        showToast('error', 'API客户端未初始化');
+                        return;
+                    }
+                    apiRequest('POST', '/minds/' + mindId + '/tags', {
+                        tag_name: tagName
+                    }).then(function(response) {
+                        if (response.code === 9999) {
+                            loadMinds(Number((mindsState.pagination || {}).current_page || 1));
+                            showToast('success', '标签添加成功');
+                        } else {
+                            showToast('error', response.msg || '添加失败');
+                        }
+                    }).catch(function() {
+                        showToast('error', '网络错误，请稍后重试');
+                    });
+                    return;
+                }
                 Swal.fire({
                     title: '添加标签',
                     input: 'text',
@@ -347,6 +377,12 @@
 
             // 删除思维导图确认
             function confirmDeleteMind(mindId, mindName) {
+                if (typeof Swal === 'undefined') {
+                    if (confirm('确定要删除思维导图 "' + mindName + '" 吗？此操作不可恢复。')) {
+                        deleteMind(mindId);
+                    }
+                    return;
+                }
                 Swal.fire({
                     title: '确认删除',
                     html: `确定要删除思维导图 <strong>"${mindName}"</strong> 吗？<br><br>
@@ -489,6 +525,27 @@
                         createMindAndRedirect(name, submitCreateModalBtn);
                     });
                 }
+
+                $(document).on('click', '.add-mind-tag-btn', function() {
+                    var mindId = Number($(this).data('mind-id') || 0);
+                    if (mindId > 0) {
+                        addTagToMind(mindId);
+                    }
+                });
+
+                $(document).on('click', '.delete-mind-btn', function() {
+                    var mindId = Number($(this).data('mind-id') || 0);
+                    var encodedName = String($(this).attr('data-mind-name') || '');
+                    var mindName = '';
+                    try {
+                        mindName = decodeURIComponent(encodedName);
+                    } catch (e) {
+                        mindName = encodedName;
+                    }
+                    if (mindId > 0) {
+                        confirmDeleteMind(mindId, mindName || '未命名导图');
+                    }
+                });
 
                 if (prevBtn) {
                     prevBtn.addEventListener('click', function() {

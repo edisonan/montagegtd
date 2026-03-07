@@ -590,7 +590,31 @@
     <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
-            : null;
+            : function(method, path, params) {
+                const upperMethod = String(method || 'GET').toUpperCase();
+                const fetcher = window.taskApiFetch || window.fetch;
+                let url = '/api/v2' + path;
+                const options = {
+                    method: upperMethod,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                };
+                if (upperMethod === 'GET' && params && typeof params === 'object') {
+                    const sp = new URLSearchParams();
+                    Object.keys(params).forEach(function(key) {
+                        const val = params[key];
+                        if (val !== undefined && val !== null && val !== '') sp.append(key, val);
+                    });
+                    const qs = sp.toString();
+                    if (qs) url += (url.indexOf('?') >= 0 ? '&' : '?') + qs;
+                } else if (params && typeof params === 'object') {
+                    options.headers['Content-Type'] = 'application/json';
+                    options.body = JSON.stringify(params);
+                }
+                return fetcher(url, options).then(function(resp) { return resp.json(); });
+            };
 
         function waitTokenReady() {
             if (window.__taskTokenBootstrapPromise && typeof window.__taskTokenBootstrapPromise.then === 'function') {
@@ -1324,7 +1348,7 @@
                 ? window.marked.parse(note.name || '')
                 : (note.name || '');
             const actionsHtml = isOwn
-                ? '<button class="operation-btn edit" onclick="window.location=\'/noteupdate/' + Number(note.id) + '\'" title="编辑笔记"><i class="fas fa-edit"></i></button>' +
+                ? '<button class="operation-btn edit" onclick="window.location=\'/notes/' + Number(note.id) + '/edit\'" title="编辑笔记"><i class="fas fa-edit"></i></button>' +
                   '<button class="operation-btn delete delete_note" note_value="' + Number(note.id) + '" title="删除笔记"><i class="fas fa-trash"></i></button>'
                 : '<button class="operation-btn like like_note" note_value="' + Number(note.id) + '" title="点赞"><i class="far fa-thumbs-up"></i></button>';
 

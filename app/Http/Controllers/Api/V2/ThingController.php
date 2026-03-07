@@ -6,16 +6,20 @@ use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Thing;
+use App\Services\PointGrantService;
 use App\Services\ThingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ThingController extends Controller
 {
     protected $thingService;
+    protected $pointGrantService;
 
-    public function __construct(ThingService $thingService)
+    public function __construct(ThingService $thingService, PointGrantService $pointGrantService)
     {
         $this->thingService = $thingService;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function index(Request $request)
@@ -76,6 +80,20 @@ class ThingController extends Controller
             $thing->end_time = $endTime;
         }
         $thing->save();
+        try {
+            $this->pointGrantService->grantByEvent(
+                (int)$thing->user_id,
+                'thing_created',
+                'thing',
+                (int)$thing->id
+            );
+        } catch (\Throwable $e) {
+            Log::warning('grant points on thing store failed', array(
+                'thing_id' => $thing->id,
+                'user_id' => $thing->user_id,
+                'error' => $e->getMessage(),
+            ));
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($thing));
     }

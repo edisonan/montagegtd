@@ -23,7 +23,7 @@
                     <div class="flex flex-wrap gap-2">
                         <button id="toggle_all_remarks" class="btn btn-secondary btn-sm">
                             <i class="fas fa-expand-alt mr-2"></i>
-                            <span class="hidden sm:inline">折叠/展开备注</span>
+                            <span class="hidden sm:inline">展开所有备注</span>
                         </button>
 
                         <button id="export_mind" class="btn btn-outline btn-sm">
@@ -68,14 +68,14 @@
 
                         <!-- 视图选项 -->
                         <div class="flex items-center gap-3">
-                            <div class="flex items-center gap-2">
-                                <label class="text-sm text-gray-600">结构:</label>
-                                <select id="layout_type" class="input text-sm py-1 px-2">
-                                    <option value="vertical">垂直</option>
-                                    <option value="horizontal">水平</option>
-                                    <option value="radial">放射</option>
-                                </select>
+                            <div class="relative">
+                                <input id="outline_search" type="text" class="input text-sm py-2 pl-9 pr-3 w-56" placeholder="搜索节点/备注">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                             </div>
+                            <button id="toggle_all_nodes" class="btn btn-outline btn-sm">
+                                <i class="fas fa-stream mr-2"></i>
+                                <span class="hidden sm:inline">折叠所有节点</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -287,7 +287,8 @@
         $(document).ready(function(){
             let mindData = null;
             let mindId = resolveMindId();
-            let allRemarksVisible = true;
+            let allRemarksVisible = false;
+            let allNodesExpanded = true;
             let isFocusMode = false;
             let nodeCount = 0;
             let remarkCount = 0;
@@ -365,67 +366,51 @@
             }
 
             // 渲染列表视图
-            function renderMindList(data, level = 0) {
+            function renderMindList(data) {
                 const container = $('#mind_list_view');
                 container.empty();
 
                 function processNode(node, depth) {
                     const hasRemark = node.content && node.content.trim() !== '';
+                    const hasChildren = !!(node.children && Object.keys(node.children).length > 0);
                     const nodeId = 'node-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    const safeTopic = escapeHtml(node.topic || '');
+                    const safeContent = hasRemark ? escapeHtml(node.content || '') : '';
 
                     const nodeHtml = `
-                <div class="mind-list-item" data-depth="${depth}" id="${nodeId}">
-                    <div class="flex items-start gap-3 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                        <div class="flex-shrink-0 pt-1">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center
+                <div class="mind-list-item mind-node-card" data-depth="${depth}" data-topic="${safeTopic.toLowerCase()}" data-content="${safeContent.toLowerCase()}" id="${nodeId}">
+                    <div class="node-main">
+                        <div class="node-icon-wrap">
+                            <div class="node-icon
                                 ${depth === 0 ? 'bg-purple-100 text-purple-600' :
                         depth === 1 ? 'bg-blue-100 text-blue-600' :
                             depth === 2 ? 'bg-green-100 text-green-600' :
                                 'bg-gray-100 text-gray-600'}">
-                                <i class="fas ${depth === 0 ? 'fa-sitemap' : 'fa-circle'} text-sm"></i>
+                                <i class="fas ${depth === 0 ? 'fa-sitemap' : 'fa-circle'} text-xs"></i>
                             </div>
                         </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-start justify-between gap-3">
-                                <h3 class="font-medium text-gray-900 ${depth === 0 ? 'text-lg' : ''}">
-                                    ${escapeHtml(node.topic)}
-                                </h3>
-
+                        <div class="node-content">
+                            <div class="node-header">
+                                <h3 class="font-medium text-gray-900 ${depth === 0 ? 'text-lg' : ''}">${safeTopic}</h3>
                                 <div class="flex items-center gap-2">
+                                    ${hasChildren ? `
+                                    <button class="toggle-children-btn btn btn-xs btn-outline" title="折叠/展开子节点">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>` : ''}
                                     ${hasRemark ? `
-                                        <button class="toggle-remark-btn btn btn-xs btn-outline">
-                                            <i class="fas fa-comment-alt mr-1"></i>
-                                            <span class="hidden sm:inline">备注</span>
-                                        </button>
-                                    ` : ''}
-
-                                    <button class="node-actions-btn btn btn-xs btn-outline">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </button>
+                                    <button class="toggle-remark-btn btn btn-xs btn-outline" title="显示备注">
+                                        <i class="fas fa-comment-alt mr-1"></i>
+                                        <span class="hidden sm:inline">备注</span>
+                                    </button>` : ''}
                                 </div>
                             </div>
-
                             ${hasRemark ? `
-                                <div class="mind-remark mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg hidden">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div class="flex-1">
-                                            <p class="text-gray-700 whitespace-pre-wrap">${nl2br(escapeHtml(node.content))}</p>
-                                        </div>
-                                        <button class="close-remark-btn text-gray-400 hover:text-gray-600">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            ` : ''}
-
-                            ${node.children && Object.keys(node.children).length > 0 ? `
-                                <div class="mt-3">
-                                    ${renderChildren(node.children, depth + 1)}
-                                </div>
-                            ` : ''}
+                            <div class="mind-remark mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg hidden">
+                                <p class="text-gray-700 whitespace-pre-wrap leading-6">${nl2br(safeContent)}</p>
+                            </div>` : ''}
                         </div>
                     </div>
+                    ${hasChildren ? `<div class="mind-children mt-2">${renderChildren(node.children, depth + 1)}</div>` : ''}
                 </div>
             `;
 
@@ -433,7 +418,7 @@
                 }
 
                 function renderChildren(children, depth) {
-                    let html = '<div class="pl-8 border-l-2 border-gray-200 ml-4">';
+                    let html = '<div class="children-wrap">';
                     $.each(children, function(index, child) {
                         html += processNode(child, depth);
                     });
@@ -454,27 +439,23 @@
                 // 切换备注显示
                 $('.toggle-remark-btn').off('click').on('click', function(e) {
                     e.stopPropagation();
-                    const remarkDiv = $(this).closest('.mind-list-item').find('.mind-remark');
+                    const remarkDiv = $(this).closest('.mind-list-item').find('.mind-remark').first();
                     remarkDiv.slideToggle(200);
                     $(this).toggleClass('btn-primary btn-outline');
                 });
 
-                // 关闭备注
-                $('.close-remark-btn').off('click').on('click', function(e) {
+                // 折叠/展开子节点
+                $('.toggle-children-btn').off('click').on('click', function(e) {
                     e.stopPropagation();
-                    $(this).closest('.mind-remark').slideUp(200);
-                    $(this).closest('.mind-list-item').find('.toggle-remark-btn').removeClass('btn-primary').addClass('btn-outline');
-                });
-
-                // 节点操作
-                $('.node-actions-btn').off('click').on('click', function(e) {
-                    e.stopPropagation();
-                    showNodeContextMenu($(this), $(this).closest('.mind-list-item'));
+                    const wrap = $(this).closest('.mind-list-item').children('.mind-children');
+                    const icon = $(this).find('i');
+                    wrap.slideToggle(150);
+                    icon.toggleClass('fa-chevron-down fa-chevron-right');
                 });
 
                 // 节点点击效果
                 $('.mind-list-item').off('click').on('click', function(e) {
-                    if (!$(e.target).closest('.toggle-remark-btn, .node-actions-btn, .close-remark-btn').length) {
+                    if (!$(e.target).closest('.toggle-remark-btn, .toggle-children-btn').length) {
                         $(this).toggleClass('bg-blue-50 border border-blue-100');
                     }
                 });
@@ -528,6 +509,35 @@
                     $buttons.removeClass('btn-primary').addClass('btn-outline');
                     $(this).html('<i class="fas fa-expand-alt mr-2"></i><span class="hidden sm:inline">展开所有备注</span>');
                 }
+            });
+
+            $('#toggle_all_nodes').click(function() {
+                allNodesExpanded = !allNodesExpanded;
+                const $children = $('.mind-children');
+                const $icons = $('.toggle-children-btn i');
+                if (allNodesExpanded) {
+                    $children.slideDown(150);
+                    $icons.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+                    $(this).html('<i class="fas fa-stream mr-2"></i><span class="hidden sm:inline">折叠所有节点</span>');
+                } else {
+                    $children.slideUp(150);
+                    $icons.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+                    $(this).html('<i class="fas fa-stream mr-2"></i><span class="hidden sm:inline">展开所有节点</span>');
+                }
+            });
+
+            $('#outline_search').on('input', function() {
+                const keyword = String($(this).val() || '').trim().toLowerCase();
+                if (!keyword) {
+                    $('.mind-list-item').removeClass('hidden');
+                    return;
+                }
+                $('.mind-list-item').each(function() {
+                    const topic = String($(this).attr('data-topic') || '');
+                    const content = String($(this).attr('data-content') || '');
+                    const matched = topic.indexOf(keyword) >= 0 || content.indexOf(keyword) >= 0;
+                    $(this).toggleClass('hidden', !matched);
+                });
             });
 
 
@@ -592,12 +602,58 @@
     <style>
         /* 思维导图样式 */
         .mind-list-item {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             transition: all 0.2s ease;
         }
 
+        .mind-node-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: #fff;
+        }
+
         .mind-list-item:hover {
-            transform: translateX(2px);
+            transform: translateX(1px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+        }
+
+        .node-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .node-icon-wrap {
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+
+        .node-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .node-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .children-wrap {
+            margin-left: 16px;
+            padding-left: 14px;
+            border-left: 2px solid #e5e7eb;
         }
 
         .mind-list-item[data-depth="0"] {
@@ -609,11 +665,11 @@
         }
 
         .mind-list-item[data-depth="2"] {
-            margin-left: 16px;
+            margin-left: 8px;
         }
 
         .mind-list-item[data-depth="3"] {
-            margin-left: 32px;
+            margin-left: 14px;
         }
 
         /* 备注样式 */
@@ -662,16 +718,12 @@
 
         /* 响应式调整 */
         @media (max-width: 768px) {
-            .mind-list-item {
-                padding: 12px;
-            }
-
             .mind-list-item[data-depth] {
                 margin-left: 0;
             }
-
-            .pl-8 {
-                padding-left: 16px;
+            .children-wrap {
+                margin-left: 8px;
+                padding-left: 8px;
             }
         }
 

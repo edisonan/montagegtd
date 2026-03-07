@@ -602,7 +602,7 @@
                         </div>
 
                         <a href="javascript:void(0);" id="article_mindmap_btn" class="share-btn">
-                            <i class="fas fa-project-diagram"></i>
+                            <i class="fas fa-brain"></i>
                             AI生成导图
                         </a>
 
@@ -820,12 +820,20 @@
                 return topic || '导图节点';
             }
 
+            function sanitizeRemark(text) {
+                var remark = String(text || '').replace(/\s+/g, ' ').trim();
+                if (!remark) return '';
+                if (remark.length > 180) remark = remark.slice(0, 180);
+                return remark;
+            }
+
             function normalizeMindTree(input, depth) {
                 var currentDepth = Number(depth || 0);
                 if (currentDepth > 3) return null;
-                if (typeof input === 'string') return { topic: sanitizeTopic(input), children: [] };
+                if (typeof input === 'string') return { topic: sanitizeTopic(input), content: '', children: [] };
                 if (!input || typeof input !== 'object') return null;
                 var topic = sanitizeTopic(input.topic || input.title || input.name || input.text, '导图节点');
+                var content = sanitizeRemark(input.content || input.remark || input.note || input.summary || '');
                 var rawChildren = input.children || input.nodes || input.items || [];
                 var children = [];
                 if (Array.isArray(rawChildren)) {
@@ -835,7 +843,7 @@
                         if (children.length >= 8) break;
                     }
                 }
-                return { topic: topic, children: children };
+                return { topic: topic, content: content, children: children };
             }
 
             function extractJsonObject(text) {
@@ -854,19 +862,22 @@
                 var parts = text.split(/[。！？；\n]/).map(function(item) { return item.trim(); }).filter(Boolean);
                 var children = [];
                 for (var i = 0; i < Math.min(5, parts.length); i++) {
-                    children.push({ topic: sanitizeTopic(parts[i], '要点' + (i + 1)), children: [] });
+                    children.push({ topic: sanitizeTopic(parts[i], '要点' + (i + 1)), content: sanitizeRemark(parts[i]), children: [] });
                 }
                 if (children.length === 0) {
-                    children.push({ topic: '核心观点', children: [] });
-                    children.push({ topic: '关键细节', children: [] });
-                    children.push({ topic: '可行动事项', children: [] });
+                    children.push({ topic: '核心观点', content: '', children: [] });
+                    children.push({ topic: '关键细节', content: '', children: [] });
+                    children.push({ topic: '可行动事项', content: '', children: [] });
                 }
-                return { topic: cleanTitle, children: children };
+                return { topic: cleanTitle, content: '', children: children };
             }
 
             function renderMindTree(node, depth) {
                 var level = Number(depth || 0);
                 var html = '<div class="article-mind-node level-' + level + '"><div class="article-mind-topic">' + escapeHtml(node.topic || '') + '</div>';
+                if (node.content) {
+                    html += '<div class="text-xs text-gray-600 mt-1 leading-5">' + escapeHtml(node.content) + '</div>';
+                }
                 if (Array.isArray(node.children) && node.children.length > 0) {
                     html += '<div class="article-mind-children">';
                     for (var i = 0; i < node.children.length; i++) {
@@ -908,8 +919,8 @@
                 var query = [
                     '请根据我提供的文章标题和内容，生成思维导图。',
                     '只返回JSON，不要解释，不要markdown。',
-                    '格式: {"topic":"根节点","children":[{"topic":"一级节点","children":[{"topic":"二级节点","children":[]}]}]}',
-                    '要求: 中文；层级不超过3层；一级节点3-6个；topic简洁。'
+                    '格式: {"topic":"根节点","content":"节点备注","children":[{"topic":"一级节点","content":"备注","children":[{"topic":"二级节点","content":"备注","children":[]}]}]}',
+                    '要求: 中文；层级不超过3层；一级节点3-6个；topic简洁；关键节点要给content备注（20-80字，可为空字符串）。'
                 ].join('\n');
                 var sessionId = await ensureAiSession();
                 var response = await window.taskApiFetch('/api/v2/llm/chat', {
@@ -929,6 +940,7 @@
                 var decoder = new TextDecoder();
                 var buffer = '';
                 var finalText = '';
+                var reasoningText = '';
                 var doneSignal = false;
                 while (!doneSignal) {
                     var chunk = await reader.read();
@@ -947,16 +959,25 @@
                             var delta = data && data.choices && data.choices[0] && data.choices[0].delta ? data.choices[0].delta : {};
                             var piece = '';
                             if (typeof delta.content === 'string' && delta.content) piece = delta.content;
-                            else if (typeof delta.reasoning === 'string' && delta.reasoning) piece = delta.reasoning;
+                            else if (typeof data.content === 'string' && data.content) piece = data.content;
+                            else if (data.message && typeof data.message.content === 'string' && data.message.content) piece = data.message.content;
                             if (piece) finalText += piece;
+                            if (typeof delta.reasoning === 'string' && delta.reasoning) reasoningText += delta.reasoning;
                         } catch (e) {}
                     }
                 }
+                console.info('[ArticleMindmap] AI raw content output:', finalText);
+                if (reasoningText) {
+                    console.info('[ArticleMindmap] AI reasoning output:', reasoningText);
+                }
                 var parsed = extractJsonObject(finalText);
-                if (!parsed) throw new Error('AI输出无法解析为导图JSON');
+                if (!parsed) {
+                    var rawPreview = String(finalText || '').replace(/\s+/g, ' ').trim().slice(0, 800);
+                    throw new Error('AI输出无法解析为导图JSON。原始输出预览：' + (rawPreview || '[empty]'));
+                }
                 var normalized = normalizeMindTree(parsed, 0);
                 if (!normalized || !Array.isArray(normalized.children) || normalized.children.length === 0) {
-                    throw new Error('AI导图结构为空');
+                    throw new Error('AI导图结构为空。请检查AI输出结构是否包含children节点。');
                 }
                 if (!normalized.topic || normalized.topic === '导图节点') {
                     normalized.topic = sanitizeTopic(title, '文章导图');
@@ -964,9 +985,14 @@
                 return normalized;
             }
 
-            async function createMindNode(name, parentMindId) {
-                var payload = { name: sanitizeTopic(name, '导图节点') };
+            async function createMindNode(name, parentMindId, content, sourceType, sourceId) {
+                var payload = {
+                    name: sanitizeTopic(name, '导图节点'),
+                    content: sanitizeRemark(content || '')
+                };
                 if (parentMindId) payload.parent_mind_id = parentMindId;
+                if (sourceType) payload.source_type = sourceType;
+                if (sourceId) payload.source_id = Number(sourceId);
                 var result = await apiRequest('POST', '/minds', payload);
                 if (!result || result.code !== 9999 || !result.result || !result.result.id) {
                     throw new Error((result && result.msg) ? result.msg : '保存导图节点失败');
@@ -975,12 +1001,14 @@
             }
 
             async function saveMindTreeToServer(tree) {
-                var rootId = await createMindNode(tree.topic || '文章导图', 0);
+                var sourceType = 'article';
+                var sourceId = Number(currentArticleId || 0);
+                var rootId = await createMindNode(tree.topic || '文章导图', 0, tree.content || '', sourceType, sourceId);
                 async function createChildren(parentId, children) {
                     if (!Array.isArray(children) || children.length === 0) return;
                     for (var i = 0; i < children.length; i++) {
                         var child = children[i];
-                        var childId = await createMindNode(child.topic || ('节点' + (i + 1)), parentId);
+                        var childId = await createMindNode(child.topic || ('节点' + (i + 1)), parentId, child.content || '', sourceType, sourceId);
                         await createChildren(childId, child.children || []);
                     }
                 }

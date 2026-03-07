@@ -13,12 +13,15 @@ class Mind extends Model {
 			'orders',
 			'parent_mind_id',
 			'copy_mind_id',
+			'source_type',
+			'source_id',
 			'is_root' 
 	];
 	protected $table = 'minds';
 	protected $appends = array ();
 	protected $casts = [ 
-			'user_id' => 'int' 
+			'user_id' => 'int',
+			'source_id' => 'int'
 	];
 	
 	/**

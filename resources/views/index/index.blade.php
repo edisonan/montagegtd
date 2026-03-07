@@ -6,7 +6,7 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div id="doingTaskCard" class="mb-6 hidden"></div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div id="indexMainGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左侧：番茄钟面板 -->
             <div class="space-y-6">
                 <!-- 番茄操作卡片 -->
@@ -154,7 +154,7 @@
             </div>
 
             <!-- 右侧：待办事项面板 -->
-            <div class="space-y-6">
+            <div class="space-y-6" id="taskPanelColumn">
                 <!-- 待办事项卡片 -->
                 <div class="card">
                     <div class="px-6 py-4 border-b border-gray-200">
@@ -166,6 +166,11 @@
                             </div>
 
                             <div class="flex gap-2">
+                                <button id="collapseTaskPanelBtn"
+                                        class="text-sm px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors"
+                                        title="缩小到右侧">
+                                    <i class="fas fa-compress-alt mr-1"></i>缩小
+                                </button>
                                 <a href="{{ url('tasks') }}"
                                    class="text-sm px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
                                     <i class="fas fa-list mr-1"></i>列表
@@ -237,6 +242,15 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div id="taskPanelDock"
+         class="hidden fixed right-3 top-1/2 -translate-y-1/2 z-40">
+        <button id="restoreTaskPanelBtn"
+                class="w-10 h-24 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg flex flex-col items-center justify-center gap-1"
+                title="恢复待办面板">
+            <i class="fas fa-list-check text-sm"></i>
+            <i class="fas fa-chevron-left text-xs"></i>
+        </button>
     </div>
 
     <!-- 原有模态框保留 -->
@@ -422,6 +436,10 @@
             background: var(--gray-300);
             transform: translateY(-50%);
         }
+
+        #taskPanelDock {
+            transition: opacity .2s ease, transform .2s ease;
+        }
     </style>
 @endsection
 
@@ -547,6 +565,7 @@
         let lastCreatedTaskName = '';
         let lastCreatedTaskAt = 0;
         let isSwitchingDoing = false;
+        let isTaskPanelCollapsed = false;
 
         // 设置cookie
         function setCookie(c_name, value, expiredays) {
@@ -662,6 +681,51 @@
             }
         }
 
+        function applyPomoState(result) {
+            const data = result || {};
+            status = Number(data.current_pomo_status || 1);
+            remain = Number(data.current_pomo_remain || 0);
+            originalRemain = remain;
+            totalTime = status === 2 ? 1500 : (status === 4 ? 300 : 1500);
+            activePomoStartTime = data.active_pomo && data.active_pomo.start_time ? data.active_pomo.start_time : '';
+            activePomoEndTime = data.active_pomo && data.active_pomo.end_time ? data.active_pomo.end_time : '';
+
+            const pomoIdInput = document.getElementById('pomo_id');
+            if (pomoIdInput) {
+                pomoIdInput.value = (data.active_pomo && data.active_pomo.id) ? data.active_pomo.id : '';
+            }
+
+            if (status === 2 || status === 4) {
+                startPomoTimer();
+            } else {
+                clearInterval(timer);
+            }
+            renderPomoPanel();
+            updateDisplay();
+        }
+
+        function syncPomoStatus(silent) {
+            if (!apiRequest) {
+                if (!silent) {
+                    showNotification('error', 'API客户端未初始化');
+                }
+                return Promise.resolve();
+            }
+            return apiRequest('GET', '/pomos/status', {}).then(function(response) {
+                if (!response || response.code != 9999 || !response.result) {
+                    throw new Error('status_failed');
+                }
+                applyPomoState(response.result);
+                if (!silent) {
+                    showpomos();
+                }
+            }).catch(function() {
+                if (!silent) {
+                    showNotification('error', '同步番茄状态失败');
+                }
+            });
+        }
+
         function loadIndexState() {
             if (!apiRequest) {
                 indexDebug('loadIndexState skipped: apiRequest missing');
@@ -671,17 +735,7 @@
             indexDebug('loadIndexState start');
             apiRequest('GET', '/index', {}).then(function(response) {
                 if (response && response.code === 9999 && response.result) {
-                    var result = response.result;
-                    status = Number(result.current_pomo_status || 1);
-                    remain = Number(result.current_pomo_remain || 0);
-                    originalRemain = remain;
-                    totalTime = status === 2 ? 1500 : (status === 4 ? 300 : 1500);
-                    activePomoStartTime = result.active_pomo && result.active_pomo.start_time ? result.active_pomo.start_time : '';
-                    activePomoEndTime = result.active_pomo && result.active_pomo.end_time ? result.active_pomo.end_time : '';
-                    if (result.active_pomo && result.active_pomo.id) {
-                        document.getElementById('pomo_id').value = result.active_pomo.id;
-                    }
-                    initializePage();
+                    applyPomoState(response.result);
                     indexDebug('loadIndexState success', { status: status, remain: remain });
                 }
             }).catch(function() {
@@ -808,16 +862,12 @@
                 // 番茄完成
                 document.title = '番茄完成！快来记录一下吧 - ' + title;
                 notify('您已经完成了一个番茄，快来记录一下吧~');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
+                syncPomoStatus(true);
             } else if (status == 4) {
                 // 休息完成
                 document.title = '休息完成，快来开始下一个番茄吧 - ' + title;
                 notify('休息完成，快来开始下一个番茄吧~');
-                setTimeout(() => {
-                    window.location.href = '/index';
-                }, 2000);
+                syncPomoStatus(true);
             }
         }
 
@@ -844,13 +894,20 @@
         function discard() {
             if (confirm("确认要放弃当前番茄/休息吗？")) {
                 const pomoId = document.getElementById('pomo_id').value;
+                if (!pomoId) {
+                    showNotification('warning', '当前没有可放弃的番茄');
+                    return;
+                }
                 if (!apiRequest) {
                     showNotification('error', 'API客户端未初始化');
                     return;
                 }
                 apiRequest('POST', '/pomos/discard/' + pomoId, {}).then(function(response) {
                     if (response.code == 9999) {
-                        window.location.reload();
+                        showNotification('success', '已放弃当前番茄');
+                        syncPomoStatus(true).then(function() {
+                            showpomos();
+                        });
                     } else {
                         showNotification('error', response.msg || '放弃失败');
                     }
@@ -862,30 +919,7 @@
 
         // 校准番茄状态
         function calibratePomoStatus() {
-            if (!apiRequest) {
-                return;
-            }
-            apiRequest('GET', '/pomos/status', {}).then(function(response) {
-                    if (response.code == 9999) {
-                        const newStatus = response.result.current_pomo_status;
-                        const newRemain = response.result.current_pomo_remain;
-
-                        // 如果状态发生变化，刷新页面
-                        if (newStatus != status) {
-                            window.location.reload();
-                            return;
-                        }
-
-                        // 更新剩余时间（如果差异较大）
-                        if (Math.abs(newRemain - remain) > 5) {
-                            remain = newRemain;
-                            if (status == 2 || status == 4) {
-                                updateDisplay();
-                            }
-                        }
-                    }
-                }).catch(function() {
-                });
+            syncPomoStatus(true);
         }
 
         // 保存番茄记录
@@ -900,7 +934,11 @@
                 }
                 apiRequest('POST', '/pomos/' + pomoId, { name: pomoName }).then(function(response) {
                         if (response.code == 9999) {
-                            window.location.href = '/index';
+                            showNotification('success', '番茄记录已保存');
+                            document.getElementById('pomo_name').value = '';
+                            syncPomoStatus(true).then(function() {
+                                showpomos();
+                            });
                         } else {
                             showNotification('error', '保存失败');
                         }
@@ -916,6 +954,7 @@
         function createPomoListItem(pomoData) {
             const startTime = formatTime(new Date(pomoData.start_time));
             const endTime = formatTime(new Date(pomoData.end_time));
+            const fullName = escapeHtml((pomoData.name || '未命名番茄'));
 
             return `
     <li id="pomo${pomoData.id}" class="pomo-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
@@ -923,7 +962,7 @@
             <div class="flex items-center gap-3 flex-1 min-w-0">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">
-                        <span class="font-medium text-gray-800 truncate">${escapeHtml(pomoData.name || '未命名番茄')}</span>
+                        <span class="font-medium text-gray-800 truncate" title="${fullName}">${fullName}</span>
                     </div>
                     <div class="flex items-center gap-2 mt-1">
                         <span class="text-xs text-gray-500">${startTime} - ${endTime}</span>
@@ -950,6 +989,7 @@
             const isCompleted = data.status == 3;
             const isDoing = Number(data.is_doing || 0) === 1;
             const isDoingList = listType === 'doing';
+            const fullTaskName = escapeHtml(data.name || '');
 
             return `
     <li id="task${data.id}" class="task-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors ${isChild ? 'child-task ml-8' : ''}">
@@ -965,10 +1005,10 @@
             <!-- 任务内容 -->
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                    ${isTop ? '<span class="priority-badge priority-high">置顶</span>' : ''}
                     ${isDoing ? '<span class="priority-badge bg-emerald-100 text-emerald-700">正在做</span>' : ''}
-                    <span class="font-medium text-gray-800 ${isCompleted ? 'line-through text-gray-400' : ''}">
-                        ${escapeHtml(data.name)}
+                    ${isTop ? '<span class="priority-badge priority-high">置顶</span>' : ''}
+                    <span class="font-medium text-gray-800 truncate ${isCompleted ? 'line-through text-gray-400' : ''}" title="${fullTaskName}">
+                        ${fullTaskName}
                     </span>
                 </div>
             </div>
@@ -984,16 +1024,16 @@
                 </button>
             ` : ''}
 
-            <button class="action-button text-gray-400 hover:text-emerald-500"
-                    onclick="toggleTaskDoing(${data.id}, ${isDoing ? 1 : 0})"
-                    title="${isDoing ? '取消正在做' : '设为正在做'}">
-                <i class="fas fa-bolt ${isDoing || isDoingList ? 'text-emerald-500' : ''}"></i>
-            </button>
-
             <button class="action-button text-gray-400 hover:text-yellow-500"
                     onclick="toggleTaskTop(${data.id}, ${isTop})"
                     title="${isTop ? '取消置顶' : '置顶'}">
                 <i class="fas fa-thumbtack ${isTop ? 'text-yellow-500' : ''}"></i>
+            </button>
+
+            <button class="action-button text-gray-400 hover:text-emerald-500"
+                    onclick="toggleTaskDoing(${data.id}, ${isDoing ? 1 : 0})"
+                    title="${isDoing ? '取消正在做' : '设为正在做'}">
+                <i class="fas fa-bolt ${isDoing || isDoingList ? 'text-emerald-500' : ''}"></i>
             </button>
 
             <button class="action-button text-gray-400 hover:text-blue-500"
@@ -1022,13 +1062,18 @@
         function createDoingTaskCard(task) {
             const taskName = escapeHtml(task.name || '未命名任务');
             return `
-    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 task-content" data-task-name="${taskName}">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <div class="text-xs text-emerald-700 mb-1">当前专注任务</div>
-                <div class="font-semibold text-gray-900 break-words">${taskName}</div>
+                <div class="font-medium text-gray-900 break-words">${taskName}</div>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
+                <button class="action-button text-gray-400 hover:text-green-500"
+                        onclick="finishTask(${task.id})"
+                        title="完成任务">
+                    <i class="fas fa-check-circle"></i>
+                </button>
                 <button class="action-button text-gray-400 hover:text-emerald-500"
                         onclick="toggleTaskDoing(${task.id}, 1)"
                         title="取消正在做">
@@ -1057,6 +1102,25 @@
         }
 
         // 任务操作函数
+        function finishTask(taskId) {
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            apiRequest('DELETE', '/tasks/' + taskId, {
+                type: 'finish'
+            }).then(function(response) {
+                    if (response.code == 9999) {
+                        showtasks();
+                        showNotification('success', '任务已完成');
+                    } else {
+                        showNotification('error', response.msg || '操作失败');
+                    }
+                }).catch(function() {
+                    showNotification('error', '请求失败');
+                });
+        }
+
         function toggleTaskStatus(taskId, element) {
             const isCurrentlyCompleted = element.classList.contains('checked');
             const action = isCurrentlyCompleted ? 'restore' : 'finish';
@@ -1438,9 +1502,10 @@
             }
             apiRequest('POST', '/pomos/start', {}).then(function(response) {
                     if (response.code != 9999) {
-                        showNotification('error', '启动失败');
+                        showNotification('error', response.msg || '启动失败');
                     } else {
-                        window.location.reload();
+                        applyPomoState(response.result || {});
+                        showNotification('success', '番茄已开始');
                     }
                 }).catch(function() {
                     showNotification('error', '启动失败');
@@ -1503,6 +1568,47 @@
                     }
                 });
             }
+
+            const collapseBtn = document.getElementById('collapseTaskPanelBtn');
+            if (collapseBtn) {
+                collapseBtn.addEventListener('click', function() {
+                    toggleTaskPanel(true);
+                });
+            }
+            const restoreBtn = document.getElementById('restoreTaskPanelBtn');
+            if (restoreBtn) {
+                restoreBtn.addEventListener('click', function() {
+                    toggleTaskPanel(false);
+                });
+            }
+        }
+
+        function toggleTaskPanel(collapse) {
+            isTaskPanelCollapsed = !!collapse;
+            const column = document.getElementById('taskPanelColumn');
+            const dock = document.getElementById('taskPanelDock');
+            const grid = document.getElementById('indexMainGrid');
+            if (column) {
+                column.style.display = isTaskPanelCollapsed ? 'none' : '';
+            }
+            if (dock) {
+                dock.classList.toggle('hidden', !isTaskPanelCollapsed);
+            }
+            if (grid) {
+                grid.classList.toggle('lg:grid-cols-2', !isTaskPanelCollapsed);
+                grid.classList.toggle('lg:grid-cols-1', isTaskPanelCollapsed);
+            }
+            try {
+                window.localStorage.setItem('index_task_panel_collapsed', isTaskPanelCollapsed ? '1' : '0');
+            } catch (e) {}
+        }
+
+        function restoreTaskPanelState() {
+            let collapsed = false;
+            try {
+                collapsed = window.localStorage.getItem('index_task_panel_collapsed') === '1';
+            } catch (e) {}
+            toggleTaskPanel(collapsed);
         }
 
         function handleKeyPress(e) {
@@ -1524,21 +1630,39 @@
             }
         }
 
+        function normalizeTaskText(text) {
+            return String(text || '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function extractTaskTextFromElement(target) {
+            if (!target) return '';
+            const taskNameHolder = target.closest('[data-task-name]');
+            if (taskNameHolder) {
+                return normalizeTaskText(taskNameHolder.getAttribute('data-task-name'));
+            }
+            const taskElement = target.closest('.task-item') || target.closest('.task-content');
+            if (!taskElement) return '';
+            const taskTextElement = taskElement.querySelector('.font-medium');
+            const raw = taskTextElement ? taskTextElement.textContent : taskElement.textContent;
+            return normalizeTaskText(raw);
+        }
+
         // 双击任务添加到番茄描述（兼容原有功能）
         document.addEventListener('dblclick', function(e) {
-            if (e.target.closest('.task-item') || e.target.closest('.task-content')) {
-                const taskElement = e.target.closest('.task-item') || e.target.closest('.task-content');
-                const taskTextElement = taskElement ? taskElement.querySelector('.font-medium') : null;
-                const taskText = taskTextElement ? taskTextElement.textContent : taskElement.textContent;
-                const pomoInput = document.getElementById('pomo_name');
-
-                if (pomoInput && taskText) {
-                    const currentValue = pomoInput.value.trim();
-                    if (!currentValue.includes(taskText)) {
-                        pomoInput.value = currentValue ? `${currentValue} + ${taskText}` : taskText;
-                        showNotification('info', '任务已添加到番茄描述');
-                    }
-                }
+            const taskText = extractTaskTextFromElement(e.target);
+            if (!taskText) {
+                return;
+            }
+            const pomoInput = document.getElementById('pomo_name');
+            if (!pomoInput) {
+                return;
+            }
+            const currentValue = normalizeTaskText(pomoInput.value);
+            if (!currentValue.includes(taskText)) {
+                pomoInput.value = currentValue ? `${currentValue} + ${taskText}` : taskText;
+                showNotification('info', '任务已添加到番茄描述');
             }
         });
 
@@ -1586,5 +1710,6 @@
             }, 5000);
         }
 
+        restoreTaskPanelState();
     </script>
 @endsection

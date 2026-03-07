@@ -11,6 +11,7 @@ use App\Models\LlmProvider;
 use App\Models\LlmConversation;
 use App\Services\LlmPolishService;
 use App\Services\LlmConversationService;
+use App\Services\PointGrantService;
 use App\Repositories\LlmSessionRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -37,12 +38,18 @@ class LlmController extends Controller
      * @var LlmSessionRepository
      */
     protected $sessionRepository;
+    protected $pointGrantService;
     protected $conversationHasSessionId = null;
 
-    public function __construct(LlmConversationService $conversationService, LlmSessionRepository $sessionRepository)
+    public function __construct(
+        LlmConversationService $conversationService,
+        LlmSessionRepository $sessionRepository,
+        PointGrantService $pointGrantService
+    )
     {
         $this->conversationService = $conversationService;
         $this->sessionRepository = $sessionRepository;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function getProviders(Request $request)
@@ -713,6 +720,8 @@ class LlmController extends Controller
             $verbose = fopen('php://temp', 'rw+');
             curl_setopt($curl, CURLOPT_STDERR, $verbose);
             
+            $insecureSsl = filter_var(env('LLM_CURL_INSECURE', true), FILTER_VALIDATE_BOOLEAN);
+
             curl_setopt_array($curl, [
                 CURLOPT_URL => $provider->base_url . "/chat/completions",
                 CURLOPT_RETURNTRANSFER => true,
@@ -760,10 +769,9 @@ class LlmController extends Controller
                 CURLOPT_CONNECTTIMEOUT => 30, // 连接超时
                 CURLOPT_FOLLOWLOCATION => true, // 跟随重定向
                 CURLOPT_MAXREDIRS => 5, // 最大重定向次数
-                CURLOPT_SSL_VERIFYPEER => false, // 禁用SSL证书验证
-                CURLOPT_SSL_VERIFYHOST => false, // 禁用主机验证
-                CURLOPT_CAINFO => null, // 不使用CA证书文件
-                CURLOPT_CAPATH => null, // 不使用CA证书目录
+                // 兼容 NSS 环境：不再强制置空 CAINFO/CAPATH，避免触发 certpath=none 初始化失败
+                CURLOPT_SSL_VERIFYPEER => !$insecureSsl,
+                CURLOPT_SSL_VERIFYHOST => $insecureSsl ? 0 : 2,
             ]);
 
             $result = curl_exec($curl);
@@ -840,6 +848,26 @@ class LlmController extends Controller
                     'response_body' => substr($result ?? '', 0, 500),
                     'curl_info' => $info
                 ]);
+            } else {
+                try {
+                    if (!empty($sessionId) && !empty($user->id)) {
+                        $this->pointGrantService->grantByEvent(
+                            (int)$user->id,
+                            'llm_session_completed',
+                            'llm_session',
+                            (int)$sessionId,
+                            array(
+                                'event_key' => 'llm_session_completed:conversation:' . (int)$conversation->id,
+                            )
+                        );
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('grant points on llm chat failed', array(
+                        'session_id' => $sessionId,
+                        'user_id' => $user->id ?? null,
+                        'error' => $e->getMessage(),
+                    ));
+                }
             }
 
             curl_close($curl);

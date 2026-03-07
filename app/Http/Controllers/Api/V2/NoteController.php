@@ -8,6 +8,7 @@ use App\Http\Utils\ResponseDataUtil;
 use App\Models\Note;
 use App\Services\AchievementAutoUnlockService;
 use App\Services\NoteService;
+use App\Services\PointGrantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -15,11 +16,17 @@ class NoteController extends Controller
 {
     protected $noteService;
     protected $achievementAutoUnlockService;
+    protected $pointGrantService;
 
-    public function __construct(NoteService $noteService, AchievementAutoUnlockService $achievementAutoUnlockService)
+    public function __construct(
+        NoteService $noteService,
+        AchievementAutoUnlockService $achievementAutoUnlockService,
+        PointGrantService $pointGrantService
+    )
     {
         $this->noteService = $noteService;
         $this->achievementAutoUnlockService = $achievementAutoUnlockService;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function index(Request $request)
@@ -108,9 +115,24 @@ class NoteController extends Controller
         $sourceType = $request->input('source_type', 0);
         $sourceId = $request->input('source_id', 0);
 
-        $this->noteService->store($name, $status, $addImage, $fname, $sourceType, $sourceId);
+        $note = $this->noteService->store($name, $status, $addImage, $fname, $sourceType, $sourceId);
         $userId = (int)$this->getAuthUserId($request);
         if ($userId > 0) {
+            try {
+                $this->pointGrantService->grantByEvent(
+                    $userId,
+                    'note_created',
+                    'note',
+                    (int)$note->id
+                );
+            } catch (\Throwable $e) {
+                Log::warning('grant points on note store failed', array(
+                    'user_id' => $userId,
+                    'note_id' => isset($note->id) ? (int)$note->id : 0,
+                    'error' => $e->getMessage(),
+                ));
+            }
+
             try {
                 $this->achievementAutoUnlockService->evaluateForUser($userId);
             } catch (\Throwable $e) {

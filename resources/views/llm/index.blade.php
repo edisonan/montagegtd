@@ -4,7 +4,7 @@
 @section('description', '与智能助手对话，获取帮助和建议')
 
 @section('content')
-    <div class="h-screen llm-shell flex bg-white">
+    <div class="llm-shell flex bg-white">
         <!-- 左侧会话列表 -->
         <aside class="w-72 llm-sidebar border-r border-gray-200 bg-white flex flex-col">
             <!-- 会话列表头部 -->
@@ -29,6 +29,18 @@
                         <i class="fas fa-search text-xs"></i>
                     </div>
                 </div>
+
+                <div class="mt-3">
+                    <select id="session-agent-filter" class="input input-sm w-full">
+                        <option value="">全部智能体</option>
+                    </select>
+                </div>
+
+                <div class="mt-3 flex gap-2 llm-session-quick-filters">
+                    <button type="button" class="llm-filter-chip is-active" data-filter="all">全部</button>
+                    <button type="button" class="llm-filter-chip" data-filter="pinned">固定</button>
+                    <button type="button" class="llm-filter-chip" data-filter="active">最近活跃</button>
+                </div>
             </div>
 
             <!-- 会话列表内容 -->
@@ -52,7 +64,11 @@
                     <span>对话总数</span>
                     <span id="session-count" class="font-medium">0</span>
                 </div>
+                <button id="clear-unpinned-btn" type="button" class="btn btn-sm btn-outline w-full mt-3">
+                    清理未固定会话
+                </button>
                 <div class="text-[11px] text-gray-400 mt-2">模型能力由已配置 Agent 决定</div>
+                <div id="llm-layout-debug" class="text-[10px] text-gray-400 mt-2 break-all"></div>
             </div>
         </aside>
 
@@ -65,7 +81,7 @@
 
                 <!-- 主内容区 -->
                 <div class="flex-1 bg-white flex flex-col items-center justify-center overflow-auto llm-hero">
-                    <div class="max-w-3xl w-full text-center px-6">
+                    <div class="llm-content-frame w-full text-center px-6">
                         <div class="mb-2 llm-initial-title-wrap">
                             <h1 class="text-xl font-semibold text-gray-800 tracking-tight">开始一个新对话</h1>
                         </div>
@@ -74,7 +90,7 @@
 
                 <!-- 底部输入区域 -->
                 <div class="bg-white border-t border-gray-200 llm-composer-wrap">
-                    <div class="max-w-3xl mx-auto p-4">
+                    <div class="llm-content-frame mx-auto p-4">
                         <!-- 输入框容器 -->
                         <div class="relative bg-white rounded-xl border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all llm-composer">
                         <textarea
@@ -87,10 +103,10 @@
                             <div class="flex items-center justify-between px-4 pb-3">
                                 <!-- 左侧功能按钮 -->
                                 <div class="flex items-center space-x-1">
-                                    <button id="initial-attachment-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="上传文件">
+                                    <button id="initial-attachment-btn" class="btn-icon text-gray-500 hover:text-gray-700 hidden" title="上传文件">
                                         <i class="fas fa-paperclip text-sm"></i>
                                     </button>
-                                    <button id="initial-voice-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="语音输入">
+                                    <button id="initial-voice-btn" class="btn-icon text-gray-500 hover:text-gray-700 hidden" title="语音输入">
                                         <i class="fas fa-microphone text-sm"></i>
                                     </button>
                                     <button id="initial-clear-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="清空">
@@ -138,7 +154,16 @@
                                 <i class="fas fa-comment text-blue-500 text-xs"></i>
                             </div>
                             <div>
-                                <h3 id="session-title-display" class="font-semibold text-gray-900 text-sm">会话标题</h3>
+                                <div id="session-title-inline-wrap" class="llm-inline-title-wrap">
+                                    <h3 id="session-title-display" class="font-semibold text-gray-900 text-sm cursor-text" title="双击可重命名">会话标题</h3>
+                                    <input
+                                        id="session-title-inline-input"
+                                        type="text"
+                                        class="input input-sm llm-inline-title-input hidden"
+                                        maxlength="255"
+                                        placeholder="请输入会话标题"
+                                    >
+                                </div>
                                 <div class="flex items-center space-x-2 text-xs text-gray-500">
                                     <span id="session-agent">智能体：加载中...</span>
                                     <span>•</span>
@@ -149,6 +174,9 @@
 
                         <!-- 会话操作 -->
                         <div class="flex items-center space-x-1">
+                            <button id="fork-session-btn" class="btn-icon-sm" title="基于当前智能体新建会话">
+                                <i class="fas fa-plus-circle text-xs"></i>
+                            </button>
                             <button id="pin-session-btn" class="btn-icon-sm" title="固定会话">
                                 <i class="fas fa-thumbtack text-xs"></i>
                             </button>
@@ -185,7 +213,7 @@
 
                 <!-- 底部输入区 - 固定 -->
                 <div class="bg-white border-t border-gray-200 shrink-0 llm-composer-wrap">
-                    <div class="max-w-3xl mx-auto p-4">
+                    <div class="llm-content-frame mx-auto p-4">
                         <div class="relative bg-white rounded-xl border border-gray-300 focus-within:border-primary-color focus-within:ring-2 focus-within:ring-blue-100 transition-all llm-composer">
                         <textarea
                                 id="message-input"
@@ -197,10 +225,10 @@
                             <div class="flex items-center justify-between px-4 pb-3">
                                 <!-- 左侧功能按钮 -->
                                 <div class="flex items-center space-x-1">
-                                    <button id="chat-attachment-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="上传文件">
+                                    <button id="chat-attachment-btn" class="btn-icon text-gray-500 hover:text-gray-700 hidden" title="上传文件">
                                         <i class="fas fa-paperclip text-sm"></i>
                                     </button>
-                                    <button id="chat-voice-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="语音输入">
+                                    <button id="chat-voice-btn" class="btn-icon text-gray-500 hover:text-gray-700 hidden" title="语音输入">
                                         <i class="fas fa-microphone text-sm"></i>
                                     </button>
                                     <button id="chat-clear-btn" class="btn-icon text-gray-500 hover:text-gray-700" title="清空">
@@ -232,6 +260,15 @@
                                 </div>
                                 <button id="regenerate-btn" class="btn-scene">
                                     <i class="fas fa-redo mr-1 text-xs"></i>重新生成
+                                </button>
+                                <button id="edit-last-question-btn" class="btn-scene">
+                                    <i class="fas fa-pen mr-1 text-xs"></i>编辑上一问
+                                </button>
+                                <button id="fork-last-question-btn" class="btn-scene">
+                                    <i class="fas fa-code-branch mr-1 text-xs"></i>上一问开新聊
+                                </button>
+                                <button id="quote-last-answer-btn" class="btn-scene">
+                                    <i class="fas fa-quote-left mr-1 text-xs"></i>引用上一答
                                 </button>
                             </div>
                         </div>
@@ -282,14 +319,21 @@
     <input type="hidden" id="current-session-id" value="">
 
     <script src="/js/marked.min.js"></script>
+    <script src="/plugins/purify/purify.min.js"></script>
 
     <script>
         // 全局变量
         let currentSessionId = null;
         let currentSessionAgent = null;
         let allAgents = [];
+        let allSessions = [];
+        let sessionQuickFilter = 'all';
         let isStreaming = false;
         let currentStreamController = null;
+        let currentThinkingIndicatorId = null;
+        let currentStreamingMessageId = null;
+        let isInlineRenaming = false;
+        let layoutSyncRaf = null;
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -304,6 +348,9 @@
 
             // 初始化字符计数器
             initCharCounters();
+            requestLayoutSync();
+            setTimeout(requestLayoutSync, 120);
+            setTimeout(requestLayoutSync, 500);
         });
 
         // 初始化事件监听器
@@ -351,29 +398,41 @@
             document.getElementById('chat-attachment-btn').addEventListener('click', showAttachmentOptions);
             document.getElementById('chat-voice-btn').addEventListener('click', showVoiceInput);
             document.getElementById('regenerate-btn').addEventListener('click', regenerateLastResponse);
+            document.getElementById('edit-last-question-btn').addEventListener('click', editLastQuestion);
+            document.getElementById('fork-last-question-btn').addEventListener('click', forkLastQuestionToNewSession);
+            document.getElementById('quote-last-answer-btn').addEventListener('click', quoteLastAnswer);
+            document.getElementById('clear-unpinned-btn').addEventListener('click', clearUnpinnedSessions);
 
             // 搜索会话
             document.getElementById('search-sessions').addEventListener('input', searchSessions);
+            document.getElementById('session-agent-filter').addEventListener('change', searchSessions);
+            document.querySelectorAll('.llm-filter-chip').forEach((button) => {
+                button.addEventListener('click', function() {
+                    sessionQuickFilter = this.dataset.filter || 'all';
+                    document.querySelectorAll('.llm-filter-chip').forEach((chip) => chip.classList.remove('is-active'));
+                    this.classList.add('is-active');
+                    searchSessions();
+                });
+            });
 
             // 使用事件委托处理会话列表点击（更可靠）
             document.getElementById('sessions-list').addEventListener('click', function(e) {
-                // 处理会话项点击
+                const pinBtn = e.target.closest('.session-pin-btn');
+                if (pinBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const sessionId = pinBtn.closest('.session-item')?.dataset.sessionId;
+                    if (sessionId) {
+                        togglePinSession(sessionId);
+                    }
+                    return;
+                }
+
                 const sessionItem = e.target.closest('.session-item');
                 if (sessionItem) {
                     const sessionId = sessionItem.dataset.sessionId;
                     if (sessionId) {
                         switchToSession(sessionId);
-                    }
-                    return;
-                }
-
-                // 处理固定按钮点击
-                const pinBtn = e.target.closest('.session-pin-btn');
-                if (pinBtn) {
-                    e.stopPropagation();
-                    const sessionId = pinBtn.closest('.session-item').dataset.sessionId;
-                    if (sessionId) {
-                        togglePinSession(sessionId);
                     }
                 }
             });
@@ -382,9 +441,36 @@
             document.getElementById('save-rename-btn').addEventListener('click', saveRenameSession);
             document.getElementById('rename-session-btn')?.addEventListener('click', renameCurrentSession);
             document.getElementById('delete-session-btn')?.addEventListener('click', deleteCurrentSession);
+            document.getElementById('fork-session-btn')?.addEventListener('click', forkSessionWithCurrentAgent);
             document.getElementById('pin-session-btn')?.addEventListener('click', togglePinCurrentSession);
             document.getElementById('clear-session-btn')?.addEventListener('click', clearCurrentSession);
             document.getElementById('export-session-btn')?.addEventListener('click', exportCurrentSession);
+            document.getElementById('session-title-display')?.addEventListener('dblclick', startInlineRename);
+
+            const inlineTitleInput = document.getElementById('session-title-inline-input');
+            inlineTitleInput?.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveInlineRename();
+                }
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelInlineRename();
+                }
+            });
+            inlineTitleInput?.addEventListener('blur', function() {
+                if (isInlineRenaming) {
+                    saveInlineRename();
+                }
+            });
+
+            window.addEventListener('resize', requestLayoutSync);
+            window.addEventListener('orientationchange', requestLayoutSync);
+            const sessionsList = document.getElementById('sessions-list');
+            if (sessionsList && window.MutationObserver) {
+                const observer = new MutationObserver(() => requestLayoutSync());
+                observer.observe(sessionsList, { childList: true, subtree: true });
+            }
 
             // 模态框关闭事件
             document.querySelectorAll('.modal').forEach(modal => {
@@ -409,6 +495,78 @@
                     e.stopPropagation();
                 });
             });
+        }
+
+        function requestLayoutSync() {
+            if (layoutSyncRaf) {
+                cancelAnimationFrame(layoutSyncRaf);
+            }
+            layoutSyncRaf = requestAnimationFrame(syncLlmLayoutHeights);
+        }
+
+        function syncLlmLayoutHeights() {
+            const shell = document.querySelector('.llm-shell');
+            const sidebar = document.querySelector('.llm-sidebar');
+            const main = document.querySelector('.llm-main');
+            const sessionsList = document.getElementById('sessions-list');
+            if (!shell || !sidebar || !main || !sessionsList) {
+                return;
+            }
+
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 900;
+            const shellTopRaw = shell.getBoundingClientRect().top;
+            const shellTop = Math.max(shellTopRaw, 0);
+            const bottomGap = window.innerWidth <= 768 ? 12 : 20;
+            const minShellHeight = window.innerWidth <= 768 ? 520 : 620;
+            const targetShellHeight = Math.floor(viewportHeight - shellTop - bottomGap);
+            let shellHeight = Math.max(420, Math.min(Math.max(minShellHeight, targetShellHeight), viewportHeight - 6));
+            shell.style.height = `${shellHeight}px`;
+
+            const sidebarHeader = sidebar.querySelector('.p-5.border-b.border-gray-200');
+            const sidebarFooter = sidebar.querySelector('.llm-sidebar-footer');
+            const headerHeight = sidebarHeader ? sidebarHeader.offsetHeight : 0;
+            const footerHeight = sidebarFooter ? sidebarFooter.offsetHeight : 0;
+
+            let sidebarHeight = shellHeight;
+            if (window.innerWidth <= 1024) {
+                const listNaturalHeight = sessionsList.scrollHeight;
+                const listVisibleHeight = Math.min(listNaturalHeight, window.innerWidth <= 768 ? 200 : 240);
+                const sidebarMinHeight = headerHeight + footerHeight + 110;
+                const sidebarMaxHeight = Math.min(300, Math.floor(shellHeight * 0.4));
+                sidebarHeight = Math.max(
+                    sidebarMinHeight,
+                    Math.min(sidebarMaxHeight, headerHeight + footerHeight + listVisibleHeight)
+                );
+            }
+
+            sidebar.style.height = `${sidebarHeight}px`;
+            sidebar.style.maxHeight = `${sidebarHeight}px`;
+
+            const mainHeight = window.innerWidth <= 1024
+                ? Math.max(260, shellHeight - sidebarHeight)
+                : shellHeight;
+            main.style.height = `${mainHeight}px`;
+            main.style.minHeight = '0';
+
+            const metrics = {
+                viewportHeight,
+                shellTopRaw: Math.round(shellTopRaw),
+                shellTop: Math.round(shellTop),
+                shellHeight,
+                sidebarHeaderHeight: headerHeight,
+                sidebarFooterHeight: footerHeight,
+                sessionsScrollHeight: sessionsList.scrollHeight,
+                sidebarHeight,
+                mainHeight,
+                width: window.innerWidth,
+                ts: new Date().toISOString()
+            };
+            console.log('[LLM_LAYOUT_SYNC]', metrics);
+
+            const debugEl = document.getElementById('llm-layout-debug');
+            if (debugEl) {
+                debugEl.textContent = `layout shell:${metrics.shellHeight}px sidebar:${metrics.sidebarHeight}px main:${metrics.mainHeight}px list:${metrics.sessionsScrollHeight}px vw:${metrics.width}`;
+            }
         }
 
         // 初始化字符计数器
@@ -489,6 +647,72 @@
             return [];
         }
 
+        function renderMarkdown(content) {
+            const rawHtml = marked.parse(content || '');
+            if (window.DOMPurify) {
+                return window.DOMPurify.sanitize(rawHtml, {
+                    USE_PROFILES: { html: true }
+                });
+            }
+            return escapeHtml(content || '').replace(/\n/g, '<br>');
+        }
+
+        function setStreamingState(streaming) {
+            isStreaming = streaming;
+
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            if (regenerateBtn) {
+                regenerateBtn.innerHTML = streaming
+                    ? '<i class="fas fa-stop mr-1 text-xs"></i>停止生成'
+                    : '<i class="fas fa-redo mr-1 text-xs"></i>重新生成';
+                regenerateBtn.classList.toggle('text-red-600', streaming);
+            }
+
+            const sendButtons = [
+                document.getElementById('initial-send-btn'),
+                document.getElementById('chat-send-btn')
+            ];
+            sendButtons.forEach((button) => {
+                if (!button) {
+                    return;
+                }
+                button.disabled = streaming;
+                button.classList.toggle('opacity-60', streaming);
+                button.classList.toggle('cursor-not-allowed', streaming);
+            });
+        }
+
+        function stopStreaming(options = {}) {
+            const { silent = false, preserveMessage = true } = options;
+
+            if (currentStreamController) {
+                currentStreamController.abort();
+                currentStreamController = null;
+            }
+
+            if (!silent && currentStreamingMessageId && preserveMessage) {
+                const footer = document.getElementById(`${currentStreamingMessageId}-footer`);
+                if (footer) {
+                    footer.innerHTML = `
+                    <div class="text-xs text-amber-600 flex items-center gap-2">
+                        <i class="fas fa-pause-circle"></i>
+                        <span>已停止生成</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="copyMessage('${currentStreamingMessageId}')" class="text-xs text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100" title="复制消息">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                `;
+                }
+            }
+
+            removeThinkingIndicator(currentThinkingIndicatorId);
+            currentThinkingIndicatorId = null;
+            currentStreamingMessageId = null;
+            setStreamingState(false);
+        }
+
         // 加载会话列表
         async function loadSessions() {
             try {
@@ -506,12 +730,29 @@
                 const result = await response.json();
                 const payload = unwrapApiPayload(result);
                 const sessions = normalizeArrayPayload(payload);
+                allSessions = sessions;
+                populateSessionAgentFilter(sessions);
                 displaySessions(sessions);
                 updateSessionCount(sessions.length);
+                updateClearUnpinnedButton(sessions);
+                requestLayoutSync();
             } catch (error) {
                 console.error('加载会话列表失败:', error);
                 showError('加载会话列表失败，请检查网络连接');
             }
+        }
+
+        function updateClearUnpinnedButton(sessions = allSessions) {
+            const button = document.getElementById('clear-unpinned-btn');
+            if (!button) {
+                return;
+            }
+
+            const count = (sessions || []).filter((session) => !session.is_pinned).length;
+            button.disabled = count === 0;
+            button.classList.toggle('opacity-60', count === 0);
+            button.classList.toggle('cursor-not-allowed', count === 0);
+            button.textContent = count > 0 ? `清理未固定会话 (${count})` : '清理未固定会话';
         }
 
         // 显示会话列表
@@ -532,47 +773,108 @@
             }
 
             let html = '';
-
-            // 分组：固定的会话和普通会话
             const pinnedSessions = sessions.filter(s => s.is_pinned);
             const regularSessions = sessions.filter(s => !s.is_pinned);
 
-            // 固定会话
             if (pinnedSessions.length > 0) {
-                html += `
+                html += createSessionGroupHTML('固定对话', pinnedSessions, 'fas fa-thumbtack text-yellow-500');
+            }
+
+            const datedGroups = [
+                { key: 'today', label: '今天' },
+                { key: 'recent', label: '近 7 天' },
+                { key: 'older', label: '更早' }
+            ];
+
+            const groupedSessions = {
+                today: [],
+                recent: [],
+                older: []
+            };
+
+            regularSessions.forEach((session) => {
+                groupedSessions[getSessionDateGroup(session)].push(session);
+            });
+
+            datedGroups.forEach((group, index) => {
+                if (groupedSessions[group.key].length === 0) {
+                    return;
+                }
+                if (html && index >= 0) {
+                    html += `<div class="border-t border-gray-100 my-2"></div>`;
+                }
+                html += createSessionGroupHTML(group.label, groupedSessions[group.key]);
+            });
+
+            container.innerHTML = html;
+            requestLayoutSync();
+        }
+
+        function createSessionGroupHTML(label, sessions, iconClass = '') {
+            const iconHtml = iconClass ? `<i class="${iconClass} mr-1.5 text-xs"></i>` : '';
+            let html = `
                 <div class="px-2 pt-2">
                     <div class="flex items-center text-xs text-gray-500 mb-2 px-2">
-                        <i class="fas fa-thumbtack mr-1.5 text-yellow-500 text-xs"></i>
-                        <span>固定对话</span>
+                        ${iconHtml}
+                        <span>${label}</span>
                     </div>
             `;
 
-                pinnedSessions.forEach(session => {
-                    html += createSessionItemHTML(session);
-                });
+            sessions.forEach((session) => {
+                html += createSessionItemHTML(session);
+            });
 
-                html += `</div>`;
+            html += `</div>`;
+            return html;
+        }
+
+        function getSessionDateGroup(session) {
+            const rawTime = session?.updated_at || session?.last_message_at || session?.created_at;
+            if (!rawTime) {
+                return 'older';
             }
 
-            // 普通会话
-            if (regularSessions.length > 0) {
-                if (pinnedSessions.length > 0) {
-                    html += `<div class="border-t border-gray-100 my-2"></div>`;
+            const date = new Date(rawTime);
+            if (Number.isNaN(date.getTime())) {
+                return 'older';
+            }
+
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diffMs = startOfToday.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 0) {
+                return 'today';
+            }
+            if (diffDays < 7) {
+                return 'recent';
+            }
+            return 'older';
+        }
+
+        function populateSessionAgentFilter(sessions) {
+            const filter = document.getElementById('session-agent-filter');
+            if (!filter) {
+                return;
+            }
+
+            const currentValue = filter.value;
+            const options = new Map();
+            options.set('', '全部智能体');
+
+            (sessions || []).forEach((session) => {
+                const agentId = session && session.agent_id ? String(session.agent_id) : '';
+                const agentName = session && session.agent_name ? session.agent_name : '';
+                if (agentId && agentName && !options.has(agentId)) {
+                    options.set(agentId, agentName);
                 }
+            });
 
-                html += `
-                <div class="px-2 pt-2">
-                    <div class="text-xs text-gray-500 mb-2 px-2">最近对话</div>
-            `;
-
-                regularSessions.forEach(session => {
-                    html += createSessionItemHTML(session);
-                });
-
-                html += `</div>`;
-            }
-
-            container.innerHTML = html;
+            filter.innerHTML = Array.from(options.entries()).map(([value, label]) => {
+                const selected = value === currentValue ? 'selected' : '';
+                return `<option value="${escapeHtml(value)}" ${selected}>${escapeHtml(label)}</option>`;
+            }).join('');
         }
 
         // 创建会话项HTML
@@ -649,6 +951,80 @@
             document.getElementById('session-count').textContent = count;
         }
 
+        function setCurrentPinButtonState(isPinned) {
+            const pinButton = document.getElementById('pin-session-btn');
+            const pinIcon = pinButton ? pinButton.querySelector('i') : null;
+            if (!pinButton || !pinIcon) {
+                return;
+            }
+
+            pinButton.title = isPinned ? '取消固定会话' : '固定会话';
+            pinIcon.classList.toggle('text-yellow-500', !!isPinned);
+        }
+
+        function renderSessionMessages(messages, fallbackAgentName = '智能助手') {
+            const messagesList = document.getElementById('messages-list');
+            messagesList.innerHTML = '';
+
+            const historyMessages = Array.isArray(messages) ? messages : normalizeArrayPayload(messages);
+            if (historyMessages.length === 0) {
+                addMessage('ai', `您好！我是${fallbackAgentName}，有什么可以帮您的吗？`);
+                return 0;
+            }
+
+            historyMessages.forEach((msg) => {
+                const role = msg && msg.role === 'user' ? 'user' : 'ai';
+                const content = msg && typeof msg.content === 'string' ? msg.content : '';
+                if (content.trim() !== '') {
+                    addMessage(role, content);
+                }
+            });
+
+            return historyMessages.length;
+        }
+
+        function enhanceMessageBlocks(root) {
+            if (!root) {
+                return;
+            }
+
+            root.querySelectorAll('.markdown-content pre').forEach((pre) => {
+                if (pre.dataset.enhanced === '1') {
+                    return;
+                }
+
+                pre.dataset.enhanced = '1';
+                const code = pre.querySelector('code');
+                const langClass = code ? Array.from(code.classList).find((item) => item.startsWith('language-')) : '';
+                const language = langClass ? langClass.replace('language-', '') : 'text';
+                const toolbar = document.createElement('div');
+                toolbar.className = 'llm-code-toolbar';
+                toolbar.innerHTML = `
+                    <span class="llm-code-lang">${escapeHtml(language)}</span>
+                    <div class="llm-code-actions">
+                        <button type="button" class="llm-code-btn" data-action="copy">复制</button>
+                        <button type="button" class="llm-code-btn" data-action="toggle">折叠</button>
+                    </div>
+                `;
+
+                pre.parentNode.insertBefore(toolbar, pre);
+                toolbar.querySelector('[data-action="copy"]').addEventListener('click', async () => {
+                    const text = code ? (code.innerText || code.textContent || '') : (pre.innerText || pre.textContent || '');
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        showToast('代码已复制', 'success');
+                    } catch (error) {
+                        console.error('复制代码失败:', error);
+                        showToast('复制代码失败', 'error');
+                    }
+                });
+                toolbar.querySelector('[data-action="toggle"]').addEventListener('click', () => {
+                    const collapsed = pre.classList.toggle('llm-code-collapsed');
+                    toolbar.querySelector('[data-action="toggle"]').textContent = collapsed ? '展开' : '折叠';
+                });
+            });
+        }
+
         // 加载所有智能体
         async function loadAllAgents() {
             try {
@@ -710,6 +1086,28 @@
                     select.selectedIndex = i;
                     break;
                 }
+            }
+        }
+
+        function selectAgentById(agentId) {
+            const select = document.getElementById('agent-select');
+            if (!select || !agentId) {
+                ensureAgentSelected();
+                return;
+            }
+
+            const normalizedAgentId = String(agentId);
+            let matched = false;
+            for (let i = 0; i < select.options.length; i++) {
+                if (String(select.options[i].value) === normalizedAgentId) {
+                    select.selectedIndex = i;
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched) {
+                ensureAgentSelected();
             }
         }
 
@@ -806,7 +1204,16 @@
         }
 
         // 切换到初始模式
-        function switchToInitialMode() {
+        function switchToInitialMode(options = {}) {
+            const preserveAgent = options.preserveAgent !== false;
+            const preservedAgentId = preserveAgent
+                ? ((currentSessionAgent && currentSessionAgent.id) || document.getElementById('current-agent-id').value || '')
+                : '';
+
+            if (isStreaming) {
+                stopStreaming({ silent: true, preserveMessage: false });
+            }
+
             currentSessionId = null;
             currentSessionAgent = null;
 
@@ -815,10 +1222,49 @@
 
             document.getElementById('initial-message-input').value = '';
             updateInitialCharCount();
-            ensureAgentSelected();
+            selectAgentById(preservedAgentId);
 
             document.getElementById('current-agent-id').value = '';
             document.getElementById('current-session-id').value = '';
+        }
+
+        function forkSessionWithCurrentAgent() {
+            const currentAgentId = (currentSessionAgent && currentSessionAgent.id) || document.getElementById('current-agent-id').value;
+            switchToInitialMode({
+                preserveAgent: true
+            });
+
+            if (currentAgentId) {
+                selectAgentById(currentAgentId);
+            }
+
+            const input = document.getElementById('initial-message-input');
+            input.focus();
+            showToast('已为你开启新会话，当前智能体已自动沿用', 'success');
+        }
+
+        function forkLastQuestionToNewSession() {
+            const lastQuestion = getLastUserMessage();
+            if (!lastQuestion) {
+                showToast('当前会话还没有可带出的提问', 'info');
+                return;
+            }
+
+            const currentAgentId = (currentSessionAgent && currentSessionAgent.id) || document.getElementById('current-agent-id').value;
+            switchToInitialMode({
+                preserveAgent: true
+            });
+
+            if (currentAgentId) {
+                selectAgentById(currentAgentId);
+            }
+
+            const input = document.getElementById('initial-message-input');
+            input.value = lastQuestion;
+            updateInitialCharCount();
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+            showToast('已把上一条问题带到新会话草稿', 'success');
         }
 
         // 更新会话信息
@@ -831,12 +1277,18 @@
             if (sessionData.agent && sessionData.agent.name) {
                 agentName = sessionData.agent.name;
                 agentId = sessionData.agent.id;
-                document.getElementById('current-agent-id').value = agentId;
             } else if (sessionData.agent_name) {
                 agentName = sessionData.agent_name;
             }
 
+            if (sessionData.agent_id) {
+                agentId = sessionData.agent_id;
+            }
+
+            document.getElementById('current-agent-id').value = agentId;
+
             document.getElementById('session-agent').textContent = `智能体：${agentName}`;
+            setCurrentPinButtonState(!!sessionData.is_pinned);
 
             if (sessionData.updated_at) {
                 document.getElementById('session-time').textContent = formatTime(sessionData.updated_at);
@@ -878,26 +1330,10 @@
                         document.getElementById('current-agent-id').value = currentSessionAgent.id;
                     }
 
-                    // 清空消息列表并加载历史消息
-                    document.getElementById('messages-list').innerHTML = '';
-
-                    if (sessionData.messages && sessionData.messages.length > 0) {
-                        // 逐条添加历史消息，保持时间顺序
-                        for (let i = 0; i < sessionData.messages.length; i++) {
-                            const msg = sessionData.messages[i];
-                            addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
-
-                            // 添加小延迟以获得更好的视觉效果
-                            if (i < sessionData.messages.length - 1) {
-                                await new Promise(resolve => setTimeout(resolve, 50));
-                            }
-                        }
-
-                        showToast(`已加载 ${sessionData.messages.length} 条历史消息`, 'success');
-                    } else {
-                        // 没有历史消息时显示欢迎语
-                        const agentName = sessionData.agent?.name || '智能助手';
-                        addMessage('ai', `您好！我是${agentName}，有什么可以帮您的吗？`);
+                    const agentName = sessionData.agent?.name || '智能助手';
+                    const loadedCount = renderSessionMessages(sessionData.messages, agentName);
+                    if (loadedCount > 0) {
+                        showToast(`已加载 ${loadedCount} 条历史消息`, 'success');
                     }
 
                     // 聚焦到聊天输入框
@@ -935,7 +1371,7 @@
                 const userInitial = getUserAvatarInitial();
                 const userMessageHTML = `
                 <div id="${messageId}" class="llm-message-row llm-message-user mb-5">
-                    <div class="max-w-3xl mx-auto w-full">
+                    <div class="llm-content-frame mx-auto w-full">
                         <div class="llm-message-track llm-message-track-user">
                             <div class="llm-message-main llm-message-main-user">
                                 <div class="llm-message-meta llm-message-meta-user">
@@ -957,7 +1393,7 @@
                 const agentAvatar = getAgentAvatar(agentName);
                 const aiMessageHTML = `
                 <div id="${messageId}" class="llm-message-row llm-message-ai mb-5">
-                    <div class="max-w-3xl mx-auto w-full">
+                    <div class="llm-content-frame mx-auto w-full">
                         <div class="llm-message-track">
                             <div class="llm-message-avatar llm-message-avatar-ai">${agentAvatar}</div>
                             <div class="llm-message-main llm-message-main-ai">
@@ -966,7 +1402,7 @@
                                     <span>${nowText}</span>
                                 </div>
                                 <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-none px-4 py-3 llm-message-bubble-ai">
-                                    <div class="markdown-content whitespace-pre-wrap break-words">${marked.parse(content)}</div>
+                                    <div class="markdown-content whitespace-pre-wrap break-words">${renderMarkdown(content)}</div>
                                 </div>
                                 <div class="flex items-center justify-between mt-2 llm-message-actions">
                                     <div class="text-xs text-gray-500">
@@ -975,6 +1411,15 @@
                                     <div class="flex items-center space-x-2">
                                         <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-[#00b894] p-1 rounded hover:bg-gray-100" title="复制消息">
                                             <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button onclick="saveMessageAsNote('${messageId}')" class="text-xs text-gray-400 hover:text-emerald-600 p-1 rounded hover:bg-gray-100" title="保存为笔记">
+                                            <i class="fas fa-sticky-note"></i>
+                                        </button>
+                                        <button onclick="saveMessageAsMind('${messageId}')" class="text-xs text-gray-400 hover:text-cyan-600 p-1 rounded hover:bg-gray-100" title="生成思维导图">
+                                            <i class="fas fa-sitemap"></i>
+                                        </button>
+                                        <button onclick="quoteMessage('${messageId}')" class="text-xs text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100" title="引用消息">
+                                            <i class="fas fa-quote-left"></i>
                                         </button>
                                         <button onclick="likeMessage('${messageId}')" class="text-xs text-gray-400 hover:text-red-500 p-1 rounded hover:bg-gray-100" title="点赞">
                                             <i class="far fa-heart"></i>
@@ -987,6 +1432,7 @@
                 </div>
             `;
                 messagesList.insertAdjacentHTML('beforeend', aiMessageHTML);
+                enhanceMessageBlocks(document.getElementById(messageId));
             }
 
             // 滚动到底部
@@ -1063,6 +1509,164 @@
             }
         }
 
+        function buildQuoteText(content) {
+            return String(content || '')
+                .split('\n')
+                .map((line) => `> ${line}`)
+                .join('\n');
+        }
+
+        function appendToMessageInput(text) {
+            const messageInput = document.getElementById('message-input');
+            const currentValue = messageInput.value.trim();
+            messageInput.value = currentValue ? `${currentValue}\n\n${text}\n\n` : `${text}\n\n`;
+            updateChatCharCount();
+            messageInput.focus();
+            messageInput.setSelectionRange(messageInput.value.length, messageInput.value.length);
+        }
+
+        function quoteMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            if (!messageElement) {
+                showToast('未找到可引用的消息', 'error');
+                return;
+            }
+
+            const contentElement = messageElement.querySelector('.markdown-content') ||
+                messageElement.querySelector('.whitespace-pre-wrap');
+            const text = contentElement ? (contentElement.innerText || contentElement.textContent || '').trim() : '';
+            if (!text) {
+                showToast('消息内容为空，无法引用', 'info');
+                return;
+            }
+
+            appendToMessageInput(buildQuoteText(text));
+            showToast('已将消息引用到输入框', 'success');
+        }
+
+        async function saveMessageAsNote(messageId) {
+            const messageElement = document.getElementById(messageId);
+            if (!messageElement) {
+                showToast('未找到可保存的消息', 'error');
+                return;
+            }
+
+            const contentElement = messageElement.querySelector('.markdown-content') ||
+                messageElement.querySelector('.whitespace-pre-wrap');
+            const text = contentElement ? (contentElement.innerText || contentElement.textContent || '').trim() : '';
+            if (!text) {
+                showToast('消息内容为空，无法保存为笔记', 'info');
+                return;
+            }
+
+            const sessionTitle = (document.getElementById('session-title-display')?.textContent || 'AI会话').trim();
+            const firstLine = text.split('\n').find((line) => line.trim() !== '') || 'AI回复摘录';
+            const noteTitle = `[AI] ${sessionTitle} - ${firstLine}`.slice(0, 255);
+
+            try {
+                const response = await window.taskApiFetch('/api/v2/notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        name: `${noteTitle}\n\n${text}`,
+                        status: 1
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (result.success || Number(result.code) === 0 || Number(result.code) === 9999) {
+                    showToast('已保存为私密笔记', 'success');
+                    return;
+                }
+
+                throw new Error(result.message || result.msg || '保存失败');
+            } catch (error) {
+                console.error('保存为笔记失败:', error);
+                showToast('保存笔记失败: ' + error.message, 'error');
+            }
+        }
+
+        async function saveMessageAsMind(messageId) {
+            const messageElement = document.getElementById(messageId);
+            if (!messageElement) {
+                showToast('未找到可生成导图的消息', 'error');
+                return;
+            }
+
+            const contentElement = messageElement.querySelector('.markdown-content') ||
+                messageElement.querySelector('.whitespace-pre-wrap');
+            const text = contentElement ? (contentElement.innerText || contentElement.textContent || '').trim() : '';
+            if (!text) {
+                showToast('消息内容为空，无法生成导图', 'info');
+                return;
+            }
+
+            const sessionTitle = (document.getElementById('session-title-display')?.textContent || 'AI会话').trim();
+            const firstLine = text.split('\n').find((line) => line.trim() !== '') || 'AI回复导图';
+            const mindName = `[AI导图] ${sessionTitle} - ${firstLine}`.slice(0, 255);
+
+            try {
+                const response = await window.taskApiFetch('/api/v2/minds', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        name: mindName,
+                        content: text,
+                        source_type: 'llm',
+                        source_id: currentSessionId || null
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                const payload = unwrapApiPayload(result);
+                const mindId = payload && (payload.id || (payload.mind && payload.mind.id));
+                if (!mindId) {
+                    throw new Error(result.message || result.msg || '导图创建失败');
+                }
+
+                showToast('思维导图已创建，已为你打开编辑页', 'success');
+                window.open(`/mind/${mindId}`, '_blank');
+            } catch (error) {
+                console.error('保存为思维导图失败:', error);
+                showToast('生成思维导图失败: ' + error.message, 'error');
+            }
+        }
+
+        function getConversationMessages() {
+            return Array.from(document.querySelectorAll('#messages-list .llm-message-row')).map((row) => {
+                const role = row.classList.contains('llm-message-user') ? 'user' : 'assistant';
+                const contentElement = row.querySelector('.markdown-content') || row.querySelector('.whitespace-pre-wrap');
+                const content = contentElement ? (contentElement.innerText || contentElement.textContent || '').trim() : '';
+                return { role, content };
+            }).filter((item) => item.content !== '');
+        }
+
+        function getLastUserMessage() {
+            const messages = getConversationMessages().filter((item) => item.role === 'user');
+            return messages.length > 0 ? messages[messages.length - 1].content : '';
+        }
+
+        function getLastAssistantMessage() {
+            const messages = getConversationMessages().filter((item) => item.role === 'assistant');
+            return messages.length > 0 ? messages[messages.length - 1].content : '';
+        }
+
         // 显示会话加载状态
         function showSessionLoading() {
             const messagesList = document.getElementById('messages-list');
@@ -1132,25 +1736,24 @@
 
         // 发送消息到AI
         async function sendMessageToAI(message, agentId = null) {
-            if (isStreaming && currentStreamController) {
-                currentStreamController.abort();
-                isStreaming = false;
+            if (isStreaming) {
+                stopStreaming({ silent: true });
             }
 
             try {
-                // 显示AI思考指示器
-                const thinkingId = showThinkingIndicator();
-
-                // 获取最终智能体ID
                 let finalAgentId = agentId;
                 if (!finalAgentId) {
                     finalAgentId = document.getElementById('current-agent-id').value;
                 }
 
-                isStreaming = true;
+                currentStreamController = new AbortController();
+                setStreamingState(true);
+
+                currentThinkingIndicatorId = showThinkingIndicator();
 
                 const response = await window.taskApiFetch('/api/v2/llm/chat', {
                     method: 'POST',
+                    signal: currentStreamController.signal,
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
@@ -1165,8 +1768,8 @@
 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                // 移除思考指示器
-                removeThinkingIndicator(thinkingId);
+                removeThinkingIndicator(currentThinkingIndicatorId);
+                currentThinkingIndicatorId = null;
 
                 const requestStartAt = Date.now();
 
@@ -1175,10 +1778,11 @@
                 const messagesList = document.getElementById('messages-list');
                 const agentName = getCurrentAgentName();
                 const agentAvatar = getAgentAvatar(agentName);
+                currentStreamingMessageId = messageId;
 
                 messagesList.insertAdjacentHTML('beforeend', `
                 <div id="${messageId}" class="llm-message-row llm-message-ai mb-5">
-                    <div class="max-w-3xl mx-auto w-full">
+                    <div class="llm-content-frame mx-auto w-full">
                         <div class="llm-message-track">
                             <div class="llm-message-avatar llm-message-avatar-ai">${agentAvatar}</div>
                             <div class="llm-message-main llm-message-main-ai">
@@ -1241,7 +1845,8 @@
                                         // 更新消息内容
                                         const contentElement = document.getElementById(`${messageId}-content`);
                                         if (contentElement) {
-                                            contentElement.innerHTML = marked.parse(accumulatedContent);
+                                            contentElement.innerHTML = renderMarkdown(accumulatedContent);
+                                            enhanceMessageBlocks(contentElement.closest('.llm-message-row'));
                                         }
                                     }
                                 }
@@ -1270,6 +1875,12 @@
                         <button onclick="copyMessage('${messageId}')" class="text-xs text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100" title="复制消息">
                             <i class="fas fa-copy"></i>
                         </button>
+                        <button onclick="saveMessageAsNote('${messageId}')" class="text-xs text-gray-400 hover:text-emerald-600 p-1 rounded hover:bg-gray-100" title="保存为笔记">
+                            <i class="fas fa-sticky-note"></i>
+                        </button>
+                        <button onclick="saveMessageAsMind('${messageId}')" class="text-xs text-gray-400 hover:text-cyan-600 p-1 rounded hover:bg-gray-100" title="生成思维导图">
+                            <i class="fas fa-sitemap"></i>
+                        </button>
                         <button onclick="likeMessage('${messageId}')" class="text-xs text-gray-400 hover:text-red-500 p-1 rounded hover:bg-gray-100" title="点赞">
                             <i class="far fa-heart"></i>
                         </button>
@@ -1278,6 +1889,9 @@
                 }
 
                 reader.releaseLock();
+                currentStreamController = null;
+                currentStreamingMessageId = null;
+                setStreamingState(false);
 
                 // 重新加载会话列表以更新最后消息时间
                 loadSessions();
@@ -1285,8 +1899,8 @@
             } catch (error) {
                 console.error('发送消息到AI失败:', error);
 
-                // 移除思考指示器
-                removeThinkingIndicator();
+                removeThinkingIndicator(currentThinkingIndicatorId);
+                currentThinkingIndicatorId = null;
 
                 // 显示错误消息
                 if (error.name !== 'AbortError') {
@@ -1294,7 +1908,9 @@
                     showToast('网络请求失败: ' + error.message, 'error');
                 }
 
-                isStreaming = false;
+                currentStreamController = null;
+                currentStreamingMessageId = null;
+                setStreamingState(false);
             }
         }
 
@@ -1307,7 +1923,7 @@
 
             messagesList.insertAdjacentHTML('beforeend', `
             <div id="${indicatorId}" class="llm-message-row llm-message-ai mb-4">
-                <div class="max-w-3xl mx-auto w-full">
+                <div class="llm-content-frame mx-auto w-full">
                     <div class="llm-message-track">
                         <div class="llm-message-avatar llm-message-avatar-ai">${agentAvatar}</div>
                         <div class="llm-message-main llm-message-main-ai">
@@ -1341,7 +1957,7 @@
                 if (element) element.remove();
             } else {
                 document.querySelectorAll('.typing-indicator').forEach(ind => {
-                    ind.closest('.flex.mb-3')?.remove();
+                    ind.closest('.llm-message-row')?.remove();
                 });
             }
         }
@@ -1349,16 +1965,34 @@
         // 搜索会话
         function searchSessions() {
             const searchTerm = document.getElementById('search-sessions').value.toLowerCase();
-            const sessionItems = document.querySelectorAll('.session-item');
-
-            sessionItems.forEach(item => {
-                const title = item.querySelector('.font-medium').textContent.toLowerCase();
-                if (title.includes(searchTerm) || !searchTerm) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
+            const selectedAgentId = document.getElementById('session-agent-filter').value;
+            const sessions = (allSessions || []).filter((session) => {
+                const title = String(session.title || '').toLowerCase();
+                const titleMatch = !searchTerm || title.includes(searchTerm);
+                const agentMatch = !selectedAgentId || String(session.agent_id || '') === selectedAgentId;
+                const quickFilterMatch = (() => {
+                    if (sessionQuickFilter === 'pinned') {
+                        return !!session.is_pinned;
+                    }
+                    if (sessionQuickFilter === 'active') {
+                        const rawTime = session?.updated_at || session?.last_message_at || session?.created_at;
+                        if (!rawTime) {
+                            return false;
+                        }
+                        const date = new Date(rawTime);
+                        if (Number.isNaN(date.getTime())) {
+                            return false;
+                        }
+                        return (Date.now() - date.getTime()) <= 1000 * 60 * 60 * 24 * 3;
+                    }
+                    return true;
+                })();
+                return titleMatch && agentMatch && quickFilterMatch;
             });
+
+            displaySessions(sessions);
+            updateClearUnpinnedButton(sessions);
+            requestLayoutSync();
         }
 
         // 固定/取消固定会话
@@ -1377,7 +2011,10 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // 重新加载会话列表
+                    if (String(currentSessionId) === String(sessionId)) {
+                        setCurrentPinButtonState(!!result.data.is_pinned);
+                    }
+
                     loadSessions();
 
                     showToast(result.data.is_pinned ? '已固定对话' : '已取消固定', 'success');
@@ -1402,6 +2039,10 @@
 
             showConfirmModal('清空对话', '确定要清空当前对话的所有消息吗？此操作不可撤销。', async () => {
                 try {
+                    if (isStreaming) {
+                        stopStreaming({ silent: true, preserveMessage: false });
+                    }
+
                     const response = await window.taskApiFetch(`/api/v2/llm/sessions/${currentSessionId}/clear`, {
                         method: 'POST',
                         headers: {
@@ -1433,7 +2074,43 @@
 
         // 导出当前会话
         function exportCurrentSession() {
-            showToast('导出功能开发中...', 'info');
+            if (!currentSessionId) {
+                showToast('请先打开一个会话', 'error');
+                return;
+            }
+
+            const title = (document.getElementById('session-title-display')?.textContent || '未命名对话').trim();
+            const agent = getCurrentAgentName();
+            const messages = getConversationMessages();
+
+            if (messages.length === 0) {
+                showToast('当前会话暂无可导出的内容', 'info');
+                return;
+            }
+
+            const lines = [
+                `# ${title}`,
+                '',
+                `- 智能体：${agent}`,
+                `- 导出时间：${new Date().toLocaleString('zh-CN')}`,
+                ''
+            ];
+
+            messages.forEach((item) => {
+                lines.push(`## ${item.role === 'user' ? '用户' : 'AI'}`);
+                lines.push(item.content);
+                lines.push('');
+            });
+
+            const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${title.replace(/[\\\\/:*?"<>|]/g, '_') || 'llm-session'}.md`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(link.href);
+            showToast('对话已导出', 'success');
         }
 
         // 删除会话
@@ -1442,6 +2119,10 @@
 
             showConfirmModal('删除对话', '确定要删除这个对话吗？此操作不可撤销。', async () => {
                 try {
+                    if (isStreaming) {
+                        stopStreaming({ silent: true, preserveMessage: false });
+                    }
+
                     const response = await window.taskApiFetch(`/api/v2/llm/sessions/${currentSessionId}`, {
                         method: 'DELETE',
                         headers: {
@@ -1491,6 +2172,13 @@
                 return;
             }
 
+            const saved = await updateSessionTitle(newName);
+            if (saved) {
+                closeRenameModal();
+            }
+        }
+
+        async function updateSessionTitle(newName) {
             if (!currentSessionId) return;
 
             try {
@@ -1511,30 +2199,189 @@
                 if (result.success) {
                     showToast('对话已重命名', 'success');
                     document.getElementById('session-title-display').textContent = newName;
-                    closeRenameModal();
-                    loadSessions();
+                    await loadSessions();
+                    return true;
                 } else {
                     throw new Error(result.message);
                 }
             } catch (error) {
                 console.error('重命名会话失败:', error);
                 showToast('重命名失败: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        function startInlineRename() {
+            if (!currentSessionId || isInlineRenaming) {
+                return;
+            }
+
+            const titleDisplay = document.getElementById('session-title-display');
+            const titleInput = document.getElementById('session-title-inline-input');
+            if (!titleDisplay || !titleInput) {
+                return;
+            }
+
+            isInlineRenaming = true;
+            titleInput.value = (titleDisplay.textContent || '').trim();
+            titleDisplay.classList.add('hidden');
+            titleInput.classList.remove('hidden');
+            titleInput.focus();
+            titleInput.select();
+        }
+
+        function cancelInlineRename() {
+            const titleDisplay = document.getElementById('session-title-display');
+            const titleInput = document.getElementById('session-title-inline-input');
+            if (!titleDisplay || !titleInput) {
+                return;
+            }
+
+            isInlineRenaming = false;
+            titleInput.classList.add('hidden');
+            titleDisplay.classList.remove('hidden');
+        }
+
+        async function saveInlineRename() {
+            const titleInput = document.getElementById('session-title-inline-input');
+            const titleDisplay = document.getElementById('session-title-display');
+            if (!titleInput || !titleDisplay || !isInlineRenaming) {
+                return;
+            }
+
+            const newName = titleInput.value.trim();
+            if (!newName) {
+                showToast('请输入对话名称', 'error');
+                titleInput.focus();
+                return;
+            }
+
+            const currentName = (titleDisplay.textContent || '').trim();
+            if (newName === currentName) {
+                cancelInlineRename();
+                return;
+            }
+
+            const saved = await updateSessionTitle(newName);
+            if (saved) {
+                cancelInlineRename();
+            } else {
+                titleInput.focus();
+                titleInput.select();
             }
         }
 
         // 显示附件选项
         function showAttachmentOptions() {
-            showToast('附件功能开发中...', 'info');
+            showToast('附件能力暂未开放，后续会接入真实文件上下文。', 'info');
         }
 
         // 语音输入
         function showVoiceInput() {
-            showToast('语音功能开发中...', 'info');
+            showToast('语音输入暂未开放，当前先使用文本会话。', 'info');
+        }
+
+        function editLastQuestion() {
+            const lastUserMessage = getLastUserMessage();
+            if (!lastUserMessage) {
+                showToast('当前会话还没有可编辑的问题', 'info');
+                return;
+            }
+
+            const messageInput = document.getElementById('message-input');
+            messageInput.value = lastUserMessage;
+            updateChatCharCount();
+            messageInput.focus();
+            messageInput.setSelectionRange(messageInput.value.length, messageInput.value.length);
+            showToast('已载入上一条问题，可直接修改后重发', 'success');
+        }
+
+        function quoteLastAnswer() {
+            const lastAssistantMessage = getLastAssistantMessage();
+            if (!lastAssistantMessage) {
+                showToast('当前会话还没有可引用的回复', 'info');
+                return;
+            }
+
+            appendToMessageInput(buildQuoteText(lastAssistantMessage));
+            showToast('已引用上一条 AI 回复', 'success');
+        }
+
+        async function clearUnpinnedSessions() {
+            const unpinnedSessions = (allSessions || []).filter((session) => !session.is_pinned);
+            if (unpinnedSessions.length === 0) {
+                showToast('当前没有可清理的未固定会话', 'info');
+                return;
+            }
+
+            showConfirmModal(
+                '清理未固定会话',
+                `确定要删除 ${unpinnedSessions.length} 个未固定会话吗？此操作不可撤销。`,
+                async () => {
+                    let removedCount = 0;
+
+                    for (const session of unpinnedSessions) {
+                        try {
+                            await window.taskApiFetch(`/api/v2/llm/sessions/${session.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                }
+                            });
+
+                            if (String(currentSessionId) === String(session.id)) {
+                                switchToInitialMode();
+                            }
+                            removedCount += 1;
+                        } catch (error) {
+                            console.error('批量删除会话失败:', error);
+                        }
+                    }
+
+                    await loadSessions();
+                    showToast(`已清理 ${removedCount} 个未固定会话`, removedCount > 0 ? 'success' : 'info');
+                }
+            );
         }
 
         // 重新生成最后一条消息
         async function regenerateLastResponse() {
-            showToast('重新生成功能开发中...', 'info');
+            if (isStreaming) {
+                stopStreaming();
+                return;
+            }
+
+            if (!currentSessionId) {
+                showToast('请先打开一个会话', 'error');
+                return;
+            }
+
+            try {
+                const response = await window.taskApiFetch(`/api/v2/llm/sessions/${currentSessionId}/regenerate`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (!result.success || !result.data || !result.data.query) {
+                    throw new Error(result.message || '没有可重新生成的问题');
+                }
+
+                await switchToSession(currentSessionId);
+                await loadSessions();
+                await sendMessageToAI(result.data.query, result.data.agent_id || document.getElementById('current-agent-id').value);
+            } catch (error) {
+                console.error('重新生成失败:', error);
+                showToast('重新生成失败: ' + error.message, 'error');
+            }
         }
 
         // 显示确认模态框
@@ -1602,16 +2449,6 @@
     </script>
 
     <style>
-        main.max-w-7xl.mx-auto {
-            max-width: 100%;
-            padding: 0;
-            margin: 0;
-        }
-
-        footer {
-            display: none;
-        }
-
         .llm-shell {
             --llm-bg: #f4f7fb;
             --llm-card: #ffffff;
@@ -1623,24 +2460,30 @@
             --llm-user: #0f766e;
             --llm-user-grad: linear-gradient(130deg, #0f766e 0%, #0b5f58 100%);
             --llm-shadow: 0 18px 40px -24px rgba(15, 118, 110, 0.35);
-            height: 100vh;
+            height: calc(100vh - 10rem);
+            min-height: 680px;
             background:
                 radial-gradient(circle at 6% 10%, rgba(15, 118, 110, 0.12) 0, rgba(15, 118, 110, 0) 28%),
                 radial-gradient(circle at 94% 92%, rgba(30, 64, 175, 0.1) 0, rgba(30, 64, 175, 0) 24%),
                 var(--llm-bg);
             color: var(--llm-text);
             font-family: "Plus Jakarta Sans", "Noto Sans SC", "PingFang SC", sans-serif;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid #e6eaf0;
         }
 
         .llm-sidebar {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             border-color: var(--llm-border);
+            height: 100%;
         }
 
         .llm-main {
             background: transparent;
-            min-height: 100vh;
+            height: 100%;
+            min-height: 0;
         }
 
         .llm-search-wrap .input {
@@ -1719,6 +2562,11 @@
             width: 100%;
         }
 
+        .llm-content-frame {
+            width: 100%;
+            max-width: 100%;
+        }
+
         .llm-message-track {
             display: flex;
             align-items: flex-start;
@@ -1777,6 +2625,19 @@
             justify-content: flex-end;
         }
 
+        .llm-inline-title-wrap {
+            min-width: 0;
+        }
+
+        .llm-inline-title-input {
+            min-width: 16rem;
+            max-width: min(28rem, 56vw);
+            height: 2rem;
+            font-weight: 600;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+
         .llm-role-chip {
             display: inline-flex;
             align-items: center;
@@ -1803,7 +2664,7 @@
             opacity: 0.55;
         }
 
-        .btn {
+        .llm-shell .btn {
             padding: 0.4rem 0.78rem;
             border-radius: 10px;
             font-size: 0.85rem;
@@ -1811,46 +2672,51 @@
             transition: all 0.2s ease;
         }
 
-        .btn-sm {
+        .llm-shell .btn-sm {
             padding: 0.26rem 0.58rem;
             font-size: 0.74rem;
         }
 
-        .btn-primary {
+        .llm-shell .btn-primary {
             background: var(--llm-user-grad);
             color: #fff;
             border: none;
             box-shadow: 0 10px 18px -14px rgba(15, 118, 110, 0.7);
         }
 
-        .btn-primary:hover {
+        .llm-shell .btn-primary:hover {
             transform: translateY(-1px);
             filter: brightness(1.03);
         }
 
-        .btn-outline {
+        .llm-shell .btn-outline {
             background: #fff;
             border: 1px solid #d6dee8;
             color: #334155;
         }
 
-        .btn-outline:hover {
+        .llm-shell .btn-outline:hover {
             border-color: #9fb2c8;
         }
 
-        .btn-icon,
-        .btn-icon-sm {
+        .llm-shell .btn-icon,
+        .llm-shell .btn-icon-sm {
             border-radius: 10px;
             transition: all 0.2s ease;
         }
 
-        .btn-icon:hover,
-        .btn-icon-sm:hover {
+        .llm-shell .btn-icon:hover,
+        .llm-shell .btn-icon-sm:hover {
             background-color: #f2f7fa;
             color: var(--llm-primary);
         }
 
-        .btn-scene {
+        #fork-session-btn:hover {
+            color: #0f766e;
+            background: #ecfdf5;
+        }
+
+        .llm-shell .btn-scene {
             padding: 0.34rem 0.75rem;
             font-size: 0.74rem;
             color: #4b5563;
@@ -1861,13 +2727,38 @@
             white-space: nowrap;
         }
 
-        .btn-scene:hover {
+        .llm-shell .btn-scene:hover {
             color: var(--llm-primary);
             border-color: #98c5bf;
             background: #f2fffd;
         }
 
-        .input {
+        .llm-filter-chip {
+            flex: 1 1 0;
+            border: 1px solid #dbe3ec;
+            border-radius: 999px;
+            background: #fff;
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.36rem 0.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .llm-filter-chip:hover {
+            color: var(--llm-primary);
+            border-color: #98c5bf;
+            background: #f2fffd;
+        }
+
+        .llm-filter-chip.is-active {
+            color: #0f766e;
+            border-color: #8bc9bf;
+            background: linear-gradient(180deg, #f0fdfa 0%, #ecfeff 100%);
+            box-shadow: 0 8px 16px -14px rgba(15, 118, 110, 0.75);
+        }
+
+        .llm-shell .input {
             padding: 0.5rem 0.75rem;
             border: 1px solid #d4dbe5;
             border-radius: 10px;
@@ -1875,13 +2766,13 @@
             transition: all 0.2s ease;
         }
 
-        .input:focus {
+        .llm-shell .input:focus {
             outline: none;
             border-color: #80bfb7;
             box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
         }
 
-        .input-sm {
+        .llm-shell .input-sm {
             padding: 0.38rem 0.74rem;
             font-size: 0.76rem;
         }
@@ -1906,6 +2797,48 @@
             box-shadow: 0 10px 20px -18px rgba(15, 118, 110, 0.7);
         }
 
+        .llm-code-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-top: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #dbe5ef;
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .llm-code-lang {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #4b5563;
+        }
+
+        .llm-code-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .llm-code-btn {
+            border: 1px solid #cfe0dd;
+            border-radius: 999px;
+            padding: 0.22rem 0.62rem;
+            font-size: 0.72rem;
+            color: #0f766e;
+            background: #ffffff;
+            transition: all 0.18s ease;
+        }
+
+        .llm-code-btn:hover {
+            background: #ecfdf5;
+            border-color: #8cc9bf;
+        }
+
         #messages-list > .flex {
             animation: llm-slide-up 0.22s ease-out;
         }
@@ -1922,7 +2855,7 @@
             background: #fff;
         }
 
-        .dropdown-menu {
+        .llm-shell .dropdown-menu {
             display: none;
             position: absolute;
             right: 0;
@@ -1936,11 +2869,11 @@
             overflow: hidden;
         }
 
-        .dropdown:hover .dropdown-menu {
+        .llm-shell .dropdown:hover .dropdown-menu {
             display: block;
         }
 
-        .dropdown-item {
+        .llm-shell .dropdown-item {
             display: flex;
             align-items: center;
             width: 100%;
@@ -1950,7 +2883,7 @@
             transition: background-color 0.2s ease;
         }
 
-        .dropdown-item:hover {
+        .llm-shell .dropdown-item:hover {
             background: #f3f7fb;
         }
 
@@ -1971,7 +2904,7 @@
             background: #b5c3d6;
         }
 
-        .modal {
+        main.max-w-7xl.mx-auto .modal {
             display: none;
             position: fixed;
             inset: 0;
@@ -1982,11 +2915,11 @@
             backdrop-filter: blur(6px);
         }
 
-        .modal.show {
+        main.max-w-7xl.mx-auto .modal.show {
             display: flex;
         }
 
-        .modal-content {
+        main.max-w-7xl.mx-auto .modal-content {
             background: #fff;
             border-radius: 16px;
             border: 1px solid #dce5ef;
@@ -2084,19 +3017,25 @@
             background: #0f172a;
             color: #f8fafc;
             padding: 0.9rem;
-            border-radius: 12px;
+            border-radius: 0 0 12px 12px;
             overflow-x: auto;
             margin: 0.7rem 0;
+        }
+
+        .markdown-content pre.llm-code-collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0.7rem;
+            overflow: hidden;
+            border-width: 0 1px 1px 1px;
         }
 
         .markdown-content pre code {
             background: transparent;
             color: inherit;
             padding: 0;
-        }
-
-        .max-w-3xl {
-            max-width: 54rem;
         }
 
         .w-4\/5 {
@@ -2110,17 +3049,21 @@
         @media (max-width: 1024px) {
             .llm-shell {
                 flex-direction: column;
-                height: auto;
-                min-height: 100vh;
+                height: calc(100vh - 8rem);
+                min-height: 620px;
+                border-radius: 18px;
             }
 
             .llm-sidebar {
                 width: 100%;
-                max-height: 36vh;
+                max-height: 280px;
+                flex: 0 0 auto;
             }
 
             .llm-main {
-                min-height: 64vh;
+                flex: 1 1 auto;
+                height: auto;
+                min-height: 0;
             }
 
             .llm-hero {
@@ -2130,6 +3073,12 @@
         }
 
         @media (max-width: 768px) {
+            .llm-shell {
+                height: calc(100vh - 7.5rem);
+                min-height: 520px;
+                border-radius: 14px;
+            }
+
             .llm-chat-header,
             .llm-composer-wrap {
                 padding-left: 0.7rem;
@@ -2140,8 +3089,8 @@
                 padding: 1rem;
             }
 
-            .max-w-3xl {
-                max-width: 100%;
+            .llm-content-frame {
+                width: 100%;
             }
 
             .w-4\/5,
@@ -2154,6 +3103,11 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 0.6rem;
+            }
+
+            .llm-inline-title-input {
+                min-width: 10rem;
+                max-width: 70vw;
             }
 
             .llm-message-main-ai {

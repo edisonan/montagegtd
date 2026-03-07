@@ -6,15 +6,19 @@ use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
 use App\Services\CourseService;
+use App\Services\PointGrantService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CourseController extends Controller
 {
     protected $courseService;
+    protected $pointGrantService;
 
-    public function __construct(CourseService $courseService)
+    public function __construct(CourseService $courseService, PointGrantService $pointGrantService)
     {
         $this->courseService = $courseService;
+        $this->pointGrantService = $pointGrantService;
     }
 
     public function index(Request $request)
@@ -103,6 +107,20 @@ class CourseController extends Controller
         );
 
         $course = $this->courseService->createCourse($data);
+        try {
+            $this->pointGrantService->grantByEvent(
+                (int)$course->created_by,
+                'course_created',
+                'course',
+                (int)$course->id
+            );
+        } catch (\Throwable $e) {
+            Log::warning('grant points on course create failed', array(
+                'course_id' => $course->id,
+                'user_id' => $course->created_by,
+                'error' => $e->getMessage(),
+            ));
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'course' => $course,
@@ -175,6 +193,20 @@ class CourseController extends Controller
         $userId = $this->getAuthUserId($request);
         $customTitle = $request->input('title');
         $userCourse = $this->courseService->joinCourse($userId, $id, $customTitle);
+        try {
+            $this->pointGrantService->grantByEvent(
+                (int)$userId,
+                'course_joined',
+                'user_course',
+                (int)$userCourse->id
+            );
+        } catch (\Throwable $e) {
+            Log::warning('grant points on course join failed', array(
+                'course_id' => $id,
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ));
+        }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'user_course' => $userCourse,

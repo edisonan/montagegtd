@@ -132,7 +132,9 @@ class NoteController extends Controller {
 	    $this->authorize ( 'destroy', $note );
 	    
 	    if ($request->method () == 'GET') {
-	        return view ( 'notes.update', array () );
+	        return view ( 'notes.update', array (
+	            'note_id' => (int)$note->id
+	        ) );
 	    }
 	    
 	    $this->validate ( $request, [

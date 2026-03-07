@@ -57,13 +57,19 @@ class MindController extends Controller {
 	 */
 	public function store(Request $request) {
 		$this->validate ( $request, [ 
-				'name' => 'required' 
+				'name' => 'required',
+				'content' => 'nullable|string',
+				'source_type' => 'nullable|string|max:50',
+				'source_id' => 'nullable|integer|min:1'
 		] );
 		
 		$name = $request->get ( 'name' );
 		$parentMindId = $request->input ( 'parent_mind_id', 0 );
+		$content = $request->input ( 'content', null );
+		$sourceType = $request->input ( 'source_type', null );
+		$sourceId = $request->input ( 'source_id', null );
 		
-		$mind = $this->mindService->store ( $name, $parentMindId );
+		$mind = $this->mindService->store ( $name, $parentMindId, $content, $sourceType, $sourceId );
 		
 		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( array (
 				'id' => $mind->id,
