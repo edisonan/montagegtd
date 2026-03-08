@@ -212,6 +212,7 @@
         function render(data, section = 'all') {
             const seedlings = data.seedlings || [];
             const trees = data.trees || [];
+            const treeList = document.getElementById('treeList');
             
             // 渲染树苗券列表（弹窗用）
             if (section === 'all' || section === 'seedlings') {
@@ -231,9 +232,10 @@
 
             // 渲染树木列表（核心区域）
             if (section === 'all' || section === 'trees') {
-                treeList.innerHTML = '<div class="text-sm text-gray-500">你还没有树，先种下第一棵吧</div>';
-            } else {
-                treeList.innerHTML = trees.map(t => {
+                if (!trees.length) {
+                    treeList.innerHTML = '<div class="text-sm text-gray-500">你还没有树，先种下第一棵吧</div>';
+                } else {
+                    treeList.innerHTML = trees.map(t => {
                     let decoText = '未设置';
                     try {
                         const deco = t.decoration_payload ? JSON.parse(t.decoration_payload) : null;
@@ -262,6 +264,7 @@
                         </div>
                     </div>
                 `;}).join('');
+                }
             }
         }
 
@@ -281,14 +284,6 @@
                     tip.textContent = msg;
                     titleNode.parentNode.appendChild(tip);
                 }
-            });
-        }
-
-        function loadSeedlings() {
-            api('/point-mall/tree/overview').then(resp => {
-                if (!resp || Number(resp.code) !== 9999) return;
-                const data = getResultData(resp);
-                render(data, 'seedlings');
             });
         }
 
@@ -465,7 +460,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            loadGoods();
             loadOverview();
             loadLeaderboard();
         });
