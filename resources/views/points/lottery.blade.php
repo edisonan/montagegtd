@@ -289,6 +289,19 @@
             </div>
         </div>
 
+
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="card lg:col-span-3">
+{{--                <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">九宫格抽奖</div>--}}
+                <div class="p-4 space-y-3" id="poolList">加载中...</div>
+            </div>
+            <div class="card">
+                <div class="p-3 border-b border-gray-200 font-semibold text-gray-900 text-sm">最近抽奖记录</div>
+                <div class="p-3 space-y-2 text-xs draw-log-panel" id="drawLogList">加载中...</div>
+            </div>
+        </div>
+
         <div class="card mb-6">
             <div class="p-4 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-semibold text-gray-900">抽奖券购买</div>
@@ -298,17 +311,6 @@
                 <div id="lotteryGoodsList" class="lottery-shop-grid">
                     <div class="text-sm text-gray-500">加载抽奖券中...</div>
                 </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="card lg:col-span-3">
-                <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">九宫格抽奖</div>
-                <div class="p-4 space-y-3" id="poolList">加载中...</div>
-            </div>
-            <div class="card">
-                <div class="p-3 border-b border-gray-200 font-semibold text-gray-900 text-sm">最近抽奖记录</div>
-                <div class="p-3 space-y-2 text-xs draw-log-panel" id="drawLogList">加载中...</div>
             </div>
         </div>
     </div>

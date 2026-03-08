@@ -68,7 +68,6 @@
                     清理未固定会话
                 </button>
                 <div class="text-[11px] text-gray-400 mt-2">模型能力由已配置 Agent 决定</div>
-                <div id="llm-layout-debug" class="text-[10px] text-gray-400 mt-2 break-all"></div>
             </div>
         </aside>
 
@@ -333,12 +332,12 @@
         let currentThinkingIndicatorId = null;
         let currentStreamingMessageId = null;
         let isInlineRenaming = false;
-        let layoutSyncRaf = null;
+        const API_REQUEST_HEADERS = {
+            'X-Requested-With': 'XMLHttpRequest'
+        };
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('AI助手初始化...');
-
             // 加载会话和智能体
             loadSessions();
             loadAllAgents();
@@ -348,64 +347,92 @@
 
             // 初始化字符计数器
             initCharCounters();
-            requestLayoutSync();
-            setTimeout(requestLayoutSync, 120);
-            setTimeout(requestLayoutSync, 500);
         });
+
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        }
+
+        function buildApiOptions(options = {}) {
+            const mergedHeaders = Object.assign({}, API_REQUEST_HEADERS, options.headers || {});
+            const csrfToken = getCsrfToken();
+            if (csrfToken && !Object.prototype.hasOwnProperty.call(mergedHeaders, 'X-CSRF-TOKEN')) {
+                mergedHeaders['X-CSRF-TOKEN'] = csrfToken;
+            }
+            return Object.assign({}, options, { headers: mergedHeaders });
+        }
+
+        function apiFetch(url, options = {}) {
+            return window.taskApiFetch(url, buildApiOptions(options));
+        }
 
         // 初始化事件监听器
         function initEventListeners() {
-            // 智能体选择
-            document.getElementById('agent-select').addEventListener('change', function() {
-                console.log('智能体选择变更:', this.value);
-            });
+            bindInitialModeEvents();
+            bindChatModeEvents();
+            bindSessionFilterEvents();
+            bindSessionListEvents();
+            bindSessionActionEvents();
+            bindModalEvents();
+            bindSceneButtonEvents();
+        }
 
-            // ========== 初始状态（新建对话） ==========
+        function bindEnterToSend(inputElement, handler) {
+            if (!inputElement) {
+                return;
+            }
+            inputElement.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handler();
+                }
+            });
+        }
+
+        function bindInitialModeEvents() {
             const initialInput = document.getElementById('initial-message-input');
-            initialInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    startNewChat();
-                }
-            });
-            initialInput.addEventListener('input', updateInitialCharCount);
+            bindEnterToSend(initialInput, startNewChat);
+            initialInput?.addEventListener('input', updateInitialCharCount);
 
-            document.getElementById('initial-send-btn').addEventListener('click', startNewChat);
-            document.getElementById('initial-clear-btn').addEventListener('click', function() {
-                document.getElementById('initial-message-input').value = '';
+            document.getElementById('initial-send-btn')?.addEventListener('click', startNewChat);
+            document.getElementById('initial-clear-btn')?.addEventListener('click', function() {
+                if (!initialInput) {
+                    return;
+                }
+                initialInput.value = '';
                 updateInitialCharCount();
-                document.getElementById('initial-message-input').focus();
+                initialInput.focus();
             });
-            document.getElementById('initial-attachment-btn').addEventListener('click', showAttachmentOptions);
-            document.getElementById('initial-voice-btn').addEventListener('click', showVoiceInput);
+            document.getElementById('initial-attachment-btn')?.addEventListener('click', showAttachmentOptions);
+            document.getElementById('initial-voice-btn')?.addEventListener('click', showVoiceInput);
+        }
 
-            // ========== 聊天状态 ==========
+        function bindChatModeEvents() {
             const chatInput = document.getElementById('message-input');
-            chatInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
+            bindEnterToSend(chatInput, sendMessage);
+            chatInput?.addEventListener('input', updateChatCharCount);
+
+            document.getElementById('chat-send-btn')?.addEventListener('click', sendMessage);
+            document.getElementById('chat-clear-btn')?.addEventListener('click', function() {
+                if (!chatInput) {
+                    return;
                 }
-            });
-            chatInput.addEventListener('input', updateChatCharCount);
-
-            document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
-            document.getElementById('chat-clear-btn').addEventListener('click', function() {
-                document.getElementById('message-input').value = '';
+                chatInput.value = '';
                 updateChatCharCount();
-                document.getElementById('message-input').focus();
+                chatInput.focus();
             });
-            document.getElementById('chat-attachment-btn').addEventListener('click', showAttachmentOptions);
-            document.getElementById('chat-voice-btn').addEventListener('click', showVoiceInput);
-            document.getElementById('regenerate-btn').addEventListener('click', regenerateLastResponse);
-            document.getElementById('edit-last-question-btn').addEventListener('click', editLastQuestion);
-            document.getElementById('fork-last-question-btn').addEventListener('click', forkLastQuestionToNewSession);
-            document.getElementById('quote-last-answer-btn').addEventListener('click', quoteLastAnswer);
-            document.getElementById('clear-unpinned-btn').addEventListener('click', clearUnpinnedSessions);
+            document.getElementById('chat-attachment-btn')?.addEventListener('click', showAttachmentOptions);
+            document.getElementById('chat-voice-btn')?.addEventListener('click', showVoiceInput);
+            document.getElementById('regenerate-btn')?.addEventListener('click', regenerateLastResponse);
+            document.getElementById('edit-last-question-btn')?.addEventListener('click', editLastQuestion);
+            document.getElementById('fork-last-question-btn')?.addEventListener('click', forkLastQuestionToNewSession);
+            document.getElementById('quote-last-answer-btn')?.addEventListener('click', quoteLastAnswer);
+            document.getElementById('clear-unpinned-btn')?.addEventListener('click', clearUnpinnedSessions);
+        }
 
-            // 搜索会话
-            document.getElementById('search-sessions').addEventListener('input', searchSessions);
-            document.getElementById('session-agent-filter').addEventListener('change', searchSessions);
+        function bindSessionFilterEvents() {
+            document.getElementById('search-sessions')?.addEventListener('input', searchSessions);
+            document.getElementById('session-agent-filter')?.addEventListener('change', searchSessions);
             document.querySelectorAll('.llm-filter-chip').forEach((button) => {
                 button.addEventListener('click', function() {
                     sessionQuickFilter = this.dataset.filter || 'all';
@@ -414,9 +441,10 @@
                     searchSessions();
                 });
             });
+        }
 
-            // 使用事件委托处理会话列表点击（更可靠）
-            document.getElementById('sessions-list').addEventListener('click', function(e) {
+        function bindSessionListEvents() {
+            document.getElementById('sessions-list')?.addEventListener('click', function(e) {
                 const pinBtn = e.target.closest('.session-pin-btn');
                 if (pinBtn) {
                     e.preventDefault();
@@ -436,9 +464,10 @@
                     }
                 }
             });
+        }
 
-            // 模态框按钮
-            document.getElementById('save-rename-btn').addEventListener('click', saveRenameSession);
+        function bindSessionActionEvents() {
+            document.getElementById('save-rename-btn')?.addEventListener('click', saveRenameSession);
             document.getElementById('rename-session-btn')?.addEventListener('click', renameCurrentSession);
             document.getElementById('delete-session-btn')?.addEventListener('click', deleteCurrentSession);
             document.getElementById('fork-session-btn')?.addEventListener('click', forkSessionWithCurrentAgent);
@@ -463,17 +492,10 @@
                     saveInlineRename();
                 }
             });
+        }
 
-            window.addEventListener('resize', requestLayoutSync);
-            window.addEventListener('orientationchange', requestLayoutSync);
-            const sessionsList = document.getElementById('sessions-list');
-            if (sessionsList && window.MutationObserver) {
-                const observer = new MutationObserver(() => requestLayoutSync());
-                observer.observe(sessionsList, { childList: true, subtree: true });
-            }
-
-            // 模态框关闭事件
-            document.querySelectorAll('.modal').forEach(modal => {
+        function bindModalEvents() {
+            document.querySelectorAll('.modal').forEach((modal) => {
                 modal.addEventListener('click', function(e) {
                     if (e.target === this) {
                         this.classList.remove('show');
@@ -481,92 +503,20 @@
                 });
             });
 
-            // 重命名输入框回车保存
-            document.getElementById('new-session-name').addEventListener('keydown', function(e) {
+            document.getElementById('new-session-name')?.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    document.getElementById('save-rename-btn').click();
+                    document.getElementById('save-rename-btn')?.click();
                 }
             });
+        }
 
-            // 场景按钮点击
-            document.querySelectorAll('.btn-scene').forEach(btn => {
+        function bindSceneButtonEvents() {
+            document.querySelectorAll('.btn-scene').forEach((btn) => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
                 });
             });
-        }
-
-        function requestLayoutSync() {
-            if (layoutSyncRaf) {
-                cancelAnimationFrame(layoutSyncRaf);
-            }
-            layoutSyncRaf = requestAnimationFrame(syncLlmLayoutHeights);
-        }
-
-        function syncLlmLayoutHeights() {
-            const shell = document.querySelector('.llm-shell');
-            const sidebar = document.querySelector('.llm-sidebar');
-            const main = document.querySelector('.llm-main');
-            const sessionsList = document.getElementById('sessions-list');
-            if (!shell || !sidebar || !main || !sessionsList) {
-                return;
-            }
-
-            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 900;
-            const shellTopRaw = shell.getBoundingClientRect().top;
-            const shellTop = Math.max(shellTopRaw, 0);
-            const bottomGap = window.innerWidth <= 768 ? 12 : 20;
-            const minShellHeight = window.innerWidth <= 768 ? 520 : 620;
-            const targetShellHeight = Math.floor(viewportHeight - shellTop - bottomGap);
-            let shellHeight = Math.max(420, Math.min(Math.max(minShellHeight, targetShellHeight), viewportHeight - 6));
-            shell.style.height = `${shellHeight}px`;
-
-            const sidebarHeader = sidebar.querySelector('.p-5.border-b.border-gray-200');
-            const sidebarFooter = sidebar.querySelector('.llm-sidebar-footer');
-            const headerHeight = sidebarHeader ? sidebarHeader.offsetHeight : 0;
-            const footerHeight = sidebarFooter ? sidebarFooter.offsetHeight : 0;
-
-            let sidebarHeight = shellHeight;
-            if (window.innerWidth <= 1024) {
-                const listNaturalHeight = sessionsList.scrollHeight;
-                const listVisibleHeight = Math.min(listNaturalHeight, window.innerWidth <= 768 ? 200 : 240);
-                const sidebarMinHeight = headerHeight + footerHeight + 110;
-                const sidebarMaxHeight = Math.min(300, Math.floor(shellHeight * 0.4));
-                sidebarHeight = Math.max(
-                    sidebarMinHeight,
-                    Math.min(sidebarMaxHeight, headerHeight + footerHeight + listVisibleHeight)
-                );
-            }
-
-            sidebar.style.height = `${sidebarHeight}px`;
-            sidebar.style.maxHeight = `${sidebarHeight}px`;
-
-            const mainHeight = window.innerWidth <= 1024
-                ? Math.max(260, shellHeight - sidebarHeight)
-                : shellHeight;
-            main.style.height = `${mainHeight}px`;
-            main.style.minHeight = '0';
-
-            const metrics = {
-                viewportHeight,
-                shellTopRaw: Math.round(shellTopRaw),
-                shellTop: Math.round(shellTop),
-                shellHeight,
-                sidebarHeaderHeight: headerHeight,
-                sidebarFooterHeight: footerHeight,
-                sessionsScrollHeight: sessionsList.scrollHeight,
-                sidebarHeight,
-                mainHeight,
-                width: window.innerWidth,
-                ts: new Date().toISOString()
-            };
-            console.log('[LLM_LAYOUT_SYNC]', metrics);
-
-            const debugEl = document.getElementById('llm-layout-debug');
-            if (debugEl) {
-                debugEl.textContent = `layout shell:${metrics.shellHeight}px sidebar:${metrics.sidebarHeight}px main:${metrics.mainHeight}px list:${metrics.sessionsScrollHeight}px vw:${metrics.width}`;
-            }
         }
 
         // 初始化字符计数器
@@ -716,12 +666,7 @@
         // 加载会话列表
         async function loadSessions() {
             try {
-                const response = await window.taskApiFetch('/api/v2/llm/sessions', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
+                const response = await apiFetch('/api/v2/llm/sessions');
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
@@ -735,7 +680,6 @@
                 displaySessions(sessions);
                 updateSessionCount(sessions.length);
                 updateClearUnpinnedButton(sessions);
-                requestLayoutSync();
             } catch (error) {
                 console.error('加载会话列表失败:', error);
                 showError('加载会话列表失败，请检查网络连接');
@@ -807,7 +751,6 @@
             });
 
             container.innerHTML = html;
-            requestLayoutSync();
         }
 
         function createSessionGroupHTML(label, sessions, iconClass = '') {
@@ -1028,12 +971,7 @@
         // 加载所有智能体
         async function loadAllAgents() {
             try {
-                const response = await window.taskApiFetch('/api/v2/llm/agents', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
+                const response = await apiFetch('/api/v2/llm/agents');
 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -1126,12 +1064,10 @@
             const agentName = agentSelect.options[agentSelect.selectedIndex].text;
 
             try {
-                const response = await window.taskApiFetch('/api/v2/llm/sessions', {
+                const response = await apiFetch('/api/v2/llm/sessions', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         agent_id: agentId,
@@ -1304,12 +1240,7 @@
                 // 显示加载状态
                 showSessionLoading();
 
-                const response = await window.taskApiFetch(`/api/v2/llm/sessions/${sessionId}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
+                const response = await apiFetch(`/api/v2/llm/sessions/${sessionId}`);
 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -1564,12 +1495,10 @@
             const noteTitle = `[AI] ${sessionTitle} - ${firstLine}`.slice(0, 255);
 
             try {
-                const response = await window.taskApiFetch('/api/v2/notes', {
+                const response = await apiFetch('/api/v2/notes', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         name: `${noteTitle}\n\n${text}`,
@@ -1614,12 +1543,10 @@
             const mindName = `[AI导图] ${sessionTitle} - ${firstLine}`.slice(0, 255);
 
             try {
-                const response = await window.taskApiFetch('/api/v2/minds', {
+                const response = await apiFetch('/api/v2/minds', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         name: mindName,
@@ -1751,13 +1678,11 @@
 
                 currentThinkingIndicatorId = showThinkingIndicator();
 
-                const response = await window.taskApiFetch('/api/v2/llm/chat', {
+                const response = await apiFetch('/api/v2/llm/chat', {
                     method: 'POST',
                     signal: currentStreamController.signal,
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         query: message,
@@ -1992,18 +1917,13 @@
 
             displaySessions(sessions);
             updateClearUnpinnedButton(sessions);
-            requestLayoutSync();
         }
 
         // 固定/取消固定会话
         async function togglePinSession(sessionId) {
             try {
-                const response = await window.taskApiFetch(`/api/v2/llm/sessions/${sessionId}/toggle-pin`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                const response = await apiFetch(`/api/v2/llm/sessions/${sessionId}/toggle-pin`, {
+                    method: 'POST'
                 });
 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -2043,12 +1963,8 @@
                         stopStreaming({ silent: true, preserveMessage: false });
                     }
 
-                    const response = await window.taskApiFetch(`/api/v2/llm/sessions/${currentSessionId}/clear`, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
+                    const response = await apiFetch(`/api/v2/llm/sessions/${currentSessionId}/clear`, {
+                        method: 'POST'
                     });
 
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -2123,12 +2039,8 @@
                         stopStreaming({ silent: true, preserveMessage: false });
                     }
 
-                    const response = await window.taskApiFetch(`/api/v2/llm/sessions/${currentSessionId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
+                    const response = await apiFetch(`/api/v2/llm/sessions/${currentSessionId}`, {
+                        method: 'DELETE'
                     });
 
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -2182,12 +2094,10 @@
             if (!currentSessionId) return;
 
             try {
-                const response = await window.taskApiFetch(`/api/v2/llm/sessions/${currentSessionId}/title`, {
+                const response = await apiFetch(`/api/v2/llm/sessions/${currentSessionId}/title`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ title: newName })
                 });
@@ -2322,12 +2232,8 @@
 
                     for (const session of unpinnedSessions) {
                         try {
-                            await window.taskApiFetch(`/api/v2/llm/sessions/${session.id}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                                }
+                            await apiFetch(`/api/v2/llm/sessions/${session.id}`, {
+                                method: 'DELETE'
                             });
 
                             if (String(currentSessionId) === String(session.id)) {
@@ -2358,12 +2264,8 @@
             }
 
             try {
-                const response = await window.taskApiFetch(`/api/v2/llm/sessions/${currentSessionId}/regenerate`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
+                const response = await apiFetch(`/api/v2/llm/sessions/${currentSessionId}/regenerate`, {
+                    method: 'POST'
                 });
 
                 if (!response.ok) {
@@ -2461,7 +2363,10 @@
             --llm-user-grad: linear-gradient(130deg, #0f766e 0%, #0b5f58 100%);
             --llm-shadow: 0 18px 40px -24px rgba(15, 118, 110, 0.35);
             height: calc(100vh - 10rem);
+            height: calc(100dvh - 10rem);
             min-height: 680px;
+            max-height: calc(100vh - 7rem);
+            max-height: calc(100dvh - 7rem);
             background:
                 radial-gradient(circle at 6% 10%, rgba(15, 118, 110, 0.12) 0, rgba(15, 118, 110, 0) 28%),
                 radial-gradient(circle at 94% 92%, rgba(30, 64, 175, 0.1) 0, rgba(30, 64, 175, 0) 24%),
@@ -2478,11 +2383,18 @@
             backdrop-filter: blur(10px);
             border-color: var(--llm-border);
             height: 100%;
+            min-height: 0;
         }
 
         .llm-main {
             background: transparent;
             height: 100%;
+            min-height: 0;
+        }
+
+        .llm-chat-mode,
+        .llm-initial,
+        .llm-messages-pane {
             min-height: 0;
         }
 
@@ -3050,7 +2962,10 @@
             .llm-shell {
                 flex-direction: column;
                 height: calc(100vh - 8rem);
+                height: calc(100dvh - 8rem);
                 min-height: 620px;
+                max-height: calc(100vh - 6rem);
+                max-height: calc(100dvh - 6rem);
                 border-radius: 18px;
             }
 
@@ -3075,7 +2990,10 @@
         @media (max-width: 768px) {
             .llm-shell {
                 height: calc(100vh - 7.5rem);
+                height: calc(100dvh - 7.5rem);
                 min-height: 520px;
+                max-height: calc(100vh - 5.5rem);
+                max-height: calc(100dvh - 5.5rem);
                 border-radius: 14px;
             }
 
