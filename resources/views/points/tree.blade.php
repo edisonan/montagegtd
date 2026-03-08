@@ -78,24 +78,62 @@
                 <h1 class="text-2xl font-bold text-gray-900">积分种树</h1>
                 <p class="text-sm text-gray-500 mt-1">买树苗、浇水成长、持续经营你的绿色花园</p>
             </div>
-            <a href="/point-mall" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left mr-1"></i>返回商城</a>
-        </div>
-
-        <div class="card mb-6">
-            <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">树苗商城</div>
-            <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3" id="seedlingGoods">加载中...</div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card">
-                <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">待种植树苗券</div>
-                <div class="p-4 space-y-3" id="seedlingList">加载中...</div>
-            </div>
-            <div class="card">
-                <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">我的树木</div>
-                <div class="p-4 space-y-3" id="treeList">加载中...</div>
+            <div class="flex items-center gap-2">
+                <button class="btn btn-primary" onclick="openGoodsModal()">
+                    <i class="fas fa-shopping-cart mr-1"></i>树苗商城
+                </button>
+                <button class="btn btn-secondary" onclick="openSeedlingModal()">
+                    <i class="fas fa-seedling mr-1"></i>待种植的树苗券
+                </button>
+                <a href="/point-mall" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left mr-1"></i>返回商城</a>
             </div>
         </div>
+
+        <!-- 我的树木 - 核心区域 -->
+        <div class="card mb-6 border-2 border-emerald-300 shadow-lg">
+            <div class="p-4 border-b border-emerald-200 bg-gradient-to-r from-emerald-50 to-white">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-tree text-emerald-600 text-xl"></i>
+                    <div>
+                        <div class="font-bold text-emerald-900 text-lg">我的树木</div>
+                        <div class="text-xs text-emerald-700 mt-1">精心培育属于你的绿色花园</div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 space-y-3" id="treeList">加载中...</div>
+        </div>
+        <!-- 树苗商城弹窗 -->
+        <div id="goodsModal" class="deco-modal" onclick="closeGoodsModal(event)">
+            <div class="deco-card" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-shopping-cart text-emerald-600 text-xl"></i>
+                        <div class="font-bold text-gray-900 text-lg">树苗商城</div>
+                    </div>
+                    <button class="text-gray-400 hover:text-gray-600" onclick="closeGoodsModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="seedlingGoods">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 待种植树苗券弹窗 -->
+        <div id="seedlingModal" class="deco-modal" onclick="closeSeedlingModal(event)">
+            <div class="deco-card" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-seedling text-emerald-600 text-xl"></i>
+                        <div class="font-bold text-gray-900 text-lg">待种植的树苗券</div>
+                    </div>
+                    <button class="text-gray-400 hover:text-gray-600" onclick="closeSeedlingModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-3" id="seedlingList">加载中...</div>
+            </div>
+        </div>
+
         <div class="card mt-6">
             <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">森林排行榜 TOP10</div>
             <div class="p-4 space-y-2 text-sm" id="treeLeaderboard">加载中...</div>
@@ -171,25 +209,28 @@
             return '🌱';
         }
 
-        function render(data) {
+        function render(data, section = 'all') {
             const seedlings = data.seedlings || [];
             const trees = data.trees || [];
-            const seedlingList = document.getElementById('seedlingList');
-            const treeList = document.getElementById('treeList');
-
-            if (!seedlings.length) {
-                seedlingList.innerHTML = '<div class="text-sm text-gray-500">暂无树苗券，可去商城兑换种树商品</div>';
-            } else {
-                seedlingList.innerHTML = seedlings.map(s => `
-                    <div class="border border-emerald-200 rounded-lg p-3 bg-emerald-50">
-                        <div class="font-medium text-emerald-800">树苗券 #${s.id}</div>
-                        <div class="text-xs text-emerald-700 mt-1">状态：${s.status}</div>
-                        <button class="btn btn-primary btn-sm mt-2" onclick="plantTree(${s.id})">立即种植</button>
-                    </div>
-                `).join('');
+            
+            // 渲染树苗券列表（弹窗用）
+            if (section === 'all' || section === 'seedlings') {
+                const seedlingList = document.getElementById('seedlingList');
+                if (!seedlings.length) {
+                    seedlingList.innerHTML = '<div class="text-sm text-gray-500 text-center py-8">暂无树苗券，可去商城兑换种树商品</div>';
+                } else {
+                    seedlingList.innerHTML = seedlings.map(s => `
+                        <div class="border border-emerald-200 rounded-lg p-3 bg-emerald-50">
+                            <div class="font-medium text-emerald-800">树苗券 #${s.id}</div>
+                            <div class="text-xs text-emerald-700 mt-1">状态：${s.status}</div>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="plantTree(${s.id}); closeSeedlingModal();">立即种植</button>
+                        </div>
+                    `).join('');
+                }
             }
 
-            if (!trees.length) {
+            // 渲染树木列表（核心区域）
+            if (section === 'all' || section === 'trees') {
                 treeList.innerHTML = '<div class="text-sm text-gray-500">你还没有树，先种下第一棵吧</div>';
             } else {
                 treeList.innerHTML = trees.map(t => {
@@ -228,7 +269,7 @@
             api('/point-mall/tree/overview').then(resp => {
                 if (!resp || Number(resp.code) !== 9999) { alert(resp && resp.msg ? resp.msg : '加载失败'); return; }
                 const data = getResultData(resp);
-                render(data);
+                render(data, 'trees');
                 if (data.season) {
                     const msg = `当前季节：${data.season.name || '-'} · ${data.season.hint || ''}`;
                     const titleNode = document.querySelector('h1.text-2xl');
@@ -240,6 +281,22 @@
                     tip.textContent = msg;
                     titleNode.parentNode.appendChild(tip);
                 }
+            });
+        }
+
+        function loadSeedlings() {
+            api('/point-mall/tree/overview').then(resp => {
+                if (!resp || Number(resp.code) !== 9999) return;
+                const data = getResultData(resp);
+                render(data, 'seedlings');
+            });
+        }
+
+        function loadSeedlings() {
+            api('/point-mall/tree/overview').then(resp => {
+                if (!resp || Number(resp.code) !== 9999) return;
+                const data = getResultData(resp);
+                render(data, 'seedlings');
             });
         }
 
@@ -268,6 +325,26 @@
             });
         }
 
+        function openGoodsModal() {
+            document.getElementById('goodsModal').classList.add('show');
+            loadGoods();
+        }
+
+        function closeGoodsModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('goodsModal').classList.remove('show');
+        }
+
+        function openSeedlingModal() {
+            document.getElementById('seedlingModal').classList.add('show');
+            loadSeedlings();
+        }
+
+        function closeSeedlingModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('seedlingModal').classList.remove('show');
+        }
+
         function loadGoods() {
             api('/point-mall/goods?scene=tree').then(resp => {
                 if (!resp || Number(resp.code) !== 9999) return;
@@ -282,7 +359,7 @@
                         <div class="font-medium text-emerald-900">${g.name}</div>
                         <div class="text-xs text-emerald-700 mt-1">${g.description || ''}</div>
                         <div class="text-sm text-emerald-900 mt-2">${g.point_cost} AP</div>
-                        <button class="btn btn-primary btn-sm mt-2" onclick="buyGoods(${g.id})">兑换树苗</button>
+                        <button class="btn btn-primary btn-sm mt-2" onclick="buyGoods(${g.id}); closeGoodsModal();">兑换树苗</button>
                     </div>
                 `).join('');
             });
