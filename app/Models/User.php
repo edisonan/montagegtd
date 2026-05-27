@@ -3,15 +3,15 @@
 namespace App\Models;
 
 use App\Models\Task;
-use App\Models\Pomo;
+use App\Models\Focus;
 use App\Models\Feed;
 use App\Models\Category;
 use App\Models\Article;
 use App\Models\Note;
 use App\Models\Third;
-use App\Models\Goal;
+use App\Models\Plan;
 use App\Models\Setting;
-use App\Models\Thing;
+use App\Models\Journal;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 //use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -59,8 +59,8 @@ class User extends Authenticatable{
 	/**
 	 * Get all of the tasks for the user.
 	 */
-	public function pomos() {
-		return $this->hasMany ( Pomo::class );
+	public function focuss() {
+		return $this->hasMany ( Focus::class );
 	}
 	
 	/**
@@ -89,14 +89,14 @@ class User extends Authenticatable{
 	/**
 	 * Get all of the tags for the user.
 	 */
-	public function goals() {
-		return $this->hasMany ( Goal::class );
+	public function plans() {
+		return $this->hasMany ( Plan::class );
 	}
 	public function minds() {
 		return $this->hasMany ( Mind::class );
 	}
-	public function things() {
-		return $this->hasMany ( Thing::class );
+	public function journals() {
+		return $this->hasMany ( Journal::class );
 	}
 	public function setting() {
 		return $this->hasOne ( Setting::class );

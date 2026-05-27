@@ -292,7 +292,7 @@ CREATE TABLE IF NOT EXISTS `feed_subs` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table tasks.goals
+-- Dumping structure for table tasks.plans
 CREATE TABLE IF NOT EXISTS `goals` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL COMMENT '用户id',
@@ -409,7 +409,7 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table tasks.pomos
+-- Dumping structure for table tasks.focus
 CREATE TABLE IF NOT EXISTS `pomos` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL COMMENT '用户id',
@@ -511,7 +511,7 @@ CREATE TABLE IF NOT EXISTS `task_tag_maps` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table tasks.things
+-- Dumping structure for table tasks.journals
 CREATE TABLE IF NOT EXISTS `things` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL COMMENT '用户id',
@@ -657,15 +657,15 @@ INSERT INTO `admin_menu` (`id`, `parent_id`, `order`, `title`, `icon`, `uri`, `c
   (13, 9, 14, 'Article Info', 'fa-bars', 'articles', '2018-01-07 01:11:11', '2018-01-07 01:12:03'),
   (14, 9, 13, 'ArticleMark Info', 'fa-bars', 'articlemarks', '2018-01-07 01:11:54', '2018-01-07 01:12:03'),
   (15, 26, 25, 'Feed Back', 'fa-bars', 'feedbacks', '2018-01-07 01:12:28', '2018-01-07 01:18:43'),
-  (16, 25, 21, 'Goal Info', 'fa-bars', 'goals', '2018-01-07 01:12:44', '2018-01-07 01:18:43'),
+  (16, 25, 21, 'Goal Info', 'fa-bars', 'plans', '2018-01-07 01:12:44', '2018-01-07 01:18:43'),
   (17, 25, 22, 'Category Info', 'fa-bars', 'categorys', '2018-01-07 01:12:58', '2018-01-07 01:18:54'),
   (18, 26, 26, 'Kindle Log', 'fa-bars', 'kindlelogs', '2018-01-07 01:13:16', '2018-01-07 01:18:43'),
   (19, 25, 19, 'Mind Info', 'fa-bars', 'minds', '2018-01-07 01:13:35', '2018-01-07 01:18:43'),
   (20, 25, 20, 'Note Info', 'fa-bars', 'notes', '2018-01-07 01:13:48', '2018-01-07 01:18:43'),
-  (21, 25, 17, 'Pomo Info', 'fa-bars', 'pomos', '2018-01-07 01:14:03', '2018-01-07 01:18:43'),
+  (21, 25, 17, 'Pomo Info', 'fa-bars', 'focus', '2018-01-07 01:14:03', '2018-01-07 01:18:43'),
   (22, 26, 24, 'Setting Info', 'fa-bars', 'settings', '2018-01-07 01:14:19', '2018-01-07 01:18:43'),
   (23, 25, 18, 'Task Info', 'fa-bars', 'tasks', '2018-01-07 01:14:40', '2018-01-07 01:18:43'),
-  (24, 25, 16, 'Things Info', 'fa-bars', 'things', '2018-01-07 01:14:58', '2018-01-07 01:18:43'),
+  (24, 25, 16, 'Things Info', 'fa-bars', 'journals', '2018-01-07 01:14:58', '2018-01-07 01:18:43'),
   (25, 0, 15, 'GTD Manager', 'fa-tasks', NULL, '2018-01-07 01:15:12', '2018-01-07 01:18:43'),
   (26, 0, 23, 'System Manager', 'fa-comments-o', NULL, '2018-01-07 01:16:40', '2018-01-07 01:18:43');
 /*!40000 ALTER TABLE `admin_menu` ENABLE KEYS */;

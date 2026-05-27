@@ -19,7 +19,8 @@ class PointMallGameplayController extends Controller
     public function treeOverview(Request $request)
     {
         $userId = (int)$this->getAuthUserId($request);
-        $data = $this->service->getTreeOverview($userId);
+        $selectedTreeId = (int)$request->input('tree_id', 0);
+        $data = $this->service->getTreeOverview($userId, $selectedTreeId);
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($data));
     }
 
@@ -44,9 +45,13 @@ class PointMallGameplayController extends Controller
 
     public function treeWater(Request $request, $treeId)
     {
+        $this->validate($request, array(
+            'point_cost' => 'nullable|integer|in:10,30,50',
+        ));
         $userId = (int)$this->getAuthUserId($request);
         try {
-            $tree = $this->service->waterTree($userId, (int)$treeId);
+            $pointCost = (int)$request->input('point_cost', 10);
+            $tree = $this->service->waterTree($userId, (int)$treeId, $pointCost);
             return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('tree' => $tree)));
         } catch (\Throwable $e) {
             return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
@@ -145,5 +150,85 @@ class PointMallGameplayController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'leaderboard' => $rows,
         )));
+    }
+
+    public function petOverview(Request $request)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        $data = $this->service->getPetOverview($userId);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($data));
+    }
+
+    public function petAdopt(Request $request)
+    {
+        $this->validate($request, array(
+            'entitlement_id' => 'required|integer|min:1',
+            'name' => 'nullable|string|max:64',
+        ));
+        $userId = (int)$this->getAuthUserId($request);
+        try {
+            $pet = $this->service->adoptPet(
+                $userId,
+                (int)$request->input('entitlement_id'),
+                (string)$request->input('name', '我的宠物')
+            );
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('pet' => $pet)));
+        } catch (\Throwable $e) {
+            return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
+        }
+    }
+
+    public function petFeed(Request $request, $petId)
+    {
+        $this->validate($request, array(
+            'point_cost' => 'nullable|integer|in:10,30,50',
+        ));
+        $userId = (int)$this->getAuthUserId($request);
+        try {
+            $pet = $this->service->feedPet($userId, (int)$petId, (int)$request->input('point_cost', 10));
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('pet' => $pet)));
+        } catch (\Throwable $e) {
+            return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
+        }
+    }
+
+    public function pondOverview(Request $request)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        $data = $this->service->getPondOverview($userId);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($data));
+    }
+
+    public function pondRelease(Request $request)
+    {
+        $this->validate($request, array(
+            'entitlement_id' => 'required|integer|min:1',
+            'name' => 'nullable|string|max:64',
+        ));
+        $userId = (int)$this->getAuthUserId($request);
+        try {
+            $fish = $this->service->releaseFish(
+                $userId,
+                (int)$request->input('entitlement_id'),
+                (string)$request->input('name', '我的鱼')
+            );
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('fish' => $fish)));
+        } catch (\Throwable $e) {
+            return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
+        }
+    }
+
+    public function pondFeed(Request $request, $fishId)
+    {
+        $this->validate($request, array(
+            'point_cost' => 'nullable|integer|in:10,30,50',
+        ));
+        $userId = (int)$this->getAuthUserId($request);
+        try {
+            $fish = $this->service->feedFish($userId, (int)$fishId, (int)$request->input('point_cost', 10));
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('fish' => $fish)));
+        } catch (\Throwable $e) {
+            return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
+        }
     }
 }

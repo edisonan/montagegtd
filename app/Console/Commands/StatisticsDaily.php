@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 use Log;
 
 /**
- * statistics pomo note task etc.
+ * statistics focus note task etc.
  *
  * @author edison.an
  *
@@ -26,7 +26,7 @@ class StatisticsDaily extends Command
      *
      * @var string
      */
-    protected $description = 'Statistic Task Pomo Note etc.';
+    protected $description = 'Statistic Task Focus Note etc.';
 
     /**
      * Execute the console command.

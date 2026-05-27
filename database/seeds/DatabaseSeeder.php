@@ -13,5 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(PointRuleSeeder::class);
         $this->call(AchievementCatalogSeeder::class);
+        $this->call(PointMallGoodsSeeder::class);
+        $this->call(PointMallGameplaySeeder::class);
     }
 }

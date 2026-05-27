@@ -2,30 +2,30 @@
 
 namespace App\Console\Commands;
 
-use App\Services\PomoService;
+use App\Services\FocusService;
 use Illuminate\Console\Command;
 
 /**
- * 番茄每日提醒
+ * 专注每日提醒
  *
  * @author edison.an
  *
  */
-class PomoDailyReminder extends Command
+class FocusDailyReminder extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'pomo_daily_reminder {type}';
+    protected $signature = 'focus_daily_reminder {type}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Pomo daily Reminder';
+    protected $description = 'Focus daily Reminder';
 
     /**
      * Execute the console command.
@@ -42,16 +42,16 @@ class PomoDailyReminder extends Command
 
         $type = $this->argument('type');
         if ($type != 1 || $type != 2) {
-            Log::error('pomo daily type wrong');
+            Log::error('focus daily type wrong');
             return;
         }
 
         /**
          *
-         * @var PomoService $pomoService
+         * @var FocusService $focusService
          */
-        $pomoService = app(PomoService::class);
-        $pomoService->schedulePomoDailyReminder($type);
+        $focusService = app(FocusService::class);
+        $focusService->scheduleFocusDailyReminder($type);
     }
 }
 

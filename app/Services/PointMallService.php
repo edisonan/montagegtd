@@ -42,6 +42,20 @@ class PointMallService
                 'icon' => 'fas fa-tree',
                 'color' => 'from-emerald-500 to-green-600',
             ),
+            array(
+                'scene' => 'pet',
+                'title' => '宠物乐园',
+                'subtitle' => '兑换宠物并持续喂养成长',
+                'icon' => 'fas fa-paw',
+                'color' => 'from-rose-500 to-pink-600',
+            ),
+            array(
+                'scene' => 'pond',
+                'title' => '池塘乐园',
+                'subtitle' => '兑换鱼苗并投喂升级',
+                'icon' => 'fas fa-fish',
+                'color' => 'from-cyan-500 to-sky-600',
+            ),
         );
     }
 
@@ -175,11 +189,15 @@ class PointMallService
     protected function fulfillOrder(PointMallOrder $order, PointMallGood $good, int $quantity): void
     {
         $deliveryType = (string)$good->delivery_type;
+        $goodsPayload = $this->decodeJson($good->payload);
+        $grantEach = max(1, (int)($goodsPayload['quantity'] ?? 1));
+        $grantQty = $grantEach * $quantity;
 
         if ($deliveryType === 'lottery') {
-            $this->createEntitlement($order, 'lottery_chance', $quantity, 'active', array(
+            $this->createEntitlement($order, 'lottery_chance', $grantQty, 'active', array(
                 'scene' => 'lottery',
                 'note' => '已发放抽奖次数',
+                'goods_payload' => $goodsPayload,
             ));
             $this->markOrderFulfilled($order, '抽奖次数已到账');
             $this->writeDeliveryLog($order->id, 'lottery_handler', 'success', 'lottery chance granted');
@@ -187,9 +205,10 @@ class PointMallService
         }
 
         if ($deliveryType === 'bus') {
-            $this->createEntitlement($order, 'bus_ticket', $quantity, 'active', array(
+            $this->createEntitlement($order, 'bus_ticket', $grantQty, 'active', array(
                 'scene' => 'bus',
                 'note' => '已发放公交权益',
+                'goods_payload' => $goodsPayload,
             ));
             $this->markOrderFulfilled($order, '公交权益已到账');
             $this->writeDeliveryLog($order->id, 'bus_handler', 'success', 'bus ticket granted');
@@ -197,14 +216,47 @@ class PointMallService
         }
 
         if ($deliveryType === 'tree') {
-            $this->createEntitlement($order, 'tree_seedling', $quantity, 'pending_planting', array(
+            $this->createEntitlement($order, 'tree_seedling', $grantQty, 'pending_planting', array(
                 'scene' => 'tree',
                 'note' => '待种植确认',
+                'tree_type' => (string)($goodsPayload['tree_type'] ?? 'oak'),
+                'goods_payload' => $goodsPayload,
             ));
             $order->delivery_status = 'processing';
-            $order->delivery_message = '树苗种植处理中，请等待通知';
+            $order->delivery_message = '树苗已到账，待你手动种植';
+            $order->fulfilled_at = date('Y-m-d H:i:s');
             $order->save();
-            $this->writeDeliveryLog($order->id, 'tree_handler', 'processing', 'tree planting queued');
+            $this->writeDeliveryLog($order->id, 'tree_handler', 'success', 'tree seedlings granted');
+            return;
+        }
+
+        if ($deliveryType === 'pet') {
+            $this->createEntitlement($order, 'pet_companion', $grantQty, 'pending_adoption', array(
+                'scene' => 'pet',
+                'note' => '待领养',
+                'pet_type' => (string)($goodsPayload['pet_type'] ?? 'cat'),
+                'goods_payload' => $goodsPayload,
+            ));
+            $order->delivery_status = 'processing';
+            $order->delivery_message = '宠物已到账，待你手动领养';
+            $order->fulfilled_at = date('Y-m-d H:i:s');
+            $order->save();
+            $this->writeDeliveryLog($order->id, 'pet_handler', 'success', 'pet entitlement granted');
+            return;
+        }
+
+        if ($deliveryType === 'pond') {
+            $this->createEntitlement($order, 'fish_fry', $grantQty, 'pending_release', array(
+                'scene' => 'pond',
+                'note' => '待放养',
+                'fish_type' => (string)($goodsPayload['fish_type'] ?? 'goldfish'),
+                'goods_payload' => $goodsPayload,
+            ));
+            $order->delivery_status = 'processing';
+            $order->delivery_message = '鱼苗已到账，待你手动放养';
+            $order->fulfilled_at = date('Y-m-d H:i:s');
+            $order->save();
+            $this->writeDeliveryLog($order->id, 'pond_handler', 'success', 'fish entitlement granted');
             return;
         }
 
@@ -281,4 +333,3 @@ class PointMallService
         return 'PM' . date('YmdHis') . str_pad((string)($userId % 1000), 3, '0', STR_PAD_LEFT) . mt_rand(100, 999);
     }
 }
-

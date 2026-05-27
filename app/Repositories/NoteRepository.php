@@ -13,7 +13,7 @@ class NoteRepository {
 	 * @param unknown $userId        	
 	 * @param unknown $tagId        	
 	 * @param unknown $keyword        	
-	 * @param unknown $pomoId        	
+	 * @param unknown $focusId        	
 	 * @param unknown $articleId        	
 	 * @param unknown $taskId        	
 	 * @return unknown
@@ -126,8 +126,8 @@ class NoteRepository {
 	// if (isset ( $conditions ['article_id'] )) {
 	// $query->where ( 'article_id', $conditions ['article_id'] );
 	// }
-	// if (isset ( $conditions ['pomo_id'] )) {
-	// $query->where ( 'pomo_id', $conditions ['pomo_id'] );
+	// if (isset ( $conditions ['focus_id'] )) {
+	// $query->where ( 'focus_id', $conditions ['focus_id'] );
 	// }
 	// if (isset ( $conditions ['task_id'] )) {
 	// $query->where ( 'task_id', $conditions ['task_id'] );

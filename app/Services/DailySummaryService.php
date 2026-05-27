@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Repositories\DailySummaryRepository;
 use Illuminate\Support\Facades\Auth;
-use App\Repositories\ThingRepository;
+use App\Repositories\JournalRepository;
 use App\Repositories\ArticleRepository;
 use App\Repositories\ArticleSubRepository;
 use App\Repositories\MindRepository;
@@ -26,9 +26,9 @@ class DailySummaryService {
 	protected $dailySummaryRepository;
 	/**
 	 *
-	 * @var ThingRepository
+	 * @var JournalRepository
 	 */
-	protected $thingRepository;
+	protected $journalRepository;
 	/**
 	 *
 	 * @var ArticleSubRepository
@@ -49,9 +49,9 @@ class DailySummaryService {
 	 *
 	 * @param CategoryRepository $categories        	
 	 */
-	public function __construct(DailySummaryRepository $dailySummaryRepository, ThingRepository $thingRepository, ArticleSubRepository $articleSubRepository, MindRepository $mindRepository, NoteRepository $noteRepository) {
+	public function __construct(DailySummaryRepository $dailySummaryRepository, JournalRepository $journalRepository, ArticleSubRepository $articleSubRepository, MindRepository $mindRepository, NoteRepository $noteRepository) {
 		$this->dailySummaryRepository = $dailySummaryRepository;
-		$this->thingRepository = $thingRepository;
+		$this->journalRepository = $journalRepository;
 		$this->articleSubRepository = $articleSubRepository;
 		$this->mindRepository = $mindRepository;
 		$this->noteRepository = $noteRepository;
@@ -86,22 +86,22 @@ class DailySummaryService {
 		$startTime = $summaryDate . ' 00:00:00';
 		$endTime = $summaryDate . ' 23:59:59';
 		
-		$things = $this->thingRepository->getListForSummary ( Auth::id (), $startTime, $endTime );
+		$journals = $this->journalRepository->getListForSummary ( Auth::id (), $startTime, $endTime );
 		$articleSubs = $this->articleSubRepository->getListForSummary ( Auth::id (), $startTime, $endTime );
 		$minds = $this->mindRepository->getListForSummary ( Auth::id (), $startTime, $endTime );
 		$notes = $this->noteRepository->getListForSummary ( Auth::id (), $startTime, $endTime );
 		
-		$thingTypeInfos = array(1=>'事情', 2=>'任务', 3=>'番茄');
+		$journalTypeInfos = array(1=>'手账', 2=>'任务', 3=>'专注');
 		$infos = array (
-			'thing'=>array('name'=>'事情', 'list'=>array()),
+			'journal'=>array('name'=>'手账', 'list'=>array()),
 			'article'=>array('name'=>'文章', 'list'=>array()),
 			'mind'=>array('name'=>'导图', 'list'=>array()),
 			'note'=>array('name'=>'笔记', 'list'=>array()),
 		);
-		foreach ( $things as $thing ) {
-			$type = isset($thingTypeInfos[$thing->type]) ? '['.$thingTypeInfos[$thing->type].']':'';
-			$infos ['thing'] ['list'] [] = array (
-					'content' => $type . $thing->name,
+		foreach ( $journals as $journal ) {
+			$type = isset($journalTypeInfos[$journal->type]) ? '['.$journalTypeInfos[$journal->type].']':'';
+			$infos ['journal'] ['list'] [] = array (
+					'content' => $type . $journal->name,
 					'url' => '' 
 			);
 		}

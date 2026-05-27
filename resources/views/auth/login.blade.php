@@ -582,7 +582,7 @@
                                 <div style="font-size: 14px; color: var(--gray-600); line-height: 1.6;">
                                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                         <i class="fas fa-check-circle text-green-500"></i>
-                                        <span>专业的番茄工作法工具</span>
+                                        <span>专业的专注工作法工具</span>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                                         <i class="fas fa-check-circle text-green-500"></i>

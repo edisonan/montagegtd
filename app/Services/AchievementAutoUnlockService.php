@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Achievement;
 use App\Models\DailySummary;
 use App\Models\Note;
-use App\Models\Pomo;
+use App\Models\Focus;
 use App\Models\Task;
 use App\Repositories\UserAchievementRepository;
 
@@ -32,7 +32,7 @@ class AchievementAutoUnlockService
         }
 
         $taskDoneCount = (int)Task::where('user_id', $userId)->where('status', 2)->count();
-        $pomoDoneCount = (int)Pomo::where('user_id', $userId)->where('status', 2)->count();
+        $focusDoneCount = (int)Focus::where('user_id', $userId)->where('status', 2)->count();
         $dailySummaryCount = (int)DailySummary::where('user_id', $userId)->where('status', '!=', 2)->count();
         $noteCount = (int)Note::where('user_id', $userId)->count();
 
@@ -40,8 +40,8 @@ class AchievementAutoUnlockService
             'achievement_first_task_done' => $taskDoneCount >= 1,
             'achievement_task_done_10' => $taskDoneCount >= 10,
             'achievement_task_done_100' => $taskDoneCount >= 100,
-            'achievement_pomo_done_10' => $pomoDoneCount >= 10,
-            'achievement_pomo_done_100' => $pomoDoneCount >= 100,
+            'achievement_focus_done_10' => $focusDoneCount >= 10,
+            'achievement_focus_done_100' => $focusDoneCount >= 100,
             'achievement_daily_summary_7' => $dailySummaryCount >= 7,
             'achievement_daily_summary_30' => $dailySummaryCount >= 30,
             'achievement_note_50' => $noteCount >= 50,

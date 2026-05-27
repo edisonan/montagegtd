@@ -30,4 +30,14 @@ class PointMallController extends Controller
     {
         return view('points.bus');
     }
+
+    public function pet(Request $request)
+    {
+        return view('points.pet');
+    }
+
+    public function pond(Request $request)
+    {
+        return view('points.pond');
+    }
 }

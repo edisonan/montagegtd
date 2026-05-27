@@ -13,7 +13,7 @@ class CreatePomosTable extends Migration
      */
     public function up()
     {
-        Schema::create('pomos', function (Blueprint $table) {
+        Schema::create('focus', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->index();
             $table->integer('status');
@@ -29,6 +29,6 @@ class CreatePomosTable extends Migration
      */
     public function down()
     {
-        Schema::drop('pomos');
+        Schema::drop('focus');
     }
 }

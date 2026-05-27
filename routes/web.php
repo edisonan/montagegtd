@@ -12,7 +12,7 @@ Route::get('/', function () {
  * |
  * | Here is where you can register web routes for your application. These
  * | routes are loaded by the RouteServiceProvider within a group which
- * | contains the "web" middleware group. Now create something great!
+ * | contains the "web" middleware group. Now create somejournal great!
  * |
  */
 Route::group([
@@ -53,6 +53,9 @@ Route::group([
     Route::post('/mindaddtag/{mind}', 'MindController@addTag');
 
     Route::get('/tasks', 'TaskController@index');
+    Route::get('/study', 'StudyController@index');
+    Route::get('/study/checkins', 'StudyController@checkins');
+    Route::get('/studyfocus/{task}', 'StudyController@focus');
     Route::get('/tasksall', 'TaskController@getAllList');
     Route::post('/task', 'TaskController@store');
     Route::delete('/task/{task}', 'TaskController@destroy');
@@ -102,12 +105,12 @@ Route::group([
     Route::get('/article/navcountinfo', 'ArticleController@navcountinfo');
     Route::get('/article/proxyview', 'ArticleController@proxyView');
 
-    Route::get('/pomos', 'PomoController@index');
-    Route::get('/pomostoday', 'PomoController@todayPomos');
-    Route::get('/pomos/start', 'PomoController@start');
-    Route::get('/pomos/discard/{pomo}', 'PomoController@discard');
-    Route::get('/pomos/discard/', 'PomoController@discard');
-    Route::get('/pomos/pomostatus', 'PomoController@pomostatus');
+    Route::get('/focuss', 'FocusController@index');
+    Route::get('/focusstoday', 'FocusController@todayFocuss');
+    Route::get('/focuss/start', 'FocusController@start');
+    Route::get('/focuss/discard/{focus}', 'FocusController@discard');
+    Route::get('/focuss/discard/', 'FocusController@discard');
+    Route::get('/focuss/focusstatus', 'FocusController@focusstatus');
 
     Route::get('/third/index', 'ThirdController@index');
     Route::get('/third/testFave', 'ThirdController@testFave');
@@ -116,17 +119,22 @@ Route::group([
     Route::get('/third/twitterIndex', 'ThirdController@twitterIndex');
     Route::get('/third/twitterCallback', 'ThirdController@twitterCallback');
 
-    Route::post('/pomoupdate/{pomo}', 'PomoController@update');
-    Route::post('/pomo/{pomo}', 'PomoController@store');
-    Route::delete('/pomo/{pomo}', 'PomoController@destroy');
+    Route::post('/focusupdate/{focus}', 'FocusController@update');
+    Route::post('/focus/{focus}', 'FocusController@store');
+    Route::delete('/focus/{focus}', 'FocusController@destroy');
 
     Route::get('/statistics', 'StatisticsController@index');
 
-    Route::get('/goals', 'GoalController@index');
-    Route::post('/goal', 'GoalController@store');
-    Route::delete('/goal/{goal}', 'GoalController@destroy');
-    Route::post('/goal/{goal}', 'GoalController@update');
-    Route::get('/goal/{goal}', 'GoalController@update');
+    Route::get('/plans', 'PlanController@index');
+    Route::post('/plan', 'PlanController@store');
+    Route::delete('/plan/{plan}', 'PlanController@destroy');
+    Route::post('/plan/{plan}', 'PlanController@update');
+    Route::get('/plan/{plan}', 'PlanController@update');
+    // backward compatibility for legacy endpoints
+    Route::post('/goal', 'PlanController@store');
+    Route::delete('/goal/{plan}', 'PlanController@destroy');
+    Route::post('/goal/{plan}', 'PlanController@update');
+    Route::get('/goal/{plan}', 'PlanController@update');
 
     Route::get('/dailysummarys', 'DailySummaryController@index');
     Route::get('/dailycreate', 'DailySummaryController@create');
@@ -137,7 +145,7 @@ Route::group([
     Route::get('/dailysummary/{dailySummary}', 'DailySummaryController@update');
 
     // welcome
-    Route::get('/pomo/welcome', 'PomoController@welcome');
+    Route::get('/focus/welcome', 'FocusController@welcome');
     Route::get('/note/welcome', 'NoteController@welcome');
     Route::get('/read/welcome', 'ArticleController@welcome');
     Route::get('/minds/welcome', 'MindController@welcome');
@@ -153,6 +161,8 @@ Route::group([
     Route::get('/point-mall/tree', 'PointMallController@tree');
     Route::get('/point-mall/lottery', 'PointMallController@lottery');
     Route::get('/point-mall/bus', 'PointMallController@bus');
+    Route::get('/point-mall/pet', 'PointMallController@pet');
+    Route::get('/point-mall/pond', 'PointMallController@pond');
     Route::get('/achievements', 'AchievementController@index');
     Route::post('/achievement/claim', 'AchievementController@claim');
 
@@ -160,11 +170,11 @@ Route::group([
     Route::get('/kindles', 'KindleController@index');
     Route::get('/kindle/test', 'KindleController@test');
 
-    Route::get('/things', 'ThingController@index');
-    Route::post('/thing', 'ThingController@store');
-    Route::delete('/thing/{thing}', 'ThingController@destroy');
-    Route::post('/thing/{thing}', 'ThingController@update');
-    Route::get('/thing/{thing}', 'ThingController@update');
+    Route::get('/journals', 'JournalController@index');
+    Route::post('/journal', 'JournalController@store');
+    Route::delete('/journal/{journal}', 'JournalController@destroy');
+    Route::post('/journal/{journal}', 'JournalController@update');
+    Route::get('/journal/{journal}', 'JournalController@update');
 
     Auth::routes();
     Route::post('/auth/token/bootstrap', 'Api\\V2\\AuthController@bootstrapSession')->middleware('auth');
@@ -177,8 +187,8 @@ Route::group([
     Route::get('/logout', 'Auth\LoginController@logout');
 
 
-    // Legacy wechat mini and old /api/pomo routes are migrated to /api/v2/wechat/*
-    // and /api/v2/pomos* token routes.
+    // Legacy wechat mini and old /api/focus routes are migrated to /api/v2/wechat/*
+    // and /api/v2/focuss* token routes.
 
     Route::any('/code/{codeInfo}', 'CodeController@view');
     

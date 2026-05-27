@@ -26,7 +26,7 @@ tags:
   - name: courses
   - name: daily-summaries
   - name: feeds
-  - name: goals
+  - name: plans
   - name: health
   - name: help
   - name: index
@@ -37,11 +37,11 @@ tags:
   - name: notifications
   - name: personal-access-tokens
   - name: points
-  - name: pomos
+  - name: focus
   - name: settings
   - name: statistics
   - name: tasks
-  - name: things
+  - name: journals
   - name: thirds
   - name: wechat
 paths:
@@ -3893,8 +3893,8 @@ paths:
   "/goals":
     get:
       tags:
-        - goals
-      summary: "GET /goals"
+        - plans
+      summary: "GET /plans"
       operationId: unknown_handle_get_goals
       description: |
         Action: Api\\V2\\GoalController@index
@@ -3928,8 +3928,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     post:
       tags:
-        - goals
-      summary: "POST /goals"
+        - plans
+      summary: "POST /plans"
       operationId: unknown_handle_post_goals
       description: |
         Action: Api\\V2\\GoalController@store
@@ -3974,8 +3974,8 @@ paths:
   "/goals/{goal}":
     get:
       tags:
-        - goals
-      summary: "GET /goals/{goal}"
+        - plans
+      summary: "GET /plans/{goal}"
       operationId: unknown_handle_get_goals_by_goal
       description: |
         Action: Api\\V2\\GoalController@show
@@ -4015,8 +4015,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     post:
       tags:
-        - goals
-      summary: "POST /goals/{goal}"
+        - plans
+      summary: "POST /plans/{goal}"
       operationId: unknown_handle_post_goals_by_goal
       description: |
         Action: Api\\V2\\GoalController@update
@@ -4066,8 +4066,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     put:
       tags:
-        - goals
-      summary: "PUT /goals/{goal}"
+        - plans
+      summary: "PUT /plans/{goal}"
       operationId: unknown_handle_put_goals_by_goal
       description: |
         Action: Api\\V2\\GoalController@update
@@ -4117,8 +4117,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     delete:
       tags:
-        - goals
-      summary: "DELETE /goals/{goal}"
+        - plans
+      summary: "DELETE /plans/{goal}"
       operationId: unknown_handle_delete_goals_by_goal
       description: |
         Action: Api\\V2\\GoalController@destroy
@@ -7189,8 +7189,8 @@ paths:
   "/pomos":
     get:
       tags:
-        - pomos
-      summary: "GET /pomos"
+        - focus
+      summary: "GET /focus"
       operationId: unknown_handle_get_pomos
       description: |
         Action: Api\\V2\\PomoController@index
@@ -7225,8 +7225,8 @@ paths:
   "/pomos/discard":
     post:
       tags:
-        - pomos
-      summary: "POST /pomos/discard"
+        - focus
+      summary: "POST /focus/discard"
       operationId: unknown_handle_post_pomos_discard
       description: |
         Action: Api\\V2\\PomoController@discardCurrent
@@ -7271,8 +7271,8 @@ paths:
   "/pomos/discard/{pomo}":
     post:
       tags:
-        - pomos
-      summary: "POST /pomos/discard/{pomo}"
+        - focus
+      summary: "POST /focus/discard/{pomo}"
       operationId: unknown_handle_post_pomos_discard_by_pomo
       description: |
         Action: Api\\V2\\PomoController@discard
@@ -7323,8 +7323,8 @@ paths:
   "/pomos/start":
     post:
       tags:
-        - pomos
-      summary: "POST /pomos/start"
+        - focus
+      summary: "POST /focus/start"
       operationId: unknown_handle_post_pomos_start
       description: |
         Action: Api\\V2\\PomoController@start
@@ -7369,8 +7369,8 @@ paths:
   "/pomos/status":
     get:
       tags:
-        - pomos
-      summary: "GET /pomos/status"
+        - focus
+      summary: "GET /focus/status"
       operationId: unknown_handle_get_pomos_status
       description: |
         Action: Api\\V2\\PomoController@pomostatus
@@ -7405,8 +7405,8 @@ paths:
   "/pomos/today":
     get:
       tags:
-        - pomos
-      summary: "GET /pomos/today"
+        - focus
+      summary: "GET /focus/today"
       operationId: unknown_handle_get_pomos_today
       description: |
         Action: Api\\V2\\PomoController@today
@@ -7441,8 +7441,8 @@ paths:
   "/pomos/{pomo}":
     post:
       tags:
-        - pomos
-      summary: "POST /pomos/{pomo}"
+        - focus
+      summary: "POST /focus/{pomo}"
       operationId: unknown_handle_post_pomos_by_pomo
       description: |
         Action: Api\\V2\\PomoController@store
@@ -7492,8 +7492,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     put:
       tags:
-        - pomos
-      summary: "PUT /pomos/{pomo}"
+        - focus
+      summary: "PUT /focus/{pomo}"
       operationId: unknown_handle_put_pomos_by_pomo
       description: |
         Action: Api\\V2\\PomoController@update
@@ -7543,8 +7543,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     delete:
       tags:
-        - pomos
-      summary: "DELETE /pomos/{pomo}"
+        - focus
+      summary: "DELETE /focus/{pomo}"
       operationId: unknown_handle_delete_pomos_by_pomo
       description: |
         Action: Api\\V2\\PomoController@destroy
@@ -8277,8 +8277,8 @@ paths:
   "/things":
     get:
       tags:
-        - things
-      summary: "GET /things"
+        - journals
+      summary: "GET /journals"
       operationId: unknown_handle_get_things
       description: |
         Action: Api\\V2\\ThingController@index
@@ -8312,8 +8312,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     post:
       tags:
-        - things
-      summary: "POST /things"
+        - journals
+      summary: "POST /journals"
       operationId: unknown_handle_post_things
       description: |
         Action: Api\\V2\\ThingController@store
@@ -8358,8 +8358,8 @@ paths:
   "/things/{thing}":
     get:
       tags:
-        - things
-      summary: "GET /things/{thing}"
+        - journals
+      summary: "GET /journals/{thing}"
       operationId: unknown_handle_get_things_by_thing
       description: |
         Action: Api\\V2\\ThingController@show
@@ -8399,8 +8399,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     put:
       tags:
-        - things
-      summary: "PUT /things/{thing}"
+        - journals
+      summary: "PUT /journals/{thing}"
       operationId: unknown_handle_put_things_by_thing
       description: |
         Action: Api\\V2\\ThingController@update
@@ -8450,8 +8450,8 @@ paths:
           $ref: "#/components/responses/GenericError"
     delete:
       tags:
-        - things
-      summary: "DELETE /things/{thing}"
+        - journals
+      summary: "DELETE /journals/{thing}"
       operationId: unknown_handle_delete_things_by_thing
       description: |
         Action: Api\\V2\\ThingController@destroy

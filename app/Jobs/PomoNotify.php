@@ -10,7 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use App\Http\Utils\CommonUtil;
 use Illuminate\Support\Facades\Log;
 
-class PomoNotify implements ShouldQueue {
+class FocusNotify implements ShouldQueue {
 	use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 	protected $user;
 	protected $message;
@@ -31,11 +31,11 @@ class PomoNotify implements ShouldQueue {
 	 * @return void
 	 */
 	public function handle() {
-		$needPomo = \Cache::store ( 'file' )->pull ( 'NEED_POMO' . $this->user->id );
+		$needFocus = \Cache::store ( 'file' )->pull ( 'NEED_POMO' . $this->user->id );
 		
-		if (! empty ( $needPomo )) {
+		if (! empty ( $needFocus )) {
 			if (isset ( $this->user->setting->ifttt_notify )) {
-				$notifyResult = CommonUtil::iftttNotify ( '做番茄', $this->message,  config('app.url'), $this->user->setting->ifttt_notify );
+				$notifyResult = CommonUtil::iftttNotify ( '做专注', $this->message,  config('app.url'), $this->user->setting->ifttt_notify );
 				Log::info ( 'notify result:' . $notifyResult . '|message:' . $this->message . '|user:' . $this->user->name );
 			}
 		}

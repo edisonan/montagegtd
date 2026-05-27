@@ -247,7 +247,7 @@
                                     <i class="fas fa-clock text-blue-600"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium text-gray-900 mb-1">完成番茄专注</h4>
+                                    <h4 class="font-medium text-gray-900 mb-1">完成专注专注</h4>
                                     <p class="text-sm text-gray-600">每完成一个番茄钟可获得5-10积分</p>
                                 </div>
                             </div>
@@ -450,7 +450,7 @@
                 task_complete: { color: 'blue', icon: 'fa-tasks' },
                 daily_checkin: { color: 'green', icon: 'fa-calendar-check' },
                 article_read: { color: 'purple', icon: 'fa-newspaper' },
-                pomo_complete: { color: 'red', icon: 'fa-clock' },
+                focus_complete: { color: 'red', icon: 'fa-clock' },
                 system_grant: { color: 'yellow', icon: 'fa-gift' },
                 exchange_use: { color: 'gray', icon: 'fa-exchange-alt' }
             };

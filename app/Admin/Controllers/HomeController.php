@@ -24,17 +24,17 @@ class HomeController extends Controller {
 				$users = DB::table ( 'users' )->select ( DB::raw ( 'count(*) as total' ) )->where ( 'created_at', '>', $now )->first ();
 				$feed_subs = DB::table ( 'feed_subs' )->select ( DB::raw ( 'count(*) as total' ) )->where ( 'created_at', '>', $now )->first ();
 				$articles = DB::table ( 'articles' )->select ( DB::raw ( 'count(*) as total' ) )->where ( 'created_at', '>', $now )->first ();
-				$pomos = DB::table ( 'pomos' )->select ( DB::raw ( 'count(*) as total' ) )->where ( 'created_at', '>', $now )->first ();
+				$focuss = DB::table ( 'focus' )->select ( DB::raw ( 'count(*) as total' ) )->where ( 'created_at', '>', $now )->first ();
 				
 				$userInfoBox = new InfoBox ( '最近一周新增用户', 'users', 'aqua', '/admin/users', $users->total );
 				$feedSubInfoBox = new InfoBox ( '最近一周新增订阅', 'feed', 'green', '/admin/feedsubs', $feed_subs->total );
 				$articleInfoBox = new InfoBox ( '最近一周新增文章', 'book', 'yellow-gradient', '/admin/articles', $articles->total );
-				$pomoInfoBox = new InfoBox ( '最近一周新增番茄', 'tasks', 'light-blue', '/admin/pomos', $pomos->total );
+				$focusInfoBox = new InfoBox ( '最近一周新增专注', 'tasks', 'light-blue', '/admin/focus', $focuss->total );
 				
 				$row->column ( 3, $userInfoBox );
 				$row->column ( 3, $feedSubInfoBox );
 				$row->column ( 3, $articleInfoBox );
-				$row->column ( 3, $pomoInfoBox );
+				$row->column ( 3, $focusInfoBox );
 				
 				// $row->column(4, function (Column $column) {
 				// $column->append(Dashboard::extensions());

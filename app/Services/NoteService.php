@@ -9,10 +9,10 @@ use App\Exceptions\CustomException;
 use App\Http\Utils\CommonUtil;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\ArticleRepository;
-use App\Repositories\PomoRepository;
+use App\Repositories\FocusRepository;
 use Auth;
 use App\Repositories\TaskRepository;
-use App\Repositories\ThingRepository;
+use App\Repositories\JournalRepository;
 use App\Repositories\NoteRepository;
 
 /**
@@ -38,11 +38,11 @@ class NoteService {
 	protected $taskRepository;
 
     /**
-     * The thing repository instance.
+     * The journal repository instance.
      *
-     * @var ThingRepository
+     * @var JournalRepository
      */
-    protected $thingRepository;
+    protected $journalRepository;
 	
 	/**
 	 * The article Repository instance.
@@ -52,11 +52,11 @@ class NoteService {
 	protected $articleRepository;
 	
 	/**
-	 * The pomo repository instance.
+	 * The focus repository instance.
 	 *
-	 * @var PomoRepository
+	 * @var FocusRepository
 	 */
-	protected $pomoRepository;
+	protected $focusRepository;
 	
 	/**
 	 * The tag service instance.
@@ -74,17 +74,17 @@ class NoteService {
 	 *
 	 * @param NoteRepository $noteRepository        	
 	 * @param TaskRepository $taskRepository        	
-	 * @param ThingRepository $thingRepository
+	 * @param JournalRepository $journalRepository
 	 * @param ArticleService $articleRepository
-	 * @param PomoRepository $pomoRepository        	
+	 * @param FocusRepository $focusRepository        	
 	 * @param TagService $tagService        	
 	 */
-	public function __construct(NoteRepository $noteRepository, TaskRepository $taskRepository, ThingRepository $thingRepository, ArticleRepository $articleRepository, PomoRepository $pomoRepository, TagService $tagService) {
+	public function __construct(NoteRepository $noteRepository, TaskRepository $taskRepository, JournalRepository $journalRepository, ArticleRepository $articleRepository, FocusRepository $focusRepository, TagService $tagService) {
 		$this->noteRepository = $noteRepository;
 		$this->taskRepository = $taskRepository;
-		$this->thingRepository = $thingRepository;
+		$this->journalRepository = $journalRepository;
 		$this->articleRepository = $articleRepository;
-		$this->pomoRepository = $pomoRepository;
+		$this->focusRepository = $focusRepository;
 		$this->tagService = $tagService;
 	}
 	
@@ -95,7 +95,7 @@ class NoteService {
 	 * @param string $type        	
 	 * @param number $tagId        	
 	 * @param string $keyword        	
-	 * @param number $pomoId        	
+	 * @param number $focusId        	
 	 * @param number $articleId        	
 	 * @param number $taskId        	
 	 * @return string[]|unknown[]|number[]
@@ -128,7 +128,7 @@ class NoteService {
 	 * 
 	 * @param unknown $addContent        	
 	 * @param unknown $type        	
-	 * @param unknown $pomoId        	
+	 * @param unknown $focusId        	
 	 * @param unknown $articleId        	
 	 * @param unknown $taskId        	
 	 * @throws CustomException
@@ -137,11 +137,11 @@ class NoteService {
 	public function getFormatContent($addContent, $type, $sourceType = 0, $sourceId =0) {
 		$formatContent = $addContent;
 		if ($sourceType == self::NOTE_SOURCE_TYPE_POMO && ! empty ( $sourceId )) {
-			$pomo = $this->pomoRepository->getPomoById ( $sourceId );
-			if (empty ( $pomo ) || $pomo->user_id != Auth::id ()) {
-				throw new CustomException ( "系统异常，无此番茄!" );
+			$focus = $this->focusRepository->getFocusById ( $sourceId );
+			if (empty ( $focus ) || $focus->user_id != Auth::id ()) {
+				throw new CustomException ( "系统异常，无此专注!" );
 			}
-			$formatContent = "[[记录番茄]] " . $pomo->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $pomo->created_at ) ) . "\n持续时长:20分钟\n";
+			$formatContent = "[[记录专注]] " . $focus->name . "\n开始时间：" . date ( 'm月d日 H时i分', strtotime ( $focus->created_at ) ) . "\n持续时长:20分钟\n";
 			return $formatContent;
 		}
 		
@@ -166,15 +166,15 @@ class NoteService {
 		}
 
         if ($sourceType == self::NOTE_SOURCE_TYPE_THING && ! empty ( $sourceId )) {
-            $thing = $this->thingRepository->getThingById ( $sourceId );
-            if (empty ( $thing ) || $thing->user_id != Auth::id ()) {
-                throw new CustomException ( "系统异常，无此事情!" );
+            $journal = $this->journalRepository->getJournalById ( $sourceId );
+            if (empty ( $journal ) || $journal->user_id != Auth::id ()) {
+                throw new CustomException ( "系统异常，无此手账!" );
             }
 
-            $formatContent = "[[记录事情]] "  . $thing->name ;
-            if(!empty($thing->start_time) && !empty($thing->end_time)) {
-                $duration = round((strtotime($thing->end_time) - strtotime($thing->start_time))/60);
-                $formatContent = $formatContent . "\n时间：" . date ( 'm月d日 H时i分', strtotime($thing->start_time) ) . '-' . date ( 'm月d日 H时i分', strtotime($thing->end_time) ). "\n持续时长:". $duration . "分钟\n";
+            $formatContent = "[[记录手账]] "  . $journal->name ;
+            if(!empty($journal->start_time) && !empty($journal->end_time)) {
+                $duration = round((strtotime($journal->end_time) - strtotime($journal->start_time))/60);
+                $formatContent = $formatContent . "\n时间：" . date ( 'm月d日 H时i分', strtotime($journal->start_time) ) . '-' . date ( 'm月d日 H时i分', strtotime($journal->end_time) ). "\n持续时长:". $duration . "分钟\n";
             }
 
             return $formatContent;
@@ -210,7 +210,7 @@ class NoteService {
 	 * @param unknown $fname        	
 	 * @param unknown $taskId        	
 	 * @param unknown $articleId        	
-	 * @param unknown $pomoId        	
+	 * @param unknown $focusId        	
 	 */
 	public function store($name, $status, $addImage, $fname, $sourceType, $sourceId) {
 		$note = new Note ();

@@ -69,10 +69,10 @@ class CategoryRepository {
 	// }
 	
 	// /**
-	// * Get goal for goal id.
+	// * Get plan for plan id.
 	// *
 	// * @param User $user
-	// * @param int $goal_id
+	// * @param int $plan_id
 	// * @return Collection
 	// */
 	// public function forCategoryId(User $user, $category_id) {

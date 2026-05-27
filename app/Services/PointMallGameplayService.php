@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\DB;
 
 class PointMallGameplayService
 {
+    const TREE_LEVEL_MAP = array(
+        1 => 0,
+        2 => 120,
+        3 => 300,
+        4 => 600,
+    );
+
     protected $pointRecordService;
 
     public function __construct(PointRecordService $pointRecordService)
@@ -15,14 +22,20 @@ class PointMallGameplayService
         $this->pointRecordService = $pointRecordService;
     }
 
-    public function getTreeOverview(int $userId): array
+    public function getTreeOverview(int $userId, int $selectedTreeId = 0): array
     {
         $this->applyNaturalGrowth($userId);
 
-        $trees = DB::table('point_tree_instances')
+        $treeRows = DB::table('point_tree_instances')
             ->where('user_id', $userId)
             ->orderBy('id', 'desc')
             ->get();
+
+        $trees = array();
+        foreach ($treeRows as $row) {
+            $trees[] = $this->formatTree($row);
+        }
+
         $seedlings = DB::table('point_mall_entitlements')
             ->where('user_id', $userId)
             ->where('entitlement_type', 'tree_seedling')
@@ -37,11 +50,16 @@ class PointMallGameplayService
             ->limit(10)
             ->get(array('id', 'user_id', 'name', 'species', 'growth_value', 'stage'));
 
+        $selected = $this->resolveCurrentTree($trees, $selectedTreeId);
+        $nextTreeId = $this->resolveNextTreeId($trees, $selected ? (int)$selected['id'] : 0);
+
         return array(
             'trees' => $trees,
             'seedlings' => $seedlings,
             'season' => $this->resolveSeasonInfo(),
             'leaderboard' => $leaderboard,
+            'current_tree' => $selected,
+            'next_tree_id' => $nextTreeId,
         );
     }
 
@@ -60,7 +78,7 @@ class PointMallGameplayService
             }
 
             $meta = $this->decodePayload($entitlement->meta_payload);
-            $species = !empty($meta['tree_type']) ? (string)$meta['tree_type'] : 'oak';
+            $species = $this->resolveTreeSpeciesFromMeta($meta);
 
             $treeId = DB::table('point_tree_instances')->insertGetId(array(
                 'user_id' => $userId,
@@ -84,13 +102,13 @@ class PointMallGameplayService
             }
             $entitlement->save();
 
-            return DB::table('point_tree_instances')->where('id', $treeId)->first();
+            return $this->formatTree(DB::table('point_tree_instances')->where('id', $treeId)->first());
         });
     }
 
-    public function waterTree(int $userId, int $treeId)
+    public function waterTree(int $userId, int $treeId, int $pointCost = 10)
     {
-        return DB::transaction(function () use ($userId, $treeId) {
+        return DB::transaction(function () use ($userId, $treeId, $pointCost) {
             $tree = DB::table('point_tree_instances')
                 ->where('id', $treeId)
                 ->where('user_id', $userId)
@@ -107,7 +125,24 @@ class PointMallGameplayService
                 throw new \RuntimeException('今天已经浇过水了');
             }
 
-            $inc = mt_rand(8, 15);
+            $tier = $this->resolveCareTier($pointCost);
+            $account = $this->lockPointAccount($userId);
+            if ((int)$account->ap_balance < $tier['cost']) {
+                throw new \RuntimeException('可用积分不足，无法浇水');
+            }
+            $account->ap_balance = (int)$account->ap_balance - $tier['cost'];
+            $account->save();
+            $this->pointRecordService->record(
+                $userId,
+                'AP',
+                -$tier['cost'],
+                (int)$account->ap_balance,
+                'tree_water',
+                $treeId,
+                '浇水消耗（' . $tier['tier'] . '）'
+            );
+
+            $inc = $tier['growth'];
             $growth = (int)$tree->growth_value + $inc;
             $stage = $this->resolveTreeStage($growth);
             $health = min(100, (int)$tree->health + 2);
@@ -124,11 +159,13 @@ class PointMallGameplayService
                 'tree_id' => $treeId,
                 'user_id' => $userId,
                 'water_value' => $inc,
+                'point_cost' => $tier['cost'],
+                'water_tier' => $tier['tier'],
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ));
 
-            return DB::table('point_tree_instances')->where('id', $treeId)->first();
+            return $this->formatTree(DB::table('point_tree_instances')->where('id', $treeId)->first());
         });
     }
 
@@ -150,6 +187,236 @@ class PointMallGameplayService
             throw new \RuntimeException('树不存在');
         }
         return $tree;
+    }
+
+    public function getPetOverview(int $userId): array
+    {
+        $pets = DB::table('point_pet_instances')
+            ->where('user_id', $userId)
+            ->orderBy('id', 'desc')
+            ->get();
+        $petData = array();
+        foreach ($pets as $pet) {
+            $petData[] = $this->formatPet($pet);
+        }
+
+        $entitlements = DB::table('point_mall_entitlements')
+            ->where('user_id', $userId)
+            ->where('entitlement_type', 'pet_companion')
+            ->whereIn('status', array('pending_adoption', 'active'))
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return array(
+            'pets' => $petData,
+            'companions' => $entitlements,
+        );
+    }
+
+    public function adoptPet(int $userId, int $entitlementId, string $name = '我的宠物')
+    {
+        return DB::transaction(function () use ($userId, $entitlementId, $name) {
+            $entitlement = PointMallEntitlement::where('id', $entitlementId)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+            if (!$entitlement) {
+                throw new \RuntimeException('宠物权益不存在');
+            }
+            if (!in_array((string)$entitlement->status, array('pending_adoption', 'active'), true)) {
+                throw new \RuntimeException('宠物权益不可使用');
+            }
+
+            $meta = $this->decodePayload($entitlement->meta_payload);
+            $species = !empty($meta['pet_type']) ? (string)$meta['pet_type'] : 'cat';
+            $petId = DB::table('point_pet_instances')->insertGetId(array(
+                'user_id' => $userId,
+                'name' => mb_substr($name ?: '我的宠物', 0, 64),
+                'species' => $species,
+                'growth_value' => 0,
+                'level' => 1,
+                'health' => 100,
+                'status' => 'active',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ));
+
+            $this->consumeEntitlementUnit($entitlement, 'pending_adoption');
+
+            return $this->formatPet(DB::table('point_pet_instances')->where('id', $petId)->first());
+        });
+    }
+
+    public function feedPet(int $userId, int $petId, int $pointCost = 10)
+    {
+        return DB::transaction(function () use ($userId, $petId, $pointCost) {
+            $pet = DB::table('point_pet_instances')
+                ->where('id', $petId)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+            if (!$pet) {
+                throw new \RuntimeException('宠物不存在');
+            }
+            if ((string)$pet->status !== 'active') {
+                throw new \RuntimeException('当前宠物状态不可喂养');
+            }
+
+            $tier = $this->resolveCareTier($pointCost);
+            $account = $this->lockPointAccount($userId);
+            if ((int)$account->ap_balance < $tier['cost']) {
+                throw new \RuntimeException('可用积分不足，无法喂养');
+            }
+            $account->ap_balance = (int)$account->ap_balance - $tier['cost'];
+            $account->save();
+            $this->pointRecordService->record(
+                $userId,
+                'AP',
+                -$tier['cost'],
+                (int)$account->ap_balance,
+                'pet_feed',
+                $petId,
+                '宠物喂养消耗（' . $tier['tier'] . '）'
+            );
+
+            $growth = (int)$pet->growth_value + $tier['growth'];
+            $level = $this->resolveLevelByGrowth($growth);
+            $health = min(100, (int)$pet->health + 2);
+            DB::table('point_pet_instances')->where('id', $petId)->update(array(
+                'growth_value' => $growth,
+                'level' => $level,
+                'health' => $health,
+                'last_fed_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ));
+
+            DB::table('point_pet_feed_logs')->insert(array(
+                'pet_id' => $petId,
+                'user_id' => $userId,
+                'feed_value' => $tier['growth'],
+                'point_cost' => $tier['cost'],
+                'feed_tier' => $tier['tier'],
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ));
+
+            return $this->formatPet(DB::table('point_pet_instances')->where('id', $petId)->first());
+        });
+    }
+
+    public function getPondOverview(int $userId): array
+    {
+        $fishes = DB::table('point_fish_instances')
+            ->where('user_id', $userId)
+            ->orderBy('id', 'desc')
+            ->get();
+        $fishData = array();
+        foreach ($fishes as $fish) {
+            $fishData[] = $this->formatFish($fish);
+        }
+
+        $entitlements = DB::table('point_mall_entitlements')
+            ->where('user_id', $userId)
+            ->where('entitlement_type', 'fish_fry')
+            ->whereIn('status', array('pending_release', 'active'))
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return array(
+            'fishes' => $fishData,
+            'fry' => $entitlements,
+        );
+    }
+
+    public function releaseFish(int $userId, int $entitlementId, string $name = '我的鱼')
+    {
+        return DB::transaction(function () use ($userId, $entitlementId, $name) {
+            $entitlement = PointMallEntitlement::where('id', $entitlementId)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+            if (!$entitlement) {
+                throw new \RuntimeException('鱼苗权益不存在');
+            }
+            if (!in_array((string)$entitlement->status, array('pending_release', 'active'), true)) {
+                throw new \RuntimeException('鱼苗权益不可使用');
+            }
+
+            $meta = $this->decodePayload($entitlement->meta_payload);
+            $species = !empty($meta['fish_type']) ? (string)$meta['fish_type'] : 'goldfish';
+            $fishId = DB::table('point_fish_instances')->insertGetId(array(
+                'user_id' => $userId,
+                'name' => mb_substr($name ?: '我的鱼', 0, 64),
+                'species' => $species,
+                'growth_value' => 0,
+                'level' => 1,
+                'health' => 100,
+                'status' => 'active',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ));
+
+            $this->consumeEntitlementUnit($entitlement, 'pending_release');
+
+            return $this->formatFish(DB::table('point_fish_instances')->where('id', $fishId)->first());
+        });
+    }
+
+    public function feedFish(int $userId, int $fishId, int $pointCost = 10)
+    {
+        return DB::transaction(function () use ($userId, $fishId, $pointCost) {
+            $fish = DB::table('point_fish_instances')
+                ->where('id', $fishId)
+                ->where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
+            if (!$fish) {
+                throw new \RuntimeException('鱼不存在');
+            }
+            if ((string)$fish->status !== 'active') {
+                throw new \RuntimeException('当前鱼状态不可投喂');
+            }
+
+            $tier = $this->resolveCareTier($pointCost);
+            $account = $this->lockPointAccount($userId);
+            if ((int)$account->ap_balance < $tier['cost']) {
+                throw new \RuntimeException('可用积分不足，无法投喂');
+            }
+            $account->ap_balance = (int)$account->ap_balance - $tier['cost'];
+            $account->save();
+            $this->pointRecordService->record(
+                $userId,
+                'AP',
+                -$tier['cost'],
+                (int)$account->ap_balance,
+                'fish_feed',
+                $fishId,
+                '池塘投喂消耗（' . $tier['tier'] . '）'
+            );
+
+            $growth = (int)$fish->growth_value + $tier['growth'];
+            $level = $this->resolveLevelByGrowth($growth);
+            $health = min(100, (int)$fish->health + 2);
+            DB::table('point_fish_instances')->where('id', $fishId)->update(array(
+                'growth_value' => $growth,
+                'level' => $level,
+                'health' => $health,
+                'last_fed_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ));
+
+            DB::table('point_fish_feed_logs')->insert(array(
+                'fish_id' => $fishId,
+                'user_id' => $userId,
+                'feed_value' => $tier['growth'],
+                'point_cost' => $tier['cost'],
+                'feed_tier' => $tier['tier'],
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ));
+
+            return $this->formatFish(DB::table('point_fish_instances')->where('id', $fishId)->first());
+        });
     }
 
     public function getLotteryOverview(int $userId): array
@@ -468,12 +735,17 @@ class PointMallGameplayService
     public function getTreeLeaderboard(int $limit = 20)
     {
         $limit = max(1, min(100, $limit));
-        return DB::table('point_tree_instances')
+        $rows = DB::table('point_tree_instances')
             ->where('status', 'alive')
             ->orderBy('growth_value', 'desc')
             ->orderBy('updated_at', 'asc')
             ->limit($limit)
             ->get(array('id', 'user_id', 'name', 'species', 'growth_value', 'stage', 'updated_at'));
+        $result = array();
+        foreach ($rows as $row) {
+            $result[] = $this->formatTree($row);
+        }
+        return $result;
     }
 
     protected function applyNaturalGrowth(int $userId): void
@@ -663,16 +935,197 @@ class PointMallGameplayService
 
     protected function resolveTreeStage(int $growth): string
     {
-        if ($growth >= 420) {
+        $level = $this->resolveLevelByGrowth($growth);
+        if ($level >= 4) {
             return 'giant';
         }
-        if ($growth >= 220) {
+        if ($level >= 3) {
             return 'mature';
         }
-        if ($growth >= 100) {
+        if ($level >= 2) {
             return 'young';
         }
         return 'sapling';
+    }
+
+    protected function resolveLevelByGrowth(int $growth): int
+    {
+        if ($growth >= self::TREE_LEVEL_MAP[4]) {
+            return 4;
+        }
+        if ($growth >= self::TREE_LEVEL_MAP[3]) {
+            return 3;
+        }
+        if ($growth >= self::TREE_LEVEL_MAP[2]) {
+            return 2;
+        }
+        return 1;
+    }
+
+    protected function resolveCareTier(int $pointCost): array
+    {
+        if ($pointCost >= 50) {
+            return array('cost' => 50, 'growth' => 65, 'tier' => 'premium');
+        }
+        if ($pointCost >= 30) {
+            return array('cost' => 30, 'growth' => 35, 'tier' => 'standard');
+        }
+        return array('cost' => 10, 'growth' => 10, 'tier' => 'basic');
+    }
+
+    protected function resolveCurrentTree(array $trees, int $selectedTreeId)
+    {
+        if (empty($trees)) {
+            return null;
+        }
+
+        if ($selectedTreeId > 0) {
+            foreach ($trees as $tree) {
+                if ((int)$tree['id'] === $selectedTreeId) {
+                    return $tree;
+                }
+            }
+        }
+
+        return $trees[0];
+    }
+
+    protected function resolveNextTreeId(array $trees, int $currentTreeId): int
+    {
+        if (count($trees) <= 1 || $currentTreeId <= 0) {
+            return 0;
+        }
+
+        $count = count($trees);
+        for ($i = 0; $i < $count; $i++) {
+            if ((int)$trees[$i]['id'] === $currentTreeId) {
+                $next = ($i + 1) % $count;
+                return (int)$trees[$next]['id'];
+            }
+        }
+
+        return (int)$trees[0]['id'];
+    }
+
+    protected function formatTree($tree): array
+    {
+        $species = (string)($tree->species ?? 'oak');
+        $growth = (int)($tree->growth_value ?? 0);
+        $level = $this->resolveLevelByGrowth($growth);
+
+        return array(
+            'id' => (int)$tree->id,
+            'user_id' => (int)$tree->user_id,
+            'name' => (string)$tree->name,
+            'species' => $species,
+            'growth_value' => $growth,
+            'level' => $level,
+            'stage' => $this->resolveTreeStage($growth),
+            'health' => (int)($tree->health ?? 100),
+            'status' => (string)($tree->status ?? 'alive'),
+            'last_watered_at' => !empty($tree->last_watered_at) ? (string)$tree->last_watered_at : null,
+            'image_url' => $this->resolveTreeImage($species, $level),
+            'level_thresholds' => self::TREE_LEVEL_MAP,
+            'updated_at' => !empty($tree->updated_at) ? (string)$tree->updated_at : null,
+            'created_at' => !empty($tree->created_at) ? (string)$tree->created_at : null,
+        );
+    }
+
+    protected function formatPet($pet): array
+    {
+        $species = (string)($pet->species ?? 'cat');
+        $growth = (int)($pet->growth_value ?? 0);
+        $level = $this->resolveLevelByGrowth($growth);
+
+        return array(
+            'id' => (int)$pet->id,
+            'user_id' => (int)$pet->user_id,
+            'name' => (string)$pet->name,
+            'species' => $species,
+            'growth_value' => $growth,
+            'level' => $level,
+            'health' => (int)($pet->health ?? 100),
+            'status' => (string)($pet->status ?? 'active'),
+            'last_fed_at' => !empty($pet->last_fed_at) ? (string)$pet->last_fed_at : null,
+            'image_url' => $this->resolvePetImage($species, $level),
+            'updated_at' => !empty($pet->updated_at) ? (string)$pet->updated_at : null,
+            'created_at' => !empty($pet->created_at) ? (string)$pet->created_at : null,
+        );
+    }
+
+    protected function formatFish($fish): array
+    {
+        $species = (string)($fish->species ?? 'goldfish');
+        $growth = (int)($fish->growth_value ?? 0);
+        $level = $this->resolveLevelByGrowth($growth);
+
+        return array(
+            'id' => (int)$fish->id,
+            'user_id' => (int)$fish->user_id,
+            'name' => (string)$fish->name,
+            'species' => $species,
+            'growth_value' => $growth,
+            'level' => $level,
+            'health' => (int)($fish->health ?? 100),
+            'status' => (string)($fish->status ?? 'active'),
+            'last_fed_at' => !empty($fish->last_fed_at) ? (string)$fish->last_fed_at : null,
+            'image_url' => $this->resolveFishImage($species, $level),
+            'updated_at' => !empty($fish->updated_at) ? (string)$fish->updated_at : null,
+            'created_at' => !empty($fish->created_at) ? (string)$fish->created_at : null,
+        );
+    }
+
+    protected function lockPointAccount(int $userId): PointAccount
+    {
+        $account = PointAccount::where('user_id', $userId)->lockForUpdate()->first();
+        if (!$account) {
+            $account = PointAccount::create(array('user_id' => $userId));
+        }
+        return $account;
+    }
+
+    protected function consumeEntitlementUnit(PointMallEntitlement $entitlement, string $remainStatus = 'active'): void
+    {
+        $currentQty = max(1, (int)$entitlement->quantity);
+        if ($currentQty > 1) {
+            $entitlement->quantity = $currentQty - 1;
+            $entitlement->status = $remainStatus;
+        } else {
+            $entitlement->quantity = 0;
+            $entitlement->status = 'used';
+        }
+        $entitlement->save();
+    }
+
+    protected function resolveTreeImage(string $species, int $level): string
+    {
+        $species = preg_replace('/[^a-z0-9_\\-]/i', '', strtolower($species));
+        $level = max(1, min(4, $level));
+        return '/assets/game/tree/' . $species . '-lv' . $level . '.png';
+    }
+
+    protected function resolveTreeSpeciesFromMeta(array $meta): string
+    {
+        $species = !empty($meta['tree_type']) ? (string)$meta['tree_type'] : 'oak';
+        if ($species !== 'mixed') {
+            return $species;
+        }
+        $pool = array('oak', 'pine', 'sakura', 'maple');
+        return $pool[array_rand($pool)];
+    }
+
+    protected function resolvePetImage(string $species, int $level): string
+    {
+        $species = preg_replace('/[^a-z0-9_\\-]/i', '', strtolower($species));
+        $level = max(1, min(4, $level));
+        return '/assets/game/pet/' . $species . '-lv' . $level . '.png';
+    }
+
+    protected function resolveFishImage(string $species, int $level): string
+    {
+        $species = preg_replace('/[^a-z0-9_\\-]/i', '', strtolower($species));
+        $level = max(1, min(4, $level));
+        return '/assets/game/fish/' . $species . '-lv' . $level . '.png';
     }
 
     protected function decodePayload($payload): array

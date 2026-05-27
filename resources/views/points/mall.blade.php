@@ -93,7 +93,14 @@
 
             container.innerHTML = items.map(item => {
                 const active = currentScene === item.scene;
-                const target = item.scene === 'tree' ? '/point-mall/tree' : (item.scene === 'lottery' ? '/point-mall/lottery' : (item.scene === 'bus' ? '/point-mall/bus' : '/point-mall'));
+                const targetMap = {
+                    tree: '/point-mall/tree',
+                    lottery: '/point-mall/lottery',
+                    bus: '/point-mall/bus',
+                    pet: '/point-mall/pet',
+                    pond: '/point-mall/pond'
+                };
+                const target = targetMap[item.scene] || '/point-mall';
                 return `
                     <a href="${target}" class="card block p-5 text-left border ${active ? 'border-emerald-400 bg-emerald-50' : 'border-gray-200 bg-white'}">
                         <div class="flex items-center gap-3 mb-2">

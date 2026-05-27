@@ -149,11 +149,11 @@ class UserController extends Controller {
 				$user_id = $_GET ['user_id'];
 				$user = DB::table ( 'users' )->where ( 'id', $user_id )->first ();
 				
-				$pomos = DB::table ( 'pomos' )->select ( 'status', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'status' )->get ();
-				foreach ( $pomos as $pomo ) {
+				$focus_datas = DB::table ( 'focus' )->select ( 'status', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'status' )->get ();
+				foreach ( $focus_datas as $focus ) {
 					$rows1 [] = array (
-							"<a href='/admin/pomos?user_id={$user_id}'>Pomo </span>" . $pomo->status,
-							$pomo->total 
+							"<a href='/admin/focus?user_id={$user_id}'>Focus </span>" . $focus->status,
+							$focus->total 
 					);
 				}
 				
@@ -165,11 +165,11 @@ class UserController extends Controller {
 					);
 				}
 				
-				$things = DB::table ( 'things' )->select ( 'type', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'type' )->get ();
-				foreach ( $things as $thing ) {
+				$journals = DB::table ( 'journals' )->select ( 'type', DB::raw ( 'count(*) as total' ) )->where ( 'user_id', $user_id )->groupBy ( 'type' )->get ();
+				foreach ( $journals as $journal ) {
 					$rows1 [] = array (
-							"<a href='/admin/things?user_id={$user_id}'>Thing </span>" . $thing->type,
-							$thing->total 
+							"<a href='/admin/journals?user_id={$user_id}'>Journal </span>" . $journal->type,
+							$journal->total 
 					);
 				}
 				

@@ -13,7 +13,7 @@ class ArticlePolicy {
 	 * Determine if the given user can delete the given task.
 	 *
 	 * @param User $user        	
-	 * @param Goal $goal        	
+	 * @param Plan $plan        	
 	 * @return bool
 	 */
 	public function destroy(User $user, Article $article) {

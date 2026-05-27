@@ -128,10 +128,10 @@ class FeedRepository {
 	// }
 	
 	// /**
-	// * Get goal for goal id.
+	// * Get plan for plan id.
 	// *
 	// * @param User $user
-	// * @param int $goal_id
+	// * @param int $plan_id
 	// * @return Collection
 	// */
 	// public function forFeedId(User $user, $feedId) {

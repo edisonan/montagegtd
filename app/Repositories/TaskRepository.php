@@ -91,7 +91,7 @@ class TaskRepository {
 	 * @return unknown
 	 */
 	public function getUserAllListByStatusMode($userId, $status = '', $mode = '') {
-		$tasks = Task::with ( 'goal' )->where ( 'user_id', $userId );
+		$tasks = Task::with ( 'plan' )->where ( 'user_id', $userId );
 		
 		if (! empty ( $status )) {
 			$tasks->where ( 'status', $status );
@@ -202,7 +202,7 @@ class TaskRepository {
 	// * @return Collection
 	// */
 	// public function forUserByStatus(User $user, string $status, $needPage = false, $mode = '') {
-	// $task = Task::with ( 'goal' )->where ( 'user_id', $user->id )->where ( 'status', $status );
+	// $task = Task::with ( 'plan' )->where ( 'user_id', $user->id )->where ( 'status', $status );
 	
 	// if (! empty ( $mode )) {
 	// $task = $task->where ( 'mode', $mode );

@@ -165,8 +165,8 @@
                             <i class="fas fa-clock"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500">番茄总数</p>
-                            <p id="totalPomosValue" class="text-2xl font-bold text-gray-900">{{ $total_pomos ?? 0 }}</p>
+                            <p class="text-sm text-gray-500">专注总数</p>
+                            <p id="totalPomosValue" class="text-2xl font-bold text-gray-900">{{ $total_focuss ?? 0 }}</p>
                         </div>
                     </div>
                     <div class="text-sm text-gray-500">
@@ -242,7 +242,7 @@
                         </div>
                     </div>
 
-                    <div class="chart-container" id="pomo_main">
+                    <div class="chart-container" id="focus_main">
                         <div class="empty-chart">
                             <div>
                                 <i class="fas fa-chart-line"></i>
@@ -253,7 +253,7 @@
 
                     <div class="stat-summary">
                         <div class="summary-item">
-                            <span class="summary-label">平均每日番茄</span>
+                            <span class="summary-label">平均每日专注</span>
                             <span class="summary-value" id="avgDailyPomosValue">0 个</span>
                         </div>
                         <div class="summary-item">
@@ -446,7 +446,7 @@
                         <thead>
                         <tr>
                             <th>日期</th>
-                            <th>番茄数</th>
+                            <th>专注数</th>
                             <th>完成任务</th>
                             <th>新增笔记</th>
                             <th>阅读文章</th>
@@ -520,7 +520,7 @@
 
         function showAllEmptyStates(message) {
             var charts = [
-                { id: 'pomo_main', type: 'pomo' },
+                { id: 'focus_main', type: 'focus' },
                 { id: 'task_main', type: 'task' },
                 { id: 'note_main', type: 'note' },
                 { id: 'article_main', type: 'article' },
@@ -585,14 +585,14 @@
         }
 
         function buildDetailRows(payload) {
-            var pomoSeries = getDailySeries(parseChartData(payload.pomo_bar_statistics || null));
+            var focusSeries = getDailySeries(parseChartData(payload.focus_bar_statistics || null));
             var taskSeries = getDailySeries(parseChartData(payload.task_bar_statistics || null));
             var noteSeries = getDailySeries(parseChartData(payload.note_bar_statistics || null));
             var articleSeries = getDailySeries(parseChartData(payload.article_bar_statistics || null));
             var mindSeries = getDailySeries(parseChartData(payload.mind_bar_statistics || null));
 
             var datesMap = {};
-            [pomoSeries.dates, taskSeries.dates, noteSeries.dates, articleSeries.dates, mindSeries.dates].forEach(function(list) {
+            [focusSeries.dates, taskSeries.dates, noteSeries.dates, articleSeries.dates, mindSeries.dates].forEach(function(list) {
                 (list || []).forEach(function(d) { datesMap[d] = true; });
             });
             var dates = Object.keys(datesMap).sort();
@@ -602,14 +602,14 @@
             dates.forEach(function(date, i) {
                 var row = {
                     date: date,
-                    pomo: Number(pomoSeries.values[i] || 0),
+                    focus: Number(focusSeries.values[i] || 0),
                     task: Number(taskSeries.values[i] || 0),
                     note: Number(noteSeries.values[i] || 0),
                     article: Number(articleSeries.values[i] || 0),
                     mind: Number(mindSeries.values[i] || 0),
                     score: 0
                 };
-                var composite = row.task * 3 + row.pomo * 2 + row.note * 1.5 + row.article * 1.2 + row.mind * 1.8;
+                var composite = row.task * 3 + row.focus * 2 + row.note * 1.5 + row.article * 1.2 + row.mind * 1.8;
                 row.__composite = composite;
                 if (composite > maxComposite) {
                     maxComposite = composite;
@@ -618,7 +618,7 @@
             });
 
             rows = rows.filter(function(row) {
-                return (row.pomo + row.task + row.note + row.article + row.mind) > 0;
+                return (row.focus + row.task + row.note + row.article + row.mind) > 0;
             });
 
             rows.forEach(function(row) {
@@ -653,7 +653,7 @@
                 body.append(
                     '<tr>' +
                     '<td>' + row.date + '</td>' +
-                    '<td>' + row.pomo + '</td>' +
+                    '<td>' + row.focus + '</td>' +
                     '<td>' + row.task + '</td>' +
                     '<td>' + row.note + '</td>' +
                     '<td>' + row.article + '</td>' +
@@ -665,25 +665,25 @@
         }
 
         function updateSummaryCards(payload) {
-            var pomo = parseChartData(payload.pomo_bar_statistics || payload.pomo_bar_chart || null);
+            var focus = parseChartData(payload.focus_bar_statistics || payload.focus_bar_chart || null);
             var task = parseChartData(payload.task_bar_statistics || payload.task_bar_chart || null);
             var note = parseChartData(payload.note_bar_statistics || payload.note_bar_chart || null);
             var article = parseChartData(payload.article_bar_statistics || payload.article_bar_chart || null);
             var mind = parseChartData(payload.mind_bar_statistics || payload.mind_bar_chart || null);
 
-            var pomoSum = getSeriesSum(pomo);
+            var focusSum = getSeriesSum(focus);
             var taskSum = getSeriesSum(task);
             var noteSum = getSeriesSum(note);
             var articleSum = getSeriesSum(article);
             var mindSum = getSeriesSum(mind);
 
-            var pomoEl = document.getElementById('totalPomosValue');
+            var focusEl = document.getElementById('totalPomosValue');
             var taskEl = document.getElementById('totalTasksValue');
             var noteEl = document.getElementById('totalNotesValue');
             var articleEl = document.getElementById('totalArticlesValue');
             var rangeEl = document.getElementById('statRangeText');
 
-            if (pomoEl) pomoEl.textContent = String(pomoSum);
+            if (focusEl) focusEl.textContent = String(focusSum);
             if (taskEl) taskEl.textContent = String(taskSum);
             if (noteEl) noteEl.textContent = String(noteSum);
             if (articleEl) articleEl.textContent = String(articleSum);
@@ -698,7 +698,7 @@
             var detailRows = buildDetailRows(payload);
             renderDetailTable(detailRows);
 
-            var rangeDays = getDailySeries(pomo).dates.length
+            var rangeDays = getDailySeries(focus).dates.length
                 || getDailySeries(task).dates.length
                 || getDailySeries(note).dates.length
                 || getDailySeries(article).dates.length
@@ -707,25 +707,25 @@
 
             var daysCount = Math.max(1, Number(rangeDays || 0));
             var activeDays = detailRows.filter(function(row) {
-                return (row.pomo + row.task + row.note + row.article + row.mind) > 0;
+                return (row.focus + row.task + row.note + row.article + row.mind) > 0;
             }).length;
             var maxPomoPerDay = detailRows.reduce(function(max, row) {
-                return Math.max(max, row.pomo || 0);
+                return Math.max(max, row.focus || 0);
             }, 0);
             var mostProductive = detailRows.reduce(function(prev, row) {
-                var score = row.pomo + row.task + row.note + row.article + row.mind;
+                var score = row.focus + row.task + row.note + row.article + row.mind;
                 if (!prev || score > prev.score) {
                     return { date: row.date, score: score };
                 }
                 return prev;
             }, null);
 
-            var avgTaskHours = taskSum > 0 ? ((pomoSum * 25) / 60 / taskSum) : 0;
+            var avgTaskHours = taskSum > 0 ? ((focusSum * 25) / 60 / taskSum) : 0;
             var avgReadMinutes = daysCount > 0 ? (articleSum / daysCount) * 8 : 0;
             var avgMindNodes = daysCount > 0 ? (mindSum / daysCount) * 6 : 0;
-            var totalFocusHours = (pomoSum * 25) / 60;
+            var totalFocusHours = (focusSum * 25) / 60;
 
-            $('#avgDailyPomosValue').text(formatNum(pomoSum / daysCount, ' 个'));
+            $('#avgDailyPomosValue').text(formatNum(focusSum / daysCount, ' 个'));
             $('#maxFocusTimeValue').text(formatNum(maxPomoPerDay * 25, ' 分钟'));
             $('#avgTaskCompletionHoursValue').text(formatNum(avgTaskHours, ' 小时'));
             $('#quadrantDistributionValue').text('-');
@@ -813,9 +813,9 @@
 
         function initCharts(payload) {
             var chartOptions = {
-                pomo: {
-                    dom: document.getElementById('pomo_main'),
-                    data: parseChartData(payload.pomo_bar_statistics || null)
+                focus: {
+                    dom: document.getElementById('focus_main'),
+                    data: parseChartData(payload.focus_bar_statistics || null)
                 },
                 task: {
                     dom: document.getElementById('task_main'),
@@ -900,7 +900,7 @@
 
         function getChartIcon(chartType) {
             var icons = {
-                pomo: 'line',
+                focus: 'line',
                 task: 'bar',
                 note: 'area',
                 article: 'pie',

@@ -13,7 +13,7 @@ class CategoryPolicy {
 	 * Determine if the given user can delete the given task.
 	 *
 	 * @param User $user        	
-	 * @param Goal $goal        	
+	 * @param Category $category
 	 * @return bool
 	 */
 	public function destroy(User $user, Category $category) {

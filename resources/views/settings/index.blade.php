@@ -42,24 +42,24 @@
                         <form action="javascript:void(0)" method="POST" class="space-y-8" id="settings-form">
                             {{ csrf_field() }}
 
-                            <!-- 番茄工作法设置 -->
+                            <!-- 专注工作法设置 -->
                             <div>
                                 <div class="flex items-center mb-6">
                                     <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
                                         <i class="fas fa-clock text-red-600"></i>
                                     </div>
                                     <div>
-                                        <h3 class="text-base font-semibold text-gray-900">🍅 番茄工作法设置</h3>
-                                        <p class="text-sm text-gray-500">配置您的专注时间和目标</p>
+                                        <h3 class="text-base font-semibold text-gray-900">🍅 专注工作法设置</h3>
+                                        <p class="text-sm text-gray-500">配置您的专注时间和计划</p>
                                     </div>
                                 </div>
 
                                 <div class="space-y-6">
-                                    <!-- 番茄时间设置 -->
+                                    <!-- 专注时间设置 -->
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label for="pomo_time" class="block text-sm font-medium text-gray-700 mb-2">
-                                                番茄专注时间
+                                                专注专注时间
                                             </label>
                                             <div class="relative">
                                                 <input type="number"
@@ -82,7 +82,7 @@
 
                                         <div>
                                             <label for="pomo_rest_time" class="block text-sm font-medium text-gray-700 mb-2">
-                                                番茄休息时间
+                                                专注休息时间
                                             </label>
                                             <div class="relative">
                                                 <input type="number"
@@ -104,13 +104,13 @@
                                         </div>
                                     </div>
 
-                                    <!-- 目标设置 -->
+                                    <!-- 计划设置 -->
                                     <div>
-                                        <h4 class="text-sm font-medium text-gray-700 mb-4">🎯 目标设置</h4>
+                                        <h4 class="text-sm font-medium text-gray-700 mb-4">🎯 计划设置</h4>
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
                                                 <label for="day_pomo_goal" class="block text-xs font-medium text-gray-500 mb-2">
-                                                    <i class="fas fa-sun text-yellow-500 mr-1"></i> 日目标
+                                                    <i class="fas fa-sun text-yellow-500 mr-1"></i> 日计划
                                                 </label>
                                                 <input type="number"
                                                        name="day_pomo_goal"
@@ -119,12 +119,12 @@
                                                        value="8"
                                                        min="1"
                                                        step="1">
-                                                <p class="text-xs text-gray-500 mt-2 text-center">个番茄/天</p>
+                                                <p class="text-xs text-gray-500 mt-2 text-center">个专注/天</p>
                                             </div>
 
                                             <div>
                                                 <label for="week_pomo_goal" class="block text-xs font-medium text-gray-500 mb-2">
-                                                    <i class="fas fa-calendar-week text-green-500 mr-1"></i> 周目标
+                                                    <i class="fas fa-calendar-week text-green-500 mr-1"></i> 周计划
                                                 </label>
                                                 <input type="number"
                                                        name="week_pomo_goal"
@@ -133,12 +133,12 @@
                                                        value="40"
                                                        min="1"
                                                        step="1">
-                                                <p class="text-xs text-gray-500 mt-2 text-center">个番茄/周</p>
+                                                <p class="text-xs text-gray-500 mt-2 text-center">个专注/周</p>
                                             </div>
 
                                             <div>
                                                 <label for="month_pomo_goal" class="block text-xs font-medium text-gray-500 mb-2">
-                                                    <i class="fas fa-calendar-alt text-blue-500 mr-1"></i> 月目标
+                                                    <i class="fas fa-calendar-alt text-blue-500 mr-1"></i> 月计划
                                                 </label>
                                                 <input type="number"
                                                        name="month_pomo_goal"
@@ -147,7 +147,7 @@
                                                        value="160"
                                                        min="1"
                                                        step="1">
-                                                <p class="text-xs text-gray-500 mt-2 text-center">个番茄/月</p>
+                                                <p class="text-xs text-gray-500 mt-2 text-center">个专注/月</p>
                                             </div>
                                         </div>
                                     </div>
@@ -307,16 +307,16 @@
                     </div>
 
                     <div class="p-6 space-y-6">
-                        <!-- 番茄工作法说明 -->
+                        <!-- 专注工作法说明 -->
                         <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
                             <div class="flex items-start">
                                 <i class="fas fa-clock text-blue-500 text-lg mt-0.5 mr-3"></i>
                                 <div>
-                                    <h4 class="text-sm font-medium text-blue-800 mb-2">🍅 番茄工作法</h4>
+                                    <h4 class="text-sm font-medium text-blue-800 mb-2">🍅 专注工作法</h4>
                                     <ul class="text-xs text-blue-700 space-y-1">
                                         <li>• 25分钟专注 + 5分钟休息为经典组合</li>
                                         <li>• 根据您的注意力周期调整时间</li>
-                                        <li>• 目标设置应具有挑战性但可实现</li>
+                                        <li>• 计划设置应具有挑战性但可实现</li>
                                         <li>• 建议每日8个番茄钟（约4小时）</li>
                                     </ul>
                                 </div>
@@ -376,12 +376,12 @@
                             <h4 class="text-sm font-medium text-gray-900 mb-3">📊 使用统计</h4>
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs text-gray-600">当前番茄时长</span>
+                                    <span class="text-xs text-gray-600">当前专注时长</span>
                                     <span class="text-sm font-medium text-gray-900" id="stats_pomo_time">25分钟</span>
                                 </div>
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs text-gray-600">今日目标完成</span>
-                                    <span class="text-sm font-medium text-green-600" id="stats_day_goal">0/8</span>
+                                    <span class="text-xs text-gray-600">今日计划完成</span>
+                                    <span class="text-sm font-medium text-green-600" id="stats_day_plan">0/8</span>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-gray-600">Kindle推送状态</span>
@@ -430,7 +430,7 @@
                 setRadioValue('with_image_push', String(setting.with_image_push || 0), '0');
 
                 var statsPomo = document.getElementById('stats_pomo_time');
-                var statsDay = document.getElementById('stats_day_goal');
+                var statsDay = document.getElementById('stats_day_plan');
                 var statsKindle = document.getElementById('stats_kindle_status');
                 if (statsPomo) statsPomo.textContent = (setting.pomo_time || 25) + '分钟';
                 if (statsDay) statsDay.textContent = '0/' + (setting.day_pomo_goal || 8);
@@ -458,16 +458,16 @@
                     return;
                 }
 
-                // 验证番茄时间范围
-                const pomoTime = parseInt(document.getElementById('pomo_time').value);
-                const pomoRestTime = parseInt(document.getElementById('pomo_rest_time').value);
+                // 验证专注时间范围
+                const focusTime = parseInt(document.getElementById('pomo_time').value);
+                const focusRestTime = parseInt(document.getElementById('pomo_rest_time').value);
 
-                if (pomoTime < 10 || pomoTime > 60) {
-                    showToast('番茄时间应在10-60分钟之间', 'error');
+                if (focusTime < 10 || focusTime > 60) {
+                    showToast('专注时间应在10-60分钟之间', 'error');
                     return;
                 }
 
-                if (pomoRestTime < 1 || pomoRestTime > 10) {
+                if (focusRestTime < 1 || focusRestTime > 10) {
                     showToast('休息时间应在1-10分钟之间', 'error');
                     return;
                 }
@@ -510,8 +510,8 @@
             });
 
             // 实时验证输入
-            const pomoTimeInput = document.getElementById('pomo_time');
-            const pomoRestInput = document.getElementById('pomo_rest_time');
+            const focusTimeInput = document.getElementById('pomo_time');
+            const focusRestInput = document.getElementById('pomo_rest_time');
 
             function validateTime(input, min, max) {
                 const value = parseInt(input.value);
@@ -519,8 +519,8 @@
                 if (value > max) input.value = max;
             }
 
-            pomoTimeInput.addEventListener('blur', () => validateTime(pomoTimeInput, 10, 60));
-            pomoRestInput.addEventListener('blur', () => validateTime(pomoRestInput, 1, 10));
+            focusTimeInput.addEventListener('blur', () => validateTime(focusTimeInput, 10, 60));
+            focusRestInput.addEventListener('blur', () => validateTime(focusRestInput, 1, 10));
         });
 
         // 切换密码可见性

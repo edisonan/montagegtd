@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Exceptions\CustomException;
 use App\Models\DailySummary;
 use App\Models\Note;
-use App\Models\Pomo;
+use App\Models\Focus;
 use App\Models\Task;
 use App\Repositories\AchievementRepository;
 use App\Repositories\UserAchievementRepository;
@@ -76,7 +76,7 @@ class AchievementService {
     {
         return array(
             'task_done_count' => (int) Task::where('user_id', $userId)->where('status', 2)->count(),
-            'pomo_done_count' => (int) Pomo::where('user_id', $userId)->where('status', 2)->count(),
+            'focus_done_count' => (int) Focus::where('user_id', $userId)->where('status', 2)->count(),
             'daily_summary_count' => (int) DailySummary::where('user_id', $userId)->where('status', '!=', 2)->count(),
             'note_count' => (int) Note::where('user_id', $userId)->count(),
         );
@@ -85,7 +85,7 @@ class AchievementService {
     protected function resolveProgressByCode(string $code, array $metrics): array
     {
         $taskDone = (int) $metrics['task_done_count'];
-        $pomoDone = (int) $metrics['pomo_done_count'];
+        $focusDone = (int) $metrics['focus_done_count'];
         $summaryDone = (int) $metrics['daily_summary_count'];
         $noteCount = (int) $metrics['note_count'];
 
@@ -105,10 +105,10 @@ class AchievementService {
                 return $this->simpleProgress($taskDone, 10, '完成 10 个任务');
             case 'achievement_task_done_100':
                 return $this->simpleProgress($taskDone, 100, '完成 100 个任务');
-            case 'achievement_pomo_done_10':
-                return $this->simpleProgress($pomoDone, 10, '完成 10 个番茄');
-            case 'achievement_pomo_done_100':
-                return $this->simpleProgress($pomoDone, 100, '完成 100 个番茄');
+            case 'achievement_focus_done_10':
+                return $this->simpleProgress($focusDone, 10, '完成 10 个专注');
+            case 'achievement_focus_done_100':
+                return $this->simpleProgress($focusDone, 100, '完成 100 个专注');
             case 'achievement_daily_summary_7':
                 return $this->simpleProgress($summaryDone, 7, '完成 7 次日报');
             case 'achievement_daily_summary_30':
@@ -119,7 +119,7 @@ class AchievementService {
             case 'badge_early_bird':
                 return $this->simpleProgress($summaryDone, 7, '完成 7 次日报');
             case 'badge_deep_work':
-                return $this->simpleProgress($pomoDone, 50, '完成 50 个番茄');
+                return $this->simpleProgress($focusDone, 50, '完成 50 个专注');
             case 'badge_consistency':
                 return $this->compositeProgress(
                     array($taskDone, $summaryDone),
@@ -129,12 +129,12 @@ class AchievementService {
             case 'badge_knowledge_collector':
                 return $this->simpleProgress($noteCount, 100, '创建 100 条笔记');
             case 'badge_focus_master':
-                return $this->simpleProgress($pomoDone, 300, '完成 300 个番茄');
+                return $this->simpleProgress($focusDone, 300, '完成 300 个专注');
             case 'badge_productivity_architect':
                 return $this->compositeProgress(
-                    array($taskDone, $pomoDone, $summaryDone, $noteCount),
+                    array($taskDone, $focusDone, $summaryDone, $noteCount),
                     array(200, 200, 30, 100),
-                    array('任务 200', '番茄 200', '日报 30', '笔记 100')
+                    array('任务 200', '专注 200', '日报 30', '笔记 100')
                 );
             default:
                 return $defaults;

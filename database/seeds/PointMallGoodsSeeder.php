@@ -1,0 +1,191 @@
+<?php
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class PointMallGoodsSeeder extends Seeder
+{
+    public function run()
+    {
+        $now = date('Y-m-d H:i:s');
+        $items = array(
+            array(
+                'code' => 'lottery_ticket_basic',
+                'name' => '抽奖券（基础）',
+                'scene' => 'lottery',
+                'delivery_type' => 'lottery',
+                'description' => '兑换后获得 1 次抽奖机会',
+                'point_cost' => 20,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 100,
+                'payload' => json_encode(array('chance' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'lottery_ticket_pack5',
+                'name' => '抽奖券（5连包）',
+                'scene' => 'lottery',
+                'delivery_type' => 'lottery',
+                'description' => '兑换后获得 5 次抽奖机会',
+                'point_cost' => 90,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 90,
+                'payload' => json_encode(array('chance' => 5), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'bus_ticket_single',
+                'name' => '公交权益券（单次）',
+                'scene' => 'bus',
+                'delivery_type' => 'bus',
+                'description' => '兑换 1 张公交权益券',
+                'point_cost' => 30,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 100,
+                'payload' => json_encode(array('ticket_count' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'bus_ticket_week',
+                'name' => '公交权益券（周包）',
+                'scene' => 'bus',
+                'delivery_type' => 'bus',
+                'description' => '兑换 7 张公交权益券',
+                'point_cost' => 180,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 90,
+                'payload' => json_encode(array('ticket_count' => 7), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'tree_seedling_oak',
+                'name' => '种树计划（橡树）',
+                'scene' => 'tree',
+                'delivery_type' => 'tree',
+                'description' => '兑换 1 棵橡树树苗，成长速度均衡',
+                'point_cost' => 120,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 120,
+                'payload' => json_encode(array('tree_type' => 'oak', 'quantity' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'tree_seedling_pine',
+                'name' => '种树计划（松树）',
+                'scene' => 'tree',
+                'delivery_type' => 'tree',
+                'description' => '兑换 1 棵松树树苗，耐久更高',
+                'point_cost' => 180,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 110,
+                'payload' => json_encode(array('tree_type' => 'pine', 'quantity' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'tree_seedling_sakura',
+                'name' => '种树计划（樱花）',
+                'scene' => 'tree',
+                'delivery_type' => 'tree',
+                'description' => '兑换 1 棵樱花树苗，颜值更高',
+                'point_cost' => 260,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 100,
+                'payload' => json_encode(array('tree_type' => 'sakura', 'quantity' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'tree_seedling_pack3',
+                'name' => '种树计划（三棵随机）',
+                'scene' => 'tree',
+                'delivery_type' => 'tree',
+                'description' => '兑换 3 棵随机树苗，性价比更高',
+                'point_cost' => 480,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 90,
+                'payload' => json_encode(array('tree_type' => 'mixed', 'quantity' => 3), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'pet_companion_cat',
+                'name' => '宠物乐园（猫咪）',
+                'scene' => 'pet',
+                'delivery_type' => 'pet',
+                'description' => '兑换 1 只猫咪伙伴，待领养',
+                'point_cost' => 220,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 100,
+                'payload' => json_encode(array('pet_type' => 'cat', 'quantity' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'pet_companion_dog',
+                'name' => '宠物乐园（小狗）',
+                'scene' => 'pet',
+                'delivery_type' => 'pet',
+                'description' => '兑换 1 只小狗伙伴，待领养',
+                'point_cost' => 260,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 90,
+                'payload' => json_encode(array('pet_type' => 'dog', 'quantity' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'pond_fry_goldfish',
+                'name' => '池塘乐园（金鱼）',
+                'scene' => 'pond',
+                'delivery_type' => 'pond',
+                'description' => '兑换 1 条金鱼鱼苗，待放养',
+                'point_cost' => 160,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 100,
+                'payload' => json_encode(array('fish_type' => 'goldfish', 'quantity' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+            array(
+                'code' => 'pond_fry_koi',
+                'name' => '池塘乐园（锦鲤）',
+                'scene' => 'pond',
+                'delivery_type' => 'pond',
+                'description' => '兑换 1 条锦鲤鱼苗，待放养',
+                'point_cost' => 280,
+                'stock' => -1,
+                'status' => 1,
+                'sort' => 90,
+                'payload' => json_encode(array('fish_type' => 'koi', 'quantity' => 1), JSON_UNESCAPED_UNICODE),
+            ),
+        );
+
+        foreach ($items as $item) {
+            $exists = DB::table('point_mall_goods')->where('code', $item['code'])->first();
+            if ($exists) {
+                DB::table('point_mall_goods')->where('id', $exists->id)->update(array(
+                    'name' => $item['name'],
+                    'scene' => $item['scene'],
+                    'delivery_type' => $item['delivery_type'],
+                    'description' => $item['description'],
+                    'point_cost' => $item['point_cost'],
+                    'stock' => $item['stock'],
+                    'status' => $item['status'],
+                    'sort' => $item['sort'],
+                    'payload' => $item['payload'],
+                    'updated_at' => $now,
+                ));
+            } else {
+                DB::table('point_mall_goods')->insert(array(
+                    'code' => $item['code'],
+                    'name' => $item['name'],
+                    'scene' => $item['scene'],
+                    'delivery_type' => $item['delivery_type'],
+                    'description' => $item['description'],
+                    'point_cost' => $item['point_cost'],
+                    'stock' => $item['stock'],
+                    'status' => $item['status'],
+                    'sort' => $item['sort'],
+                    'payload' => $item['payload'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ));
+            }
+        }
+    }
+}

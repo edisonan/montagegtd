@@ -2,30 +2,30 @@
 
 namespace App\Console\Commands;
 
-use App\Services\PomoService;
+use App\Services\FocusService;
 use Illuminate\Console\Command;
 
 /**
- * 番茄休息过后开启新番茄提醒
+ * 专注休息过后开启新专注提醒
  *
  * @author edison.an
  *
  */
-class PomoRestedReminder extends Command
+class FocusRestedReminder extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'pomo_rested_reminder';
+    protected $signature = 'focus_rested_reminder';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Pomo Rested Reminder';
+    protected $description = 'Focus Rested Reminder';
 
     /**
      * Execute the console command.
@@ -37,24 +37,24 @@ class PomoRestedReminder extends Command
 
         /**
          *
-         * @var PomoService $taskService
+         * @var FocusService $taskService
          */
-        $pomoService = app(PomoService::class);
+        $focusService = app(FocusService::class);
 
         // 5分钟
         $startTime = date('Y-m-d H:i:s', time() - 300);
         $endTime = date('Y-m-d H:i:s', strtotime($startTime) + 60);
-        $pomoService->schedulePomoRestedReminder($startTime, $endTime);
+        $focusService->scheduleFocusRestedReminder($startTime, $endTime);
 
         // 30分钟
         $startTime = date('Y-m-d H:i:s', time() - 1800);
         $endTime = date('Y-m-d H:i:s', strtotime($startTime) + 60);
-        $pomoService->schedulePomoRestedReminder($startTime, $endTime);
+        $focusService->scheduleFocusRestedReminder($startTime, $endTime);
 
         // 60分钟
         $startTime = date('Y-m-d H:i:s', time() - 3600);
         $endTime = date('Y-m-d H:i:s', strtotime($startTime) + 60);
-        $pomoService->schedulePomoRestedReminder($startTime, $endTime);
+        $focusService->scheduleFocusRestedReminder($startTime, $endTime);
     }
 }
 

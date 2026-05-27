@@ -7,7 +7,7 @@ use App\Exceptions\CustomException;
 use App\Repositories\NoteRepository;
 use App\Repositories\TaskRepository;
 use App\Repositories\ArticleSubRepository;
-use App\Repositories\PomoRepository;
+use App\Repositories\FocusRepository;
 use App\Repositories\MindRepository;
 
 /**
@@ -34,9 +34,9 @@ class StatisticsService {
 	protected $articleSubRepository;
 	/**
 	 *
-	 * @var PomoRepository
+	 * @var FocusRepository
 	 */
-	protected $pomoRepository;
+	protected $focusRepository;
 	/**
 	 *
 	 * @var MindRepository
@@ -48,14 +48,14 @@ class StatisticsService {
 	 * @param NoteRepository $noteRepository        	
 	 * @param ArticleSubRepository $articleSubRepository        	
 	 * @param TaskRepository $taskRepository        	
-	 * @param PomoRepository $pomoRepository        	
+	 * @param FocusRepository $focusRepository        	
 	 * @param MindRepository $mindRepository        	
 	 */
-	public function __construct(NoteRepository $noteRepository, ArticleSubRepository $articleSubRepository, TaskRepository $taskRepository, PomoRepository $pomoRepository, MindRepository $mindRepository) {
+	public function __construct(NoteRepository $noteRepository, ArticleSubRepository $articleSubRepository, TaskRepository $taskRepository, FocusRepository $focusRepository, MindRepository $mindRepository) {
 		$this->noteRepository = $noteRepository;
 		$this->articleSubRepository = $articleSubRepository;
 		$this->taskRepository = $taskRepository;
-		$this->pomoRepository = $pomoRepository;
+		$this->focusRepository = $focusRepository;
 		$this->mindRepository = $mindRepository;
 	}
 	
@@ -75,7 +75,7 @@ class StatisticsService {
 		
 		$basicInfos = array (
 				'task' => '任务量',
-				'pomo' => '番茄量',
+				'focus' => '专注量',
 				'note' => '笔记数',
 				'article' => '阅读数',
 				'mind' => '思维导图数' 
@@ -110,7 +110,7 @@ class StatisticsService {
 		
 		return [ 
 				'task_bar_statistics' => json_encode ( $detailFormatInfos ['task'] ),
-				'pomo_bar_statistics' => json_encode ( $detailFormatInfos ['pomo'] ),
+				'focus_bar_statistics' => json_encode ( $detailFormatInfos ['focus'] ),
 				'note_bar_statistics' => json_encode ( $detailFormatInfos ['note'] ),
 				'article_bar_statistics' => json_encode ( $detailFormatInfos ['article'] ),
 				'mind_bar_statistics' => json_encode ( $detailFormatInfos ['mind'] ),
@@ -261,8 +261,8 @@ class StatisticsService {
 			case 'task' :
 				$counts = $this->taskRepository->getStatisticCounts ( $startTime, $endTime );
 				break;
-			case 'pomo' :
-				$counts = $this->pomoRepository->getStatisticCounts ( $startTime, $endTime );
+			case 'focus' :
+				$counts = $this->focusRepository->getStatisticCounts ( $startTime, $endTime );
 				break;
 			case 'article' :
 				$counts = $this->articleSubRepository->getStatisticCounts ( $startTime, $endTime );
@@ -286,7 +286,7 @@ class StatisticsService {
 		$dataTypes = array (
 				'note',
 				'task',
-				'pomo',
+				'focus',
 				'article',
 				'mind' 
 		);

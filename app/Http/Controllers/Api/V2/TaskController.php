@@ -132,7 +132,7 @@ class TaskController extends Controller
         $remindtime = $request->input('remindtime', null);
         $deadline = $request->input('deadline', null);
         $parentTaskId = $request->input('parent_task_id', null);
-        $goalId = $request->input('goal_id', null);
+        $planId = $request->input('plan_id', null);
 
         if (!in_array($priority, array(1, 2, 3, 4), true)) {
             throw new CustomException('错误的优先级！');
@@ -144,7 +144,7 @@ class TaskController extends Controller
             throw new CustomException('错误的截止时间！');
         }
 
-        $task = $this->taskService->store($name, $mode, $priority, $remindtime, $deadline, $parentTaskId, $goalId);
+        $task = $this->taskService->store($name, $mode, $priority, $remindtime, $deadline, $parentTaskId, $planId);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($task));
     }
@@ -155,10 +155,22 @@ class TaskController extends Controller
         $this->validate($request, array(
             'is_doing' => 'nullable|in:0,1',
             'status' => 'nullable|in:1,2,3',
+            'planned_start_time' => 'nullable|date_format:Y-m-d H:i:s',
+            'planned_end_time' => 'nullable|date_format:Y-m-d H:i:s',
+            'remindtime' => 'nullable|date_format:Y-m-d H:i:s',
+            'deadline' => 'nullable|date_format:Y-m-d H:i:s',
+            'rating' => 'nullable|integer|min:1|max:5',
+            'review_note' => 'nullable|string|max:2000',
         ));
 
         if ($request->has('is_doing') && (int)$request->input('is_doing') === 1 && (int)$task->status !== 1) {
             throw new CustomException('仅进行中的任务可设置为正在做');
+        }
+
+        $plannedStartTime = $request->input('planned_start_time');
+        $plannedEndTime = $request->input('planned_end_time');
+        if (!empty($plannedStartTime) && !empty($plannedEndTime) && strtotime($plannedStartTime) > strtotime($plannedEndTime)) {
+            throw new CustomException('预计开始时间不能晚于预计结束时间');
         }
 
         $payload = $request->all();

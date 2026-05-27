@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', '蒙太奇 - 专注效率工具')</title>
-    <meta name="description" content="@yield('description', '蒙太奇是一个专注于提升个人效率的时间管理工具，提供番茄工作法、待办事项、阅读管理等核心功能。')">
+    <meta name="description" content="@yield('description', '蒙太奇是一个专注于提升个人效率的时间管理工具，提供专注工作法、待办事项、阅读管理等核心功能。')">
     <meta name="keywords" content="蒙太奇,番茄工作法,时间管理,待办事项,GTD,RSS阅读,效率工具">
 
     @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
@@ -55,21 +55,18 @@
                         $menuItems = [
                             [
                                 'url'=>'/',
-                                'label'=>'做番茄',
+                                'label'=>'专注',
                                 'icon'=>'fas fa-clock',
                                 'submenu' => [
                                     ['url'=>'/', 'label'=>'开始专注', 'icon'=>'fas fa-play'],
-                                    ['url'=>'/pomos', 'label'=>'番茄列表', 'icon'=>'fas fa-list'],
+//                                    ['url'=>'/focuss', 'label'=>'专注列表', 'icon'=>'fas fa-list'],
                                     ['url'=>'/tasks', 'label'=>'待办列表', 'icon'=>'fas fa-tasks'],
-                                    ['url'=>'/things', 'label'=>'事情列表', 'icon'=>'fas fa-check-circle'],
-                                    ['url'=>'/cals', 'label'=>'日历/订阅', 'icon'=>'fas fa-calendar'],
-                                    ['url'=>'/dailysummarys', 'label'=>'日报记录', 'icon'=>'fas fa-newspaper'],
-                                    ['url'=>'/statistics', 'label'=>'数据统计', 'icon'=>'fas fa-chart-bar']
+                                    ['url'=>'/journals', 'label'=>'手账列表', 'icon'=>'fas fa-check-circle']
                                 ]
                             ],
                             [
                                 'url'=>'/notes',
-                                'label'=>'记想法',
+                                'label'=>'想法',
                                 'icon'=>'fas fa-lightbulb',
                                 'submenu' => [
                                     ['url'=>'/notes', 'label'=>'新的想法', 'icon'=>'fas fa-plus'],
@@ -78,7 +75,7 @@
                             ],
                             [
                                 'url'=>'/articles',
-                                'label'=>'去阅读',
+                                'label'=>'阅读',
                                 'icon'=>'fas fa-book-reader',
                                 'submenu' => [
                                     ['url'=>'/articles', 'label'=>'最新文章', 'icon'=>'fas fa-newspaper'],
@@ -89,17 +86,18 @@
                                 ]
                             ],
                             [
-                                'url'=>'/courses',
-                                'label'=>'学课程',
+                                'url'=>'/study',
+                                'label'=>'学习',
                                 'icon'=>'fas fa-graduation-cap',
                                 'submenu' => [
+                                    ['url'=>'/study', 'label'=>'学习计划', 'icon'=>'fas fa-calendar-alt'],
                                     ['url'=>'/courses', 'label'=>'我的学习', 'icon'=>'fas fa-book'],
                                     ['url'=>'/course/management', 'label'=>'课程管理', 'icon'=>'fas fa-cog']
                                 ]
                             ],
                             [
                                 'url'=>'/llm/index',
-                                'label'=>'智能助手',
+                                'label'=>'助手',
                                 'icon'=>'fas fa-comments',
                                 'submenu' => [
                                     ['url'=>'/llm/index', 'label'=>'智能助手', 'icon'=>'fas fa-comments'],
@@ -174,6 +172,21 @@
                                     <div class="text-sm text-gray-500">{{ Auth::user()->email }}</div>
                                 </div>
 
+                                <a href="{{ url('cals') }}" class="dropdown-item">
+                                    <i class="fas fa-medal text-yellow-500"></i>
+                                    <span>日历/订阅</span>
+                                </a>
+                                <a href="{{ url('dailysummarys') }}" class="dropdown-item">
+                                    <i class="fas fa-store text-emerald-500"></i>
+                                    <span>日报记录</span>
+                                </a>
+                                <a href="{{ url('satistics') }}" class="dropdown-item">
+                                    <i class="fas fa-trophy text-purple-500"></i>
+                                    <span>数据统计</span>
+                                </a>
+
+                                <div class="border-t border-gray-200 my-1"></div>
+
                                 <a href="{{ url('points') }}" class="dropdown-item">
                                     <i class="fas fa-medal text-yellow-500"></i>
                                     <span>积分中心</span>
@@ -188,6 +201,8 @@
                                 </a>
 
                                 <div class="border-t border-gray-200 my-1"></div>
+
+
 
                                 <a href="{{ url('accounts') }}" class="dropdown-item">
                                     <i class="fas fa-user-cog text-gray-500"></i>

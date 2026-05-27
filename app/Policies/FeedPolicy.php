@@ -13,7 +13,7 @@ class FeedPolicy {
 	 * Determine if the given user can delete the given task.
 	 *
 	 * @param User $user        	
-	 * @param Goal $goal        	
+	 * @param Feed $feed
 	 * @return bool
 	 */
 	public function destroy(User $user, Feed $feed) {

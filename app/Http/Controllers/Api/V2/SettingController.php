@@ -33,6 +33,7 @@ class SettingController extends Controller
     public function update(Request $request, Setting $setting)
     {
         $this->authorize('destroy', $setting);
+        $this->normalizeLegacySettingKeys($request);
 
         $this->validate($request, array(
             'day_pomo_goal' => 'integer|min:1',
@@ -136,5 +137,19 @@ class SettingController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'data' => $data,
         )));
+    }
+
+    protected function normalizeLegacySettingKeys(Request $request): void
+    {
+        $payload = array();
+        if ($request->has('week_focus_plan') && !$request->has('week_pomo_goal')) {
+            $payload['week_pomo_goal'] = $request->input('week_focus_plan');
+        }
+        if ($request->has('month_focus_plan') && !$request->has('month_pomo_goal')) {
+            $payload['month_pomo_goal'] = $request->input('month_focus_plan');
+        }
+        if (!empty($payload)) {
+            $request->merge($payload);
+        }
     }
 }

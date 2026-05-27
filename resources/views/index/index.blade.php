@@ -9,7 +9,7 @@
         <div id="indexMainGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左侧：番茄钟面板 -->
             <div class="space-y-6">
-                <!-- 番茄操作卡片 -->
+                <!-- 专注操作卡片 -->
                 <div class="card">
                     <div class="px-6 py-4 border-b border-gray-200">
                         <div class="flex items-center justify-between">
@@ -25,24 +25,24 @@
                                         class="text-sm px-3 py-1 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors">
                                     <i class="fas fa-eye-slash mr-1"></i>纯净模式
                                 </button>
-                                <a href="{{ url('pomos') }}"
+                                <a href="{{ url('focuss') }}"
                                    class="text-sm px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
-                                    <i class="fas fa-history mr-1"></i>番茄历史
+                                    <i class="fas fa-history mr-1"></i>专注历史
                                 </a>
-                                <button onclick="showThingCreateModal()"
+                                <button onclick="showJournalCreateModal()"
                                         class="text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">
-                                    <i class="fas fa-plus mr-1"></i>记录事情
+                                    <i class="fas fa-plus mr-1"></i>记录手账
                                 </button>
                             </div>
                         </div>
                     </div>
 
                     <div class="p-6">
-                        <!-- 番茄按钮区域 -->
+                        <!-- 专注按钮区域 -->
                         <div class="mb-6">
-                            <!-- 开始番茄按钮 -->
-                            <div id="pomoStartSection" class="hidden">
-                                <button id="pomoBtn"
+                            <!-- 开始专注按钮 -->
+                            <div id="focusStartSection" class="hidden">
+                                <button id="focusBtn"
                                         class="btn btn-outline w-full py-2 text-lg font-semibold hover:scale-[1.02] transition-transform">
                                     <i class="fas fa-play-circle mr-3 text-xl"></i>
                                     开始新的番茄钟
@@ -50,12 +50,12 @@
                             </div>
 
                             <!-- 倒计时显示 -->
-                            <div id="pomoTimerSection" class="hidden">
+                            <div id="focusTimerSection" class="hidden">
                                 <div class="relative">
-                                    <div id="pomoTimerContainer" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
+                                    <div id="focusTimerContainer" class="absolute inset-0 flex items-center justify-center transition-opacity duration-300">
                                         <div class="text-center">
-                                            <div id="pomoTimer" class="text-4xl font-bold text-gray-900 mb-2"></div>
-                                            <div id="pomoStatus" class="text-sm text-gray-600"></div>
+                                            <div id="focusTimer" class="text-4xl font-bold text-gray-900 mb-2"></div>
+                                            <div id="focusStatus" class="text-sm text-gray-600"></div>
                                         </div>
                                     </div>
 
@@ -83,13 +83,13 @@
                                 </div>
                             </div>
 
-                            <!-- 记录番茄内容 -->
+                            <!-- 记录专注内容 -->
                             <div id="recordPomo" class="space-y-4 hidden">
                                 <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
                                     <div class="flex items-center gap-3">
                                         <i class="fas fa-check-circle text-green-500 text-lg"></i>
                                         <div>
-                                            <div class="font-medium text-green-800">番茄完成！</div>
+                                            <div class="font-medium text-green-800">专注完成！</div>
                                             <div class="text-sm text-green-700">记录您的成果吧</div>
                                         </div>
                                     </div>
@@ -97,16 +97,16 @@
 
                                 <div class="space-y-3">
                                     <div class="flex items-center justify-between text-sm text-gray-600">
-                                        <span id="pomo_start_time_show"></span>
+                                        <span id="focus_start_time_show"></span>
                                         <span class="text-gray-400">→</span>
-                                        <span id="pomo_end_time_show"></span>
+                                        <span id="focus_end_time_show"></span>
                                     </div>
 
                                     <input type="text"
                                            name="name"
-                                           id="pomo_name"
+                                           id="focus_name"
                                            value=""
-                                           placeholder="记录刚完成的番茄内容（点击任务名快速添加）..."
+                                           placeholder="记录刚完成的专注内容（点击任务名快速添加）..."
                                            class="input w-full">
 
                                     <div class="flex gap-2">
@@ -123,7 +123,7 @@
                             </div>
                         </div>
 
-                        <!-- 今日番茄统计 -->
+                        <!-- 今日专注统计 -->
                         <div class="border-t border-gray-200 pt-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center gap-2">
@@ -133,24 +133,24 @@
                                     <h3 class="font-medium text-gray-800">今日成果</h3>
                                 </div>
                                 <div class="text-sm text-gray-500">
-                                    已完成 <span id="pomoCount" class="font-semibold text-gray-900">0</span> 个番茄
+                                    已完成 <span id="focusCount" class="font-semibold text-gray-900">0</span> 个专注
                                 </div>
                             </div>
 
-                            <!-- 番茄列表 -->
+                            <!-- 专注列表 -->
                             <div class="space-y-2">
-                                <div id="pomosLoading" class="text-center py-8">
+                                <div id="focussLoading" class="text-center py-8">
                                     <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
-                                    <p class="text-sm text-gray-500 mt-2">加载番茄记录...</p>
+                                    <p class="text-sm text-gray-500 mt-2">加载专注记录...</p>
                                 </div>
-                                <ul id="pomos" class="space-y-2 hidden">
-                                    <!-- 番茄列表动态加载 -->
+                                <ul id="focuss" class="space-y-2 hidden">
+                                    <!-- 专注列表动态加载 -->
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
-                <input type="hidden" value="" id="pomo_id">
+                <input type="hidden" value="" id="focus_id">
             </div>
 
             <!-- 右侧：待办事项面板 -->
@@ -255,7 +255,100 @@
 
     <!-- 原有模态框保留 -->
     @include('components.task-update-modal')
-    @include('components.thing-create-modal')
+    @include('components.journal-create-modal')
+
+    <div id="taskScheduleModal" class="hidden fixed inset-0 z-50">
+        <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closeTaskScheduleModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center px-4">
+            <div class="w-full max-w-md bg-white rounded-xl shadow-xl">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 class="text-base font-semibold text-gray-900">任务时间设置</h3>
+                    <button class="text-gray-400 hover:text-gray-700" onclick="closeTaskScheduleModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="px-5 py-4 space-y-4">
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">任务</div>
+                        <div id="taskScheduleTitle" class="text-sm text-gray-800 break-words"></div>
+                    </div>
+                    <div>
+                        <label for="taskPlannedStartInput" class="text-sm text-gray-700">预计开始时间</label>
+                        <input id="taskPlannedStartInput" type="datetime-local" class="input w-full mt-1">
+                    </div>
+                    <div>
+                        <label for="taskPlannedEndInput" class="text-sm text-gray-700">预计结束时间</label>
+                        <input id="taskPlannedEndInput" type="datetime-local" class="input w-full mt-1">
+                    </div>
+                    <div>
+                        <label for="taskRemindInput" class="text-sm text-gray-700">提醒时间</label>
+                        <input id="taskRemindInput" type="datetime-local" class="input w-full mt-1">
+                    </div>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-200 flex justify-end gap-2">
+                    <button class="btn btn-outline" onclick="closeTaskScheduleModal()">取消</button>
+                    <button class="btn btn-primary" onclick="saveTaskSchedule()">
+                        <i class="fas fa-save mr-1"></i>保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="reviewModal" class="hidden fixed inset-0 z-50">
+        <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closeReviewModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center px-4">
+            <div class="w-full max-w-md bg-white rounded-xl shadow-xl">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 id="reviewModalTitle" class="text-base font-semibold text-gray-900">评分与备注</h3>
+                    <button class="text-gray-400 hover:text-gray-700" onclick="closeReviewModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="px-5 py-4 space-y-4">
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">对象</div>
+                        <div id="reviewTargetName" class="text-sm text-gray-800 break-words"></div>
+                    </div>
+                    <div>
+                        <label for="reviewScoreInput" class="text-sm text-gray-700">评分</label>
+                        <input type="hidden" id="reviewScoreInput" value="">
+                        <div class="mt-2 flex items-center gap-1">
+                            <button type="button" class="review-star-btn text-2xl text-gray-300 hover:text-amber-400 transition-colors" data-score="1" onclick="selectReviewScore(1)" title="1分">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button type="button" class="review-star-btn text-2xl text-gray-300 hover:text-amber-400 transition-colors" data-score="2" onclick="selectReviewScore(2)" title="2分">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button type="button" class="review-star-btn text-2xl text-gray-300 hover:text-amber-400 transition-colors" data-score="3" onclick="selectReviewScore(3)" title="3分">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button type="button" class="review-star-btn text-2xl text-gray-300 hover:text-amber-400 transition-colors" data-score="4" onclick="selectReviewScore(4)" title="4分">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button type="button" class="review-star-btn text-2xl text-gray-300 hover:text-amber-400 transition-colors" data-score="5" onclick="selectReviewScore(5)" title="5分">
+                                <i class="fas fa-star"></i>
+                            </button>
+                            <button type="button" class="text-xs ml-2 px-2 py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200" onclick="selectReviewScore(0)">
+                                清空
+                            </button>
+                        </div>
+                        <div id="reviewScoreText" class="mt-1 text-xs text-gray-500">暂不评分</div>
+                    </div>
+                    <div>
+                        <label for="reviewNoteInput" class="text-sm text-gray-700">备注</label>
+                        <textarea id="reviewNoteInput" rows="4" maxlength="2000" class="input w-full mt-1" placeholder="写一点复盘或备注..."></textarea>
+                    </div>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-200 flex justify-end gap-2">
+                    <button class="btn btn-outline" onclick="closeReviewModal()">取消</button>
+                    <button class="btn btn-primary" onclick="saveReview()">
+                        <i class="fas fa-save mr-1"></i>保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <style>
         /* 进度条样式 */
@@ -264,16 +357,16 @@
         }
 
         /* 纯净模式切换 */
-        #pomoTimerContainer {
+        #focusTimerContainer {
             transition: opacity 0.3s ease;
         }
 
-        /* 任务和番茄项样式 */
-        .task-item, .pomo-item {
+        /* 任务和专注项样式 */
+        .task-item, .focus-item {
             transition: all 0.2s ease;
         }
 
-        .task-item:hover, .pomo-item:hover {
+        .task-item:hover, .focus-item:hover {
             transform: translateX(2px);
         }
 
@@ -337,7 +430,7 @@
 
         /* 悬停时显示操作按钮区域 */
         .task-item:hover .task-actions,
-        .pomo-item:hover .task-actions {
+        .focus-item:hover .task-actions {
             display: flex; /* 显示容器 */
             opacity: 1;
             gap: 4px;
@@ -378,7 +471,7 @@
         }
 
         /* 任务项悬停时的整体效果 */
-        .task-item:hover, .pomo-item:hover {
+        .task-item:hover, .focus-item:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             border-color: var(--primary-color);
@@ -389,8 +482,8 @@
             min-height: auto; /* 移除最小高度 */
         }
 
-        /* 番茄项的操作按钮区域 */
-        .pomo-item .task-actions {
+        /* 专注项的操作按钮区域 */
+        .focus-item .task-actions {
             margin-top: 4px;
             padding-top: 4px;
             border-top: 1px dashed var(--gray-200);
@@ -566,6 +659,9 @@
         let lastCreatedTaskAt = 0;
         let isSwitchingDoing = false;
         let isTaskPanelCollapsed = false;
+        let currentScheduleTaskId = 0;
+        let reviewTargetType = '';
+        let reviewTargetId = 0;
 
         // 设置cookie
         function setCookie(c_name, value, expiredays) {
@@ -630,7 +726,7 @@
             loadIndexState();
             indexDebug('about to load lists');
             showtasks();
-            showpomos();
+            showfocuss();
 
             // 启动校准定时器
             calibrationTimer = setInterval(calibratePomoStatus, calibrationInterval);
@@ -648,8 +744,8 @@
         });
 
         function renderPomoPanel() {
-            var startSection = document.getElementById('pomoStartSection');
-            var timerSection = document.getElementById('pomoTimerSection');
+            var startSection = document.getElementById('focusStartSection');
+            var timerSection = document.getElementById('focusTimerSection');
             var recordSection = document.getElementById('recordPomo');
 
             if (startSection) startSection.classList.add('hidden');
@@ -662,8 +758,8 @@
                 if (timerSection) timerSection.classList.remove('hidden');
             } else if (status === 3) {
                 if (recordSection) recordSection.classList.remove('hidden');
-                if (activePomoStartTime) showPomoTime('pomo_start_time_show', activePomoStartTime);
-                if (activePomoEndTime) showPomoTime('pomo_end_time_show', activePomoEndTime);
+                if (activePomoStartTime) showPomoTime('focus_start_time_show', activePomoStartTime);
+                if (activePomoEndTime) showPomoTime('focus_end_time_show', activePomoEndTime);
             }
         }
 
@@ -683,16 +779,16 @@
 
         function applyPomoState(result) {
             const data = result || {};
-            status = Number(data.current_pomo_status || 1);
-            remain = Number(data.current_pomo_remain || 0);
+            status = Number(data.current_focus_status || 1);
+            remain = Number(data.current_focus_remain || 0);
             originalRemain = remain;
             totalTime = status === 2 ? 1500 : (status === 4 ? 300 : 1500);
-            activePomoStartTime = data.active_pomo && data.active_pomo.start_time ? data.active_pomo.start_time : '';
-            activePomoEndTime = data.active_pomo && data.active_pomo.end_time ? data.active_pomo.end_time : '';
+            activePomoStartTime = data.active_focus && data.active_focus.start_time ? data.active_focus.start_time : '';
+            activePomoEndTime = data.active_focus && data.active_focus.end_time ? data.active_focus.end_time : '';
 
-            const pomoIdInput = document.getElementById('pomo_id');
-            if (pomoIdInput) {
-                pomoIdInput.value = (data.active_pomo && data.active_pomo.id) ? data.active_pomo.id : '';
+            const focusIdInput = document.getElementById('focus_id');
+            if (focusIdInput) {
+                focusIdInput.value = (data.active_focus && data.active_focus.id) ? data.active_focus.id : '';
             }
 
             if (status === 2 || status === 4) {
@@ -711,17 +807,17 @@
                 }
                 return Promise.resolve();
             }
-            return apiRequest('GET', '/pomos/status', {}).then(function(response) {
+            return apiRequest('GET', '/focuss/status', {}).then(function(response) {
                 if (!response || response.code != 9999 || !response.result) {
                     throw new Error('status_failed');
                 }
                 applyPomoState(response.result);
                 if (!silent) {
-                    showpomos();
+                    showfocuss();
                 }
             }).catch(function() {
                 if (!silent) {
-                    showNotification('error', '同步番茄状态失败');
+                    showNotification('error', '同步专注状态失败');
                 }
             });
         }
@@ -779,8 +875,8 @@
 
             // 只在非纯净模式下显示时间
             if (!pureMode) {
-                document.getElementById('pomoTimer').textContent = timeText;
-                document.getElementById('pomoStatus').textContent = statusText;
+                document.getElementById('focusTimer').textContent = timeText;
+                document.getElementById('focusStatus').textContent = statusText;
                 document.getElementById('centerTimeText').classList.add('hidden');
             } else {
                 // 纯净模式下显示剩余分钟在中心
@@ -833,7 +929,7 @@
         function togglePureMode() {
             pureMode = !pureMode;
             const toggleBtn = document.getElementById('pureModeToggle');
-            const timerContainer = document.getElementById('pomoTimerContainer');
+            const timerContainer = document.getElementById('focusTimerContainer');
 
             if (pureMode) {
                 // 切换到纯净模式
@@ -859,14 +955,14 @@
 
         function handlePomoComplete() {
             if (status == 2) {
-                // 番茄完成
-                document.title = '番茄完成！快来记录一下吧 - ' + title;
-                notify('您已经完成了一个番茄，快来记录一下吧~');
+                // 专注完成
+                document.title = '专注完成！快来记录一下吧 - ' + title;
+                notify('您已经完成了一个专注，快来记录一下吧~');
                 syncPomoStatus(true);
             } else if (status == 4) {
                 // 休息完成
-                document.title = '休息完成，快来开始下一个番茄吧 - ' + title;
-                notify('休息完成，快来开始下一个番茄吧~');
+                document.title = '休息完成，快来开始下一个专注吧 - ' + title;
+                notify('休息完成，快来开始下一个专注吧~');
                 syncPomoStatus(true);
             }
         }
@@ -890,23 +986,23 @@
             }
         }
 
-        // 放弃番茄
+        // 放弃专注
         function discard() {
-            if (confirm("确认要放弃当前番茄/休息吗？")) {
-                const pomoId = document.getElementById('pomo_id').value;
-                if (!pomoId) {
-                    showNotification('warning', '当前没有可放弃的番茄');
+            if (confirm("确认要放弃当前专注/休息吗？")) {
+                const focusId = document.getElementById('focus_id').value;
+                if (!focusId) {
+                    showNotification('warning', '当前没有可放弃的专注');
                     return;
                 }
                 if (!apiRequest) {
                     showNotification('error', 'API客户端未初始化');
                     return;
                 }
-                apiRequest('POST', '/pomos/discard/' + pomoId, {}).then(function(response) {
+                apiRequest('POST', '/focuss/discard/' + focusId, {}).then(function(response) {
                     if (response.code == 9999) {
-                        showNotification('success', '已放弃当前番茄');
+                        showNotification('success', '已放弃当前专注');
                         syncPomoStatus(true).then(function() {
-                            showpomos();
+                            showfocuss();
                         });
                     } else {
                         showNotification('error', response.msg || '放弃失败');
@@ -917,27 +1013,27 @@
             }
         }
 
-        // 校准番茄状态
+        // 校准专注状态
         function calibratePomoStatus() {
             syncPomoStatus(true);
         }
 
-        // 保存番茄记录
+        // 保存专注记录
         function savePomoRecord() {
-            const pomoName = document.getElementById('pomo_name').value.trim();
-            const pomoId = document.getElementById('pomo_id').value;
+            const focusName = document.getElementById('focus_name').value.trim();
+            const focusId = document.getElementById('focus_id').value;
 
-            if (pomoName) {
+            if (focusName) {
                 if (!apiRequest) {
                     showNotification('error', 'API客户端未初始化');
                     return;
                 }
-                apiRequest('POST', '/pomos/' + pomoId, { name: pomoName }).then(function(response) {
+                apiRequest('POST', '/focuss/' + focusId, { name: focusName }).then(function(response) {
                         if (response.code == 9999) {
-                            showNotification('success', '番茄记录已保存');
-                            document.getElementById('pomo_name').value = '';
+                            showNotification('success', '专注记录已保存');
+                            document.getElementById('focus_name').value = '';
                             syncPomoStatus(true).then(function() {
-                                showpomos();
+                                showfocuss();
                             });
                         } else {
                             showNotification('error', '保存失败');
@@ -946,18 +1042,20 @@
                         showNotification('error', '请求失败，请稍后重试');
                     });
             } else {
-                showNotification('warning', '请输入番茄内容');
+                showNotification('warning', '请输入专注内容');
             }
         }
 
-        // 创建番茄列表项
-        function createPomoListItem(pomoData) {
-            const startTime = formatTime(new Date(pomoData.start_time));
-            const endTime = formatTime(new Date(pomoData.end_time));
-            const fullName = escapeHtml((pomoData.name || '未命名番茄'));
+        // 创建专注列表项
+        function createPomoListItem(focusData) {
+            const startTime = formatTime(new Date(focusData.start_time));
+            const endTime = formatTime(new Date(focusData.end_time));
+            const fullName = escapeHtml((focusData.name || '未命名专注'));
+            const ratingHtml = renderRatingStars(focusData.rating);
+            const reviewNote = escapeHtml(focusData.review_note || '');
 
             return `
-    <li id="pomo${pomoData.id}" class="pomo-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+    <li id="focus${focusData.id}" class="focus-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3 flex-1 min-w-0">
                 <div class="flex-1 min-w-0">
@@ -966,11 +1064,17 @@
                     </div>
                     <div class="flex items-center gap-2 mt-1">
                         <span class="text-xs text-gray-500">${startTime} - ${endTime}</span>
+                        ${ratingHtml}
                     </div>
                 </div>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0 ml-2">
-                <a href="/notes?source_type=1&source_id=${pomoData.id}"
+                <button class="action-button text-gray-400 hover:text-amber-500"
+                        onclick='openReviewModal("focus", ${focusData.id}, ${JSON.stringify(String(focusData.name || '未命名专注'))}, ${focusData.rating || 'null'}, ${JSON.stringify(String(focusData.review_note || ''))})'
+                        title="评分备注">
+                    <i class="fas fa-star-half-alt"></i>
+                </button>
+                <a href="/notes?source_type=1&source_id=${focusData.id}"
                    class="action-button text-gray-400 hover:text-blue-500"
                    target="_blank"
                    title="记录想法">
@@ -978,6 +1082,7 @@
                 </a>
             </div>
         </div>
+        ${reviewNote ? `<div class="mt-2 text-xs text-gray-500 break-words">${reviewNote}</div>` : ''}
     </li>
     `;
         }
@@ -990,6 +1095,10 @@
             const isDoing = Number(data.is_doing || 0) === 1;
             const isDoingList = listType === 'doing';
             const fullTaskName = escapeHtml(data.name || '');
+            const ratingHtml = renderRatingStars(data.rating);
+            const reviewNote = escapeHtml(data.review_note || '');
+            const scheduleSummary = [formatDateTime(data.planned_start_time), formatDateTime(data.planned_end_time)].filter(Boolean).join(' ~ ');
+            const remindSummary = formatDateTime(data.remindtime);
 
             return `
     <li id="task${data.id}" class="task-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors ${isChild ? 'child-task ml-8' : ''}">
@@ -1007,10 +1116,13 @@
                 <div class="flex items-center gap-2 mb-1">
                     ${isDoing ? '<span class="priority-badge bg-emerald-100 text-emerald-700">正在做</span>' : ''}
                     ${isTop ? '<span class="priority-badge priority-high">置顶</span>' : ''}
+                    ${ratingHtml}
                     <span class="font-medium text-gray-800 truncate ${isCompleted ? 'line-through text-gray-400' : ''}" title="${fullTaskName}">
                         ${fullTaskName}
                     </span>
                 </div>
+                ${(scheduleSummary || remindSummary) ? `<div class="text-xs text-gray-500 break-words">${scheduleSummary ? `<span><i class="far fa-clock mr-1"></i>${scheduleSummary}</span>` : ''}${(scheduleSummary && remindSummary) ? '<span class="mx-2">|</span>' : ''}${remindSummary ? `<span><i class="far fa-bell mr-1"></i>${remindSummary}</span>` : ''}</div>` : ''}
+                ${reviewNote ? `<div class="text-xs text-gray-500 mt-1 break-words">${reviewNote}</div>` : ''}
             </div>
         </div>
 
@@ -1042,6 +1154,18 @@
                 <i class="fas fa-edit"></i>
             </button>
 
+            <button class="action-button text-gray-400 hover:text-indigo-500"
+                    onclick="openTaskScheduleModal(${data.id})"
+                    title="时间设置">
+                <i class="far fa-clock"></i>
+            </button>
+
+            <button class="action-button text-gray-400 hover:text-amber-500"
+                    onclick='openReviewModal("task", ${data.id}, ${JSON.stringify(String(data.name || ''))}, ${data.rating || 'null'}, ${JSON.stringify(String(data.review_note || ''))})'
+                    title="评分备注">
+                <i class="fas fa-star-half-alt"></i>
+            </button>
+
             <button class="action-button text-gray-400 hover:text-red-500"
                     onclick="deleteTask(${data.id})"
                     title="删除">
@@ -1061,12 +1185,14 @@
 
         function createDoingTaskCard(task) {
             const taskName = escapeHtml(task.name || '未命名任务');
+            const ratingHtml = renderRatingStars(task.rating);
             return `
     <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 task-content" data-task-name="${taskName}">
         <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <div class="text-xs text-emerald-700 mb-1">当前专注任务</div>
                 <div class="font-medium text-gray-900 break-words">${taskName}</div>
+                ${ratingHtml ? `<div class="mt-1">${ratingHtml}</div>` : ''}
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
                 <button class="action-button text-gray-400 hover:text-green-500"
@@ -1083,6 +1209,16 @@
                         onclick="editTask(${task.id})"
                         title="编辑">
                     <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-button text-gray-400 hover:text-indigo-500"
+                        onclick="openTaskScheduleModal(${task.id})"
+                        title="时间设置">
+                    <i class="far fa-clock"></i>
+                </button>
+                <button class="action-button text-gray-400 hover:text-amber-500"
+                        onclick='openReviewModal("task", ${task.id}, ${JSON.stringify(String(task.name || ''))}, ${task.rating || 'null'}, ${JSON.stringify(String(task.review_note || ''))})'
+                        title="评分备注">
+                    <i class="fas fa-star-half-alt"></i>
                 </button>
                 <button class="action-button text-gray-400 hover:text-red-500"
                         onclick="deleteTask(${task.id})"
@@ -1101,24 +1237,99 @@
             });
         }
 
-        // 任务操作函数
+        function getTaskDetail(taskId) {
+            if (!apiRequest) {
+                return Promise.resolve(null);
+            }
+            return apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
+                if (response && response.code == 9999) {
+                    return response.result;
+                }
+                return null;
+            }).catch(function() {
+                return null;
+            });
+        }
+
+        function showTaskCompletionTip(taskData) {
+            if (!taskData || !taskData.id) {
+                return;
+            }
+
+            const oldTip = document.getElementById('taskCompleteTip');
+            if (oldTip) {
+                oldTip.remove();
+            }
+
+            const taskName = escapeHtml(taskData.name || '未命名任务');
+            const tip = document.createElement('div');
+            tip.id = 'taskCompleteTip';
+            tip.className = 'fixed top-4 right-4 z-50 max-w-sm';
+            tip.innerHTML = `
+                <div class="card bg-green-500 text-white shadow-xl">
+                    <div class="p-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-lg mt-0.5"></i>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium">任务已完成</div>
+                                <div class="text-sm opacity-90 mt-1 break-words">${taskName}</div>
+                                <button class="mt-3 px-3 py-1.5 rounded bg-white text-green-700 text-sm hover:bg-green-50 transition-colors review-task-btn">
+                                    去评分与备注
+                                </button>
+                            </div>
+                            <button class="text-white hover:text-green-100 close-task-tip">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(tip);
+
+            tip.querySelector('.close-task-tip').addEventListener('click', function() {
+                tip.remove();
+            });
+
+            tip.querySelector('.review-task-btn').addEventListener('click', function() {
+                openReviewModal('task', taskData.id, taskData.name || '未命名任务', taskData.rating || null, taskData.review_note || '');
+                tip.remove();
+            });
+
+            setTimeout(function() {
+                if (tip.parentNode) {
+                    tip.style.opacity = '0';
+                    setTimeout(function() {
+                        if (tip.parentNode) {
+                            tip.parentNode.removeChild(tip);
+                        }
+                    }, 300);
+                }
+            }, 12000);
+        }
+
         function finishTask(taskId) {
             if (!apiRequest) {
                 showNotification('error', 'API客户端未初始化');
                 return;
             }
-            apiRequest('DELETE', '/tasks/' + taskId, {
-                type: 'finish'
-            }).then(function(response) {
-                    if (response.code == 9999) {
-                        showtasks();
-                        showNotification('success', '任务已完成');
-                    } else {
-                        showNotification('error', response.msg || '操作失败');
-                    }
-                }).catch(function() {
-                    showNotification('error', '请求失败');
+
+            let taskSnapshot = null;
+            getTaskDetail(taskId).then(function(task) {
+                taskSnapshot = task;
+                return apiRequest('DELETE', '/tasks/' + taskId, {
+                    type: 'finish'
                 });
+            }).then(function(response) {
+                if (response.code == 9999) {
+                    showtasks();
+                    showNotification('success', '任务已完成');
+                    showTaskCompletionTip(taskSnapshot || { id: taskId, name: '任务' });
+                } else {
+                    showNotification('error', response.msg || '操作失败');
+                }
+            }).catch(function() {
+                showNotification('error', '请求失败');
+            });
         }
 
         function toggleTaskStatus(taskId, element) {
@@ -1128,18 +1339,37 @@
                 showNotification('error', 'API客户端未初始化');
                 return;
             }
-            apiRequest('DELETE', '/tasks/' + taskId, {
-                type: action
-            }).then(function(response) {
+            if (action === 'finish') {
+                let taskSnapshot = null;
+                getTaskDetail(taskId).then(function(task) {
+                    taskSnapshot = task;
+                    return apiRequest('DELETE', '/tasks/' + taskId, {
+                        type: action
+                    });
+                }).then(function(response) {
                     if (response.code == 9999) {
                         showtasks();
-                        showNotification('success', `任务已${isCurrentlyCompleted ? '恢复' : '完成'}`);
+                        showNotification('success', '任务已完成');
+                        showTaskCompletionTip(taskSnapshot || { id: taskId, name: '任务' });
                     } else {
-                        showNotification('error', '操作失败');
+                        showNotification('error', response.msg || '操作失败');
                     }
                 }).catch(function() {
                     showNotification('error', '请求失败');
                 });
+                return;
+            }
+
+            apiRequest('DELETE', '/tasks/' + taskId, { type: action }).then(function(response) {
+                if (response.code == 9999) {
+                    showtasks();
+                    showNotification('success', '任务已恢复');
+                } else {
+                    showNotification('error', '操作失败');
+                }
+            }).catch(function() {
+                showNotification('error', '请求失败');
+            });
         }
 
         function deleteTask(taskId) {
@@ -1400,11 +1630,11 @@
                 });
         }
 
-        // 显示番茄列表
-        function showpomos() {
-            indexDebug('showpomos start');
-            const pomosList = document.getElementById('pomos');
-            const loading = document.getElementById('pomosLoading');
+        // 显示专注列表
+        function showfocuss() {
+            indexDebug('showfocuss start');
+            const focussList = document.getElementById('focuss');
+            const loading = document.getElementById('focussLoading');
             function finishLoading() {
                 if (loading) loading.classList.add('hidden');
             }
@@ -1422,32 +1652,32 @@
 
             if (!apiRequest) {
                 finishLoading();
-                if (pomosList) pomosList.classList.remove('hidden');
+                if (focussList) focussList.classList.remove('hidden');
                 return;
             }
-            apiRequest('GET', '/pomos/today', {
+            apiRequest('GET', '/focuss/today', {
                 type: 'time'
             }).then(function(response) {
                     if (response && response.code == 9999) {
-                        indexDebug('showpomos success', { size: (response.result && response.result.length) ? response.result.length : 'obj' });
+                        indexDebug('showfocuss success', { size: (response.result && response.result.length) ? response.result.length : 'obj' });
                         const list = toList(response.result);
-                        if (pomosList) pomosList.innerHTML = '';
-                        if (pomosList && list.length > 0) {
+                        if (focussList) focussList.innerHTML = '';
+                        if (focussList && list.length > 0) {
                             list.forEach(function(data) {
-                                pomosList.insertAdjacentHTML('beforeend', createPomoListItem(data));
+                                focussList.insertAdjacentHTML('beforeend', createPomoListItem(data));
                             });
                         }
-                        if (pomosList) pomosList.classList.remove('hidden');
-                        document.getElementById('pomoCount').textContent = list.length;
+                        if (focussList) focussList.classList.remove('hidden');
+                        document.getElementById('focusCount').textContent = list.length;
                     } else {
-                        indexDebug('showpomos non-9999', { code: response && response.code, msg: response && response.msg });
-                        if (pomosList) pomosList.classList.remove('hidden');
-                        document.getElementById('pomoCount').textContent = '0';
+                        indexDebug('showfocuss non-9999', { code: response && response.code, msg: response && response.msg });
+                        if (focussList) focussList.classList.remove('hidden');
+                        document.getElementById('focusCount').textContent = '0';
                     }
                 }).catch(function() {
-                    indexDebug('showpomos failed');
-                    if (pomosList) pomosList.classList.remove('hidden');
-                    document.getElementById('pomoCount').textContent = '0';
+                    indexDebug('showfocuss failed');
+                    if (focussList) focussList.classList.remove('hidden');
+                    document.getElementById('focusCount').textContent = '0';
                 }).finally(function() {
                     finishLoading();
                 });
@@ -1494,18 +1724,18 @@
                 });
         }
 
-        // 开始番茄
+        // 开始专注
         function startPomo() {
             if (!apiRequest) {
                 showNotification('error', 'API客户端未初始化');
                 return;
             }
-            apiRequest('POST', '/pomos/start', {}).then(function(response) {
+            apiRequest('POST', '/focuss/start', {}).then(function(response) {
                     if (response.code != 9999) {
                         showNotification('error', response.msg || '启动失败');
                     } else {
                         applyPomoState(response.result || {});
-                        showNotification('success', '番茄已开始');
+                        showNotification('success', '专注已开始');
                     }
                 }).catch(function() {
                     showNotification('error', '启动失败');
@@ -1522,6 +1752,41 @@
         function formatTime(date) {
             return date.getHours().toString().padStart(2, '0') + ':' +
                 date.getMinutes().toString().padStart(2, '0');
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '';
+            const date = new Date(value.replace(' ', 'T'));
+            if (isNaN(date.getTime())) return '';
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mm = String(date.getMinutes()).padStart(2, '0');
+            return `${y}-${m}-${d} ${hh}:${mm}`;
+        }
+
+        function toLocalDatetimeValue(value) {
+            if (!value) return '';
+            const date = new Date(value.replace(' ', 'T'));
+            if (isNaN(date.getTime())) return '';
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const mm = String(date.getMinutes()).padStart(2, '0');
+            return `${y}-${m}-${d}T${hh}:${mm}`;
+        }
+
+        function toApiDatetimeValue(value) {
+            if (!value) return null;
+            return value.replace('T', ' ') + ':00';
+        }
+
+        function renderRatingStars(score) {
+            const rating = Number(score || 0);
+            if (!rating) return '';
+            return `<span class="text-xs text-amber-500"><i class="fas fa-star mr-1"></i>${rating}分</span>`;
         }
 
         function escapeHtml(text) {
@@ -1543,10 +1808,10 @@
                 }, 1000);
             });
 
-            // 番茄按钮点击
-            const pomoBtn = document.getElementById('pomoBtn');
-            if (pomoBtn) {
-                pomoBtn.addEventListener('click', function() {
+            // 专注按钮点击
+            const focusBtn = document.getElementById('focusBtn');
+            if (focusBtn) {
+                focusBtn.addEventListener('click', function() {
                     if (status == 1) {
                         startPomo();
                     } else if (status == 2 || status == 4) {
@@ -1611,11 +1876,148 @@
             toggleTaskPanel(collapsed);
         }
 
+        function openTaskScheduleModal(taskId) {
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
+                if (!response || response.code != 9999 || !response.result) {
+                    showNotification('error', '加载任务信息失败');
+                    return;
+                }
+                const task = response.result;
+                currentScheduleTaskId = Number(task.id || 0);
+                document.getElementById('taskScheduleTitle').textContent = task.name || '未命名任务';
+                document.getElementById('taskPlannedStartInput').value = toLocalDatetimeValue(task.planned_start_time);
+                document.getElementById('taskPlannedEndInput').value = toLocalDatetimeValue(task.planned_end_time);
+                document.getElementById('taskRemindInput').value = toLocalDatetimeValue(task.remindtime);
+                document.getElementById('taskScheduleModal').classList.remove('hidden');
+            }).catch(function() {
+                showNotification('error', '加载任务信息失败');
+            });
+        }
+
+        function closeTaskScheduleModal() {
+            currentScheduleTaskId = 0;
+            document.getElementById('taskScheduleModal').classList.add('hidden');
+        }
+
+        function saveTaskSchedule() {
+            if (!currentScheduleTaskId) {
+                return;
+            }
+            const plannedStart = document.getElementById('taskPlannedStartInput').value;
+            const plannedEnd = document.getElementById('taskPlannedEndInput').value;
+            const remind = document.getElementById('taskRemindInput').value;
+
+            if (plannedStart && plannedEnd && new Date(plannedStart).getTime() > new Date(plannedEnd).getTime()) {
+                showNotification('warning', '预计开始时间不能晚于预计结束时间');
+                return;
+            }
+
+            apiRequest('PUT', '/tasks/' + currentScheduleTaskId, {
+                planned_start_time: toApiDatetimeValue(plannedStart),
+                planned_end_time: toApiDatetimeValue(plannedEnd),
+                remindtime: toApiDatetimeValue(remind)
+            }).then(function(response) {
+                if (response && response.code == 9999) {
+                    closeTaskScheduleModal();
+                    showtasks();
+                    showNotification('success', '任务时间已更新');
+                } else {
+                    showNotification('error', (response && response.msg) ? response.msg : '保存失败');
+                }
+            }).catch(function() {
+                showNotification('error', '保存失败，请稍后重试');
+            });
+        }
+
+        function openReviewModal(type, id, name, rating, note) {
+            reviewTargetType = type;
+            reviewTargetId = Number(id || 0);
+            document.getElementById('reviewModalTitle').textContent = type === 'task' ? '任务评分与备注' : '专注评分与备注';
+            document.getElementById('reviewTargetName').textContent = name || (type === 'task' ? '任务' : '专注');
+            document.getElementById('reviewScoreInput').value = rating ? String(rating) : '';
+            renderReviewScoreUI();
+            document.getElementById('reviewNoteInput').value = note || '';
+            document.getElementById('reviewModal').classList.remove('hidden');
+        }
+
+        function closeReviewModal() {
+            reviewTargetType = '';
+            reviewTargetId = 0;
+            document.getElementById('reviewModal').classList.add('hidden');
+        }
+
+        function renderReviewScoreUI() {
+            const rawScore = document.getElementById('reviewScoreInput').value;
+            const score = Number(rawScore || 0);
+            const scoreText = document.getElementById('reviewScoreText');
+            const starButtons = document.querySelectorAll('.review-star-btn');
+
+            starButtons.forEach(function(btn) {
+                const btnScore = Number(btn.getAttribute('data-score'));
+                if (btnScore <= score) {
+                    btn.classList.remove('text-gray-300');
+                    btn.classList.add('text-amber-400');
+                } else {
+                    btn.classList.remove('text-amber-400');
+                    btn.classList.add('text-gray-300');
+                }
+            });
+
+            if (scoreText) {
+                scoreText.textContent = score > 0 ? ('当前评分：' + score + ' 分') : '暂不评分';
+            }
+        }
+
+        function selectReviewScore(score) {
+            const input = document.getElementById('reviewScoreInput');
+            const current = Number(input.value || 0);
+            const next = Number(score || 0);
+            if (next > 0 && current === next) {
+                input.value = '';
+            } else {
+                input.value = next > 0 ? String(next) : '';
+            }
+            renderReviewScoreUI();
+        }
+
+        function saveReview() {
+            if (!reviewTargetType || !reviewTargetId) {
+                return;
+            }
+            const targetType = reviewTargetType;
+            const scoreValue = document.getElementById('reviewScoreInput').value;
+            const noteValue = document.getElementById('reviewNoteInput').value.trim();
+            const payload = {
+                rating: scoreValue ? Number(scoreValue) : null,
+                review_note: noteValue || null
+            };
+            const apiPath = targetType === 'task' ? '/tasks/' + reviewTargetId : '/focuss/' + reviewTargetId;
+            apiRequest('PUT', apiPath, payload).then(function(response) {
+                if (response && response.code == 9999) {
+                    closeReviewModal();
+                    if (targetType === 'task') {
+                        showtasks();
+                    } else {
+                        showfocuss();
+                    }
+                    showNotification('success', '评分与备注已保存');
+                } else {
+                    showNotification('error', (response && response.msg) ? response.msg : '保存失败');
+                }
+            }).catch(function() {
+                showNotification('error', '保存失败，请稍后重试');
+            });
+        }
+
         function handleKeyPress(e) {
             // 任务输入框回车（兼容原有代码）
             if (e.keyCode == 13) {
                 const taskInput = document.getElementById('task_name');
-                const pomoInput = document.getElementById('pomo_name');
+                const focusInput = document.getElementById('focus_name');
 
                 if (taskInput && document.activeElement === taskInput) {
                     e.preventDefault();
@@ -1623,7 +2025,7 @@
                     if (taskName) {
                         addNewTask(taskName);
                     }
-                } else if (pomoInput && document.activeElement === pomoInput) {
+                } else if (focusInput && document.activeElement === focusInput) {
                     e.preventDefault();
                     savePomoRecord();
                 }
@@ -1649,20 +2051,20 @@
             return normalizeTaskText(raw);
         }
 
-        // 双击任务添加到番茄描述（兼容原有功能）
+        // 双击任务添加到专注描述（兼容原有功能）
         document.addEventListener('dblclick', function(e) {
             const taskText = extractTaskTextFromElement(e.target);
             if (!taskText) {
                 return;
             }
-            const pomoInput = document.getElementById('pomo_name');
-            if (!pomoInput) {
+            const focusInput = document.getElementById('focus_name');
+            if (!focusInput) {
                 return;
             }
-            const currentValue = normalizeTaskText(pomoInput.value);
+            const currentValue = normalizeTaskText(focusInput.value);
             if (!currentValue.includes(taskText)) {
-                pomoInput.value = currentValue ? `${currentValue} + ${taskText}` : taskText;
-                showNotification('info', '任务已添加到番茄描述');
+                focusInput.value = currentValue ? `${currentValue} + ${taskText}` : taskText;
+                showNotification('info', '任务已添加到专注描述');
             }
         });
 

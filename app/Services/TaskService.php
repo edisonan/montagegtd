@@ -9,7 +9,7 @@ use App\Exceptions\CustomException;
 use App\Http\Utils\CommonUtil;
 use Mail;
 use Auth;
-use App\Repositories\GoalRepository;
+use App\Repositories\PlanRepository;
 use App\Repositories\TaskRepository;
 
 /**
@@ -27,11 +27,11 @@ class TaskService {
 	 */
 	protected $taskRepository;
 	/**
-	 * The goal repository instance.
+	 * The plan repository instance.
 	 *
-	 * @var GoalRepository
+	 * @var PlanRepository
 	 */
-	protected $goalRepository;
+	protected $planRepository;
 	
 	/**
 	 * The tag service instance.
@@ -41,26 +41,26 @@ class TaskService {
 	protected $tagService;
 	
 	/**
-	 * The thing service instance.
+	 * The journal service instance.
 	 *
-	 * @var ThingService
+	 * @var JournalService
 	 */
-	protected $thingService;
+	protected $journalService;
 	
 	/**
 	 * Create a new controller instance.
 	 *
 	 * @param TaskRepository $taskRepository        	
-	 * @param GoalRepository $goalRepository        	
+	 * @param PlanRepository $planRepository        	
 	 * @param TagService $tagService        	
-	 * @param GoalService $goalService        	
+	 * @param PlanService $planService        	
 	 * @return void
 	 */
-	public function __construct(TaskRepository $taskRepository, GoalRepository $goalRepository, TagService $tagService, ThingService $thingService) {
+	public function __construct(TaskRepository $taskRepository, PlanRepository $planRepository, TagService $tagService, JournalService $journalService) {
 		$this->taskRepository = $taskRepository;
-		$this->goalRepository = $goalRepository;
+		$this->planRepository = $planRepository;
 		$this->tagService = $tagService;
-		$this->thingService = $thingService;
+		$this->journalService = $journalService;
 	}
 	
 	/**
@@ -147,11 +147,11 @@ class TaskService {
 	 * @param string $remindtime        	
 	 * @param string $deadline        	
 	 * @param int $parentTaskId        	
-	 * @param int $goalId        	
+	 * @param int $planId        	
 	 * @throws CustomException
 	 * @return \App\Models\Task
 	 */
-	public function store($name, $mode, $priority, $remindtime, $deadline, $parentTaskId, $goalId) {
+	public function store($name, $mode, $priority, $remindtime, $deadline, $parentTaskId, $planId) {
 		if (! empty ( $parentTaskId )) {
 			$parentTask = $this->taskRepository->getTaskById ( $parentTaskId );
 			if (empty ( $parentTask ) || $parentTask->user_id != Auth::id ()) {
@@ -159,9 +159,9 @@ class TaskService {
 			}
 		}
 		
-		if (! empty ( $goalId )) {
-			$goal = $this->goalRepository->getGoalById ( $goalId );
-			if (empty ( $goal ) || $goal->user_id != Auth::id ()) {
+		if (! empty ( $planId )) {
+			$plan = $this->planRepository->getPlanById ( $planId );
+			if (empty ( $plan ) || $plan->user_id != Auth::id ()) {
 				throw new CustomException ( "错误的目标信息上送" );
 			}
 		}
@@ -174,7 +174,7 @@ class TaskService {
 		$task->remindtime = $remindtime;
 		$task->deadline = $deadline;
 		$task->parent_task_id = $parentTaskId;
-		$task->goal_id = $goalId;
+		$task->plan_id = $planId;
 		$task->save ();
 		
 		preg_match_all ( '/#(.*?)#/i', $name, $match );
@@ -209,7 +209,7 @@ class TaskService {
 			$params ['status'] = 2;
 			$params ['is_doing'] = 0;
 			
-			$this->thingService->storeThing ( 2, $task->name, $task->created_at, date ( 'Y-m-d H:i:s' ) );
+			$this->journalService->storeJournal ( 2, $task->name, $task->created_at, date ( 'Y-m-d H:i:s' ) );
 		} else {
 			$params ['status'] = 3;
 			$params ['is_doing'] = 0;

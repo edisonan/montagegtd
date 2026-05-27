@@ -1153,7 +1153,7 @@
                     <div class="mb-4">
                         <div class="text-sm font-medium text-gray-700 mb-2">快捷标签</div>
                         <div class="note-tags">
-                            <div class="tag-badge" onclick="addContent('tag', '每日小目标')">#每日小目标#</div>
+                            <div class="tag-badge" onclick="addContent('tag', '每日小计划')">#每日小计划#</div>
                             <div class="tag-badge" onclick="addContent('tag', '读书笔记')">#读书笔记#</div>
                             <div class="tag-badge" onclick="addContent('tag', '工作思考')">#工作思考#</div>
                             <div class="tag-badge" onclick="addContent('tag', '灵感闪现')">#灵感闪现#</div>

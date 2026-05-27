@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Code;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class ApplicationController extends Controller
 {
@@ -15,42 +17,80 @@ class ApplicationController extends Controller
      * @param string $codePath 代码文件路径
      * @return \Illuminate\Http\Response
      */
-    public function show($appSlug, $codePath)
+    public function show(Request $request, $appSlug, $codePath)
     {
-        // 根据应用标识查找应用
         $application = Application::where('slug', $appSlug)
-            ->where('status', '<', 4) // 状态不为"已删除"
+            ->where('status', '<', 4)
             ->firstOrFail();
 
-        // 根据应用ID和代码路径查找代码
+        $normalizedPath = ltrim(urldecode((string)$codePath), '/');
+        $candidates = array_values(array_unique(array(
+            $codePath,
+            $normalizedPath,
+            '/' . $normalizedPath,
+        )));
+
         $code = Code::where('app_id', $application->id)
-            ->where('path', $codePath)
-            ->where('status', 1) // 状态必须为启用
+            ->whereIn('path', $candidates)
+            ->where('status', 1)
+            ->orderByRaw("CASE WHEN path = ? THEN 0 WHEN path = ? THEN 1 ELSE 2 END", array($normalizedPath, '/' . $normalizedPath))
             ->firstOrFail();
 
-        // 根据代码类型返回不同的内容
-        $contentType = $this->getContentType($code->type);
-        
-        return response($code->content)
-            ->header('Content-Type', $contentType);
+        return $this->renderCodeResponse($request, $code);
     }
 
-    /**
-     * 根据代码类型返回对应的Content-Type
-     * 
-     * @param int $type 代码类型
-     * @return string
-     */
-    private function getContentType($type)
+    private function renderCodeResponse(Request $request, Code $code)
     {
-        $typeMap = [
-            1 => 'text/php',
-            2 => 'text/html',
-            3 => 'text/javascript',
-            4 => 'text/css',
-            5 => 'application/json',
-        ];
+        if ((int)$code->status !== 1) {
+            abort(403, 'code is disabled');
+        }
 
-        return $typeMap[$type] ?? 'text/plain';
+        if ((int)$code->type === 1) {
+            return $this->executePhpCode($request, $code);
+        }
+        if ((int)$code->type === 2) {
+            return response($code->content)->header('Content-Type', 'text/html; charset=UTF-8');
+        }
+        if ((int)$code->type === 3) {
+            return response($code->content)->header('Content-Type', 'application/javascript; charset=UTF-8');
+        }
+        if ((int)$code->type === 4) {
+            return response($code->content)->header('Content-Type', 'text/css; charset=UTF-8');
+        }
+        if ((int)$code->type === 5) {
+            return response($code->content)->header('Content-Type', 'application/json; charset=UTF-8');
+        }
+
+        return response($code->content)->header('Content-Type', 'text/plain; charset=UTF-8');
+    }
+
+    private function executePhpCode(Request $request, Code $code)
+    {
+        try {
+            $phpContent = $code->content;
+            if (strpos($phpContent, '<?php') === 0) {
+                $phpContent = substr($phpContent, 5);
+            }
+            error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+            @eval($phpContent);
+            $resultData = function_exists('myFunction') ? myFunction($request->all()) : null;
+
+            return response()->json(array(
+                'result_code' => '0000',
+                'result_msg' => 'success',
+                'result_data' => $resultData,
+            ));
+        } catch (Throwable $e) {
+            Log::error('Application code execution failed: ' . $e->getMessage(), array(
+                'code_id' => $code->id,
+                'path' => $code->path,
+            ));
+
+            return response()->json(array(
+                'result_code' => '0002',
+                'result_msg' => 'Error occurred during code execution',
+                'error' => $e->getMessage(),
+            ), 500);
+        }
     }
 }

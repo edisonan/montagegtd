@@ -91,7 +91,7 @@ class TaskController extends Controller {
 		$remindtime = $request->input ( 'remindtime', null );
 		$deadline = $request->input ( 'deadline', null );
 		$parentTaskId = $request->input ( 'parent_task_id', null );
-		$goalId = $request->input ( 'goal_id', null );
+		$planId = $request->input ( 'plan_id', null );
 		
 		if (! in_array ( $priority, array (
 				1,
@@ -110,7 +110,7 @@ class TaskController extends Controller {
 			throw new CustomException ( "错误的截止时间！" );
 		}
 		
-		$task = $this->taskService->store ( $name, $mode, $priority, $remindtime, $deadline, $parentTaskId, $goalId );
+		$task = $this->taskService->store ( $name, $mode, $priority, $remindtime, $deadline, $parentTaskId, $planId );
 		
 		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $task ), '/index' );
 	}

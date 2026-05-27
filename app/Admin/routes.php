@@ -20,15 +20,15 @@ Route::group ( [
 	$router->resource ( 'articles', ArticleController::class );
 	$router->resource ( 'articlemarks', ArticleMarkController::class );
 	$router->resource ( 'feedbacks', FeedbackController::class );
-	$router->resource ( 'goals', GoalController::class );
+	$router->resource ( 'plans', PlanController::class );
 	$router->resource ( 'categorys', CategoryController::class );
 	$router->resource ( 'kindlelogs', KindleLogController::class );
 	$router->resource ( 'minds', MindController::class );
 	$router->resource ( 'notes', NoteController::class );
-	$router->resource ( 'pomos', PomoController::class );
+	$router->resource ( 'focus', FocusController::class );
 	$router->resource ( 'settings', SettingController::class );
 	$router->resource ( 'tasks', TaskController::class );
-	$router->resource ( 'things', ThingController::class );
+	$router->resource ( 'journals', JournalController::class );
 
     $router->resource('codes', CodeController::class);
     $router->get('getCode/{id}', 'CodeController@getCode');

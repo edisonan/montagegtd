@@ -55,8 +55,8 @@ Route::prefix('v2')->group(function () {
         Route::get('/minds/{mind}/jsmind', 'Api\\V2\\MindController@jsmind');
         Route::get('/minds/{mind}/outline', 'Api\\V2\\MindController@outline');
 
-        Route::get('/goals', 'Api\\V2\\GoalController@index');
-        Route::get('/goals/{goal}', 'Api\\V2\\GoalController@show');
+        Route::get('/plans', 'Api\\V2\\PlanController@index');
+        Route::get('/plans/{plan}', 'Api\\V2\\PlanController@show');
 
         Route::get('/settings', 'Api\\V2\\SettingController@index');
         Route::get('/kindles', 'Api\\V2\\KindleController@index');
@@ -64,6 +64,11 @@ Route::prefix('v2')->group(function () {
         Route::get('/categories/{category}', 'Api\\V2\\CategoryController@show');
 
         Route::get('/tasks', 'Api\\V2\\TaskController@index');
+        Route::get('/study/overview', 'Api\\V2\\StudyController@overview');
+        Route::get('/study/checkins', 'Api\\V2\\StudyController@checkins');
+        Route::get('/study/plans', 'Api\\V2\\StudyController@plans');
+        Route::get('/study/plans/{plan}', 'Api\\V2\\StudyController@showPlan');
+        Route::get('/study/tasks/{task}/focus', 'Api\\V2\\StudyController@focusTask');
         Route::get('/index', 'Api\\V2\\IndexController@show');
         Route::get('/tasks/all', 'Api\\V2\\TaskController@getAllList');
         Route::get('/tasks/tab-counts', 'Api\\V2\\TaskController@tabCounts');
@@ -71,16 +76,16 @@ Route::prefix('v2')->group(function () {
         Route::get('/tasks/parent-tasks', 'Api\\V2\\TaskController@getParentTasks');
         Route::get('/tasks/{task}', 'Api\\V2\\TaskController@show');
 
-        Route::get('/pomos', 'Api\\V2\\PomoController@index');
-        Route::get('/pomos/today', 'Api\\V2\\PomoController@today');
-        Route::get('/pomos/tab-counts', 'Api\\V2\\PomoController@tabCounts');
-        Route::get('/pomos/status', 'Api\\V2\\PomoController@pomostatus');
+        Route::get('/focuss', 'Api\\V2\\FocusController@index');
+        Route::get('/focuss/today', 'Api\\V2\\FocusController@today');
+        Route::get('/focuss/tab-counts', 'Api\\V2\\FocusController@tabCounts');
+        Route::get('/focuss/status', 'Api\\V2\\FocusController@focusstatus');
 
         Route::get('/notes', 'Api\\V2\\NoteController@index');
         Route::get('/notes/{note}', 'Api\\V2\\NoteController@show');
         Route::get('/notes/{note}/record', 'Api\\V2\\NoteController@getRecord');
-        Route::get('/things', 'Api\\V2\\ThingController@index');
-        Route::get('/things/{thing}', 'Api\\V2\\ThingController@show');
+        Route::get('/journals', 'Api\\V2\\JournalController@index');
+        Route::get('/journals/{journal}', 'Api\\V2\\JournalController@show');
         Route::get('/daily-summaries', 'Api\\V2\\DailySummaryController@index');
         Route::get('/daily-summaries/by-date', 'Api\\V2\\DailySummaryController@getBySummaryDate');
         Route::get('/daily-summaries/tips', 'Api\\V2\\DailySummaryController@getTipInfos');
@@ -93,6 +98,8 @@ Route::prefix('v2')->group(function () {
         Route::get('/point-mall/orders', 'Api\\V2\\PointMallController@orders');
         Route::get('/point-mall/tree/overview', 'Api\\V2\\PointMallGameplayController@treeOverview');
         Route::get('/point-mall/tree/leaderboard', 'Api\\V2\\PointMallGameplayController@treeLeaderboard');
+        Route::get('/point-mall/pet/overview', 'Api\\V2\\PointMallGameplayController@petOverview');
+        Route::get('/point-mall/pond/overview', 'Api\\V2\\PointMallGameplayController@pondOverview');
         Route::get('/point-mall/lottery/overview', 'Api\\V2\\PointMallGameplayController@lotteryOverview');
         Route::get('/point-mall/bus/overview', 'Api\\V2\\PointMallGameplayController@busOverview');
         Route::get('/statistics', 'Api\\V2\\StatisticsController@index');
@@ -161,14 +168,14 @@ Route::prefix('v2')->group(function () {
         Route::delete('/minds/{mind}', 'Api\\V2\\MindController@destroy');
         Route::post('/minds/{mind}/tags', 'Api\\V2\\MindController@addTag');
 
-        Route::post('/goals', 'Api\\V2\\GoalController@store');
-        Route::post('/goals/{goal}', 'Api\\V2\\GoalController@update');
-        Route::put('/goals/{goal}', 'Api\\V2\\GoalController@update');
-        Route::delete('/goals/{goal}', 'Api\\V2\\GoalController@destroy');
+        Route::post('/plans', 'Api\\V2\\PlanController@store');
+        Route::post('/plans/{plan}', 'Api\\V2\\PlanController@update');
+        Route::put('/plans/{plan}', 'Api\\V2\\PlanController@update');
+        Route::delete('/plans/{plan}', 'Api\\V2\\PlanController@destroy');
 
-        Route::post('/settings/{setting}', 'Api\\V2\\SettingController@update');
-        Route::put('/settings/{setting}', 'Api\\V2\\SettingController@update');
         Route::post('/settings/current', 'Api\\V2\\SettingController@updateCurrent');
+        Route::post('/settings/{setting}', 'Api\\V2\\SettingController@update')->where('setting', '[0-9]+');
+        Route::put('/settings/{setting}', 'Api\\V2\\SettingController@update')->where('setting', '[0-9]+');
         Route::post('/settings/test-kindle', 'Api\\V2\\SettingController@testKindle');
         Route::post('/settings/test-ifttt', 'Api\\V2\\SettingController@testIfttt');
         Route::get('/settings/export', 'Api\\V2\\SettingController@export');
@@ -177,22 +184,28 @@ Route::prefix('v2')->group(function () {
         Route::post('/tasks', 'Api\\V2\\TaskController@store');
         Route::put('/tasks/{task}', 'Api\\V2\\TaskController@update');
         Route::delete('/tasks/{task}', 'Api\\V2\\TaskController@destroy');
+        Route::post('/study/plans', 'Api\\V2\\StudyController@createPlan');
+        Route::post('/study/plans/{plan}/status', 'Api\\V2\\StudyController@updatePlanStatus');
+        Route::post('/study/generate', 'Api\\V2\\StudyController@generate');
+        Route::post('/study/plans/{plan}/generate', 'Api\\V2\\StudyController@generateByPlan');
+        Route::delete('/study/plans/{plan}', 'Api\\V2\\StudyController@destroyPlan');
+        Route::post('/study/tasks/{task}/checkin', 'Api\\V2\\StudyController@checkin');
 
-        Route::post('/pomos/start', 'Api\\V2\\PomoController@start');
-        Route::post('/pomos/discard', 'Api\\V2\\PomoController@discardCurrent');
-        Route::post('/pomos/discard/{pomo}', 'Api\\V2\\PomoController@discard');
-        Route::post('/pomos/{pomo}', 'Api\\V2\\PomoController@store');
-        Route::put('/pomos/{pomo}', 'Api\\V2\\PomoController@update');
-        Route::delete('/pomos/{pomo}', 'Api\\V2\\PomoController@destroy');
+        Route::post('/focuss/start', 'Api\\V2\\FocusController@start');
+        Route::post('/focuss/discard', 'Api\\V2\\FocusController@discardCurrent');
+        Route::post('/focuss/discard/{focus}', 'Api\\V2\\FocusController@discard');
+        Route::post('/focuss/{focus}', 'Api\\V2\\FocusController@store');
+        Route::put('/focuss/{focus}', 'Api\\V2\\FocusController@update');
+        Route::delete('/focuss/{focus}', 'Api\\V2\\FocusController@destroy');
 
         Route::post('/notes', 'Api\\V2\\NoteController@store');
         Route::post('/notes/upload', 'Api\\V2\\NoteController@upload');
         Route::put('/notes/{note}', 'Api\\V2\\NoteController@update');
         Route::delete('/notes/{note}', 'Api\\V2\\NoteController@destroy');
         Route::post('/notes/{note}/like', 'Api\\V2\\NoteController@like');
-        Route::post('/things', 'Api\\V2\\ThingController@store');
-        Route::put('/things/{thing}', 'Api\\V2\\ThingController@update');
-        Route::delete('/things/{thing}', 'Api\\V2\\ThingController@destroy');
+        Route::post('/journals', 'Api\\V2\\JournalController@store');
+        Route::put('/journals/{journal}', 'Api\\V2\\JournalController@update');
+        Route::delete('/journals/{journal}', 'Api\\V2\\JournalController@destroy');
         Route::post('/daily-summaries', 'Api\\V2\\DailySummaryController@store');
         Route::put('/daily-summaries/{dailySummary}', 'Api\\V2\\DailySummaryController@update');
         Route::delete('/daily-summaries/{dailySummary}', 'Api\\V2\\DailySummaryController@destroy');
@@ -201,6 +214,10 @@ Route::prefix('v2')->group(function () {
         Route::post('/point-mall/tree/plant', 'Api\\V2\\PointMallGameplayController@treePlant');
         Route::post('/point-mall/tree/{treeId}/water', 'Api\\V2\\PointMallGameplayController@treeWater');
         Route::post('/point-mall/tree/{treeId}/decorate', 'Api\\V2\\PointMallGameplayController@treeDecorate');
+        Route::post('/point-mall/pet/adopt', 'Api\\V2\\PointMallGameplayController@petAdopt');
+        Route::post('/point-mall/pet/{petId}/feed', 'Api\\V2\\PointMallGameplayController@petFeed');
+        Route::post('/point-mall/pond/release', 'Api\\V2\\PointMallGameplayController@pondRelease');
+        Route::post('/point-mall/pond/{fishId}/feed', 'Api\\V2\\PointMallGameplayController@pondFeed');
         Route::post('/point-mall/lottery/draw', 'Api\\V2\\PointMallGameplayController@lotteryDraw');
         Route::post('/point-mall/bus/buy-line', 'Api\\V2\\PointMallGameplayController@busBuyLine');
         Route::post('/point-mall/bus/start-run', 'Api\\V2\\PointMallGameplayController@busStartRun');

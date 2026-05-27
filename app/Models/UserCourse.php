@@ -11,7 +11,7 @@ class UserCourse extends Model
         'course_id',
         'title',
         'status',
-        'goal',
+        'plan',
         'show_progress',
         'show_notes',
         'show_study_time',
