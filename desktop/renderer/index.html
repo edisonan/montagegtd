@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://pretask.congcong.us;">
+    <title>Montage GTD - 桌面应用</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- 登录界面 -->
+    <div id="loginView" class="view hidden">
+        <div class="login-container">
+            <div class="login-header">
+                <img src="../assets/icons/app-icon.svg" alt="Montage GTD" class="app-logo">
+                <h1>Montage GTD</h1>
+                <p>高效生产力工具</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" id="email" name="email" required placeholder="请输入邮箱">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required placeholder="请输入密码">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">登录</button>
+                
+                <div class="login-footer">
+                    <a href="#" id="forgotPassword">忘记密码？</a>
+                    <span>|</span>
+                    <a href="#" id="register">注册新账号</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 主应用界面 -->
+    <div id="mainView" class="view hidden">
+        <!-- 侧边栏导航 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/icons/app-icon.svg" alt="Logo" class="sidebar-logo">
+                <span class="sidebar-title">Montage GTD</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item active" data-view="dashboard">
+                        <i class="icon-dashboard"></i>
+                        <span>仪表盘</span>
+                    </li>
+                    <li class="nav-item" data-view="tasks">
+                        <i class="icon-tasks"></i>
+                        <span>任务管理</span>
+                        <span class="badge" id="taskBadge">0</span>
+                    </li>
+                    <li class="nav-item" data-view="pomodoro">
+                        <i class="icon-pomodoro"></i>
+                        <span>番茄钟</span>
+                    </li>
+                    <li class="nav-item" data-view="calendar">
+                        <i class="icon-calendar"></i>
+                        <span>日历</span>
+                    </li>
+                    <li class="nav-item" data-view="notes">
+                        <i class="icon-notes"></i>
+                        <span>笔记</span>
+                    </li>
+                    <li class="nav-item" data-view="statistics">
+                        <i class="icon-statistics"></i>
+                        <span>统计</span>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <img src="../assets/icons/default-avatar.png" alt="用户" class="user-avatar">
+                    <div class="user-details">
+                        <div class="user-name" id="userName">用户</div>
+                        <div class="user-status">在线</div>
+                    </div>
+                </div>
+                <button class="btn-icon" id="settingsBtn" title="设置">
+                    <i class="icon-settings"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 顶部工具栏 -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <h2 id="pageTitle">仪表盘</h2>
+                </div>
+                <div class="top-bar-right">
+                    <button class="btn-icon" id="searchBtn" title="搜索">
+                        <i class="icon-search"></i>
+                    </button>
+                    <button class="btn-icon" id="notificationBtn" title="通知">
+                        <i class="icon-notification"></i>
+                        <span class="notification-dot hidden"></span>
+                    </button>
+                    <button class="btn btn-primary" id="quickAddBtn">
+                        <i class="icon-plus"></i>
+                        <span>快速添加</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 内容视图容器 -->
+            <div class="content-views">
+                <!-- 仪表盘视图 -->
+                <div id="dashboardView" class="view-content active">
+                    <div class="dashboard-grid">
+                        <!-- 今日概览卡片 -->
+                        <div class="card overview-card">
+                            <h3>今日概览</h3>
+                            <div class="overview-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="todayTasks">0</div>
+                                    <div class="stat-label">待办任务</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="completedTasks">0</div>
+                                    <div class="stat-label">已完成</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="focusTime">0</div>
+                                    <div class="stat-label">专注分钟</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 四象限任务预览 -->
+                        <div class="card quadrant-preview">
+                            <h3>任务四象限</h3>
+                            <div class="quadrant-grid">
+                                <div class="quadrant q1">
+                                    <div class="quadrant-header">
+                                        <span class="quadrant-title">重要且紧急</span>
+                                        <span class="quadrant-count" id="q1Count">0</span>
+                                    </div>
+                                    <div class="quadrant-tasks" id="q1Tasks"></div>
+                                </div>
+                                <div class="quadrant q2">
+                                    <div class="quadrant-header">
+                                        <span class="quadrant-title">重要不紧急</span>
+                                        <span class="quadrant-count" id="q2Count">0</span>
+                                    </div>
+                                    <div class="quadrant-tasks" id="q2Tasks"></div>
+                                </div>
+                                <div class="quadrant q3">
+                                    <div class="quadrant-header">
+                                        <span class="quadrant-title">紧急不重要</span>
+                                        <span class="quadrant-count" id="q3Count">0</span>
+                                    </div>
+                                    <div class="quadrant-tasks" id="q3Tasks"></div>
+                                </div>
+                                <div class="quadrant q4">
+                                    <div class="quadrant-header">
+                                        <span class="quadrant-title">不重要不紧急</span>
+                                        <span class="quadrant-count" id="q4Count">0</span>
+                                    </div>
+                                    <div class="quadrant-tasks" id="q4Tasks"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 最近番茄钟 -->
+                        <div class="card recent-pomodoros">
+                            <h3>最近番茄钟</h3>
+                            <div id="recentPomodorosList">
+                                <div class="empty-state">
+                                    <i class="icon-empty"></i>
+                                    <p>暂无番茄钟记录</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 即将到期任务 -->
+                        <div class="card upcoming-tasks">
+                            <h3>即将到期</h3>
+                            <div id="upcomingTasksList">
+                                <div class="empty-state">
+                                    <i class="icon-empty"></i>
+                                    <p>暂无即将到期的任务</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 任务管理视图 -->
+                <div id="tasksView" class="view-content">
+                    <div class="tasks-layout">
+                        <!-- 任务过滤器 -->
+                        <div class="task-filters">
+                            <div class="filter-tabs">
+                                <button class="filter-tab active" data-filter="all">全部</button>
+                                <button class="filter-tab" data-filter="active">进行中</button>
+                                <button class="filter-tab" data-filter="completed">已完成</button>
+                                <button class="filter-tab" data-filter="folded">已折叠</button>
+                            </div>
+                            
+                            <div class="filter-actions">
+                                <select id="priorityFilter" class="filter-select">
+                                    <option value="">所有优先级</option>
+                                    <option value="1">高优先级</option>
+                                    <option value="2">中优先级</option>
+                                    <option value="3">低优先级</option>
+                                    <option value="4">无优先级</option>
+                                </select>
+                                
+                                <button class="btn btn-outline" id="sortByDate">
+                                    <i class="icon-sort"></i>
+                                    按日期排序
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 任务列表 -->
+                        <div class="task-list-container">
+                            <div id="taskList" class="task-list">
+                                <!-- 任务项将通过JavaScript动态生成 -->
+                            </div>
+                            
+                            <div class="pagination" id="taskPagination">
+                                <button class="btn btn-outline" id="prevPage">上一页</button>
+                                <span class="page-info">第 <span id="currentPage">1</span> 页</span>
+                                <button class="btn btn-outline" id="nextPage">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 番茄钟视图 -->
+                <div id="pomodoroView" class="view-content">
+                    <div class="pomodoro-container">
+                        <div class="pomodoro-timer">
+                            <div class="timer-display">
+                                <div class="timer-circle">
+                                    <svg class="timer-svg" viewBox="0 0 100 100">
+                                        <circle class="timer-background" cx="50" cy="50" r="45"></circle>
+                                        <circle class="timer-progress" cx="50" cy="50" r="45" 
+                                                stroke-dasharray="283" stroke-dashoffset="0"></circle>
+                                    </svg>
+                                    <div class="timer-text">
+                                        <div class="time-display" id="timeDisplay">25:00</div>
+                                        <div class="timer-status" id="timerStatus">准备开始</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="timer-controls">
+                                <button class="btn btn-primary btn-large" id="startTimer">开始</button>
+                                <button class="btn btn-outline" id="pauseTimer" disabled>暂停</button>
+                                <button class="btn btn-outline" id="resetTimer">重置</button>
+                            </div>
+                            
+                            <div class="timer-settings">
+                                <div class="setting-group">
+                                    <label>工作时长（分钟）</label>
+                                    <input type="number" id="workDuration" value="25" min="1" max="60">
+                                </div>
+                                <div class="setting-group">
+                                    <label>休息时长（分钟）</label>
+                                    <input type="number" id="restDuration" value="5" min="1" max="30">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pomodoro-stats">
+                            <h3>今日统计</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-number" id="todayPomodoros">0</div>
+                                    <div class="stat-desc">完成番茄钟</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="totalFocusTime">0</div>
+                                    <div class="stat-desc">总专注时间(分钟)</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number" id="currentStreak">0</div>
+                                    <div class="stat-desc">连续天数</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他视图将在后续实现 -->
+                <div id="calendarView" class="view-content">
+                    <div class="placeholder-content">
+                        <i class="icon-calendar-large"></i>
+                        <h3>日历视图</h3>
+                        <p>查看和管理您的时间安排</p>
+                    </div>
+                </div>
+
+                <div id="notesView" class="view-content">
+                    <div class="placeholder-content">
+                        <i class="icon-notes-large"></i>
+                        <h3>笔记管理</h3>
+                        <p>记录和管理您的想法</p>
+                    </div>
+                </div>
+
+                <div id="statisticsView" class="view-content">
+                    <div class="placeholder-content">
+                        <i class="icon-chart-large"></i>
+                        <h3>数据统计</h3>
+                        <p>分析您的工作效率和习惯</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 快速添加模态框 -->
+    <div id="quickAddModal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>快速添加任务</h3>
+                <button class="modal-close" id="closeQuickAdd">&times;</button>
+            </div>
+            <form id="quickAddForm">
+                <div class="form-group">
+                    <label for="taskName">任务名称</label>
+                    <input type="text" id="taskName" name="name" required placeholder="输入任务名称">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskPriority">优先级</label>
+                        <select id="taskPriority" name="priority">
+                            <option value="1">高优先级</option>
+                            <option value="2" selected>中优先级</option>
+                            <option value="3">低优先级</option>
+                            <option value="4">无优先级</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskMode">模式</label>
+                        <select id="taskMode" name="mode">
+                            <option value="1" selected>GTD模式</option>
+                            <option value="2">学习模式</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskDeadline">截止时间</label>
+                    <input type="datetime-local" id="taskDeadline" name="deadline">
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskContent">详细描述</label>
+                    <textarea id="taskContent" name="content" rows="3" placeholder="添加任务详情..."></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="cancelQuickAdd">取消</button>
+                    <button type="submit" class="btn btn-primary">添加任务</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 加载指示器 -->
+    <div id="loadingIndicator" class="loading-indicator hidden">
+        <div class="spinner"></div>
+        <p>加载中...</p>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/pomodoro.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

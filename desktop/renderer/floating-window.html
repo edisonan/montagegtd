@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montage GTD - 悬浮窗</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .floating-container {
+            width: 280px;
+            height: 180px;
+            background: linear-gradient(135deg, rgba(0, 184, 148, 0.95), rgba(0, 160, 133, 0.95));
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            color: white;
+            position: relative;
+            cursor: move;
+        }
+
+        .floating-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: move;
+        }
+
+        .app-title {
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .status-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .timer-display {
+            text-align: center;
+        }
+
+        .timer-time {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .timer-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.primary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #00b894;
+        }
+
+        .action-btn.primary:hover {
+            background: white;
+        }
+
+        .task-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .task-count {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 拖动时的样式 */
+        .dragging {
+            opacity: 0.8;
+            cursor: grabbing !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-container" id="floatingWindow">
+        <div class="floating-header" id="dragHandle">
+            <div class="app-title">🍅 Montage GTD</div>
+            <div class="window-controls">
+                <button class="control-btn" id="hideBtn" title="隐藏">−</button>
+                <button class="control-btn" id="closeBtn" title="关闭">×</button>
+            </div>
+        </div>
+
+        <div class="status-content">
+            <!-- 番茄钟状态 -->
+            <div class="timer-display" id="timerDisplay">
+                <div class="timer-time" id="timerTime">25:00</div>
+                <div class="timer-label" id="timerLabel">准备开始</div>
+            </div>
+
+            <!-- 任务指示器 -->
+            <div class="task-indicator" id="taskIndicator">
+                <span>待办任务:</span>
+                <span class="task-count" id="taskCount">0</span>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="quick-actions">
+                <button class="action-btn primary" id="startPomodoro">
+                    <span>▶</span>
+                    <span>开始</span>
+                </button>
+                <button class="action-btn" id="showMain">
+                    <span>📱</span>
+                    <span>主窗口</span>
+                </button>
+                <button class="action-btn" id="addTask">
+                    <span>+</span>
+                    <span>添加任务</span>
+                </button>
+                <button class="action-btn" id="viewTasks">
+                    <span>📋</span>
+                    <span>查看任务</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/floating-window.js"></script>
+</body>
+</html>
