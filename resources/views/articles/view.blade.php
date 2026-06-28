@@ -548,6 +548,11 @@
                                 添加订阅
                             </a>
 
+                            <a href="{{ url('/article/'.$article->id.'/ai-render') }}" class="header-action-btn">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                                AI可视化
+                            </a>
+
                             <a href="{{ url('/articles') }}" class="header-action-btn">
                                 <i class="fas fa-arrow-right"></i>
                                 继续阅读
@@ -604,6 +609,11 @@
                         <a href="javascript:void(0);" id="article_mindmap_btn" class="share-btn">
                             <i class="fas fa-brain"></i>
                             AI生成导图
+                        </a>
+
+                        <a href="{{ url('/article/'.$article->id.'/ai-render') }}" class="share-btn">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                            AI可视化
                         </a>
 
                         <a href="{{ url('/articles') }}" class="continue-reading">

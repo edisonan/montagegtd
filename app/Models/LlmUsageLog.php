@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class LlmUsageLog extends Model
 {
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'user_id',
         'provider_id',

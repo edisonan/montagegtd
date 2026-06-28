@@ -611,6 +611,7 @@
                         + '<div class="article-meta">'
                         + '<span><i class="far fa-clock"></i> ' + published + '</span><span>•</span>'
                         + '<a href="' + escapeHtml(articleUrl) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> 阅读原文</a><span>•</span>'
+                        + '<a href="/article/' + articleId + '/ai-render"><i class="fas fa-wand-magic-sparkles"></i> AI可视化</a><span>•</span>'
                         + '<span>来源：<a href="' + escapeHtml(feedUrl) + '" target="_blank" rel="noopener noreferrer">' + feedName + '</a></span>'
                         + '</div></div>'
                         + '<div class="article-content">'

@@ -107,8 +107,8 @@ class LlmController extends Controller
     {
         try {
             $user = Auth::user();
-            
-            $this->validate($request, [
+
+            $rules = [
                 'name' => 'required|string|max:100',
                 'slug' => 'required|string|max:50|unique:llm_providers,slug,' . $id,
                 'description' => 'nullable|string',
@@ -119,7 +119,36 @@ class LlmController extends Controller
                 'rate_limit_per_minute' => 'nullable|integer|min:0',
                 'concurrent_limit' => 'nullable|integer|min:0',
                 'config_schema' => 'nullable|array'
-            ]);
+            ];
+
+            $messages = [
+                'slug.unique' => '供应商标识符已存在，请换一个标识符',
+                'base_url.url' => 'API基础URL格式不正确',
+                'api_type.in' => 'API类型不支持',
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                Log::warning('保存供应商参数校验失败', array('errors' => $errors));
+                return response()->json(
+                    ResponseDataUtil::genFail(ResponseDataUtil::COMMON_ERROR, '参数校验失败', $errors),
+                    422
+                );
+            }
+
+            $providerData = $request->only(array(
+                'name',
+                'slug',
+                'description',
+                'base_url',
+                'api_type',
+                'is_active',
+                'priority',
+                'config_schema',
+                'rate_limit_per_minute',
+                'concurrent_limit'
+            ));
             
             if ($id) {
                 $provider = LlmProvider::when(!$user->is_admin, function ($query) use ($user) {
@@ -133,14 +162,13 @@ class LlmController extends Controller
                     return response()->json(['message' => '供应商不存在'], 404);
                 }
                 
-                $provider->update($request->all());
+                $provider->update($providerData);
             } else {
-                $validatedData = $request->all();
-                $validatedData['user_id'] = $user->id;
-                $provider = LlmProvider::create($validatedData);
+                $providerData['user_id'] = $user->id;
+                $provider = LlmProvider::create($providerData);
             }
             
-            return response()->json(['result' => $provider]);
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($provider));
         } catch (\Exception $e) {
             Log::error('保存供应商失败: ' . $e->getMessage());
             return response()->json(['message' => '保存供应商失败'], 500);

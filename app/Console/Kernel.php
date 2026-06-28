@@ -35,6 +35,10 @@ class Kernel extends ConsoleKernel
         Commands\FocusRestedReminder::class,
         Commands\DailySummaryReminder::class,
         Commands\StudyGenerateTasks::class,
+        Commands\ArticlesClassifyPending::class,
+        Commands\DigestGenerateScheduled::class,
+        Commands\DigestWhitelistUserCommand::class,
+        Commands\DigestUpsertProfileCommand::class,
 //        Commands\AddLlmMenuItems::class
     ];
 
@@ -68,9 +72,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('feed_common', array(
             1
         ))->everyTenMinutes();
+        $schedule->command('articles:classify-pending --limit=20 --backfill=50')->everyTenMinutes();
         $schedule->command('feed_common', array(
             2
         ))->hourly();
+        $schedule->command('digest:generate-scheduled --limit=10')->hourly();
         $schedule->command('feed_common', array(
             3
         ))->daily();

@@ -93,10 +93,13 @@ Route::group([
     Route::post('/feeds/importOpml', 'FeedController@importOpml');
 
     Route::get('/articles', 'ArticleController@index');
+    Route::get('/articles/stream', 'ArticleController@stream');
     Route::post('/article', 'ArticleController@store');
     Route::get('/article/list', 'ArticleController@list');
     Route::post('/article/mark', 'ArticleController@mark');
     Route::get('/article/view/{article}', 'ArticleController@view');
+    Route::get('/article/{article}/ai-render', 'ArticleController@aiRender');
+    Route::post('/article/{article}/ai-render/generate', 'ArticleController@generateAiRenderWeb');
     Route::get('/articles/status/{articleSub}', 'ArticleController@status');
     Route::get('/articles/allstatus', 'ArticleController@status');
     Route::delete('/article/{article}', 'ArticleController@destroy');

@@ -1326,7 +1326,14 @@
                     closeProviderModal();
                     await loadAllData();
                 } else {
-                    throw new Error(data.msg || '保存失败');
+                    let errorMessage = data.msg || '保存失败';
+                    if (data.result && typeof data.result === 'object') {
+                        const fieldErrors = Object.values(data.result).flat().filter(Boolean);
+                        if (fieldErrors.length > 0) {
+                            errorMessage += ': ' + fieldErrors.join('；');
+                        }
+                    }
+                    throw new Error(errorMessage);
                 }
             } catch (error) {
                 console.error('保存供应商失败:', error);

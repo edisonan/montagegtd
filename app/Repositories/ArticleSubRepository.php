@@ -65,6 +65,15 @@ class ArticleSubRepository {
 	public function getArticleListByFeedId($userId, $feedId, $pageCount = 20) {
 		return ArticleSub::with ( 'article.feed' )->where ( 'user_id', $userId )->where ( 'feed_id', $feedId )->orderBy ( 'updated_at', 'desc' )->simplePaginate ( $pageCount );
 	}
+
+    public function findByUserIdAndArticleId($userId, $articleId)
+    {
+        return ArticleSub::with('article.feed')
+            ->where('user_id', $userId)
+            ->where('article_id', $articleId)
+            ->orderBy('updated_at', 'desc')
+            ->first();
+    }
 	
 	/**
 	 * 通过文章订阅ids调整文章阅读状态

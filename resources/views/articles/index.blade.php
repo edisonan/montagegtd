@@ -1124,6 +1124,10 @@
                             </div>
 
                             <div class="tool-actions">
+                                <a href="{{ url('articles/stream') }}" class="tool-btn" id="streamModeBtn">
+                                    <i class="fas fa-mobile-screen-button"></i>
+                                    沉浸刷文
+                                </a>
                                 <a href="{{ url('feeds/explorer') }}" class="tool-btn" id="discoverBtn" style="display: none;">
                                     <i class="fas fa-compass"></i>
                                     发现
@@ -1625,6 +1629,18 @@
                     $(this).attr('href', url);
                     $(this).toggleClass('active', tabStatus === status);
                 });
+
+                var streamUrl = '/articles/stream?status=' + encodeURIComponent(status);
+                if (currentFeedId) {
+                    streamUrl += '&feed_id=' + encodeURIComponent(currentFeedId);
+                }
+                if (pageCount && pageCount !== 20) {
+                    streamUrl += '&page_count=' + encodeURIComponent(String(pageCount));
+                }
+                if (currentPage && currentPage !== 1) {
+                    streamUrl += '&page=' + encodeURIComponent(String(currentPage));
+                }
+                $('#streamModeBtn').attr('href', streamUrl);
             }
 
             function buildPageUrl(page) {
@@ -1749,6 +1765,8 @@
                         + (needsCollapse ? '<div class="read-more" style="display:block;"><button type="button" class="read-more-btn" data-article-id="' + subId + '"><i class="fas fa-chevron-down"></i>阅读更多</button></div>' : '')
                         + '</div>'
                         + '<div class="article-footer"><div class="action-buttons" style="margin-left:auto;">'
+                        + '<a class="action-btn" href="/articles/stream?status=' + encodeURIComponent(status) + (currentFeedId ? '&feed_id=' + encodeURIComponent(currentFeedId) : '') + '&page_count=' + encodeURIComponent(String(pageCount)) + '&page=' + encodeURIComponent(String(currentPage)) + '&article_sub_id=' + subId + '" title="沉浸刷文"><i class="fas fa-mobile-screen-button"></i><span class="action-label">沉浸</span></a>'
+                        + '<a class="action-btn" href="/article/' + articleId + '/ai-render" title="AI可视化"><i class="fas fa-wand-magic-sparkles"></i><span class="action-label">AI可视化</span></a>'
                         + '<button type="button" class="action-btn ai-assist-btn" data-content-id="desc' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI助手"><i class="fas fa-robot"></i><span class="action-label">AI助手</span></button>'
                         + '<button type="button" class="action-btn article-mindmap-btn" data-content-id="desc' + subId + '" data-article-sub-id="' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI生成导图"><i class="fas fa-brain"></i><span class="action-label">导图</span></button>'
                         + '<div class="share-container"><button type="button" class="action-btn share-btn" title="分享"><i class="fas fa-share-alt"></i><span class="action-label">分享</span></button><div class="share-menu"><a href="javascript:void(0);" class="share-option icon-heart" data-id="' + articleId + '"><i class="fas fa-heart"></i><span>记录想法</span></a></div></div>'

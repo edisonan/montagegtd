@@ -196,6 +196,13 @@
             return '<span class="badge bg-gray-100 text-gray-700"><i class="fas fa-ellipsis-h mr-1"></i>不重要不紧急</span>';
         }
 
+        function taskStateBadge(task) {
+            if (Number(task.is_doing || 0) === 1 && Number(task.status) === 1) {
+                return '<span class="badge bg-emerald-100 text-emerald-700"><i class="fas fa-bolt mr-1"></i>正在做</span>';
+            }
+            return '';
+        }
+
         function renderTasks() {
             var tasks = taskPageState.tasks || [];
             var tbody = $('#taskTableBody');
@@ -212,7 +219,7 @@
 
                 var desktopRow = '' +
                     '<tr>' +
-                    '<td>' + statusBadge(task.status) + '</td>' +
+                    '<td class="space-y-1">' + statusBadge(task.status) + taskStateBadge(task) + '</td>' +
                     '<td><div class="flex flex-col"><span class="text-sm font-medium text-gray-900">' + updated.date + '</span><span class="text-xs text-gray-500">' + updated.time + '</span></div></td>' +
                     '<td><div class="font-medium text-gray-900">' + taskNameHtml + '</div></td>' +
                     '<td>' + priorityBadge(task.priority) + '</td>' +
@@ -220,6 +227,7 @@
                     '<div class="flex items-center justify-end space-x-3">' +
                     '<a href="/notes?source_type=3&source_id=' + task.id + '" class="text-gray-400 hover:text-blue-600" title="添加笔记"><i class="fas fa-sticky-note"></i></a>' +
                     '<button onclick="editTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="编辑任务"><i class="fas fa-edit"></i></button>' +
+                    '<a href="/tasks/' + task.id + '" class="text-gray-400 hover:text-indigo-600" title="查看详情"><i class="fas fa-arrow-up-right-from-square"></i></a>' +
                     (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="标记完成"><i class="fas fa-check"></i></button>' : '') +
                     '</div>' +
                     '</td>' +
@@ -227,12 +235,14 @@
 
                 var mobileCard = '' +
                     '<div class="card border-l-4 border-gray-300"><div class="p-4">' +
-                    '<div class="flex items-center justify-between mb-2">' + statusBadge(task.status) + '<span class="text-xs text-gray-500">' + updated.date + ' ' + updated.time + '</span></div>' +
+                    '<div class="flex items-center justify-between mb-2 gap-2">' + statusBadge(task.status) + taskStateBadge(task) + '<span class="text-xs text-gray-500">' + updated.date + ' ' + updated.time + '</span></div>' +
                     '<div class="font-medium text-gray-900 mb-3">' + taskNameHtml + '</div>' +
                     '<div class="flex items-center justify-between">' +
                     '<div>' + priorityBadge(task.priority) + '</div>' +
                     '<div class="flex items-center space-x-3">' +
+                    '<a href="/notes?source_type=3&source_id=' + task.id + '" class="text-sm text-blue-600 hover:text-blue-700"><i class="fas fa-sticky-note mr-1"></i>笔记</a>' +
                     '<button onclick="editTask(' + task.id + ')" class="text-sm text-gray-600 hover:text-green-600"><i class="fas fa-edit mr-1"></i>编辑</button>' +
+                    '<a href="/tasks/' + task.id + '" class="text-sm text-indigo-600 hover:text-indigo-700"><i class="fas fa-arrow-up-right-from-square mr-1"></i>详情</a>' +
                     (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-sm text-green-600 hover:text-green-800"><i class="fas fa-check mr-1"></i>完成</button>' : '') +
                     '</div></div></div></div>';
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Montage GTD"
+  short_description: "处理待办、笔记、文章和 GTD 自动化"
+  default_prompt: "Use $montage-gtd to process my Montage GTD tasks, notes, articles, or daily workflows."

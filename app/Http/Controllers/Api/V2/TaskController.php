@@ -137,10 +137,10 @@ class TaskController extends Controller
         if (!in_array($priority, array(1, 2, 3, 4), true)) {
             throw new CustomException('错误的优先级！');
         }
-        if (!empty($remindtime) && strtotime($remindtime) > time()) {
+        if (!empty($remindtime) && strtotime($remindtime) < time()) {
             throw new CustomException('错误的提醒时间！');
         }
-        if (!empty($deadline) && strtotime($deadline) > time()) {
+        if (!empty($deadline) && strtotime($deadline) < time()) {
             throw new CustomException('错误的截止时间！');
         }
 

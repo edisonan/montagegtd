@@ -11,6 +11,8 @@ Route::group ( [
 	
 	$router->get ( '/', 'HomeController@index' );
 	$router->get ( 'statistic', 'UserController@statistic' );
+	$router->get ( 'system-logs', 'SystemLogController@index' );
+	$router->get ( 'system-logs/content', 'SystemLogController@content' );
 	
 	$router->resource ( 'users', UserController::class );
 	
@@ -45,5 +47,14 @@ Route::group ( [
     
     $router->resource('courses', CourseController::class);
     
-    $router->resource('applications', ApplicationController::class);
+    $router->get('applications/{id}/workspace-data', 'ApplicationController@workspaceData');
+    $router->post('applications', 'ApplicationController@store');
+    $router->put('applications/{id}/meta', 'ApplicationController@updateMeta');
+    $router->post('applications/{id}/codes', 'ApplicationController@storeCode');
+    $router->put('applications/{id}/codes/{codeId}', 'ApplicationController@updateCode');
+    $router->post('applications/{id}/codes/{codeId}/ai-generate', 'ApplicationController@generateCode');
+    $router->get('applications/{id}/codes/{codeId}/history', 'ApplicationController@getCodeHistory');
+    $router->post('applications/{id}/codes/{codeId}/history/{historyId}/rollback', 'ApplicationController@rollbackCodeHistory');
+    $router->get('applications/{id}', 'ApplicationController@show');
+    $router->get('applications', 'ApplicationController@index');
 } );

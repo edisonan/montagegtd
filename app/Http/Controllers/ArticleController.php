@@ -6,6 +6,7 @@ use App\Exceptions\CustomException;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Article;
 use App\Models\ArticleSub;
+use App\Services\ArticleAiRenderService;
 use App\Services\ArticleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +26,7 @@ class ArticleController extends Controller
      * @var ArticleService
      */
     protected $articleService;
+    protected $articleAiRenderService;
 
     /**
      * 构造方法
@@ -32,7 +34,7 @@ class ArticleController extends Controller
      * @param ArticleService $articleService
      * @return void
      */
-    public function __construct(ArticleService $articleService)
+    public function __construct(ArticleService $articleService, ArticleAiRenderService $articleAiRenderService)
     {
         $this->middleware('auth', [
             'except' => [
@@ -42,6 +44,7 @@ class ArticleController extends Controller
         ]);
 
         $this->articleService = $articleService;
+        $this->articleAiRenderService = $articleAiRenderService;
     }
 
     /**
@@ -133,7 +136,47 @@ class ArticleController extends Controller
      */
     public function view(Request $request, Article $article)
     {
-        return view('articles.view');
+        return view('articles.view', compact('article'));
+    }
+
+    public function aiRender(Request $request, Article $article)
+    {
+        $articleSub = $this->resolveOwnedArticleSub($article);
+        if (!$articleSub) {
+            abort(403, '未找到当前文章的阅读记录');
+        }
+
+        $article->load('feed');
+        $render = $this->articleAiRenderService->getRenderByArticleId($article->id);
+        if (empty($render) || empty($render->html_content)) {
+            $render = $this->articleAiRenderService->ensureRender($article, array(
+                'force' => (int)$request->input('force', 0) === 1,
+                'template_style' => (string)$request->input('template_style', 'magazine'),
+            ));
+        }
+
+        return view('articles.ai_render', compact('article', 'articleSub', 'render'));
+    }
+
+    public function generateAiRenderWeb(Request $request, Article $article)
+    {
+        $articleSub = $this->resolveOwnedArticleSub($article);
+        if (!$articleSub) {
+            abort(403, '未找到当前文章的阅读记录');
+        }
+
+        $article->load('feed');
+        $this->articleAiRenderService->ensureRender($article, array(
+            'force' => true,
+            'template_style' => (string)$request->input('template_style', 'magazine'),
+        ));
+
+        return redirect('/article/' . $article->id . '/ai-render?refresh=1');
+    }
+
+    public function stream(Request $request)
+    {
+        return view('articles.stream');
     }
 
     /**
@@ -279,5 +322,16 @@ class ArticleController extends Controller
 
             exit;
         }
+    }
+
+    protected function resolveOwnedArticleSub(Article $article)
+    {
+        if (!Auth::check()) {
+            return null;
+        }
+
+        return ArticleSub::where('article_id', $article->id)
+            ->where('user_id', Auth::id())
+            ->first();
     }
 }

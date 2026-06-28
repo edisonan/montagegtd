@@ -25,23 +25,27 @@ tags:
   - name: course-items
   - name: courses
   - name: daily-summaries
+  - name: digest
   - name: feeds
-  - name: plans
+  - name: focuss
   - name: health
   - name: help
   - name: index
+  - name: journals
   - name: kindles
   - name: llm
   - name: minds
+  - name: music
   - name: notes
   - name: notifications
   - name: personal-access-tokens
+  - name: plans
+  - name: point-mall
   - name: points
-  - name: focus
   - name: settings
   - name: statistics
+  - name: study
   - name: tasks
-  - name: journals
   - name: thirds
   - name: wechat
 paths:
@@ -636,6 +640,142 @@ paths:
       operationId: unknown_handle_get_articles_by_article
       description: |
         Action: Api\\V2\\ArticleController@show
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: article
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/articles/{article}/ai-render":
+    get:
+      tags:
+        - articles
+      summary: "GET /articles/{article}/ai-render"
+      operationId: unknown_handle_get_articles_by_article_ai_render
+      description: |
+        Action: Api\\V2\\ArticleController@getAiRender
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: article
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/articles/{article}/ai-render/generate":
+    post:
+      tags:
+        - articles
+      summary: "POST /articles/{article}/ai-render/generate"
+      operationId: unknown_handle_post_articles_by_article_ai_render_generate
+      description: |
+        Action: Api\\V2\\ArticleController@generateAiRender
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: article
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/articles/{article}/reader-view":
+    get:
+      tags:
+        - articles
+      summary: "GET /articles/{article}/reader-view"
+      operationId: unknown_handle_get_articles_by_article_reader_view
+      description: |
+        Action: Api\\V2\\ArticleController@readerView
         Capability: read
       x-token-capability: "read"
       x-ai-hints:
@@ -2010,6 +2150,58 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/course-items/{id}/complete":
+    post:
+      tags:
+        - course-items
+      summary: "POST /course-items/{id}/complete"
+      operationId: unknown_handle_post_course_items_by_id_complete
+      description: |
+        Action: Api\\V2\\CourseItemController@complete
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/courses":
     get:
       tags:
@@ -3176,6 +3368,211 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/digest/pages":
+    get:
+      tags:
+        - digest
+      summary: "GET /digest/pages"
+      operationId: unknown_handle_get_digest_pages
+      description: |
+        Action: Api\\V2\\DigestController@pages
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/digest/pages/generate":
+    post:
+      tags:
+        - digest
+      summary: "POST /digest/pages/generate"
+      operationId: unknown_handle_post_digest_pages_generate
+      description: |
+        Action: Api\\V2\\DigestController@generate
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/digest/pages/{id}":
+    get:
+      tags:
+        - digest
+      summary: "GET /digest/pages/{id}"
+      operationId: unknown_handle_get_digest_pages_by_id
+      description: |
+        Action: Api\\V2\\DigestController@showPage
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/digest/profile":
+    get:
+      tags:
+        - digest
+      summary: "GET /digest/profile"
+      operationId: unknown_handle_get_digest_profile
+      description: |
+        Action: Api\\V2\\DigestController@profile
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    post:
+      tags:
+        - digest
+      summary: "POST /digest/profile"
+      operationId: unknown_handle_post_digest_profile
+      description: |
+        Action: Api\\V2\\DigestController@saveProfile
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/feeds":
     get:
       tags:
@@ -3890,14 +4287,14 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/goals":
+  "/focuss":
     get:
       tags:
-        - plans
-      summary: "GET /plans"
-      operationId: unknown_handle_get_goals
+        - focuss
+      summary: "GET /focuss"
+      operationId: unknown_handle_get_focuss
       description: |
-        Action: Api\\V2\\GoalController@index
+        Action: Api\\V2\\FocusController@index
         Capability: read
       x-token-capability: "read"
       x-ai-hints:
@@ -3926,13 +4323,14 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/focuss/discard":
     post:
       tags:
-        - plans
-      summary: "POST /plans"
-      operationId: unknown_handle_post_goals
+        - focuss
+      summary: "POST /focuss/discard"
+      operationId: unknown_handle_post_focuss_discard
       description: |
-        Action: Api\\V2\\GoalController@store
+        Action: Api\\V2\\FocusController@discardCurrent
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
@@ -3971,25 +4369,35 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/goals/{goal}":
-    get:
+  "/focuss/discard/{focus}":
+    post:
       tags:
-        - plans
-      summary: "GET /plans/{goal}"
-      operationId: unknown_handle_get_goals_by_goal
+        - focuss
+      summary: "POST /focuss/discard/{focus}"
+      operationId: unknown_handle_post_focuss_discard_by_focus
       description: |
-        Action: Api\\V2\\GoalController@show
-        Capability: read
-      x-token-capability: "read"
+        Action: Api\\V2\\FocusController@discard
+        Capability: write
+      x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: goal
+        - name: focus
           in: path
           required: true
           schema:
             type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
       security:
         - BearerAuth: []
       responses:
@@ -4013,20 +4421,175 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/focuss/start":
     post:
       tags:
-        - plans
-      summary: "POST /plans/{goal}"
-      operationId: unknown_handle_post_goals_by_goal
+        - focuss
+      summary: "POST /focuss/start"
+      operationId: unknown_handle_post_focuss_start
       description: |
-        Action: Api\\V2\\GoalController@update
+        Action: Api\\V2\\FocusController@start
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/focuss/status":
+    get:
+      tags:
+        - focuss
+      summary: "GET /focuss/status"
+      operationId: unknown_handle_get_focuss_status
+      description: |
+        Action: Api\\V2\\FocusController@focusstatus
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/focuss/tab-counts":
+    get:
+      tags:
+        - focuss
+      summary: "GET /focuss/tab-counts"
+      operationId: unknown_handle_get_focuss_tab_counts
+      description: |
+        Action: Api\\V2\\FocusController@tabCounts
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/focuss/today":
+    get:
+      tags:
+        - focuss
+      summary: "GET /focuss/today"
+      operationId: unknown_handle_get_focuss_today
+      description: |
+        Action: Api\\V2\\FocusController@today
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/focuss/{focus}":
+    post:
+      tags:
+        - focuss
+      summary: "POST /focuss/{focus}"
+      operationId: unknown_handle_post_focuss_by_focus
+      description: |
+        Action: Api\\V2\\FocusController@store
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: goal
+        - name: focus
           in: path
           required: true
           schema:
@@ -4066,18 +4629,18 @@ paths:
           $ref: "#/components/responses/GenericError"
     put:
       tags:
-        - plans
-      summary: "PUT /plans/{goal}"
-      operationId: unknown_handle_put_goals_by_goal
+        - focuss
+      summary: "PUT /focuss/{focus}"
+      operationId: unknown_handle_put_focuss_by_focus
       description: |
-        Action: Api\\V2\\GoalController@update
+        Action: Api\\V2\\FocusController@update
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: goal
+        - name: focus
           in: path
           required: true
           schema:
@@ -4117,18 +4680,18 @@ paths:
           $ref: "#/components/responses/GenericError"
     delete:
       tags:
-        - plans
-      summary: "DELETE /plans/{goal}"
-      operationId: unknown_handle_delete_goals_by_goal
+        - focuss
+      summary: "DELETE /focuss/{focus}"
+      operationId: unknown_handle_delete_focuss_by_focus
       description: |
-        Action: Api\\V2\\GoalController@destroy
+        Action: Api\\V2\\FocusController@destroy
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: goal
+        - name: focus
           in: path
           required: true
           schema:
@@ -4296,6 +4859,231 @@ paths:
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/journals":
+    get:
+      tags:
+        - journals
+      summary: "GET /journals"
+      operationId: unknown_handle_get_journals
+      description: |
+        Action: Api\\V2\\JournalController@index
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    post:
+      tags:
+        - journals
+      summary: "POST /journals"
+      operationId: unknown_handle_post_journals
+      description: |
+        Action: Api\\V2\\JournalController@store
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/journals/{journal}":
+    get:
+      tags:
+        - journals
+      summary: "GET /journals/{journal}"
+      operationId: unknown_handle_get_journals_by_journal
+      description: |
+        Action: Api\\V2\\JournalController@show
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: journal
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    put:
+      tags:
+        - journals
+      summary: "PUT /journals/{journal}"
+      operationId: unknown_handle_put_journals_by_journal
+      description: |
+        Action: Api\\V2\\JournalController@update
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: journal
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    delete:
+      tags:
+        - journals
+      summary: "DELETE /journals/{journal}"
+      operationId: unknown_handle_delete_journals_by_journal
+      description: |
+        Action: Api\\V2\\JournalController@destroy
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: journal
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
       security:
         - BearerAuth: []
       responses:
@@ -5515,6 +6303,58 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/llm/models/{id}/test":
+    post:
+      tags:
+        - llm
+      summary: "POST /llm/models/{id}/test"
+      operationId: unknown_handle_post_llm_models_by_id_test
+      description: |
+        Action: Api\\V2\\LlmController@testModel
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/llm/providers":
     get:
       tags:
@@ -5922,6 +6762,58 @@ paths:
       operationId: unknown_handle_post_llm_sessions_by_id_clear
       description: |
         Action: Api\\V2\\LlmSessionController@clearSession
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/llm/sessions/{id}/regenerate":
+    post:
+      tags:
+        - llm
+      summary: "POST /llm/sessions/{id}/regenerate"
+      operationId: unknown_handle_post_llm_sessions_by_id_regenerate
+      description: |
+        Action: Api\\V2\\LlmSessionController@regenerateSession
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
@@ -6495,6 +7387,42 @@ paths:
               sample:
                 value:
                   key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/music/hot-playlist":
+    get:
+      tags:
+        - music
+      summary: "GET /music/hot-playlist"
+      operationId: unknown_handle_get_music_hot_playlist
+      description: |
+        Action: Api\\V2\\ArticleController@hotPlaylist
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
       security:
         - BearerAuth: []
       responses:
@@ -7150,14 +8078,14 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/points":
+  "/plans":
     get:
       tags:
-        - points
-      summary: "GET /points"
-      operationId: unknown_handle_get_points
+        - plans
+      summary: "GET /plans"
+      operationId: unknown_handle_get_plans
       description: |
-        Action: Api\\V2\\PointController@index
+        Action: Api\\V2\\PlanController@index
         Capability: read
       x-token-capability: "read"
       x-ai-hints:
@@ -7186,50 +8114,13 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/pomos":
-    get:
-      tags:
-        - focus
-      summary: "GET /focus"
-      operationId: unknown_handle_get_pomos
-      description: |
-        Action: Api\\V2\\PomoController@index
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/pomos/discard":
     post:
       tags:
-        - focus
-      summary: "POST /focus/discard"
-      operationId: unknown_handle_post_pomos_discard
+        - plans
+      summary: "POST /plans"
+      operationId: unknown_handle_post_plans
       description: |
-        Action: Api\\V2\\PomoController@discardCurrent
+        Action: Api\\V2\\PlanController@store
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
@@ -7268,35 +8159,25 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/pomos/discard/{pomo}":
-    post:
+  "/plans/{plan}":
+    get:
       tags:
-        - focus
-      summary: "POST /focus/discard/{pomo}"
-      operationId: unknown_handle_post_pomos_discard_by_pomo
+        - plans
+      summary: "GET /plans/{plan}"
+      operationId: unknown_handle_get_plans_by_plan
       description: |
-        Action: Api\\V2\\PomoController@discard
-        Capability: write
-      x-token-capability: "write"
+        Action: Api\\V2\\PlanController@show
+        Capability: read
+      x-token-capability: "read"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: pomo
+        - name: plan
           in: path
           required: true
           schema:
             type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
       security:
         - BearerAuth: []
       responses:
@@ -7320,139 +8201,20 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/pomos/start":
     post:
       tags:
-        - focus
-      summary: "POST /focus/start"
-      operationId: unknown_handle_post_pomos_start
+        - plans
+      summary: "POST /plans/{plan}"
+      operationId: unknown_handle_post_plans_by_plan
       description: |
-        Action: Api\\V2\\PomoController@start
-        Capability: write
-      x-token-capability: "write"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/pomos/status":
-    get:
-      tags:
-        - focus
-      summary: "GET /focus/status"
-      operationId: unknown_handle_get_pomos_status
-      description: |
-        Action: Api\\V2\\PomoController@pomostatus
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/pomos/today":
-    get:
-      tags:
-        - focus
-      summary: "GET /focus/today"
-      operationId: unknown_handle_get_pomos_today
-      description: |
-        Action: Api\\V2\\PomoController@today
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/pomos/{pomo}":
-    post:
-      tags:
-        - focus
-      summary: "POST /focus/{pomo}"
-      operationId: unknown_handle_post_pomos_by_pomo
-      description: |
-        Action: Api\\V2\\PomoController@store
+        Action: Api\\V2\\PlanController@update
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: pomo
+        - name: plan
           in: path
           required: true
           schema:
@@ -7492,18 +8254,18 @@ paths:
           $ref: "#/components/responses/GenericError"
     put:
       tags:
-        - focus
-      summary: "PUT /focus/{pomo}"
-      operationId: unknown_handle_put_pomos_by_pomo
+        - plans
+      summary: "PUT /plans/{plan}"
+      operationId: unknown_handle_put_plans_by_plan
       description: |
-        Action: Api\\V2\\PomoController@update
+        Action: Api\\V2\\PlanController@update
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: pomo
+        - name: plan
           in: path
           required: true
           schema:
@@ -7543,18 +8305,18 @@ paths:
           $ref: "#/components/responses/GenericError"
     delete:
       tags:
-        - focus
-      summary: "DELETE /focus/{pomo}"
-      operationId: unknown_handle_delete_pomos_by_pomo
+        - plans
+      summary: "DELETE /plans/{plan}"
+      operationId: unknown_handle_delete_plans_by_plan
       description: |
-        Action: Api\\V2\\PomoController@destroy
+        Action: Api\\V2\\PlanController@destroy
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
       parameters:
-        - name: pomo
+        - name: plan
           in: path
           required: true
           schema:
@@ -7569,6 +8331,948 @@ paths:
               sample:
                 value:
                   key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/buy-line":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/bus/buy-line"
+      operationId: unknown_handle_post_point_mall_bus_buy_line
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busBuyLine
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/overview":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/bus/overview"
+      operationId: unknown_handle_get_point_mall_bus_overview
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busOverview
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/run/{runId}/tick":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/bus/run/{runId}/tick"
+      operationId: unknown_handle_post_point_mall_bus_run_by_runid_tick
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busTickRun
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/start-run":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/bus/start-run"
+      operationId: unknown_handle_post_point_mall_bus_start_run
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busStartRun
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/entrances":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/entrances"
+      operationId: unknown_handle_get_point_mall_entrances
+      description: |
+        Action: Api\\V2\\PointMallController@entrances
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/goods":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/goods"
+      operationId: unknown_handle_get_point_mall_goods
+      description: |
+        Action: Api\\V2\\PointMallController@goods
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/lottery/draw":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/lottery/draw"
+      operationId: unknown_handle_post_point_mall_lottery_draw
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@lotteryDraw
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/lottery/overview":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/lottery/overview"
+      operationId: unknown_handle_get_point_mall_lottery_overview
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@lotteryOverview
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/orders":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/orders"
+      operationId: unknown_handle_get_point_mall_orders
+      description: |
+        Action: Api\\V2\\PointMallController@orders
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/pet/adopt":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/pet/adopt"
+      operationId: unknown_handle_post_point_mall_pet_adopt
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@petAdopt
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/pet/overview":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/pet/overview"
+      operationId: unknown_handle_get_point_mall_pet_overview
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@petOverview
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/pet/{petId}/feed":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/pet/{petId}/feed"
+      operationId: unknown_handle_post_point_mall_pet_by_petid_feed
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@petFeed
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/pond/overview":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/pond/overview"
+      operationId: unknown_handle_get_point_mall_pond_overview
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@pondOverview
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/pond/release":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/pond/release"
+      operationId: unknown_handle_post_point_mall_pond_release
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@pondRelease
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/pond/{fishId}/feed":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/pond/{fishId}/feed"
+      operationId: unknown_handle_post_point_mall_pond_by_fishid_feed
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@pondFeed
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: fishId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/purchase":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/purchase"
+      operationId: unknown_handle_post_point_mall_purchase
+      description: |
+        Action: Api\\V2\\PointMallController@purchase
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/tree/leaderboard":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/tree/leaderboard"
+      operationId: unknown_handle_get_point_mall_tree_leaderboard
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@treeLeaderboard
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/tree/overview":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/tree/overview"
+      operationId: unknown_handle_get_point_mall_tree_overview
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@treeOverview
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/tree/plant":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/tree/plant"
+      operationId: unknown_handle_post_point_mall_tree_plant
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@treePlant
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/tree/{treeId}/decorate":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/tree/{treeId}/decorate"
+      operationId: unknown_handle_post_point_mall_tree_by_treeid_decorate
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@treeDecorate
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: treeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/tree/{treeId}/water":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/tree/{treeId}/water"
+      operationId: unknown_handle_post_point_mall_tree_by_treeid_water
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@treeWater
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: treeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/points":
+    get:
+      tags:
+        - points
+      summary: "GET /points"
+      operationId: unknown_handle_get_points
+      description: |
+        Action: Api\\V2\\PointController@index
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
       security:
         - BearerAuth: []
       responses:
@@ -7941,6 +9645,496 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/study/checkins":
+    get:
+      tags:
+        - study
+      summary: "GET /study/checkins"
+      operationId: unknown_handle_get_study_checkins
+      description: |
+        Action: Api\\V2\\StudyController@checkins
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/generate":
+    post:
+      tags:
+        - study
+      summary: "POST /study/generate"
+      operationId: unknown_handle_post_study_generate
+      description: |
+        Action: Api\\V2\\StudyController@generate
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/overview":
+    get:
+      tags:
+        - study
+      summary: "GET /study/overview"
+      operationId: unknown_handle_get_study_overview
+      description: |
+        Action: Api\\V2\\StudyController@overview
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/plans":
+    get:
+      tags:
+        - study
+      summary: "GET /study/plans"
+      operationId: unknown_handle_get_study_plans
+      description: |
+        Action: Api\\V2\\StudyController@plans
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    post:
+      tags:
+        - study
+      summary: "POST /study/plans"
+      operationId: unknown_handle_post_study_plans
+      description: |
+        Action: Api\\V2\\StudyController@createPlan
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/plans/{plan}":
+    get:
+      tags:
+        - study
+      summary: "GET /study/plans/{plan}"
+      operationId: unknown_handle_get_study_plans_by_plan
+      description: |
+        Action: Api\\V2\\StudyController@showPlan
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: plan
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    delete:
+      tags:
+        - study
+      summary: "DELETE /study/plans/{plan}"
+      operationId: unknown_handle_delete_study_plans_by_plan
+      description: |
+        Action: Api\\V2\\StudyController@destroyPlan
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: plan
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/plans/{plan}/generate":
+    post:
+      tags:
+        - study
+      summary: "POST /study/plans/{plan}/generate"
+      operationId: unknown_handle_post_study_plans_by_plan_generate
+      description: |
+        Action: Api\\V2\\StudyController@generateByPlan
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: plan
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/plans/{plan}/status":
+    post:
+      tags:
+        - study
+      summary: "POST /study/plans/{plan}/status"
+      operationId: unknown_handle_post_study_plans_by_plan_status
+      description: |
+        Action: Api\\V2\\StudyController@updatePlanStatus
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: plan
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/tasks/{task}/checkin":
+    post:
+      tags:
+        - study
+      summary: "POST /study/tasks/{task}/checkin"
+      operationId: unknown_handle_post_study_tasks_by_task_checkin
+      description: |
+        Action: Api\\V2\\StudyController@checkin
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/study/tasks/{task}/focus":
+    get:
+      tags:
+        - study
+      summary: "GET /study/tasks/{task}/focus"
+      operationId: unknown_handle_get_study_tasks_by_task_focus
+      description: |
+        Action: Api\\V2\\StudyController@focusTask
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/tasks":
     get:
       tags:
@@ -8130,6 +10324,42 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/tasks/tab-counts":
+    get:
+      tags:
+        - tasks
+      summary: "GET /tasks/tab-counts"
+      operationId: unknown_handle_get_tasks_tab_counts
+      description: |
+        Action: Api\\V2\\TaskController@tabCounts
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/tasks/{task}":
     get:
       tags:
@@ -8237,231 +10467,6 @@ paths:
         handler: "handle"
       parameters:
         - name: task
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/things":
-    get:
-      tags:
-        - journals
-      summary: "GET /journals"
-      operationId: unknown_handle_get_things
-      description: |
-        Action: Api\\V2\\ThingController@index
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-    post:
-      tags:
-        - journals
-      summary: "POST /journals"
-      operationId: unknown_handle_post_things
-      description: |
-        Action: Api\\V2\\ThingController@store
-        Capability: write
-      x-token-capability: "write"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/things/{thing}":
-    get:
-      tags:
-        - journals
-      summary: "GET /journals/{thing}"
-      operationId: unknown_handle_get_things_by_thing
-      description: |
-        Action: Api\\V2\\ThingController@show
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      parameters:
-        - name: thing
-          in: path
-          required: true
-          schema:
-            type: string
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-    put:
-      tags:
-        - journals
-      summary: "PUT /journals/{thing}"
-      operationId: unknown_handle_put_things_by_thing
-      description: |
-        Action: Api\\V2\\ThingController@update
-        Capability: write
-      x-token-capability: "write"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      parameters:
-        - name: thing
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-    delete:
-      tags:
-        - journals
-      summary: "DELETE /journals/{thing}"
-      operationId: unknown_handle_delete_things_by_thing
-      description: |
-        Action: Api\\V2\\ThingController@destroy
-        Capability: write
-      x-token-capability: "write"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      parameters:
-        - name: thing
           in: path
           required: true
           schema:

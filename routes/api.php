@@ -125,8 +125,11 @@ Route::prefix('v2')->group(function () {
         Route::get('/feeds/{feedSub}', 'Api\\V2\\FeedController@show');
         Route::get('/articles/navinfo', 'Api\\V2\\ArticleController@navinfo');
         Route::get('/articles/navcountinfo', 'Api\\V2\\ArticleController@navcountinfo');
+        Route::get('/articles/{article}/reader-view', 'Api\\V2\\ArticleController@readerView');
+        Route::get('/articles/{article}/ai-render', 'Api\\V2\\ArticleController@getAiRender');
         Route::get('/articles/{article}', 'Api\\V2\\ArticleController@show');
         Route::get('/articles/{articleSub}/record', 'Api\\V2\\ArticleController@getRecord');
+        Route::get('/music/hot-playlist', 'Api\\V2\\ArticleController@hotPlaylist');
 
         Route::get('/courses', 'Api\\V2\\CourseController@index');
         Route::get('/courses/management', 'Api\\V2\\CourseController@management');
@@ -156,6 +159,9 @@ Route::prefix('v2')->group(function () {
         Route::get('/wechat/articles', 'Api\\V2\\WechatController@articles');
         Route::get('/wechat/articleview', 'Api\\V2\\WechatController@articleView');
         Route::get('/wechat/notes', 'Api\\V2\\WechatController@notes');
+        Route::get('/digest/profile', 'Api\\V2\\DigestController@profile');
+        Route::get('/digest/pages', 'Api\\V2\\DigestController@pages');
+        Route::get('/digest/pages/{id}', 'Api\\V2\\DigestController@showPage');
     });
 
     Route::post('/auth/logout', 'Api\\V2\\AuthController@logout')->middleware('hybrid.token');
@@ -247,6 +253,9 @@ Route::prefix('v2')->group(function () {
         Route::post('/articles/status/{articleSub}', 'Api\\V2\\ArticleController@status');
         Route::post('/articles/allstatus', 'Api\\V2\\ArticleController@allstatus');
         Route::post('/articles/mark', 'Api\\V2\\ArticleController@mark');
+        Route::post('/articles/{article}/ai-render/generate', 'Api\\V2\\ArticleController@generateAiRender');
+        Route::post('/digest/profile', 'Api\\V2\\DigestController@saveProfile');
+        Route::post('/digest/pages/generate', 'Api\\V2\\DigestController@generate');
         Route::delete('/articles/{articleSub}', 'Api\\V2\\ArticleController@destroy');
 
         Route::post('/courses', 'Api\\V2\\CourseController@store');

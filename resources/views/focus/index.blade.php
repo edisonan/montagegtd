@@ -7,54 +7,57 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         @include('common.success')
 
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 mb-2">专注工作历史</h1>
-                <p class="text-gray-600">查看和回顾您已完成的所有专注工作记录</p>
+                <p class="text-gray-600">回看完成记录，快速补注释、复盘和想法。</p>
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center gap-2">
                 <a href="{{'/index'}}" class="btn btn-outline">
-                    <i class="fas fa-arrow-left mr-2"></i>返回首页
+                    <i class="fas fa-arrow-left mr-2"></i>首页
                 </a>
                 <a href="{{'/statistics'}}" class="btn btn-secondary">
-                    <i class="fas fa-chart-bar mr-2"></i>数据统计
+                    <i class="fas fa-chart-bar mr-2"></i>统计
+                </a>
+                <a href="{{'/focusstoday'}}" class="btn btn-primary">
+                    <i class="fas fa-bolt mr-2"></i>今天
                 </a>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="card">
-                <div class="p-6">
-                    <div class="flex items-center">
-                        <div class="rounded-full bg-blue-100 p-3 mr-4"><i class="fas fa-clock text-blue-600 text-xl"></i></div>
-                        <div>
-                            <p class="text-sm text-gray-500">总计专注数</p>
-                            <p class="text-2xl font-bold text-gray-900" id="focusTotal">0</p>
-                        </div>
+                <div class="p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <i class="fas fa-clock text-lg"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">总计</p>
+                        <p class="text-2xl font-bold text-gray-900" id="focusTotal">0</p>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="p-6">
-                    <div class="flex items-center">
-                        <div class="rounded-full bg-purple-100 p-3 mr-4"><i class="fas fa-calendar-alt text-purple-600 text-xl"></i></div>
-                        <div>
-                            <p class="text-sm text-gray-500">今日完成</p>
-                            <p class="text-2xl font-bold text-gray-900" id="focusToday">0</p>
-                        </div>
+                <div class="p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                        <i class="fas fa-calendar-day text-lg"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">今日</p>
+                        <p class="text-2xl font-bold text-gray-900" id="focusToday">0</p>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="p-6">
-                    <div class="flex items-center">
-                        <div class="rounded-full bg-green-100 p-3 mr-4"><i class="fas fa-fire text-green-600 text-xl"></i></div>
-                        <div>
-                            <p class="text-sm text-gray-500">当前页时长</p>
-                            <p class="text-2xl font-bold text-gray-900" id="focusCurrentPageDuration">0min</p>
-                        </div>
+                <div class="p-5 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center">
+                        <i class="fas fa-fire text-lg"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">本页时长</p>
+                        <p class="text-2xl font-bold text-gray-900" id="focusCurrentPageDuration">0min</p>
                     </div>
                 </div>
             </div>
@@ -91,7 +94,7 @@
                                 <th class="w-24">日期</th>
                                 <th class="w-40">时间段</th>
                                 <th>专注描述</th>
-                                <th class="w-32">操作</th>
+                                <th class="w-40">操作</th>
                             </tr>
                             </thead>
                             <tbody id="focusTableBody"></tbody>
@@ -153,6 +156,15 @@
             return div.innerHTML;
         }
 
+        function focusReviewBadge(value) {
+            var rating = Number(value || 0);
+            if (!rating) {
+                return '';
+            }
+            var color = rating >= 4 ? 'bg-emerald-100 text-emerald-700' : (rating >= 3 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600');
+            return '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs ' + color + '"><i class="fas fa-star mr-1"></i>' + rating + '</span>';
+        }
+
         var focusPageState = {
             page: 1,
             perPage: 20,
@@ -192,14 +204,17 @@
                 var end = formatDate(focus.end_time);
                 var showDate = start.md !== lastDate;
                 lastDate = start.md;
+                var reviewBadge = focusReviewBadge(focus.rating);
+                var noteLink = '/notes?source_type=1&source_id=' + focus.id;
 
                 tableBody.append(
                     '<tr data-focus-row-id="' + focus.id + '" class="hover:bg-gray-50 transition-colors">' +
                     '<td><span class="font-medium text-gray-900">' + (showDate ? start.md : '<span class="text-gray-300">— —</span>') + '</span></td>' +
                     '<td><div class="text-sm text-gray-600">' + start.hm + ' - ' + end.hm + '</div></td>' +
-                    '<td><div class="flex items-center group"><span data-focus-name-id="' + focus.id + '" class="text-gray-800 font-medium">' + escapeHtml(focus.name || '') + '</span></div></td>' +
+                    '<td><div class="flex flex-col gap-1"><div class="flex items-center gap-2 group"><span data-focus-name-id="' + focus.id + '" class="text-gray-800 font-medium">' + escapeHtml(focus.name || '') + '</span>' + reviewBadge + '</div>' + (focus.review_note ? '<div class="text-xs text-gray-500 break-words">' + escapeHtml(focus.review_note) + '</div>' : '') + '</div></td>' +
                     '<td><div class="flex items-center justify-end space-x-3">' +
-                    '<button class="update_focus text-gray-400 hover:text-green-600 transition-colors" data-focus-id="' + focus.id + '" data-focus-name="' + escapeHtml(focus.name || '') + '" title="编辑描述"><i class="fas fa-edit"></i></button>' +
+                    '<a class="text-gray-400 hover:text-blue-600 transition-colors" href="' + noteLink + '" target="_blank" title="查看笔记"><i class="fas fa-sticky-note"></i></a>' +
+                    '<button class="update_focus text-gray-400 hover:text-green-600 transition-colors" data-focus-id="' + focus.id + '" data-focus-name="' + escapeHtml(focus.name || '') + '" title="编辑描述"><i class="fas fa-pen"></i></button>' +
                     '<button class="delete_focus text-gray-400 hover:text-red-600 transition-colors" data-focus-id="' + focus.id + '" title="删除专注"><i class="fas fa-trash"></i></button>' +
                     '</div></td>' +
                     '</tr>'
@@ -207,10 +222,12 @@
 
                 mobileList.append(
                     '<div data-focus-row-id="' + focus.id + '" class="card hover:shadow-md transition-shadow"><div class="p-4">' +
-                    '<div class="mb-2"><span class="text-sm text-gray-500"><i class="far fa-clock mr-1"></i>' + start.md + ' ' + start.hm + ' - ' + end.hm + '</span></div>' +
-                    '<div class="text-gray-800 font-medium mb-3"><span data-focus-name-id="' + focus.id + '">' + escapeHtml(focus.name || '') + '</span></div>' +
+                    '<div class="mb-2 flex items-center justify-between gap-2"><span class="text-sm text-gray-500"><i class="far fa-clock mr-1"></i>' + start.md + ' ' + start.hm + ' - ' + end.hm + '</span>' + reviewBadge + '</div>' +
+                    '<div class="text-gray-800 font-medium mb-2"><span data-focus-name-id="' + focus.id + '">' + escapeHtml(focus.name || '') + '</span></div>' +
+                    (focus.review_note ? '<div class="text-xs text-gray-500 mb-3 break-words">' + escapeHtml(focus.review_note) + '</div>' : '') +
                     '<div class="flex items-center justify-end space-x-3 pt-3 border-t border-gray-100">' +
-                    '<button class="update_focus text-sm text-gray-600 hover:text-green-600" data-focus-id="' + focus.id + '" data-focus-name="' + escapeHtml(focus.name || '') + '"><i class="fas fa-edit mr-1"></i>编辑</button>' +
+                    '<a class="text-sm text-blue-600 hover:text-blue-700" href="' + noteLink + '" target="_blank"><i class="fas fa-sticky-note mr-1"></i>笔记</a>' +
+                    '<button class="update_focus text-sm text-gray-600 hover:text-green-600" data-focus-id="' + focus.id + '" data-focus-name="' + escapeHtml(focus.name || '') + '"><i class="fas fa-pen mr-1"></i>编辑</button>' +
                     '<button class="delete_focus text-sm text-red-600 hover:text-red-800" data-focus-id="' + focus.id + '"><i class="fas fa-trash mr-1"></i>删除</button>' +
                     '</div></div></div>'
                 );

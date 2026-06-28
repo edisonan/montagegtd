@@ -8,6 +8,9 @@ use App\Http\Utils\CommonUtil;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Article;
 use App\Models\ArticleSub;
+use App\Repositories\ArticleSubRepository;
+use App\Repositories\BgmTrackRepository;
+use App\Services\ArticleAiRenderService;
 use App\Services\ArticleService;
 use App\Services\PointGrantService;
 use Illuminate\Http\Request;
@@ -17,11 +20,23 @@ class ArticleController extends Controller
 {
     protected $articleService;
     protected $pointGrantService;
+    protected $articleSubRepository;
+    protected $articleAiRenderService;
+    protected $bgmTrackRepository;
 
-    public function __construct(ArticleService $articleService, PointGrantService $pointGrantService)
+    public function __construct(
+        ArticleService $articleService,
+        PointGrantService $pointGrantService,
+        ArticleSubRepository $articleSubRepository,
+        ArticleAiRenderService $articleAiRenderService,
+        BgmTrackRepository $bgmTrackRepository
+    )
     {
         $this->articleService = $articleService;
         $this->pointGrantService = $pointGrantService;
+        $this->articleSubRepository = $articleSubRepository;
+        $this->articleAiRenderService = $articleAiRenderService;
+        $this->bgmTrackRepository = $bgmTrackRepository;
     }
 
     public function index(Request $request)
@@ -200,8 +215,121 @@ class ArticleController extends Controller
         }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'article' => $article,
+            'article' => $this->serializeArticle($article),
             'is_feed' => $isFeed,
+        )));
+    }
+
+    public function readerView(Request $request, Article $article)
+    {
+        $article->load('feed', 'aiRender');
+
+        $articleSub = $this->resolveArticleSubForUser($request, $article, $request->input('article_sub_id'));
+        if (!$articleSub) {
+            throw new CustomException('未找到当前文章的阅读记录');
+        }
+
+        $aiRender = $this->articleAiRenderService->getRenderByArticleId($article->id);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'article_sub' => $this->serializeSingleArticleSub($articleSub),
+            'article' => $this->serializeArticle($article, $aiRender),
+            'ai_render' => $this->serializeAiRender($aiRender),
+        )));
+    }
+
+    public function getAiRender(Request $request, Article $article)
+    {
+        $articleSub = $this->resolveArticleSubForUser($request, $article, $request->input('article_sub_id'));
+        if (!$articleSub) {
+            throw new CustomException('未找到当前文章的阅读记录');
+        }
+
+        $render = $this->articleAiRenderService->getRenderByArticleId($article->id);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'article_id' => $article->id,
+            'ai_render' => $this->serializeAiRender($render),
+        )));
+    }
+
+    public function generateAiRender(Request $request, Article $article)
+    {
+        $articleSub = $this->resolveArticleSubForUser($request, $article, $request->input('article_sub_id'));
+        if (!$articleSub) {
+            throw new CustomException('未找到当前文章的阅读记录');
+        }
+
+        $article->load('feed');
+        $render = $this->articleAiRenderService->ensureRender($article, array(
+            'force' => (int)$request->input('force', 0) === 1,
+            'template_style' => $request->input('template_style', 'magazine'),
+        ));
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'article_id' => $article->id,
+            'ai_render' => $this->serializeAiRender($render),
+        )));
+    }
+
+    public function hotPlaylist(Request $request)
+    {
+        $keyword = trim((string)$request->input('keyword', 'tiktok'));
+        $tracks = $this->bgmTrackRepository->getActiveTracks(30, $keyword);
+        if ($tracks->count() > 0) {
+            $playlist = array();
+            foreach ($tracks as $track) {
+                $playlist[] = array(
+                    'id' => 'bgm-track-' . $track->id,
+                    'title' => $track->title,
+                    'artist' => $track->artist,
+                    'audio_url' => $track->audio_url,
+                    'source_url' => $track->source_url,
+                    'cover_color' => $track->cover_color ?: '#102033',
+                    'source_type' => $track->source_type ?: 'manual_pixabay',
+                    'search_keyword' => $track->search_keyword,
+                    'metadata' => (array)$track->metadata_json,
+                );
+            }
+
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+                'playlist' => $playlist,
+                'source' => 'bgm_tracks',
+                'keyword' => $keyword,
+            )));
+        }
+
+        $playlist = array(
+            array(
+                'id' => 'demo-hot-1',
+                'title' => '流行热歌 Demo 1',
+                'artist' => 'Montage Mix',
+                'audio_url' => 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+                'cover_color' => '#ff7a59',
+                'source_type' => 'fallback_demo',
+            ),
+            array(
+                'id' => 'demo-hot-2',
+                'title' => '流行热歌 Demo 2',
+                'artist' => 'Montage Mix',
+                'audio_url' => 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+                'cover_color' => '#00b894',
+                'source_type' => 'fallback_demo',
+            ),
+            array(
+                'id' => 'demo-hot-3',
+                'title' => '流行热歌 Demo 3',
+                'artist' => 'Montage Mix',
+                'audio_url' => 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+                'cover_color' => '#6c5ce7',
+                'source_type' => 'fallback_demo',
+            ),
+        );
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'playlist' => $playlist,
+            'source' => 'fallback_demo',
+            'keyword' => $keyword,
         )));
     }
 
@@ -281,33 +409,112 @@ class ArticleController extends Controller
                 $article->load('feed');
             }
 
-            $result[] = array(
-                'id' => $articleSub->id,
-                'user_id' => $articleSub->user_id,
-                'feed_id' => $articleSub->feed_id,
-                'article_id' => $articleSub->article_id,
-                'status' => $articleSub->status,
-                'updated_at' => $articleSub->updated_at,
-                'created_at' => $articleSub->created_at,
-                'article' => $article ? array(
-                    'id' => $article->id,
-                    'feed_id' => $article->feed_id,
-                    'subject' => $article->subject,
-                    'url' => $article->url,
-                    'image_url' => $article->image_url,
-                    'content' => $article->content,
-                    'formatted_content' => CommonUtil::formatContentHtml($article->content),
-                    'published' => $article->published,
-                    'feed' => $article->feed ? array(
-                        'id' => $article->feed->id,
-                        'feed_name' => $article->feed->feed_name,
-                        'url' => $article->feed->url,
-                        'category_id' => $article->feed->category_id,
-                    ) : null,
-                ) : null,
-            );
+            $result[] = $this->serializeSingleArticleSub($articleSub, $article);
         }
 
         return $result;
+    }
+
+    private function serializeSingleArticleSub($articleSub, $article = null)
+    {
+        if (!$article && $articleSub && $articleSub->relationLoaded('article')) {
+            $article = $articleSub->article;
+        }
+
+        return array(
+            'id' => $articleSub->id,
+            'user_id' => $articleSub->user_id,
+            'feed_id' => $articleSub->feed_id,
+            'article_id' => $articleSub->article_id,
+            'status' => $articleSub->status,
+            'updated_at' => $articleSub->updated_at,
+            'created_at' => $articleSub->created_at,
+            'article' => $article ? $this->serializeArticle($article) : null,
+        );
+    }
+
+    private function serializeArticle($article, $aiRender = null)
+    {
+        if ($article && !$article->relationLoaded('feed')) {
+            $article->load('feed');
+        }
+
+        if (!$aiRender && $article && $article->relationLoaded('aiRender')) {
+            $aiRender = $article->aiRender;
+        }
+
+        $plainText = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$article->content)));
+
+        return array(
+            'id' => $article->id,
+            'feed_id' => $article->feed_id,
+            'subject' => $article->subject,
+            'url' => $article->url,
+            'image_url' => $article->image_url,
+            'content' => $article->content,
+            'formatted_content' => CommonUtil::formatContentHtml($article->content),
+            'plain_text' => $plainText,
+            'published' => $article->published,
+            'estimated_read_minutes' => max(1, (int)ceil(mb_strlen($plainText) / 320)),
+            'feed' => $article->feed ? array(
+                'id' => $article->feed->id,
+                'feed_name' => $article->feed->feed_name,
+                'url' => $article->feed->url,
+                'category_id' => $article->feed->category_id,
+            ) : null,
+            'ai_render_state' => $this->serializeAiRender($aiRender),
+        );
+    }
+
+    private function serializeAiRender($render)
+    {
+        if (!$render) {
+            return array(
+                'status' => 'pending',
+                'render_mode' => 'visual_story',
+                'template_style' => 'magazine',
+                'summary' => null,
+                'outline' => array(),
+                'html_content' => null,
+                'model_name' => null,
+                'prompt_version' => null,
+                'generated_at' => null,
+                'error_message' => null,
+            );
+        }
+
+        return array(
+            'status' => $render->status,
+            'render_mode' => $render->render_mode,
+            'template_style' => $render->template_style,
+            'summary' => $render->summary,
+            'outline' => (array)$render->outline_json,
+            'html_content' => $render->html_content,
+            'model_name' => $render->model_name,
+            'prompt_version' => $render->prompt_version,
+            'generated_at' => $render->generated_at ? $render->generated_at->toDateTimeString() : null,
+            'error_message' => $render->error_message,
+        );
+    }
+
+    private function resolveArticleSubForUser(Request $request, Article $article, $articleSubId = null)
+    {
+        $userId = $this->getAuthUserId($request);
+        if (!$userId) {
+            return null;
+        }
+
+        if (!empty($articleSubId)) {
+            $articleSub = ArticleSub::with('article.feed')
+                ->where('id', $articleSubId)
+                ->where('user_id', $userId)
+                ->first();
+
+            if ($articleSub && (int)$articleSub->article_id === (int)$article->id) {
+                return $articleSub;
+            }
+        }
+
+        return $this->articleSubRepository->findByUserIdAndArticleId($userId, $article->id);
     }
 }

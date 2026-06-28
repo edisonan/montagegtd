@@ -40,4 +40,19 @@ class Article extends Model {
 	public function user() {
 		return $this->belongsTo ( User::class );
 	}
+
+    public function aiProfile()
+    {
+        return $this->hasOne(ArticleAiProfile::class);
+    }
+
+    public function aiTasks()
+    {
+        return $this->hasMany(ArticleAiTask::class);
+    }
+
+    public function aiRender()
+    {
+        return $this->hasOne(ArticleAiRender::class);
+    }
 }

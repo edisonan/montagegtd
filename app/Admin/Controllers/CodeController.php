@@ -26,13 +26,7 @@ class CodeController extends Controller
      */
     public function index(Content $content)
     {
-        return Admin::content ( function (Content $content) {
-
-            $content->header ( 'header' );
-            $content->description ( 'description' );
-
-            $content->body ( $this->grid () );
-        } );
+        return redirect('/admin/applications');
     }
 
     /**
@@ -45,6 +39,9 @@ class CodeController extends Controller
     public function show($id, Content $content)
     {
         $model = Code::findOrFail($id);
+        if ($model->app_id) {
+            return redirect('/admin/applications/' . $model->app_id . '?file_id=' . $model->id);
+        }
         $view = view('codeview', [
             'id' => $model->id,
             'name' => $model->name,
@@ -64,6 +61,11 @@ class CodeController extends Controller
      */
     public function edit($id, Content $content)
     {
+        $model = Code::findOrFail($id);
+        if ($model->app_id) {
+            return redirect('/admin/applications/' . $model->app_id . '?file_id=' . $model->id);
+        }
+
         return Admin::content ( function (Content $content) use ($id) {
 
             $content->header ( 'header' );
@@ -81,13 +83,7 @@ class CodeController extends Controller
      */
     public function create(Content $content)
     {
-        return Admin::content ( function (Content $content) {
-
-            $content->header ( 'header' );
-            $content->description ( 'description' );
-
-            $content->body ( $this->form () );
-        } );
+        return redirect('/admin/applications');
     }
 
     /**
