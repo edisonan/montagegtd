@@ -46,13 +46,29 @@ class FocusService {
 	 *
 	 * @return \App\Repositories\unknown
 	 */
-	public function getFocusListWithPagination($pageSize) {
+	public function getFocusListWithPagination($pageSize, $extraFilters = array()) {
         $filters = array(
             "status" => 2,
             "user_id" => Auth::id (),
             "page_size" => $pageSize
         );
+		$filters = array_merge($filters, $extraFilters);
 		return $this->focusRepository->getFocusListWithPagination ( $filters , $pageSize);
+	}
+
+	/**
+	 * 获取专注列表筛选统计。
+	 *
+	 * @param array $extraFilters
+	 * @return array
+	 */
+	public function getFocusListSummary($extraFilters = array()) {
+		$filters = array_merge(array(
+			"status" => 2,
+			"user_id" => Auth::id (),
+		), $extraFilters);
+
+		return $this->focusRepository->getFocusListSummary($filters);
 	}
 
 	/**

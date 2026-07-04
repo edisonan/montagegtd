@@ -37,14 +37,77 @@ class FocusRepository {
 	 * @return unknown
 	 */
 	public function getFocusListWithPagination($filters = [], $pageSize = 10) {
-		$focus = Focus::orderBy ( 'id', 'desc' );
-        if (isset($filters['user_id'])){
-            $focus = $focus->where ( 'user_id', $filters['user_id'] );
-        }
-        if (isset($filters['status'])){
-            $focus = $focus->where ( 'status', $filters['status'] );
-        }
-		return $focus->simplePaginate ($pageSize);
+		$focus = $this->buildFocusListQuery($filters);
+		return $focus->paginate($pageSize);
+	}
+
+	/**
+	 * 获取筛选后的专注统计。
+	 *
+	 * @param array $filters
+	 * @return array
+	 */
+	public function getFocusListSummary($filters = []) {
+		$focus = $this->buildFocusListQuery($filters);
+
+		return array(
+			'total' => (int)(clone $focus)->count(),
+			'avg_rating' => round((float)((clone $focus)->whereNotNull('rating')->avg('rating')), 1),
+			'review_pending' => (int)(clone $focus)->where(function($query) {
+				$query->whereNull('rating')
+					->orWhereNull('review_note')
+					->orWhere('review_note', '');
+			})->count(),
+			'duration_minutes' => (int)(clone $focus)->select(DB::raw('COALESCE(SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)), 0) as aggregate'))->value('aggregate'),
+		);
+	}
+
+	/**
+	 * 构造专注列表筛选查询。
+	 *
+	 * @param array $filters
+	 * @return \Illuminate\Database\Eloquent\Builder
+	 */
+	protected function buildFocusListQuery($filters = []) {
+		$focus = Focus::orderBy('id', 'desc');
+
+		if (isset($filters['user_id'])) {
+			$focus = $focus->where('user_id', $filters['user_id']);
+		}
+		if (isset($filters['status'])) {
+			$focus = $focus->where('status', $filters['status']);
+		}
+		if (!empty($filters['keyword'])) {
+			$keyword = '%' . $filters['keyword'] . '%';
+			$focus = $focus->where(function($query) use ($keyword) {
+				$query->where('name', 'like', $keyword)
+					->orWhere('review_note', 'like', $keyword);
+			});
+		}
+		if (!empty($filters['start_date'])) {
+			$focus = $focus->where('end_time', '>=', $filters['start_date'] . ' 00:00:00');
+		}
+		if (!empty($filters['end_date'])) {
+			$focus = $focus->where('end_time', '<=', $filters['end_date'] . ' 23:59:59');
+		}
+		if (!empty($filters['rating'])) {
+			$focus = $focus->where('rating', (int)$filters['rating']);
+		}
+		if (!empty($filters['review_status'])) {
+			if ($filters['review_status'] === 'pending') {
+				$focus = $focus->where(function($query) {
+					$query->whereNull('rating')
+						->orWhereNull('review_note')
+						->orWhere('review_note', '');
+				});
+			} elseif ($filters['review_status'] === 'reviewed') {
+				$focus = $focus->whereNotNull('rating')
+					->whereNotNull('review_note')
+					->where('review_note', '<>', '');
+			}
+		}
+
+		return $focus;
 	}
 
 	/**

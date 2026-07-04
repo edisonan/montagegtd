@@ -25,24 +25,45 @@ class FocusController extends Controller
 
     public function index(Request $request)
     {
+        $this->validate($request, array(
+            'page_count' => 'nullable|integer|min:1|max:100',
+            'keyword' => 'nullable|string|max:100',
+            'start_date' => 'nullable|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d',
+            'rating' => 'nullable|integer|min:1|max:5',
+            'review_status' => 'nullable|in:pending,reviewed',
+        ));
+
         $pageSize = (int)$request->input('page_count', 20);
         if ($pageSize <= 0) {
             $pageSize = 20;
         }
 
-        $focus_datas = $this->focusService->getFocusListWithPagination($pageSize);
+        $filters = array_filter(array(
+            'keyword' => trim((string)$request->input('keyword', '')),
+            'start_date' => $request->input('start_date'),
+            'end_date' => $request->input('end_date'),
+            'rating' => $request->input('rating'),
+            'review_status' => $request->input('review_status'),
+        ), function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $focus_datas = $this->focusService->getFocusListWithPagination($pageSize, $filters);
+        $summary = $this->focusService->getFocusListSummary($filters);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'focuss' => $focus_datas->items(),
             'pagination' => array(
                 'current_page' => $focus_datas->currentPage(),
                 'per_page' => $focus_datas->perPage(),
-                'total' => null,
-                'last_page' => null,
+                'total' => $focus_datas->total(),
+                'last_page' => $focus_datas->lastPage(),
                 'next_page_url' => $focus_datas->nextPageUrl(),
                 'prev_page_url' => $focus_datas->previousPageUrl(),
                 'has_more_pages' => $focus_datas->hasMorePages(),
             ),
+            'summary' => $summary,
         )));
     }
 
@@ -142,13 +163,13 @@ class FocusController extends Controller
 
         $this->authorize('destroy', $focus);
         $payload = array();
-        if ($request->has('name')) {
+        if ($request->exists('name')) {
             $payload['name'] = $request->input('name');
         }
-        if ($request->has('rating')) {
+        if ($request->exists('rating')) {
             $payload['rating'] = $request->input('rating');
         }
-        if ($request->has('review_note')) {
+        if ($request->exists('review_note')) {
             $payload['review_note'] = $request->input('review_note');
         }
 
