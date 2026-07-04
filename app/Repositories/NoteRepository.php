@@ -34,7 +34,10 @@ class NoteRepository {
 	
 		} );
 		if (! empty ( $keyword )) {
-			$query->where ( 'name', 'like', "%" . $keyword . "%" );
+			$query->where ( function ($query) use ($keyword) {
+				$query->where ( 'name', 'like', "%" . $keyword . "%" )
+					->orWhere ( 'content', 'like', "%" . $keyword . "%" );
+			} );
 		}
 		if (! empty ( $sourceType )) {
 			$query->where ( 'source_type', $sourceType );

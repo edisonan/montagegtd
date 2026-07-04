@@ -34,6 +34,7 @@ Route::group([
     Route::post('/help/feedbackStore', 'HelpController@feedbackStore');
 
     Route::get('/notes', 'NoteController@index');
+    Route::get('/notes/manage', 'NoteController@manage');
     Route::post('/notes/upload', 'NoteController@upload');
     Route::get('/notes/add_content/{add_content}', 'NoteController@index');
     Route::post('/note', 'NoteController@store');
@@ -86,7 +87,14 @@ Route::group([
     Route::post('/feeds/sort', 'FeedController@sort');
     Route::get('/feeds/explorer', 'FeedController@explorer');
     Route::get('/feeds/webpage-rss', 'FeedController@webpageRss');
+    Route::get('/feeds/webpage-rss/create', 'FeedController@createWebpageRss');
+    Route::get('/feeds/webpage-rss/{source}/edit', 'FeedController@editWebpageRss');
     Route::get('/feeds/webpage-rss/categories', 'FeedController@webpageRssCategories');
+    Route::get('/feeds/webpage-rss/sources', 'FeedController@webpageRssSources');
+    Route::get('/feeds/webpage-rss/sources/{source}', 'FeedController@webpageRssSource');
+    Route::delete('/feeds/webpage-rss/sources/{source}', 'FeedController@destroyWebpageRssSource');
+    Route::post('/feeds/webpage-rss/sources/{source}/subscribe', 'FeedController@subscribeWebpageRssSource');
+    Route::post('/feeds/webpage-rss/source-preview', 'FeedController@webpageRssSourcePreview');
     Route::post('/feeds/webpage-rss/debug', 'FeedController@debugWebpageRss');
     Route::post('/feeds/webpage-rss/ai-analyze', 'FeedController@aiAnalyzeWebpageRss');
     Route::post('/feeds/webpage-rss/save', 'FeedController@saveWebpageRss');

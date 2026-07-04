@@ -120,6 +120,82 @@
             color: var(--primary-color);
         }
 
+        .note-title-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            padding: 0 14px;
+            margin-bottom: 20px;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            transition: all 0.2s ease;
+        }
+
+        .note-title-field:focus-within {
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .note-title-field i {
+            color: var(--gray-400);
+            font-size: 14px;
+            flex: 0 0 auto;
+        }
+
+        .note-title-field:focus-within i {
+            color: var(--primary-color);
+        }
+
+        .note-title-field input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--gray-900);
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.4;
+            padding: 10px 0;
+        }
+
+        .note-title-field input::placeholder {
+            color: var(--gray-400);
+            font-weight: 500;
+        }
+
+        .note-title-ai-btn {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 30px;
+            padding: 0 10px;
+            border: 0;
+            border-radius: 6px;
+            background: rgba(139, 92, 246, 0.1);
+            color: #6d28d9;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .note-title-ai-btn:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .note-title-ai-btn i,
+        .note-title-field:focus-within .note-title-ai-btn i {
+            color: inherit;
+        }
+
         .editor-toolbar {
             border: 1px solid var(--gray-200) !important;
             border-bottom: none !important;
@@ -202,6 +278,71 @@
             color: var(--primary-color);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .tag-editor {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 8px 10px;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .tag-editor:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        #note-tags-selected {
+            display: contents;
+        }
+
+        .tag-chip button {
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .tag-chip button:hover {
+            background: rgba(59, 130, 246, 0.18);
+        }
+
+        .tag-entry-input {
+            flex: 1;
+            min-width: 140px;
+            border: 0;
+            outline: 0;
+            padding: 4px 2px;
+            font-size: 14px;
+            color: var(--gray-700);
+            background: transparent;
         }
 
         /* 录音功能优化 */
@@ -563,9 +704,23 @@
                 }
 
                 currentNote = payload;
+                const noteTitleInput = document.getElementById('note-title-input');
+                if (noteTitleInput) {
+                    noteTitleInput.value = currentNote.content ? decodeNoteContent(currentNote.name || '') : '';
+                }
+
                 const noteContentInput = document.getElementById('note-content');
                 if (noteContentInput) {
-                    noteContentInput.value = decodeNoteContent(currentNote.name || '');
+                    noteContentInput.value = decodeNoteContent(currentNote.content || currentNote.name || '');
+                }
+
+                const noteTagsInput = document.getElementById('note-tags-input');
+                if (noteTagsInput) {
+                    const tagMaps = Array.isArray(currentNote.note_tag_maps) ? currentNote.note_tag_maps : [];
+                    noteTagsInput.value = tagMaps.map(function(map) {
+                        return map && map.tag && map.tag.name ? map.tag.name : '';
+                    }).filter(Boolean).join(', ');
+                    renderTagChips();
                 }
 
                 const timeNode = document.getElementById('note-updated-time');
@@ -652,14 +807,147 @@
             }
         }
 
+        function getCurrentTags() {
+            const input = document.getElementById('note-tags-input');
+            if (!input) return [];
+
+            return input.value
+                .split(/[\s,，、]+/)
+                .map(function(item) { return item.trim(); })
+                .filter(Boolean);
+        }
+
+        function splitTags(value) {
+            return String(value || '')
+                .replace(/#/g, '')
+                .split(/[\s,，、;；]+/)
+                .map(function(item) { return item.trim(); })
+                .filter(Boolean);
+        }
+
+        function syncTagInput(tags) {
+            const hidden = document.getElementById('note-tags-input');
+            if (hidden) hidden.value = tags.join(', ');
+        }
+
+        function renderTagChips() {
+            const selected = document.getElementById('note-tags-selected');
+            if (!selected) return;
+
+            selected.innerHTML = getCurrentTags().map(function(tag, index) {
+                return '<span class="tag-chip">' + escapeHtml(tag) +
+                    '<button type="button" onclick="removeTagAt(' + index + ')" title="移除标签">' +
+                    '<i class="fas fa-times"></i></button></span>';
+            }).join('');
+        }
+
+        function addTags(value) {
+            const current = getCurrentTags();
+            splitTags(value).forEach(function(tagName) {
+                if (current.indexOf(tagName) === -1) {
+                    current.push(tagName);
+                }
+            });
+            syncTagInput(current);
+            renderTagChips();
+        }
+
+        function addTag(tagName) {
+            addTags(tagName);
+            const entry = document.getElementById('note-tag-entry');
+            if (entry) {
+                entry.value = '';
+                entry.focus();
+            }
+        }
+
+        function removeTagAt(index) {
+            const tags = getCurrentTags();
+            tags.splice(index, 1);
+            syncTagInput(tags);
+            renderTagChips();
+        }
+
+        function flushTagEntry() {
+            const entry = document.getElementById('note-tag-entry');
+            if (entry && entry.value.trim()) {
+                addTags(entry.value);
+                entry.value = '';
+            }
+        }
+
+        function initTagEditor() {
+            const entry = document.getElementById('note-tag-entry');
+            const editor = document.getElementById('note-tags-editor');
+            if (!entry) return;
+
+            renderTagChips();
+            entry.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ',' || event.key === '，' || event.key === 'Tab') {
+                    event.preventDefault();
+                    flushTagEntry();
+                } else if (event.key === 'Backspace' && !entry.value) {
+                    const tags = getCurrentTags();
+                    tags.pop();
+                    syncTagInput(tags);
+                    renderTagChips();
+                }
+            });
+            entry.addEventListener('paste', function(event) {
+                const text = (event.clipboardData || window.clipboardData).getData('text');
+                if (splitTags(text).length > 1) {
+                    event.preventDefault();
+                    addTags(text);
+                }
+            });
+            entry.addEventListener('blur', flushTagEntry);
+            if (editor) {
+                editor.addEventListener('click', function() {
+                    entry.focus();
+                });
+            }
+        }
+
+        function getNoteDraftContent() {
+            if (easymde) {
+                return easymde.value();
+            }
+
+            const editor = document.getElementById('markdown-editor');
+            return editor ? editor.value : '';
+        }
+
+        function generateNoteTitle() {
+            const content = getNoteDraftContent();
+            if (!content.trim()) {
+                if (typeof showToast === 'function') {
+                    showToast('请先填写笔记内容', 'info');
+                } else {
+                    alert('请先填写笔记内容');
+                }
+                return;
+            }
+
+            const editor = document.getElementById('markdown-editor');
+            if (editor) {
+                editor.value = content;
+            }
+
+            openAskAIModal('markdown-editor', 'note-title-input');
+            setTimeout(function() {
+                const query = document.getElementById('query');
+                if (query) {
+                    query.value = '请根据引用的笔记内容生成一个简洁标题。只输出标题，不要解释，不要加引号，20字以内。';
+                    query.focus();
+                }
+            }, 350);
+        }
+
         // 添加快捷内容
         function addContent(type, content) {
             if (!easymde) return;
 
             switch(type) {
-                case 'tag':
-                    easymde.codemirror.replaceSelection(`#${content}# `);
-                    break;
                 case 'code':
                     easymde.codemirror.replaceSelection('\n```\n// 在这里输入代码\n```\n');
                     break;
@@ -676,6 +964,7 @@
 
         // 提交表单
         function submitProcess(status) {
+            flushTagEntry();
             document.getElementById('status_id').value = status;
 
             const content = easymde ? easymde.value() : '';
@@ -690,7 +979,9 @@
             }
 
             apiRequest('PUT', '/notes/' + noteIdFromPath, {
-                name: content,
+                name: document.getElementById('note-title-input') ? document.getElementById('note-title-input').value : '',
+                content: content,
+                tags: document.getElementById('note-tags-input') ? document.getElementById('note-tags-input').value : '',
                 status: status
             }).then(function(response) {
                 if (response.code == 9999) {
@@ -860,6 +1151,7 @@
                 showToast('无效的笔记ID', 'error');
                 return;
             }
+            initTagEditor();
 
             loadNote().then(function() {
                 // 初始化Markdown编辑器
@@ -1032,31 +1324,52 @@
                 <!-- 笔记内容编辑区域 -->
                 <div class="editor-section">
                     <div class="section-label">
+                        <i class="fas fa-heading"></i>
+                        笔记标题
+                    </div>
+                    <div class="note-title-field">
+                        <i class="fas fa-heading"></i>
+                        <input type="text" id="note-title-input" name="name"
+                               placeholder="可选，用一句话概括这条笔记">
+                        <button type="button" class="note-title-ai-btn" onclick="generateNoteTitle()" title="AI生成标题">
+                            <i class="fas fa-robot"></i>
+                            <span>AI生成</span>
+                        </button>
+                    </div>
+
+                    <div class="section-label">
                         <i class="fas fa-edit"></i>
                         笔记内容
                     </div>
 
                     <!-- Markdown编辑器 -->
-                    <textarea id="markdown-editor" name="name" style="display: none;"></textarea>
+                    <textarea id="markdown-editor" name="content" style="display: none;"></textarea>
                     <input type="hidden" id="note-content" value="">
 
                     <!-- 快捷标签 -->
                     <div class="quick-tags-container">
-                        <div class="text-sm font-medium text-gray-700 mb-2">快速插入</div>
+                        <div class="text-sm font-medium text-gray-700 mb-2">标签</div>
+                        <input type="hidden" id="note-tags-input" name="tags" value="">
+                        <div class="tag-editor mb-3" id="note-tags-editor">
+                            <div id="note-tags-selected" class="contents"></div>
+                            <input type="text" id="note-tag-entry" class="tag-entry-input"
+                                   placeholder="输入标签后按回车">
+                        </div>
+                        <div class="text-sm font-medium text-gray-700 mb-2">快捷标签</div>
                         <div class="tags-grid">
-                            <div class="quick-tag" onclick="addContent('tag', '每日总结')">
+                            <div class="quick-tag" onclick="addTag('每日总结')">
                                 <i class="fas fa-tag"></i>
                                 每日总结
                             </div>
-                            <div class="quick-tag" onclick="addContent('tag', '读书笔记')">
+                            <div class="quick-tag" onclick="addTag('读书笔记')">
                                 <i class="fas fa-book"></i>
                                 读书笔记
                             </div>
-                            <div class="quick-tag" onclick="addContent('tag', '工作思考')">
+                            <div class="quick-tag" onclick="addTag('工作思考')">
                                 <i class="fas fa-briefcase"></i>
                                 工作思考
                             </div>
-                            <div class="quick-tag" onclick="addContent('tag', '灵感闪现')">
+                            <div class="quick-tag" onclick="addTag('灵感闪现')">
                                 <i class="fas fa-lightbulb"></i>
                                 灵感闪现
                             </div>

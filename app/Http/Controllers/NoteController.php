@@ -59,6 +59,10 @@ class NoteController extends Controller {
 	public function index(Request $request) {
 		return view ( 'notes.index', [ ] );
 	}
+
+	public function manage(Request $request) {
+		return view ( 'notes.manage', [ ] );
+	}
 	
 	/**
 	 * 创建.
@@ -67,19 +71,22 @@ class NoteController extends Controller {
 	 */
 	public function store(Request $request) {
 		$this->validate ( $request, [ 
-				'name' => 'required',
 				'status' => 'required' 
 		] );
 		
 		$fname = $request->input ( 'fname', '' );
 		$addImage = $request->input ( 'add_image', '' );
-		$name = $request->get ( 'name' );
+		list($name, $content) = $this->resolveNameAndContent($request);
+		if (trim($content) === '' && trim($name) === '' && empty($fname) && empty($addImage)) {
+			throw new CustomException('笔记正文不能为空');
+		}
 		$status = $request->get ( 'status' );
 		
 		$sourceType = $request->input ( 'source_type', 0 );
 		$sourceId = $request->input ( 'source_id', 0 );
+		$tags = $request->has('tags') ? $request->input('tags') : null;
 
-		$this->noteService->store ( $name, $status, $addImage, $fname, $sourceType, $sourceId );
+		$this->noteService->store ( $name, $content, $status, $addImage, $fname, $sourceType, $sourceId, $tags );
 		
 		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/notes' );
 	}
@@ -138,12 +145,27 @@ class NoteController extends Controller {
 	    }
 	    
 	    $this->validate ( $request, [
-	        'name' => 'required',
 	        'status' => 'required'
 	    ] );
+	    list($name, $content) = $this->resolveNameAndContent($request);
+	    if (trim($content) === '' && trim($name) === '') {
+	        throw new CustomException('笔记正文不能为空');
+	    }
+	    $tags = $request->has('tags') ? $request->input('tags') : null;
 	    
-	    $this->noteService->update ( $note, $request->name, $request->status );
+	    $this->noteService->update ( $note, $name, $content, $request->status, $tags );
 	    
 	    return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/notes' );
+	}
+
+	protected function resolveNameAndContent(Request $request) {
+		if ($request->has('content')) {
+			return array(
+				$request->input('name', ''),
+				$request->input('content', '')
+			);
+		}
+
+		return array('', $request->input('name', ''));
 	}
 }

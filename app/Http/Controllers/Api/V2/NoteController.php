@@ -47,6 +47,8 @@ class NoteController extends Controller
     {
         $this->authorize('destroy', $note);
 
+        $note->load('noteTagMaps.tag');
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($note));
     }
 
@@ -104,18 +106,21 @@ class NoteController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, array(
-            'name' => 'required',
             'status' => 'required',
         ));
 
         $fname = $request->input('fname', '');
         $addImage = $request->input('add_image', '');
-        $name = $request->input('name');
+        list($name, $content) = $this->resolveNameAndContent($request);
+        if (trim($content) === '' && trim($name) === '' && empty($fname) && empty($addImage)) {
+            throw new CustomException('笔记正文不能为空');
+        }
         $status = $request->input('status');
         $sourceType = $request->input('source_type', 0);
         $sourceId = $request->input('source_id', 0);
+        $tags = $request->has('tags') ? $request->input('tags') : null;
 
-        $note = $this->noteService->store($name, $status, $addImage, $fname, $sourceType, $sourceId);
+        $note = $this->noteService->store($name, $content, $status, $addImage, $fname, $sourceType, $sourceId, $tags);
         $userId = (int)$this->getAuthUserId($request);
         if ($userId > 0) {
             try {
@@ -143,7 +148,7 @@ class NoteController extends Controller
             }
         }
 
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($note->load('noteTagMaps.tag')));
     }
 
     public function update(Request $request, Note $note)
@@ -151,11 +156,15 @@ class NoteController extends Controller
         $this->authorize('destroy', $note);
 
         $this->validate($request, array(
-            'name' => 'required',
             'status' => 'required',
         ));
+        list($name, $content) = $this->resolveNameAndContent($request);
+        if (trim($content) === '' && trim($name) === '') {
+            throw new CustomException('笔记正文不能为空');
+        }
 
-        $this->noteService->update($note, $request->input('name'), $request->input('status'));
+        $tags = $request->has('tags') ? $request->input('tags') : null;
+        $this->noteService->update($note, $name, $content, $request->input('status'), $tags);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($note->fresh()));
     }
@@ -176,5 +185,17 @@ class NoteController extends Controller
             'note_id' => (int)$note->id,
             'liked' => true,
         )));
+    }
+
+    protected function resolveNameAndContent(Request $request)
+    {
+        if ($request->has('content')) {
+            return array(
+                $request->input('name', ''),
+                $request->input('content', ''),
+            );
+        }
+
+        return array('', $request->input('name', ''));
     }
 }

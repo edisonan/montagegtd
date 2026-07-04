@@ -70,6 +70,7 @@
                                 'icon'=>'fas fa-lightbulb',
                                 'submenu' => [
                                     ['url'=>'/notes', 'label'=>'新的想法', 'icon'=>'fas fa-plus'],
+                                    ['url'=>'/notes/manage', 'label'=>'笔记管理', 'icon'=>'fas fa-book'],
                                     ['url'=>'/minds', 'label'=>'思维导图', 'icon'=>'fas fa-sitemap'],
                                 ]
                             ],

@@ -1501,7 +1501,9 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        name: `${noteTitle}\n\n${text}`,
+                        name: noteTitle,
+                        content: text,
+                        tags: 'AI会话',
                         status: 1
                     })
                 });

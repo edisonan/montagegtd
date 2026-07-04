@@ -127,7 +127,7 @@ class DailySummaryService {
 		}
 		foreach ( $notes as $note ) {
 			$infos ['note'] ['list'] [] = array (
-					'content' => $note->name,
+					'content' => !empty($note->content) ? $note->content : $note->name,
 					'url' => '' 
 			);
 		}

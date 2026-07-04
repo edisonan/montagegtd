@@ -63,6 +63,81 @@
             border-left: 1px solid var(--gray-200) !important;
         }
 
+        .note-title-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            padding: 0 14px;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            transition: all 0.2s ease;
+        }
+
+        .note-title-field:focus-within {
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.12);
+        }
+
+        .note-title-field i {
+            color: var(--gray-400);
+            font-size: 14px;
+            flex: 0 0 auto;
+        }
+
+        .note-title-field:focus-within i {
+            color: var(--primary-color);
+        }
+
+        .note-title-field input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--gray-900);
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.4;
+            padding: 10px 0;
+        }
+
+        .note-title-field input::placeholder {
+            color: var(--gray-400);
+            font-weight: 500;
+        }
+
+        .note-title-ai-btn {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 30px;
+            padding: 0 10px;
+            border: 0;
+            border-radius: 6px;
+            background: rgba(102, 126, 234, 0.1);
+            color: #5b5fc7;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .note-title-ai-btn:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .note-title-ai-btn i,
+        .note-title-field:focus-within .note-title-ai-btn i {
+            color: inherit;
+        }
+
         /* 录音相关样式 - 恢复以前的样式 */
         .audio-controls {
             display: flex;
@@ -179,6 +254,71 @@
             background: rgba(74, 144, 226, 0.1);
             color: var(--primary-color);
             border-color: var(--primary-color);
+        }
+
+        .tag-editor {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 8px 10px;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .tag-editor:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.12);
+        }
+
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(74, 144, 226, 0.25);
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        #note-tags-selected {
+            display: contents;
+        }
+
+        .tag-chip button {
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .tag-chip button:hover {
+            background: rgba(74, 144, 226, 0.18);
+        }
+
+        .tag-entry-input {
+            flex: 1;
+            min-width: 140px;
+            border: 0;
+            outline: 0;
+            padding: 4px 2px;
+            font-size: 14px;
+            color: var(--gray-700);
+            background: transparent;
         }
 
         /* 笔记卡片 */
@@ -709,14 +849,147 @@
             }
         }
 
+        function getCurrentTags() {
+            const input = document.getElementById('note-tags-input');
+            if (!input) return [];
+
+            return input.value
+                .split(/[\s,，、]+/)
+                .map(function(item) { return item.trim(); })
+                .filter(Boolean);
+        }
+
+        function splitTags(value) {
+            return String(value || '')
+                .replace(/#/g, '')
+                .split(/[\s,，、;；]+/)
+                .map(function(item) { return item.trim(); })
+                .filter(Boolean);
+        }
+
+        function syncTagInput(tags) {
+            const hidden = document.getElementById('note-tags-input');
+            if (hidden) hidden.value = tags.join(', ');
+        }
+
+        function renderTagChips() {
+            const selected = document.getElementById('note-tags-selected');
+            if (!selected) return;
+
+            selected.innerHTML = getCurrentTags().map(function(tag, index) {
+                return '<span class="tag-chip">' + escapeHtml(tag) +
+                    '<button type="button" onclick="removeTagAt(' + index + ')" title="移除标签">' +
+                    '<i class="fas fa-times"></i></button></span>';
+            }).join('');
+        }
+
+        function addTags(value) {
+            const current = getCurrentTags();
+            splitTags(value).forEach(function(tagName) {
+                if (current.indexOf(tagName) === -1) {
+                    current.push(tagName);
+                }
+            });
+            syncTagInput(current);
+            renderTagChips();
+        }
+
+        function addTag(tagName) {
+            addTags(tagName);
+            const entry = document.getElementById('note-tag-entry');
+            if (entry) {
+                entry.value = '';
+                entry.focus();
+            }
+        }
+
+        function removeTagAt(index) {
+            const tags = getCurrentTags();
+            tags.splice(index, 1);
+            syncTagInput(tags);
+            renderTagChips();
+        }
+
+        function flushTagEntry() {
+            const entry = document.getElementById('note-tag-entry');
+            if (entry && entry.value.trim()) {
+                addTags(entry.value);
+                entry.value = '';
+            }
+        }
+
+        function initTagEditor() {
+            const entry = document.getElementById('note-tag-entry');
+            const editor = document.getElementById('note-tags-editor');
+            if (!entry) return;
+
+            renderTagChips();
+            entry.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' || event.key === ',' || event.key === '，' || event.key === 'Tab') {
+                    event.preventDefault();
+                    flushTagEntry();
+                } else if (event.key === 'Backspace' && !entry.value) {
+                    const tags = getCurrentTags();
+                    tags.pop();
+                    syncTagInput(tags);
+                    renderTagChips();
+                }
+            });
+            entry.addEventListener('paste', function(event) {
+                const text = (event.clipboardData || window.clipboardData).getData('text');
+                if (splitTags(text).length > 1) {
+                    event.preventDefault();
+                    addTags(text);
+                }
+            });
+            entry.addEventListener('blur', flushTagEntry);
+            if (editor) {
+                editor.addEventListener('click', function() {
+                    entry.focus();
+                });
+            }
+        }
+
+        function getNoteDraftContent() {
+            if (easymde) {
+                return easymde.value();
+            }
+
+            const editor = document.getElementById('markdown-editor');
+            return editor ? editor.value : '';
+        }
+
+        function generateNoteTitle() {
+            const content = getNoteDraftContent();
+            if (!content.trim()) {
+                if (typeof showToast === 'function') {
+                    showToast('请先填写笔记内容', 'info');
+                } else {
+                    alert('请先填写笔记内容');
+                }
+                return;
+            }
+
+            const editor = document.getElementById('markdown-editor');
+            if (editor) {
+                editor.value = content;
+            }
+
+            openAskAIModal('markdown-editor', 'note-title-input');
+            setTimeout(function() {
+                const query = document.getElementById('query');
+                if (query) {
+                    query.value = '请根据引用的笔记内容生成一个简洁标题。只输出标题，不要解释，不要加引号，20字以内。';
+                    query.focus();
+                }
+            }, 350);
+        }
+
         // 添加内容到编辑器
         function addContent(type, content) {
             if (!easymde) return;
 
             switch(type) {
-                case 'tag':
-                    easymde.codemirror.replaceSelection(`#${content}# `);
-                    break;
                 case 'code':
                     easymde.codemirror.replaceSelection('\n```\n// 在这里输入代码\n```\n');
                     break;
@@ -863,9 +1136,9 @@
             // 设置编辑器内容 - 修改为适应Markdown编辑器
             if (easymde) {
                 const currentValue = easymde.value();
-                if (!currentValue.includes("#分享语音#")) {
+                if (!currentValue.includes("语音记录")) {
                     const timestamp = new Date().toLocaleTimeString();
-                    easymde.codemirror.replaceSelection(`\n\n#分享语音# (${timestamp})\n\n`);
+                    easymde.codemirror.replaceSelection(`\n\n语音记录 (${timestamp})\n\n`);
                 }
             }
 
@@ -1003,6 +1276,7 @@
             // 初始化Markdown编辑器
             initMarkdownEditor();
             updateCharCount();
+            initTagEditor();
             initCreateFormFromQuery();
 
             // 初始化录音器 - 恢复以前的初始化逻辑
@@ -1141,24 +1415,48 @@
                 {!! csrf_field() !!}
 
                 <div class="p-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            笔记标题
+                        </label>
+                        <div class="note-title-field">
+                            <i class="fas fa-heading"></i>
+                            <input type="text" id="note-title-input" name="name"
+                                   placeholder="可选，用一句话概括这条笔记">
+                            <button type="button" class="note-title-ai-btn" onclick="generateNoteTitle()" title="AI生成标题">
+                                <i class="fas fa-robot"></i>
+                                <span>AI生成</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Markdown编辑器 -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             笔记内容 <span class="text-gray-400 text-xs" id="char-count">0/10000</span>
                         </label>
-                        <textarea id="markdown-editor" name="name" style="display: none;"></textarea>
+                        <textarea id="markdown-editor" name="content" style="display: none;"></textarea>
                     </div>
 
                     <!-- 标签快捷输入 -->
                     <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            标签
+                        </label>
+                        <input type="hidden" id="note-tags-input" name="tags" value="">
+                        <div class="tag-editor mb-3" id="note-tags-editor">
+                            <div id="note-tags-selected" class="contents"></div>
+                            <input type="text" id="note-tag-entry" class="tag-entry-input"
+                                   placeholder="输入标签后按回车">
+                        </div>
                         <div class="text-sm font-medium text-gray-700 mb-2">快捷标签</div>
                         <div class="note-tags">
-                            <div class="tag-badge" onclick="addContent('tag', '每日小计划')">#每日小计划#</div>
-                            <div class="tag-badge" onclick="addContent('tag', '读书笔记')">#读书笔记#</div>
-                            <div class="tag-badge" onclick="addContent('tag', '工作思考')">#工作思考#</div>
-                            <div class="tag-badge" onclick="addContent('tag', '灵感闪现')">#灵感闪现#</div>
-                            <div class="tag-badge" onclick="addContent('tag', '会议记录')">#会议记录#</div>
-                            <div class="tag-badge" onclick="addContent('tag', '项目复盘')">#项目复盘#</div>
+                            <div class="tag-badge" onclick="addTag('每日小计划')">每日小计划</div>
+                            <div class="tag-badge" onclick="addTag('读书笔记')">读书笔记</div>
+                            <div class="tag-badge" onclick="addTag('工作思考')">工作思考</div>
+                            <div class="tag-badge" onclick="addTag('灵感闪现')">灵感闪现</div>
+                            <div class="tag-badge" onclick="addTag('会议记录')">会议记录</div>
+                            <div class="tag-badge" onclick="addTag('项目复盘')">项目复盘</div>
                             <div class="tag-badge" onclick="addContent('code', '')">
                                 <i class="fas fa-code mr-1"></i>代码块
                             </div>
@@ -1344,9 +1642,17 @@
             const color1 = user.color_1 || '#4a90e2';
             const color2 = user.color_2 || '#8a6cff';
             const canReadMedia = isOwn || isPublic;
+            const rawContent = note.content || note.name || '';
+            const noteTitle = note.content ? (note.name || '') : '';
             const contentHtml = (window.marked && typeof window.marked.parse === 'function')
-                ? window.marked.parse(note.name || '')
-                : (note.name || '');
+                ? window.marked.parse(rawContent)
+                : rawContent;
+            const tagMaps = Array.isArray(note.note_tag_maps) ? note.note_tag_maps : [];
+            const tagsHtml = tagMaps.map(function(map) {
+                const tag = map && map.tag ? map.tag : null;
+                if (!tag || !tag.name) return '';
+                return '<a class="tag-badge" href="/notes?tag_id=' + Number(tag.id || 0) + '">' + escapeHtml(tag.name) + '</a>';
+            }).join('');
             const actionsHtml = isOwn
                 ? '<button class="operation-btn edit" onclick="window.location=\'/notes/' + Number(note.id) + '/edit\'" title="编辑笔记"><i class="fas fa-edit"></i></button>' +
                   '<button class="operation-btn delete delete_note" note_value="' + Number(note.id) + '" title="删除笔记"><i class="fas fa-trash"></i></button>'
@@ -1379,6 +1685,8 @@
                             ? '<div class="note-media"><a href="' + escapeHtml(note.image_path) + '" target="_blank"><img src="' + escapeHtml(note.image_path) + '" alt="笔记图片" class="note-image"></a></div>'
                             : ''
                         ) +
+                        (noteTitle ? '<h3 class="text-lg font-semibold text-gray-900 mb-3">' + escapeHtml(noteTitle) + '</h3>' : '') +
+                        (tagsHtml ? '<div class="note-tags mb-3">' + tagsHtml + '</div>' : '') +
                         '<div class="note-content markdown-content" id="note-content-' + Number(note.id) + '">' + contentHtml + '</div>' +
                     '</div>' +
                 '</div>'
@@ -1486,6 +1794,7 @@
             if (easymde) {
                 document.querySelector('#markdown-editor').value = easymde.value();
             }
+            flushTagEntry();
             document.getElementById('status_id').value = status;
 
             if (!apiRequest) {
@@ -1494,8 +1803,10 @@
             }
 
             const payload = {
-                name: document.querySelector('#markdown-editor').value || '',
+                name: document.getElementById('note-title-input') ? document.getElementById('note-title-input').value : '',
+                content: document.querySelector('#markdown-editor').value || '',
                 status: status,
+                tags: document.getElementById('note-tags-input') ? document.getElementById('note-tags-input').value : '',
                 source_type: document.querySelector('input[name="source_type"]') ? document.querySelector('input[name="source_type"]').value : 0,
                 source_id: document.querySelector('input[name="source_id"]') ? document.querySelector('input[name="source_id"]').value : 0,
                 fname: document.getElementById('fname') ? document.getElementById('fname').value : '',

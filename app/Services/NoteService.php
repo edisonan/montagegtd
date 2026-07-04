@@ -104,15 +104,6 @@ class NoteService {
 		$formatAddContent = $this->getFormatContent ( $addContent, $type , $sourceType, $sourceId );
 		
 		$notes = $this->noteRepository->getUserList ( Auth::id (), $tagId, $keyword, $sourceType, $sourceId);
-		foreach ( $notes as $key => $note ) {
-			foreach ( $note->noteTagMaps as $noteTagMap ) {
-				$url = "/notes?tag_id=" . $noteTagMap->tag->id;
-				$tagName = '#' . $noteTagMap->tag->name . '#';
-				
-				$note->name = str_replace ( $tagName, "<a href='$url'  target='_blank'>" . $tagName . "</a>", $note->name );
-				$notes [$key] = $note;
-			}
-		}
 		
 		return [ 
 				'add_content' => $formatAddContent,
@@ -212,7 +203,7 @@ class NoteService {
 	 * @param unknown $articleId        	
 	 * @param unknown $focusId        	
 	 */
-	public function store($name, $status, $addImage, $fname, $sourceType, $sourceId) {
+	public function store($name, $content, $status, $addImage, $fname, $sourceType, $sourceId, $tags = null) {
 		$note = new Note ();
 		if (! empty ( $fname )) {
 			$note->record_path = $this->storeRecord ( $fname );
@@ -227,58 +218,30 @@ class NoteService {
 			$note->image_path = '';
 		}
 		
-		$note->name = $this->formatName ( $name );
+		$note->name = $this->formatTitle ( $name );
+		$note->content = $this->formatContentForSave ( $content );
 		$note->status = $status;
 		$note->source_type = $sourceType;
 		$note->source_id = $sourceId;
 		$note->user_id = \Auth::id ();
 		$note->save ();
-		
-		preg_match_all ( '/#(.*?)#/i', $name, $match );
-		foreach ( $match [0] as $item ) {
-			$tagName = trim ( $item, '#' );
-			if (empty ( $tagName )) {
-				continue;
-			}
-			
-			$tag = $this->tagService->getByTagName ( $tagName, true );
-			
-			$tagNote = new NoteTagMap ();
-			$tagNote->create ( array (
-					'tag_id' => $tag->id,
-					'note_id' => $note->id 
-			) );
-		}
+		$this->syncTags($note, $tags, true);
 
 		return $note;
 	}
-	public function update($note, $name, $status) {
+	public function update($note, $name, $content, $status, $tags = null) {
 	    $updateParams = array(); 
-	    $formatName = $this->formatName ( $name );
-	    if($note->name != $formatName) {
+	    $formatName = $this->formatTitle ( $name );
+	    $formatContent = $this->formatContentForSave ( $content );
+	    if($note->name != $formatName || $note->content != $formatContent) {
 	        $note->audit_status = 0;
 		$note->name = $formatName;
+		$note->content = $formatContent;
 	    }
 	    $note->status = $status;
 	    $note->update ();
-	    
-	    preg_match_all ( '/#(.*?)#/i', $name, $match );
-	    foreach ( $match [0] as $item ) {
-	        $tagName = trim ( $item, '#' );
-	        if (empty ( $tagName )) {
-	            continue;
-	        }
-	        
-	        $tag = $this->tagService->getByTagName ( $tagName, true );
-	        
-	        $tagNote = NoteTagMap::where('tag_id', $tag->id)->where('note_id', $note->id)->first();
-	        if(empty($tagNote)) {
-    	        $tagNote = new NoteTagMap ();
-    	        $tagNote->create ( array (
-    	            'tag_id' => $tag->id,
-    	            'note_id' => $note->id
-    	        ) );
-	        }
+	    if ($tags !== null) {
+	        $this->syncTags($note, $tags, true);
 	    }
 	}
 	
@@ -288,7 +251,15 @@ class NoteService {
 	 * @param unknown $name        	
 	 * @return string
 	 */
-	private function formatName($name) {
+	private function formatTitle($name) {
+		$name = trim((string)$name);
+		if ($name === '') {
+			return '';
+		}
+		return htmlspecialchars($name);
+	}
+
+	private function formatContentForSave($name) {
 		$name = htmlspecialchars ( $name );
 		$name = str_replace ( '&lt;code&gt;', '<code>', $name );
 		$name = str_replace ( '&lt;/code&gt;', '</code>', $name );
@@ -331,5 +302,48 @@ class NoteService {
 		) )) {
 			throw new CustomException ( "错误的图片类型" );
 		}
+	}
+
+	private function syncTags($note, $tags, $replace = false) {
+		if ($replace) {
+			NoteTagMap::where('note_id', $note->id)->delete();
+		}
+
+		$tagNames = $this->parseTagNames($tags);
+		foreach ($tagNames as $tagName) {
+			$tag = $this->tagService->getByTagName($tagName, true);
+			if (empty($tag)) {
+				continue;
+			}
+
+			$tagNote = NoteTagMap::where('tag_id', $tag->id)->where('note_id', $note->id)->first();
+			if (empty($tagNote)) {
+				$tagNote = new NoteTagMap();
+				$tagNote->create(array(
+					'tag_id' => $tag->id,
+					'note_id' => $note->id
+				));
+			}
+		}
+	}
+
+	private function parseTagNames($tags) {
+		if (is_array($tags)) {
+			$rawItems = $tags;
+		} else {
+			$normalized = str_replace(array('#', '，', '、', ';', '；'), array('', ',', ',', ',', ','), (string)$tags);
+			$rawItems = preg_split('/[\s,]+/u', $normalized);
+		}
+
+		$tagNames = array();
+		foreach ($rawItems as $item) {
+			$tagName = trim((string)$item);
+			if ($tagName === '' || isset($tagNames[$tagName])) {
+				continue;
+			}
+			$tagNames[$tagName] = $tagName;
+		}
+
+		return array_values($tagNames);
 	}
 }

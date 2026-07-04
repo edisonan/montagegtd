@@ -159,7 +159,7 @@ class WechatController extends Controller
     public function notes(Request $request)
     {
         $userId = $this->getAuthUserId($request);
-        $sql = 'select n.id as id,n.name as name,n.record_path as record_path,n.image_path as image_path,n.created_at as created_at,u.name as user_name from notes n,users u where n.user_id=u.id and n.user_id=:user_id order by n.updated_at desc limit 10';
+        $sql = 'select n.id as id,n.name as name,n.content as content,n.record_path as record_path,n.image_path as image_path,n.created_at as created_at,u.name as user_name from notes n,users u where n.user_id=u.id and n.user_id=:user_id order by n.updated_at desc limit 10';
         $notes = DB::select($sql, array(':user_id' => $userId));
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($notes));
@@ -167,9 +167,9 @@ class WechatController extends Controller
 
     public function addNote(Request $request)
     {
-        $this->validate($request, array(
-            'name' => 'required',
-        ));
+        if (trim($request->input('content', $request->input('name', ''))) === '') {
+            throw new CustomException('笔记正文不能为空');
+        }
 
         $status = $request->input('status', 1);
         if ($status === false || (string)$status === 'false') {
@@ -179,12 +179,14 @@ class WechatController extends Controller
         }
 
         $this->noteService->store(
-            $request->input('name'),
+            '',
+            $request->input('content', $request->input('name')),
             (int)$status,
             '',
             '',
             (int)$request->input('source_type', 0),
-            (int)$request->input('source_id', 0)
+            (int)$request->input('source_id', 0),
+            $request->has('tags') ? $request->input('tags') : null
         );
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
@@ -239,4 +241,3 @@ class WechatController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($articleSub->article));
     }
 }
-

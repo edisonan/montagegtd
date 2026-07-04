@@ -12,6 +12,7 @@ class Note extends Model {
 	 */
 	protected $fillable = [ 
 			'name',
+			'content',
 			'status',
 			'record_path',
 			'image_path',
