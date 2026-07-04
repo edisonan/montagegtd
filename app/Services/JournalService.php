@@ -35,11 +35,26 @@ class JournalService {
 	 * @param int $pageSize
 	 * @return Collection
 	 */
-	public function getList($pageSize = 10) {
+	public function getList($pageSize = 10, $extraFilters = []) {
         $filters = [
             "user_id" => Auth::id()
         ];
+		$filters = array_merge($filters, $extraFilters);
 		return $this->journalRepository->getJournalListWithPagination($filters, $pageSize);
+	}
+
+	/**
+	 * 获取手账列表统计。
+	 *
+	 * @param array $extraFilters
+	 * @return array
+	 */
+	public function getListSummary($extraFilters = []) {
+		$filters = array_merge([
+			"user_id" => Auth::id()
+		], $extraFilters);
+
+		return $this->journalRepository->getJournalListSummary($filters);
 	}
 	
 	/**

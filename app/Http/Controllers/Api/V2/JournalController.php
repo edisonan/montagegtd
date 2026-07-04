@@ -24,12 +24,30 @@ class JournalController extends Controller
 
     public function index(Request $request)
     {
+        $this->validate($request, array(
+            'page_size' => 'nullable|integer|min:1|max:100',
+            'keyword' => 'nullable|string|max:100',
+            'start_date' => 'nullable|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d',
+            'type' => 'nullable|integer|min:1|max:5',
+        ));
+
         $pageSize = (int)$request->input('page_size', 10);
         if ($pageSize <= 0) {
             $pageSize = 10;
         }
 
-        $journals = $this->journalService->getList($pageSize);
+        $filters = array_filter(array(
+            'keyword' => trim((string)$request->input('keyword', '')),
+            'start_date' => $request->input('start_date'),
+            'end_date' => $request->input('end_date'),
+            'type' => $request->input('type'),
+        ), function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        $journals = $this->journalService->getList($pageSize, $filters);
+        $summary = $this->journalService->getListSummary($filters);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'journals' => $journals->items(),
@@ -42,6 +60,7 @@ class JournalController extends Controller
                 'prev_page_url' => $journals->previousPageUrl(),
                 'has_more_pages' => $journals->hasMorePages(),
             ),
+            'summary' => $summary,
         )));
     }
 
