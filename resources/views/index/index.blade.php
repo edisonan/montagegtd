@@ -273,6 +273,20 @@
                         <div id="taskScheduleTitle" class="text-sm text-gray-800 break-words"></div>
                     </div>
                     <div>
+                        <div class="text-xs text-gray-500 mb-2">快速时间</div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(1, 'hours')">1小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(3, 'hours')">3小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(6, 'hours')">6小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(1, 'days')">明天</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(3, 'days')">3天后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(7, 'days')">一周后</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline w-full mt-2" onclick="clearTaskScheduleInputs()">
+                            <i class="fas fa-eraser mr-1"></i>清空时间
+                        </button>
+                    </div>
+                    <div>
                         <label for="taskPlannedStartInput" class="text-sm text-gray-700">预计开始时间</label>
                         <input id="taskPlannedStartInput" type="datetime-local" class="input w-full mt-1">
                     </div>
@@ -1940,6 +1954,10 @@
             if (!value) return '';
             const date = new Date(value.replace(' ', 'T'));
             if (isNaN(date.getTime())) return '';
+            return formatLocalDatetimeInput(date);
+        }
+
+        function formatLocalDatetimeInput(date) {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
             const d = String(date.getDate()).padStart(2, '0');
@@ -2066,6 +2084,27 @@
             }).catch(function() {
                 showNotification('error', '加载任务信息失败');
             });
+        }
+
+        function applyTaskSchedulePreset(amount, unit) {
+            const start = new Date();
+            const end = new Date(start.getTime());
+
+            if (unit === 'hours') {
+                end.setHours(end.getHours() + Number(amount || 0));
+            } else {
+                end.setDate(end.getDate() + Number(amount || 0));
+            }
+
+            document.getElementById('taskPlannedStartInput').value = formatLocalDatetimeInput(start);
+            document.getElementById('taskPlannedEndInput').value = formatLocalDatetimeInput(end);
+            document.getElementById('taskRemindInput').value = formatLocalDatetimeInput(end);
+        }
+
+        function clearTaskScheduleInputs() {
+            document.getElementById('taskPlannedStartInput').value = '';
+            document.getElementById('taskPlannedEndInput').value = '';
+            document.getElementById('taskRemindInput').value = '';
         }
 
         function closeTaskScheduleModal() {
