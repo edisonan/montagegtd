@@ -4,6 +4,7 @@
 @section('description', '编辑您的手账记录信息')
 
 @section('content')
+    <script src="{{ '/js/My97DatePicker/WdatePicker.js' }}"></script>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="card overflow-hidden mb-6">
             <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
@@ -79,7 +80,7 @@
                                         class="input w-full pl-10"
                                         value=""
                                         placeholder="选择开始时间"
-                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})"
+                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d %H:%m:%s',onpicked:updateDurationHint})"
                                         readonly
                                 >
                                 <div class="absolute left-3 top-3 text-gray-400">
@@ -109,7 +110,7 @@
                                         class="input w-full pl-10"
                                         value=""
                                         placeholder="选择结束时间"
-                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})"
+                                        onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d %H:%m:%s',onpicked:updateDurationHint})"
                                         readonly
                                 >
                                 <div class="absolute left-3 top-3 text-gray-400">
@@ -229,6 +230,30 @@
             : null;
         var currentJournalId = null;
 
+        function parseJournalTime(value) {
+            if (!value) {
+                return null;
+            }
+
+            var normalized = String(value).trim().replace(' ', 'T');
+            if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalized)) {
+                normalized += ':00';
+            }
+
+            var date = new Date(normalized);
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        function formatJournalTime(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const mins = String(date.getMinutes()).padStart(2, '0');
+
+            return `${year}-${month}-${day} ${hours}:${mins}:00`;
+        }
+
         // 时间调整函数
         function adjustTime(inputId, minutes) {
             const input = document.getElementById(inputId);
@@ -241,20 +266,16 @@
             }
 
             try {
-                // 解析时间
-                const date = new Date(timeValue.replace(' ', 'T') + ':00');
+                const date = parseJournalTime(timeValue);
+                if (!date) {
+                    showErrorToast('时间格式不正确，请重新选择时间');
+                    return;
+                }
 
                 // 调整分钟
                 date.setMinutes(date.getMinutes() + minutes);
 
-                // 格式化回字符串
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const mins = String(date.getMinutes()).padStart(2, '0');
-
-                input.value = `${year}-${month}-${day} ${hours}:${mins}:00`;
+                input.value = formatJournalTime(date);
                 updateDurationHint();
 
                 // 显示成功提示
@@ -296,9 +317,9 @@
                 document.getElementById('duration_hint').classList.add('hidden');
                 return;
             }
-            var start = new Date(startValue.replace(' ', 'T'));
-            var end = new Date(endValue.replace(' ', 'T'));
-            if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+            var start = parseJournalTime(startValue);
+            var end = parseJournalTime(endValue);
+            if (!start || !end || end <= start) {
                 document.getElementById('duration_hint').classList.add('hidden');
                 return;
             }
@@ -378,10 +399,10 @@
                 }
                 // 验证时间逻辑
                 else if (startTimeInput.value && endTimeInput.value) {
-                    const start = new Date(startTimeInput.value.replace(' ', 'T'));
-                    const end = new Date(endTimeInput.value.replace(' ', 'T'));
+                    const start = parseJournalTime(startTimeInput.value);
+                    const end = parseJournalTime(endTimeInput.value);
 
-                    if (end <= start) {
+                    if (!start || !end || end <= start) {
                         isValid = false;
                         errorMessage = '结束时间必须晚于开始时间';
                         endTimeInput.focus();

@@ -6,7 +6,6 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div id="doingTaskCard" class="mb-6 hidden"></div>
-        <div id="executionStrip" class="mb-6 hidden"></div>
         <div id="indexMainGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- 左侧：番茄钟面板 -->
             <div class="space-y-6">
@@ -437,79 +436,6 @@
             gap: 4px;
         }
 
-        .execution-strip {
-            border: 1px solid var(--gray-200);
-            border-radius: 18px;
-            background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-        }
-
-        .execution-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(243, 244, 246, 0.9);
-            color: var(--gray-700);
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .execution-chip strong {
-            font-weight: 700;
-        }
-
-        .execution-chip.is-success {
-            background: rgba(16, 185, 129, 0.1);
-            color: #047857;
-        }
-
-        .execution-chip.is-warning {
-            background: rgba(245, 158, 11, 0.12);
-            color: #b45309;
-        }
-
-        .execution-chip.is-info {
-            background: rgba(59, 130, 246, 0.1);
-            color: #2563eb;
-        }
-
-        .execution-mini-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            border: 1px solid var(--gray-200);
-            color: var(--gray-600);
-            transition: all 0.2s ease;
-        }
-
-        .execution-mini-btn:hover {
-            transform: translateY(-1px);
-            border-color: var(--gray-300);
-            color: var(--gray-900);
-            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
-        }
-
-        .execution-progress-track {
-            height: 6px;
-            background: var(--gray-100);
-            border-radius: 999px;
-            overflow: hidden;
-        }
-
-        .execution-progress-bar {
-            height: 100%;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #00b894 0%, #38bdf8 100%);
-            transition: width 0.3s ease;
-        }
-
         /* 操作按钮悬停效果 */
         .action-button:hover {
             background: var(--gray-50);
@@ -717,7 +643,9 @@
         let calibrationTimer;
         let mode = 1;
         const interval = 1000;
-        const calibrationInterval = 60000;
+        const calibrationBaseInterval = 60000;
+        const calibrationMaxInterval = 1800000;
+        const calibrationBackoffIntervals = [60000, 120000, 240000, 480000, 960000, 1800000];
         let remain = 0;
         let status = 1;
         const title = '蒙太奇 - 专注效率工具';
@@ -725,9 +653,6 @@
         let originalRemain = remain; // 保存原始剩余时间
         let activePomoStartTime = '';
         let activePomoEndTime = '';
-        let currentFocusMeta = null;
-        let currentDoingTask = null;
-
         // 添加纯净模式状态
         let pureMode = false;
         let isCreatingTask = false;
@@ -738,6 +663,9 @@
         let currentScheduleTaskId = 0;
         let reviewTargetType = '';
         let reviewTargetId = 0;
+        let pomoNotifyBackoffStep = 0;
+        let lastPomoNotifyKey = '';
+        let lastPomoNotifyAt = 0;
 
         // 设置cookie
         function setCookie(c_name, value, expiredays) {
@@ -804,8 +732,8 @@
             showtasks();
             showfocuss();
 
-            // 启动校准定时器
-            calibrationTimer = setInterval(calibratePomoStatus, calibrationInterval);
+            // 启动指数退避校准定时器
+            schedulePomoCalibration(calibrationBaseInterval);
 
             const pureModeToggle = document.getElementById('pureModeToggle');
             if (pureModeToggle) {
@@ -837,7 +765,6 @@
                 if (activePomoStartTime) showPomoTime('focus_start_time_show', activePomoStartTime);
                 if (activePomoEndTime) showPomoTime('focus_end_time_show', activePomoEndTime);
             }
-            renderExecutionStrip();
         }
 
         function initializePage() {
@@ -856,7 +783,7 @@
 
         function applyPomoState(result) {
             const data = result || {};
-            currentFocusMeta = data.active_focus || null;
+            const previousStatus = status;
             status = Number(data.current_focus_status || 1);
             remain = Number(data.current_focus_remain || 0);
             originalRemain = remain;
@@ -870,12 +797,21 @@
             }
 
             if (status === 2 || status === 4) {
+                resetPomoNotifyBackoff();
                 startPomoTimer();
             } else {
                 clearInterval(timer);
             }
+            if (previousStatus !== status) {
+                resetPomoNotifyBackoff();
+            }
             renderPomoPanel();
             updateDisplay();
+        }
+
+        function resetPomoNotifyBackoff() {
+            pomoNotifyBackoffStep = 0;
+            lastPomoNotifyAt = 0;
         }
 
         function syncPomoStatus(silent) {
@@ -977,7 +913,6 @@
 
             // 更新进度圈
             updateProgressCircle();
-            renderExecutionStrip();
         }
 
         // 更新进度条显示的函数
@@ -1049,20 +984,150 @@
         // 浏览器通知
         function notify(message) {
             if (typeof Notification === 'undefined') {
+                indexDebug('pomo notify skipped', { reason: 'notification_api_unavailable', message: message });
+                showNotification('info', message);
                 return;
             }
             if (Notification.permission !== "granted") {
-                Notification.requestPermission();
-            } else {
-                const notification = new Notification('蒙太奇', {
-                    icon: '/favicon.ico',
-                    body: message,
-                });
-
-                notification.onclick = function () {
-                    window.location.href = "/index";
-                };
+                indexDebug('pomo notify permission request', { permission: Notification.permission, message: message });
+                const permissionResult = Notification.requestPermission();
+                if (permissionResult && typeof permissionResult.then === 'function') {
+                    permissionResult.then(function(permission) {
+                        indexDebug('pomo notify permission result', { permission: permission, message: message });
+                        if (permission === 'granted') {
+                            notify(message);
+                        } else {
+                            showNotification('info', message);
+                        }
+                    });
+                } else {
+                    showNotification('info', message);
+                }
+                return;
             }
+
+            indexDebug('pomo notify create', { permission: Notification.permission, message: message });
+            showNotification('info', message);
+            const notification = new Notification('蒙太奇', {
+                icon: '/favicon.ico',
+                body: message,
+                tag: 'montage-pomo-reminder',
+                renotify: true,
+                requireInteraction: true,
+                silent: false,
+            });
+
+            notification.onshow = function () {
+                indexDebug('pomo notify shown', { message: message });
+            };
+            notification.onerror = function (event) {
+                indexDebug('pomo notify error', { message: message, event_type: event && event.type ? event.type : '' });
+                showNotification('warning', '浏览器通知发送失败：' + message);
+            };
+            notification.onclose = function () {
+                indexDebug('pomo notify closed', { message: message });
+            };
+            notification.onclick = function () {
+                indexDebug('pomo notify clicked', { message: message });
+                window.focus();
+                window.location.href = "/index";
+            };
+        }
+
+        function canNotifyIdlePomo(now) {
+            const hour = now.getHours();
+            if (hour >= 12 && hour < 14) {
+                indexDebug('pomo idle notify suppressed', { reason: 'lunch_break', hour: hour });
+                return false;
+            }
+            if (hour >= 23 || hour < 9) {
+                indexDebug('pomo idle notify suppressed', { reason: 'night_quiet_hours', hour: hour });
+                return false;
+            }
+            return true;
+        }
+
+        function getPomoReminderMessage() {
+            if (status === 3) {
+                return '您已经完成了一个专注，快来记录一下吧~';
+            }
+            if (status === 1 && canNotifyIdlePomo(new Date())) {
+                return '当前没有开启番茄钟，开始一个新的专注吧~';
+            }
+            return '';
+        }
+
+        function maybeNotifyPomoReminder() {
+            const message = getPomoReminderMessage();
+            if (!message) {
+                indexDebug('pomo notify skipped', {
+                    reason: 'no_message',
+                    status: status,
+                    backoff_step: pomoNotifyBackoffStep
+                });
+                return;
+            }
+
+            const focusId = document.getElementById('focus_id') ? document.getElementById('focus_id').value : '';
+            const notifyKey = status + ':' + (focusId || 'none');
+            const now = Date.now();
+            const requiredInterval = calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+
+            if (notifyKey === lastPomoNotifyKey && lastPomoNotifyAt && now - lastPomoNotifyAt < requiredInterval) {
+                indexDebug('pomo notify skipped', {
+                    reason: 'backoff_wait',
+                    status: status,
+                    notify_key: notifyKey,
+                    elapsed_ms: now - lastPomoNotifyAt,
+                    required_ms: requiredInterval,
+                    next_check_ms: getNextPomoCalibrationDelay()
+                });
+                return;
+            }
+
+            indexDebug('pomo notify firing', {
+                status: status,
+                notify_key: notifyKey,
+                backoff_step: pomoNotifyBackoffStep,
+                required_ms: requiredInterval,
+                message: message
+            });
+            notify(message);
+            lastPomoNotifyKey = notifyKey;
+            lastPomoNotifyAt = now;
+            pomoNotifyBackoffStep = Math.min(pomoNotifyBackoffStep + 1, calibrationBackoffIntervals.length - 1);
+            indexDebug('pomo notify backoff advanced', {
+                next_backoff_step: pomoNotifyBackoffStep,
+                next_interval_ms: calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)]
+            });
+        }
+
+        function getNextPomoCalibrationDelay() {
+            if (status === 2 || status === 4) {
+                return calibrationBaseInterval;
+            }
+
+            if (status === 3) {
+                return calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+            }
+
+            if (status === 1 && canNotifyIdlePomo(new Date())) {
+                return calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+            }
+
+            return calibrationMaxInterval;
+        }
+
+        function schedulePomoCalibration(delay) {
+            clearTimeout(calibrationTimer);
+            const nextDelay = delay || calibrationBaseInterval;
+            indexDebug('pomo calibration scheduled', {
+                next_delay_ms: nextDelay,
+                next_delay_minutes: Math.round(nextDelay / 60000 * 10) / 10,
+                status: status,
+                backoff_step: pomoNotifyBackoffStep
+            });
+            calibrationTimer = setTimeout(calibratePomoStatus, nextDelay);
         }
 
         // 放弃专注
@@ -1094,7 +1159,28 @@
 
         // 校准专注状态
         function calibratePomoStatus() {
-            syncPomoStatus(true);
+            indexDebug('pomo calibration start', {
+                status: status,
+                remain: remain,
+                backoff_step: pomoNotifyBackoffStep,
+                last_notify_key: lastPomoNotifyKey,
+                last_notify_at: lastPomoNotifyAt
+            });
+            syncPomoStatus(true).then(function() {
+                indexDebug('pomo calibration synced', {
+                    status: status,
+                    remain: remain,
+                    focus_id: document.getElementById('focus_id') ? document.getElementById('focus_id').value : '',
+                    backoff_step: pomoNotifyBackoffStep
+                });
+                maybeNotifyPomoReminder();
+                schedulePomoCalibration(getNextPomoCalibrationDelay());
+            }).catch(function() {
+                indexDebug('pomo calibration failed', {
+                    next_delay_ms: calibrationMaxInterval
+                });
+                schedulePomoCalibration(calibrationMaxInterval);
+            });
         }
 
         // 保存专注记录
@@ -1313,109 +1399,6 @@
         </div>
     </div>
     `;
-        }
-
-        function getExecutionStatusMeta() {
-            if (status === 2) {
-                return {
-                    label: '专注进行中',
-                    hint: '当前专注正在运行，结束后可直接记录。',
-                    chipClass: 'is-success',
-                    icon: 'fa-circle-notch',
-                    primaryAction: '刷新状态',
-                    primaryIcon: 'fa-rotate'
-                };
-            }
-            if (status === 3) {
-                return {
-                    label: '专注待记录',
-                    hint: '本次专注已完成，建议尽快补一条记录。',
-                    chipClass: 'is-warning',
-                    icon: 'fa-clipboard-check',
-                    primaryAction: '记录',
-                    primaryIcon: 'fa-save'
-                };
-            }
-            if (status === 4) {
-                return {
-                    label: '休息时间',
-                    hint: '休息结束后继续下一个专注。',
-                    chipClass: 'is-info',
-                    icon: 'fa-mug-hot',
-                    primaryAction: '刷新状态',
-                    primaryIcon: 'fa-rotate'
-                };
-            }
-            return {
-                label: '待开始',
-                hint: currentDoingTask ? '你有一个正在做的任务，可以直接开启番茄钟。' : '先添加任务，再开始专注。',
-                chipClass: '',
-                icon: 'fa-play',
-                primaryAction: '开始',
-                primaryIcon: 'fa-play'
-            };
-        }
-
-        function renderExecutionStrip() {
-            const strip = document.getElementById('executionStrip');
-            if (!strip) {
-                return;
-            }
-
-            const focusId = currentFocusMeta && currentFocusMeta.id ? Number(currentFocusMeta.id) : 0;
-            const focusName = currentFocusMeta && currentFocusMeta.name ? String(currentFocusMeta.name) : '';
-            const taskId = currentDoingTask && currentDoingTask.id ? Number(currentDoingTask.id) : 0;
-            const taskName = currentDoingTask && currentDoingTask.name ? String(currentDoingTask.name) : '';
-            const meta = getExecutionStatusMeta();
-            const progress = (status === 2 || status === 4) && totalTime > 0 ? Math.max(0, Math.min(100, Math.round(((totalTime - remain) / totalTime) * 100))) : (status === 3 ? 100 : 0);
-            const primaryHandler = status === 1 ? 'startPomo()' : (status === 3 ? 'savePomoRecord()' : 'syncPomoStatus(false)');
-            const focusNotesUrl = focusId ? '/notes?source_type=1&source_id=' + focusId : '';
-            const taskNotesUrl = taskId ? '/notes?source_type=3&source_id=' + taskId : '';
-            const taskReviewBtn = taskId ? `<button type="button" class="execution-mini-btn" onclick='openReviewModal("task", ${taskId}, ${JSON.stringify(taskName || "未命名任务")}, ${currentDoingTask.rating || "null"}, ${JSON.stringify(String(currentDoingTask.review_note || ""))})' title="评分备注"><i class="fas fa-star-half-alt"></i></button>` : '';
-            const taskEditBtn = taskId ? `<button type="button" class="execution-mini-btn" onclick="editTask(${taskId})" title="编辑任务"><i class="fas fa-pen"></i></button>` : '';
-            const focusLabel = focusName ? escapeHtml(focusName) : '';
-            const taskLabel = taskName ? escapeHtml(taskName) : '';
-            const hasFocus = !!focusId;
-            const hasTask = !!taskId;
-
-            strip.className = 'mb-6 execution-strip';
-            strip.innerHTML = `
-                <div class="px-4 py-4">
-                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div class="min-w-0 flex items-start gap-3">
-                            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white flex items-center justify-center flex-shrink-0">
-                                <i class="fas ${meta.icon}"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="execution-chip ${meta.chipClass}">
-                                        <strong>${meta.label}</strong>
-                                    </span>
-                                    ${hasFocus ? `<span class="execution-chip is-info"><i class="fas fa-bullseye"></i>${focusLabel || '当前专注'}</span>` : ''}
-                                    ${hasTask ? `<span class="execution-chip"><i class="fas fa-list-check"></i>${taskLabel}</span>` : ''}
-                                </div>
-                                <div class="mt-2 text-sm text-gray-500">${escapeHtml(meta.hint)}</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 flex-wrap lg:justify-end">
-                            <button type="button" class="execution-mini-btn" onclick="${primaryHandler}" title="${meta.primaryAction}">
-                                <i class="fas ${meta.primaryIcon}"></i>
-                            </button>
-                            ${hasFocus ? `<a class="execution-mini-btn" href="${focusNotesUrl}" target="_blank" title="专注笔记"><i class="fas fa-sticky-note"></i></a>` : ''}
-                            ${hasFocus ? `<a class="execution-mini-btn" href="/focuss" title="专注历史"><i class="fas fa-clock-rotate-left"></i></a>` : ''}
-                            ${hasTask ? `<a class="execution-mini-btn" href="${taskNotesUrl}" target="_blank" title="任务笔记"><i class="fas fa-bookmark"></i></a>` : ''}
-                            ${taskEditBtn}
-                            ${taskReviewBtn}
-                        </div>
-                    </div>
-                </div>
-                <div class="px-4 pb-4">
-                    <div class="execution-progress-track">
-                        <div class="execution-progress-bar" style="width: ${progress}%"></div>
-                    </div>
-                </div>
-            `;
-            strip.classList.toggle('hidden', !(hasFocus || hasTask || status !== 1));
         }
 
         function updateTaskDoing(taskId, targetDoing) {
@@ -1760,7 +1743,6 @@
                             return Number(task.is_doing || 0) === 1 && Number(task.status || 1) === 1;
                         });
                         const primaryDoingTask = doingTasksRaw.length > 0 ? doingTasksRaw[0] : null;
-                        currentDoingTask = primaryDoingTask;
                         const normalTasks = list.filter(function(task) {
                             if (!primaryDoingTask) {
                                 return true;
@@ -1797,7 +1779,6 @@
                         }
                     } else {
                         indexDebug('showtasks non-9999', { code: response && response.code, msg: response && response.msg });
-                        currentDoingTask = null;
                         if (doingCard) {
                             doingCard.innerHTML = '';
                             doingCard.classList.add('hidden');
@@ -1807,7 +1788,6 @@
                     }
                 }).catch(function() {
                     indexDebug('showtasks failed');
-                    currentDoingTask = null;
                     if (doingCard) {
                         doingCard.innerHTML = '';
                         doingCard.classList.add('hidden');
@@ -1817,7 +1797,6 @@
                 }).finally(function() {
                     finishLoading();
                     updateTaskCount();
-                    renderExecutionStrip();
                 });
         }
 
