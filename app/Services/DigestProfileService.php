@@ -20,15 +20,11 @@ class DigestProfileService
 
     public function getProfileByUserId($userId)
     {
-        $this->assertWhitelist($userId);
-
         return $this->profileRepository->findEnabledByUserId($userId);
     }
 
     public function saveProfileByUserId($userId, array $data)
     {
-        $this->assertWhitelist($userId);
-
         $payload = array(
             'enabled' => isset($data['enabled']) ? (bool)$data['enabled'] : true,
             'topics_json' => $this->normalizeArrayField($data['topics'] ?? array()),

@@ -45,6 +45,7 @@ class ArticleController extends Controller
         $pageCount = (int)$request->input('page_count', 20);
         $categoryId = $request->input('category_id', '');
         $feedId = $request->input('feed_id', '');
+        $filters = $this->resolveArticleAiFilters($request);
 
         if (!in_array($status, array('unread', 'read', 'read_later', 'star'), true)) {
             throw new CustomException('status状态上送错误');
@@ -53,7 +54,7 @@ class ArticleController extends Controller
             $pageCount = 20;
         }
 
-        $articleSubs = $this->articleService->getArticleSubList($status, $pageCount, $feedId, $categoryId);
+        $articleSubs = $this->articleService->getArticleSubList($status, $pageCount, $feedId, $categoryId, $filters);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'articles' => $this->serializeArticleSubs($articleSubs->items()),
@@ -69,6 +70,9 @@ class ArticleController extends Controller
                 'status' => $status,
                 'category_id' => $categoryId,
                 'feed_id' => $feedId,
+                'view_mode' => $filters['view_mode'],
+                'primary_category' => $filters['primary_category'],
+                'min_quality_score' => $filters['min_quality_score'],
             ),
         )));
     }
@@ -77,6 +81,7 @@ class ArticleController extends Controller
     {
         $feedId = $request->input('feed_id');
         $pageCount = (int)$request->input('page_count', 20);
+        $filters = $this->resolveArticleAiFilters($request);
 
         if (empty($feedId)) {
             throw new CustomException('feed_id参数缺失');
@@ -85,7 +90,7 @@ class ArticleController extends Controller
             $pageCount = 20;
         }
 
-        $articleInfos = $this->articleService->getArticleListByFeedId($feedId, $pageCount);
+        $articleInfos = $this->articleService->getArticleListByFeedId($feedId, $pageCount, $filters);
         $articles = isset($articleInfos['articles']) ? $articleInfos['articles'] : null;
         $feed = isset($articleInfos['feed']) ? $articleInfos['feed'] : null;
 
@@ -102,6 +107,9 @@ class ArticleController extends Controller
             'page_params' => array(
                 'page_count' => $pageCount,
                 'feed_id' => $feedId,
+                'view_mode' => $filters['view_mode'],
+                'primary_category' => $filters['primary_category'],
+                'min_quality_score' => $filters['min_quality_score'],
             ),
         )));
     }
@@ -429,6 +437,7 @@ class ArticleController extends Controller
             'status' => $articleSub->status,
             'updated_at' => $articleSub->updated_at,
             'created_at' => $articleSub->created_at,
+            'personalized_score' => isset($articleSub->personalized_score) ? (float)$articleSub->personalized_score : null,
             'article' => $article ? $this->serializeArticle($article) : null,
         );
     }
@@ -437,6 +446,10 @@ class ArticleController extends Controller
     {
         if ($article && !$article->relationLoaded('feed')) {
             $article->load('feed');
+        }
+
+        if ($article && !$article->relationLoaded('aiProfile')) {
+            $article->load('aiProfile');
         }
 
         if (!$aiRender && $article && $article->relationLoaded('aiRender')) {
@@ -462,7 +475,30 @@ class ArticleController extends Controller
                 'url' => $article->feed->url,
                 'category_id' => $article->feed->category_id,
             ) : null,
+            'ai_profile' => $this->serializeAiProfile($article->aiProfile),
             'ai_render_state' => $this->serializeAiRender($aiRender),
+        );
+    }
+
+    private function serializeAiProfile($profile)
+    {
+        if (!$profile) {
+            return null;
+        }
+
+        return array(
+            'status' => $profile->status,
+            'primary_category' => $profile->primary_category,
+            'secondary_category' => $profile->secondary_category,
+            'tags' => (array)$profile->tags_json,
+            'keywords' => (array)$profile->keywords_json,
+            'summary' => $profile->summary,
+            'content_type' => $profile->content_type,
+            'audience' => $profile->audience,
+            'quality_score' => $profile->quality_score,
+            'risk_flags' => (array)$profile->risk_flags_json,
+            'model_name' => $profile->model_name,
+            'analyzed_at' => $profile->analyzed_at ? $profile->analyzed_at->toDateTimeString() : null,
         );
     }
 
@@ -494,6 +530,21 @@ class ArticleController extends Controller
             'prompt_version' => $render->prompt_version,
             'generated_at' => $render->generated_at ? $render->generated_at->toDateTimeString() : null,
             'error_message' => $render->error_message,
+        );
+    }
+
+    private function resolveArticleAiFilters(Request $request)
+    {
+        $viewMode = (string)$request->input('view_mode', 'all');
+        $allowedViewModes = array('all', 'personalized', 'tech', 'product', 'read_later_suggest', 'low_priority');
+        if (!in_array($viewMode, $allowedViewModes, true)) {
+            $viewMode = 'all';
+        }
+
+        return array(
+            'view_mode' => $viewMode,
+            'primary_category' => trim((string)$request->input('primary_category', '')),
+            'min_quality_score' => max(0, (int)$request->input('min_quality_score', 0)),
         );
     }
 

@@ -13,6 +13,7 @@ use App\Repositories\CategoryRepository;
 use App\Repositories\ArticleRepository;
 use App\Repositories\FeedSubRepository;
 use App\Repositories\ArticleSubRepository;
+use App\Repositories\UserDigestProfileRepository;
 use Illuminate\Contracts\Logging\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -54,6 +55,13 @@ class ArticleService {
 	 * @var ArticleSubRepository
 	 */
 	protected $articleSubRepository;
+
+    /**
+     * UserDigestProfileRepository 实例 .
+     *
+     * @var UserDigestProfileRepository
+     */
+    protected $userDigestProfileRepository;
 	
 	/**
 	 * 创建Service
@@ -63,11 +71,12 @@ class ArticleService {
 	 * @param FeedSubRepository $feedSubRepository        	
 	 * @param ArticleSubRepository $articleSubRepository        	
 	 */
-	public function __construct(CategoryRepository $categoryRepository, ArticleRepository $articleRepository, FeedSubRepository $feedSubRepository, ArticleSubRepository $articleSubRepository) {
+	public function __construct(CategoryRepository $categoryRepository, ArticleRepository $articleRepository, FeedSubRepository $feedSubRepository, ArticleSubRepository $articleSubRepository, UserDigestProfileRepository $userDigestProfileRepository) {
 		$this->categoryRepository = $categoryRepository;
 		$this->articleRepository = $articleRepository;
 		$this->feedSubRepository = $feedSubRepository;
 		$this->articleSubRepository = $articleSubRepository;
+        $this->userDigestProfileRepository = $userDigestProfileRepository;
 	}
 	
 	/**
@@ -79,7 +88,7 @@ class ArticleService {
 	 * @param string $categoryId        	
 	 * @return unknown
 	 */
-	public function getArticleSubList(string $status, int $pageCount = 20, $feedId = '', $categoryId = '') {
+	public function getArticleSubList(string $status, int $pageCount = 20, $feedId = '', $categoryId = '', array $filters = array()) {
 		// 组装订阅源ids
 		$feedIds = array ();
 		if (! empty ( $feedId )) {
@@ -89,7 +98,7 @@ class ArticleService {
 		}
 		
 		// 获取文章列表
-		$articleSubs = $this->articleSubRepository->getArticleSubList ( Auth::id (), $status, $feedIds, $pageCount );
+		$articleSubs = $this->articleSubRepository->getArticleSubList ( Auth::id (), $status, $feedIds, $pageCount, $this->buildPersonalizedFilters(Auth::id(), $filters) );
 		return $articleSubs;
 	}
 	
@@ -155,7 +164,7 @@ class ArticleService {
 	 *        	每页数量
 	 * @return array
 	 */
-	public function getArticleListByFeedId($feedId, $pageCount) {
+	public function getArticleListByFeedId($feedId, $pageCount, array $filters = array()) {
 		// 查看订阅源
 		$feed = Feed::where ( 'id', $feedId )->first ();
 		if (empty ( $feed )) {
@@ -163,13 +172,51 @@ class ArticleService {
 		}
 		
 		// 获取文章列表
-		$articles = $this->articleSubRepository->getArticleListByFeedId ( Auth::id (), $feedId, $pageCount );
+		$articles = $this->articleSubRepository->getArticleListByFeedId ( Auth::id (), $feedId, $pageCount, $this->buildPersonalizedFilters(Auth::id(), $filters) );
 		
 		return [ 
 				'articles' => $articles,
 				'feed' => $feed 
 		];
 	}
+
+    public function buildPersonalizedFilters($userId, array $filters = array())
+    {
+        $viewMode = isset($filters['view_mode']) ? (string)$filters['view_mode'] : 'all';
+        if ($viewMode === '') {
+            $viewMode = 'all';
+        }
+
+        $payload = array(
+            'view_mode' => $viewMode,
+            'primary_category' => isset($filters['primary_category']) ? trim((string)$filters['primary_category']) : '',
+            'min_quality_score' => isset($filters['min_quality_score']) ? (int)$filters['min_quality_score'] : 0,
+        );
+
+        if ($viewMode !== 'personalized') {
+            return $payload;
+        }
+
+        $profile = $this->userDigestProfileRepository->findEnabledByUserId($userId);
+        if (!$profile) {
+            $payload['preferred_categories'] = array('AI', '后端', '前端', '产品');
+            $payload['topics'] = array();
+            $payload['include_keywords'] = array();
+            $payload['exclude_keywords'] = array();
+            return $payload;
+        }
+
+        $payload['preferred_categories'] = (array)$profile->preferred_categories_json;
+        $payload['topics'] = (array)$profile->topics_json;
+        $payload['include_keywords'] = (array)$profile->include_keywords_json;
+        $payload['exclude_keywords'] = (array)$profile->exclude_keywords_json;
+
+        if (empty($payload['preferred_categories']) && empty($payload['topics']) && empty($payload['include_keywords'])) {
+            $payload['preferred_categories'] = array('AI', '后端', '前端', '产品');
+        }
+
+        return $payload;
+    }
 	
 	/**
 	 * 判断是否订阅此源

@@ -26,12 +26,13 @@ class ArticleSubRepository {
 	 *        	每页数量
 	 * @return array
 	 */
-	public function getArticleSubList($userId, $status, $feedIds = array(), $pageCount = 20) {
-		$articleSubs = ArticleSub::with ( 'article.feed' )->where ( 'user_id', $userId )->where ( 'status', $status );
+	public function getArticleSubList($userId, $status, $feedIds = array(), $pageCount = 20, array $filters = array()) {
+		$articleSubs = ArticleSub::with ( 'article.feed', 'article.aiProfile' )->where ( 'article_subs.user_id', $userId )->where ( 'article_subs.status', $status );
 		if (! empty ( $feedIds )) {
-			$articleSubs = $articleSubs->whereIn ( 'feed_id', $feedIds );
+			$articleSubs = $articleSubs->whereIn ( 'article_subs.feed_id', $feedIds );
 		}
-		$articleSubs = $articleSubs->orderBy ( 'updated_at', 'desc' )->simplePaginate ( $pageCount );
+        $this->applyAiFilters($articleSubs, $filters);
+		$articleSubs = $articleSubs->orderBy ( 'article_subs.updated_at', 'desc' )->simplePaginate ( $pageCount );
 		return $articleSubs;
 	}
 	
@@ -62,9 +63,112 @@ class ArticleSubRepository {
 	 * @param int $pageCount
 	 *        	每页数量
 	 */
-	public function getArticleListByFeedId($userId, $feedId, $pageCount = 20) {
-		return ArticleSub::with ( 'article.feed' )->where ( 'user_id', $userId )->where ( 'feed_id', $feedId )->orderBy ( 'updated_at', 'desc' )->simplePaginate ( $pageCount );
+	public function getArticleListByFeedId($userId, $feedId, $pageCount = 20, array $filters = array()) {
+        $articleSubs = ArticleSub::with ( 'article.feed', 'article.aiProfile' )
+            ->where ( 'article_subs.user_id', $userId )
+            ->where ( 'article_subs.feed_id', $feedId );
+        $this->applyAiFilters($articleSubs, $filters);
+		return $articleSubs->orderBy ( 'article_subs.updated_at', 'desc' )->simplePaginate ( $pageCount );
 	}
+
+    protected function applyAiFilters($query, array $filters)
+    {
+        $viewMode = isset($filters['view_mode']) ? (string)$filters['view_mode'] : 'all';
+        $needsAiJoin = $viewMode !== 'all'
+            || !empty($filters['primary_category'])
+            || !empty($filters['min_quality_score']);
+
+        if (!$needsAiJoin) {
+            return;
+        }
+
+        $query->leftJoin('article_ai_profiles as aap', 'article_subs.article_id', '=', 'aap.article_id')
+            ->leftJoin('articles as ai_articles', 'article_subs.article_id', '=', 'ai_articles.id')
+            ->select('article_subs.*');
+
+        if (!empty($filters['primary_category'])) {
+            $query->where('aap.primary_category', (string)$filters['primary_category']);
+        }
+
+        if (!empty($filters['min_quality_score'])) {
+            $query->where('aap.quality_score', '>=', (int)$filters['min_quality_score']);
+        }
+
+        if ($viewMode === 'tech') {
+            $query->whereIn('aap.primary_category', array('AI', '后端', '前端'));
+            return;
+        }
+
+        if ($viewMode === 'product') {
+            $query->where('aap.primary_category', '产品');
+            return;
+        }
+
+        if ($viewMode === 'read_later_suggest') {
+            $query->where(function ($subQuery) {
+                $subQuery->where('aap.quality_score', '>=', 70)
+                    ->orWhereIn('aap.content_type', array('教程', '指南', '深度分析', '长文', '案例'));
+            });
+            return;
+        }
+
+        if ($viewMode === 'low_priority') {
+            $query->where(function ($subQuery) {
+                $subQuery->whereNull('aap.id')
+                    ->orWhere('aap.primary_category', '其他')
+                    ->orWhere('aap.quality_score', '<', 50);
+            });
+            return;
+        }
+
+        if ($viewMode !== 'personalized') {
+            return;
+        }
+
+        $scoreSqlParts = array('COALESCE(aap.quality_score, 0) * 0.3');
+        $bindings = array();
+
+        foreach ((array)($filters['preferred_categories'] ?? array()) as $category) {
+            $category = trim((string)$category);
+            if ($category === '') {
+                continue;
+            }
+            $scoreSqlParts[] = 'CASE WHEN aap.primary_category = ? THEN 30 ELSE 0 END';
+            $bindings[] = $category;
+        }
+
+        $keywords = array_merge(
+            (array)($filters['topics'] ?? array()),
+            (array)($filters['include_keywords'] ?? array())
+        );
+        foreach ($keywords as $keyword) {
+            $keyword = trim((string)$keyword);
+            if ($keyword === '') {
+                continue;
+            }
+            $like = '%' . $keyword . '%';
+            $scoreSqlParts[] = 'CASE WHEN ai_articles.subject LIKE ? OR aap.tags_json LIKE ? OR aap.keywords_json LIKE ? THEN 20 ELSE 0 END';
+            $bindings[] = $like;
+            $bindings[] = $like;
+            $bindings[] = $like;
+        }
+
+        foreach ((array)($filters['exclude_keywords'] ?? array()) as $keyword) {
+            $keyword = trim((string)$keyword);
+            if ($keyword === '') {
+                continue;
+            }
+            $like = '%' . $keyword . '%';
+            $scoreSqlParts[] = 'CASE WHEN ai_articles.subject LIKE ? OR aap.tags_json LIKE ? OR aap.keywords_json LIKE ? THEN -100 ELSE 0 END';
+            $bindings[] = $like;
+            $bindings[] = $like;
+            $bindings[] = $like;
+        }
+
+        $query->selectRaw('(' . implode(' + ', $scoreSqlParts) . ') as personalized_score', $bindings)
+            ->having('personalized_score', '>', 0)
+            ->orderBy('personalized_score', 'desc');
+    }
 
     public function findByUserIdAndArticleId($userId, $articleId)
     {

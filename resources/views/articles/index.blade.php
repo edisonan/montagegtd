@@ -267,6 +267,60 @@
             color: white;
         }
 
+        .view-mode-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .view-mode-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            background: white;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .view-mode-tab:hover,
+        .view-mode-tab.active {
+            color: #4a90e2;
+            border-color: #4a90e2;
+            background: #f8fbff;
+        }
+
+        .ai-profile-badges {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .ai-profile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: #eef6ff;
+            color: #2764a5;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .ai-profile-badge.muted {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
         .content-tools {
             display: flex;
             align-items: center;
@@ -976,6 +1030,41 @@
             animation: fadeIn 0.3s ease-out;
         }
 
+        .preference-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .preference-label {
+            color: #334155;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .preference-input {
+            width: 100%;
+            min-height: 42px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: #1e293b;
+            background: white;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .preference-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.12);
+        }
+
+        .preference-hint {
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+
         /* 分页样式修复 */
         .pagination {
             justify-content: center !important;
@@ -1104,6 +1193,15 @@
                                     稍后阅读
                                 </a>
                             </div>
+                            <div class="view-mode-tabs" id="viewModeTabs">
+                                <a href="#" class="view-mode-tab" data-view-mode="all"><i class="fas fa-layer-group"></i>全部</a>
+                                <a href="#" class="view-mode-tab" data-view-mode="personalized"><i class="fas fa-bolt"></i>为我优先</a>
+                                <a href="#" class="view-mode-tab" data-view-mode="tech"><i class="fas fa-code"></i>技术</a>
+                                <a href="#" class="view-mode-tab" data-view-mode="product"><i class="fas fa-cube"></i>产品</a>
+                                <a href="#" class="view-mode-tab" data-view-mode="read_later_suggest"><i class="far fa-clock"></i>稍后读建议</a>
+                                <a href="#" class="view-mode-tab" data-view-mode="low_priority"><i class="fas fa-filter"></i>低优先级</a>
+                                <button type="button" class="view-mode-tab" id="readingPreferenceBtnInline"><i class="fas fa-sliders-h"></i>偏好设置</button>
+                            </div>
                         </div>
 
                         <div class="content-tools">
@@ -1137,6 +1235,10 @@
                                     <i class="fas fa-plus"></i>
                                     添加订阅
                                 </a>
+                                <button type="button" class="tool-btn" id="readingPreferenceBtn">
+                                    <i class="fas fa-sliders-h"></i>
+                                    阅读偏好
+                                </button>
                                 <button type="button" class="tool-btn mobile-only" id="toggleCategoryBtn">
                                     <i class="fas fa-folder-tree"></i>
                                     订阅分类
@@ -1207,6 +1309,57 @@
     <script src="/js/qrcode.js"></script>
 
     @include('components.ai-ask-modal')
+    <div id="readingPreferenceModal" class="hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/50" id="readingPreferenceBackdrop"></div>
+        <div class="absolute inset-0 p-3 sm:p-6 overflow-y-auto">
+            <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl border border-gray-200">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">阅读偏好</h3>
+                        <p class="text-xs text-gray-500 mt-1">用于“为我优先”和汇合页候选筛选</p>
+                    </div>
+                    <button type="button" class="action-btn" id="readingPreferenceCloseBtn" title="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div id="readingPreferenceLoading" class="text-center py-6 text-gray-500 hidden">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                    </div>
+                    <div id="readingPreferenceForm" class="space-y-4">
+                        <div class="preference-field">
+                            <label class="preference-label" for="preferenceTopics">关注主题</label>
+                            <textarea id="preferenceTopics" class="preference-input" rows="2" placeholder="AI, LLM, Agent, Laravel"></textarea>
+                            <div class="preference-hint">用逗号、顿号或换行分隔。</div>
+                        </div>
+                        <div class="preference-field">
+                            <label class="preference-label" for="preferenceIncludeKeywords">加权关键词</label>
+                            <textarea id="preferenceIncludeKeywords" class="preference-input" rows="2" placeholder="OpenAI, Claude, 提示词, 产品设计"></textarea>
+                        </div>
+                        <div class="preference-field">
+                            <label class="preference-label" for="preferenceExcludeKeywords">排除/降权关键词</label>
+                            <textarea id="preferenceExcludeKeywords" class="preference-input" rows="2" placeholder="招聘, 广告, 融资快讯"></textarea>
+                        </div>
+                        <div class="preference-field">
+                            <label class="preference-label" for="preferenceCategories">偏好分类</label>
+                            <input id="preferenceCategories" class="preference-input" value="AI, 后端, 前端, 产品">
+                            <div class="preference-hint">常用分类：AI、后端、前端、产品。</div>
+                        </div>
+                    </div>
+                    <div id="readingPreferenceError" class="hidden text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                    <div class="text-xs text-gray-500">保存后会切换到“为我优先”查看。</div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="btn btn-outline btn-sm" id="readingPreferenceCancelBtn">取消</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="readingPreferenceSaveBtn">
+                            <i class="fas fa-save mr-1"></i>保存偏好
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="articleMindmapModal" class="hidden fixed inset-0 z-50">
         <div class="absolute inset-0 bg-black/50" id="articleMindmapBackdrop"></div>
         <div class="absolute inset-0 p-3 sm:p-6 overflow-y-auto">
@@ -1312,9 +1465,18 @@
             var currentFeedId = qs.get('feed_id') || '';
             var pageCount = Number(qs.get('page_count') || 20);
             var currentPage = Number(qs.get('page') || 1);
+            var viewMode = qs.get('view_mode') || 'all';
+            var allowedViewModes = ['all', 'personalized', 'tech', 'product', 'read_later_suggest', 'low_priority'];
+            if (allowedViewModes.indexOf(viewMode) === -1) {
+                viewMode = 'all';
+            }
             var processNavFlag = false;
             var unableDesc = ($.cookie('unable_desc') || 'false') === 'true';
             var unableImg = ($.cookie('unable_img') || 'false') === 'true';
+            var readingPreferenceState = {
+                isLoading: false,
+                isSaving: false
+            };
 
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
@@ -1340,6 +1502,105 @@
 
             function hideMindmapModal() {
                 $('#articleMindmapModal').addClass('hidden');
+            }
+
+            function showReadingPreferenceModal() {
+                $('#readingPreferenceModal').removeClass('hidden');
+            }
+
+            function hideReadingPreferenceModal() {
+                $('#readingPreferenceModal').addClass('hidden');
+                $('#readingPreferenceError').addClass('hidden').text('');
+            }
+
+            function splitPreferenceInput(value) {
+                return String(value || '')
+                    .split(/[\n,，、;；]+/)
+                    .map(function(item) { return item.replace(/\s+/g, ' ').trim(); })
+                    .filter(function(item, index, arr) {
+                        return item !== '' && arr.indexOf(item) === index;
+                    });
+            }
+
+            function joinPreferenceItems(items) {
+                if (!Array.isArray(items)) {
+                    return '';
+                }
+                return items.filter(function(item) {
+                    return String(item || '').trim() !== '';
+                }).join(', ');
+            }
+
+            function fillReadingPreferenceForm(profile) {
+                profile = profile || {};
+                $('#preferenceTopics').val(joinPreferenceItems(profile.topics_json || profile.topics || []));
+                $('#preferenceIncludeKeywords').val(joinPreferenceItems(profile.include_keywords_json || profile.include_keywords || []));
+                $('#preferenceExcludeKeywords').val(joinPreferenceItems(profile.exclude_keywords_json || profile.exclude_keywords || []));
+                $('#preferenceCategories').val(joinPreferenceItems(profile.preferred_categories_json || profile.preferred_categories || ['AI', '后端', '前端', '产品']));
+            }
+
+            function setReadingPreferenceBusy(isBusy) {
+                readingPreferenceState.isLoading = !!isBusy;
+                $('#readingPreferenceLoading').toggleClass('hidden', !isBusy);
+                $('#readingPreferenceForm').toggleClass('hidden', !!isBusy);
+                $('#readingPreferenceSaveBtn').prop('disabled', !!isBusy || readingPreferenceState.isSaving);
+            }
+
+            function loadReadingPreference() {
+                if (readingPreferenceState.isLoading) return;
+                $('#readingPreferenceError').addClass('hidden').text('');
+                setReadingPreferenceBusy(true);
+                apiRequest('GET', '/digest/profile', {}).then(function(result) {
+                    if (!result || result.code !== 9999 || !result.result) {
+                        throw new Error((result && result.msg) ? result.msg : '读取偏好失败');
+                    }
+                    fillReadingPreferenceForm(result.result.profile || {});
+                }).catch(function(error) {
+                    fillReadingPreferenceForm(null);
+                    $('#readingPreferenceError').removeClass('hidden').text((error && error.message) ? error.message : '读取偏好失败');
+                }).finally(function() {
+                    setReadingPreferenceBusy(false);
+                });
+            }
+
+            function saveReadingPreference() {
+                if (readingPreferenceState.isSaving) return;
+                readingPreferenceState.isSaving = true;
+                $('#readingPreferenceError').addClass('hidden').text('');
+                var $btn = $('#readingPreferenceSaveBtn');
+                var originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>保存中');
+
+                var payload = {
+                    enabled: true,
+                    topics: splitPreferenceInput($('#preferenceTopics').val()),
+                    include_keywords: splitPreferenceInput($('#preferenceIncludeKeywords').val()),
+                    exclude_keywords: splitPreferenceInput($('#preferenceExcludeKeywords').val()),
+                    preferred_categories: splitPreferenceInput($('#preferenceCategories').val()),
+                    time_window_days: 7,
+                    frequency: 'daily',
+                    max_articles: 20,
+                    output_style: 'concise'
+                };
+
+                apiRequest('POST', '/digest/profile', payload).then(function(result) {
+                    if (!result || result.code !== 9999) {
+                        throw new Error((result && result.msg) ? result.msg : '保存偏好失败');
+                    }
+                    showNotification('阅读偏好已保存', 'success');
+                    hideReadingPreferenceModal();
+                    var params = new URLSearchParams(window.location.search);
+                    params.set('status', status);
+                    params.set('view_mode', 'personalized');
+                    params.set('page', '1');
+                    window.location.href = '/articles?' + params.toString();
+                }).catch(function(error) {
+                    $('#readingPreferenceError').removeClass('hidden').text((error && error.message) ? error.message : '保存偏好失败');
+                    showNotification('保存偏好失败', 'error');
+                }).finally(function() {
+                    readingPreferenceState.isSaving = false;
+                    $btn.prop('disabled', false).html(originalHtml);
+                });
             }
 
             function sanitizeTopic(text, fallbackText) {
@@ -1623,6 +1884,9 @@
                     if (currentFeedId) {
                         url += '&feed_id=' + encodeURIComponent(currentFeedId);
                     }
+                    if (viewMode && viewMode !== 'all') {
+                        url += '&view_mode=' + encodeURIComponent(viewMode);
+                    }
                     if (pageCount && pageCount !== 20) {
                         url += '&page_count=' + encodeURIComponent(String(pageCount));
                     }
@@ -1630,9 +1894,28 @@
                     $(this).toggleClass('active', tabStatus === status);
                 });
 
+                $('.view-mode-tab').each(function() {
+                    var tabMode = $(this).data('view-mode');
+                    var url = '/articles?status=' + encodeURIComponent(status);
+                    if (currentFeedId) {
+                        url += '&feed_id=' + encodeURIComponent(currentFeedId);
+                    }
+                    if (tabMode && tabMode !== 'all') {
+                        url += '&view_mode=' + encodeURIComponent(tabMode);
+                    }
+                    if (pageCount && pageCount !== 20) {
+                        url += '&page_count=' + encodeURIComponent(String(pageCount));
+                    }
+                    $(this).attr('href', url);
+                    $(this).toggleClass('active', tabMode === viewMode);
+                });
+
                 var streamUrl = '/articles/stream?status=' + encodeURIComponent(status);
                 if (currentFeedId) {
                     streamUrl += '&feed_id=' + encodeURIComponent(currentFeedId);
+                }
+                if (viewMode && viewMode !== 'all') {
+                    streamUrl += '&view_mode=' + encodeURIComponent(viewMode);
                 }
                 if (pageCount && pageCount !== 20) {
                     streamUrl += '&page_count=' + encodeURIComponent(String(pageCount));
@@ -1652,6 +1935,11 @@
                     params.delete('feed_id');
                 }
                 params.set('page_count', String(pageCount));
+                if (viewMode && viewMode !== 'all') {
+                    params.set('view_mode', viewMode);
+                } else {
+                    params.delete('view_mode');
+                }
                 params.set('page', String(page));
                 return '/articles?' + params.toString();
             }
@@ -1690,7 +1978,8 @@
                     status: status,
                     feed_id: currentFeedId,
                     page_count: pageCount,
-                    page: currentPage
+                    page: currentPage,
+                    view_mode: viewMode
                 };
 
                 apiRequest('GET', '/articles', params).then(function(result_arr) {
@@ -1746,6 +2035,8 @@
                     var needsCollapse = unableDesc && textLen > 500;
                     var sourceHref = '/articles?status=unread&feed_id=' + encodeURIComponent(article.feed.id);
                     var originUrl = String(article.url || '#');
+                    var aiProfile = article.ai_profile || null;
+                    var aiBadges = renderAiProfileBadges(aiProfile, articleSub.personalized_score);
 
                     html += ''
                         + '<div class="article-card" id="article-' + subId + '">'
@@ -1757,6 +2048,7 @@
                         + '<div class="meta-item"><i class="fas fa-external-link-alt"></i><a href="' + escapeHtml(originUrl) + '" class="source-link" target="_blank">原文</a></div>'
                         + (unableDesc ? '<div class="quick-actions"><button type="button" class="quick-btn set_read_later_another ' + (articleSub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '">稍后阅读</button><button type="button" class="quick-btn expand-btn" data-article-id="' + subId + '">展开/收起</button></div>' : '')
                         + '</div></div>'
+                        + aiBadges
                         + '<div class="article-content" id="content' + subId + '"' + (unableDesc ? ' style="display:none"' : '') + '>'
                         + '<div id="desc' + subId + '" class="content-preview ' + (needsCollapse ? '' : 'expanded') + '" data-article-id="' + subId + '">'
                         + contentHtml
@@ -1783,6 +2075,29 @@
                 if (unableDesc) {
                     applyScanReadingMode();
                 }
+            }
+
+            function renderAiProfileBadges(profile, personalizedScore) {
+                if (!profile && (personalizedScore === null || personalizedScore === undefined)) {
+                    return '';
+                }
+
+                var html = '<div class="ai-profile-badges">';
+                if (profile && profile.primary_category) {
+                    html += '<span class="ai-profile-badge"><i class="fas fa-tag"></i>' + escapeHtml(profile.primary_category) + '</span>';
+                }
+                if (profile && profile.quality_score !== null && profile.quality_score !== undefined) {
+                    html += '<span class="ai-profile-badge muted"><i class="fas fa-tachometer-alt"></i>' + escapeHtml(String(profile.quality_score)) + '</span>';
+                }
+                if (personalizedScore !== null && personalizedScore !== undefined && personalizedScore !== '') {
+                    html += '<span class="ai-profile-badge"><i class="fas fa-bolt"></i>' + escapeHtml(Number(personalizedScore).toFixed(1)) + '</span>';
+                }
+                var tags = profile && Array.isArray(profile.tags) ? profile.tags.slice(0, 3) : [];
+                tags.forEach(function(tag) {
+                    html += '<span class="ai-profile-badge muted">' + escapeHtml(tag) + '</span>';
+                });
+                html += '</div>';
+                return html;
             }
 
             function renderPagination(pagination) {
@@ -2457,6 +2772,19 @@
             $("#audioClose").on('click', function() {
                 $("#audioPlayer").removeClass('active');
                 $("#audio")[0].pause();
+            });
+
+            $('#readingPreferenceBtn, #readingPreferenceBtnInline').on('click', function() {
+                showReadingPreferenceModal();
+                loadReadingPreference();
+            });
+
+            $('#readingPreferenceBackdrop, #readingPreferenceCloseBtn, #readingPreferenceCancelBtn').on('click', function() {
+                hideReadingPreferenceModal();
+            });
+
+            $('#readingPreferenceSaveBtn').on('click', function() {
+                saveReadingPreference();
             });
 
             // 分享功能 - 修复显示和位置问题
