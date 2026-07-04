@@ -273,30 +273,61 @@
                         <div id="taskScheduleTitle" class="text-sm text-gray-800 break-words"></div>
                     </div>
                     <div>
-                        <div class="text-xs text-gray-500 mb-2">快速时间</div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(1, 'hours')">1小时后</button>
-                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(3, 'hours')">3小时后</button>
-                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(6, 'hours')">6小时后</button>
-                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(1, 'days')">明天</button>
-                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(3, 'days')">3天后</button>
-                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset(7, 'days')">一周后</button>
+                        <div class="flex items-center justify-between gap-3">
+                            <label for="taskPlannedStartInput" class="text-sm text-gray-700">预计开始时间</label>
+                            <button type="button" class="text-xs text-blue-600 hover:text-blue-700" onclick="toggleTaskSchedulePreset('start')">
+                                <i class="fas fa-clock mr-1"></i>快捷设置
+                            </button>
                         </div>
-                        <button type="button" class="btn btn-sm btn-outline w-full mt-2" onclick="clearTaskScheduleInputs()">
-                            <i class="fas fa-eraser mr-1"></i>清空时间
-                        </button>
-                    </div>
-                    <div>
-                        <label for="taskPlannedStartInput" class="text-sm text-gray-700">预计开始时间</label>
                         <input id="taskPlannedStartInput" type="datetime-local" class="input w-full mt-1">
+                        <div id="taskSchedulePresetStart" class="hidden grid grid-cols-4 gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('start', 0, 'now')">现在</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('start', 1, 'hours')">1小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('start', 3, 'hours')">3小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('start', 6, 'hours')">6小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('start', 1, 'days')">明天</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('start', 3, 'days')">3天后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('start', 7, 'days')">一周后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="clearTaskScheduleInput('start')">清空</button>
+                        </div>
                     </div>
                     <div>
-                        <label for="taskPlannedEndInput" class="text-sm text-gray-700">预计结束时间</label>
+                        <div class="flex items-center justify-between gap-3">
+                            <label for="taskPlannedEndInput" class="text-sm text-gray-700">预计结束时间</label>
+                            <button type="button" class="text-xs text-blue-600 hover:text-blue-700" onclick="toggleTaskSchedulePreset('end')">
+                                <i class="fas fa-clock mr-1"></i>快捷设置
+                            </button>
+                        </div>
                         <input id="taskPlannedEndInput" type="datetime-local" class="input w-full mt-1">
+                        <div id="taskSchedulePresetEnd" class="hidden grid grid-cols-4 gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('end', 0, 'now')">现在</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('end', 1, 'hours')">1小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('end', 3, 'hours')">3小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('end', 6, 'hours')">6小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('end', 1, 'days')">明天</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('end', 3, 'days')">3天后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('end', 7, 'days')">一周后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="clearTaskScheduleInput('end')">清空</button>
+                        </div>
                     </div>
                     <div>
-                        <label for="taskRemindInput" class="text-sm text-gray-700">提醒时间</label>
+                        <div class="flex items-center justify-between gap-3">
+                            <label for="taskRemindInput" class="text-sm text-gray-700">提醒时间</label>
+                            <button type="button" class="text-xs text-blue-600 hover:text-blue-700" onclick="toggleTaskSchedulePreset('remind')">
+                                <i class="fas fa-clock mr-1"></i>快捷设置
+                            </button>
+                        </div>
                         <input id="taskRemindInput" type="datetime-local" class="input w-full mt-1">
+                        <div id="taskSchedulePresetRemind" class="hidden grid grid-cols-4 gap-2 mt-2">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('remind', 0, 'now')">现在</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('remind', 1, 'hours')">1小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('remind', 3, 'hours')">3小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('remind', 6, 'hours')">6小时后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('remind', 1, 'days')">明天</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('remind', 3, 'days')">3天后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="applyTaskSchedulePreset('remind', 7, 'days')">一周后</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="clearTaskScheduleInput('remind')">清空</button>
+                        </div>
                     </div>
                 </div>
                 <div class="px-5 py-4 border-t border-gray-200 flex justify-end gap-2">
@@ -2080,35 +2111,81 @@
                 document.getElementById('taskPlannedStartInput').value = toLocalDatetimeValue(task.planned_start_time);
                 document.getElementById('taskPlannedEndInput').value = toLocalDatetimeValue(task.planned_end_time);
                 document.getElementById('taskRemindInput').value = toLocalDatetimeValue(task.remindtime);
+                closeTaskSchedulePresetPanels();
                 document.getElementById('taskScheduleModal').classList.remove('hidden');
             }).catch(function() {
                 showNotification('error', '加载任务信息失败');
             });
         }
 
-        function applyTaskSchedulePreset(amount, unit) {
-            const start = new Date();
-            const end = new Date(start.getTime());
-
-            if (unit === 'hours') {
-                end.setHours(end.getHours() + Number(amount || 0));
-            } else {
-                end.setDate(end.getDate() + Number(amount || 0));
-            }
-
-            document.getElementById('taskPlannedStartInput').value = formatLocalDatetimeInput(start);
-            document.getElementById('taskPlannedEndInput').value = formatLocalDatetimeInput(end);
-            document.getElementById('taskRemindInput').value = formatLocalDatetimeInput(end);
+        function getTaskScheduleInputId(field) {
+            const inputMap = {
+                start: 'taskPlannedStartInput',
+                end: 'taskPlannedEndInput',
+                remind: 'taskRemindInput'
+            };
+            return inputMap[field] || '';
         }
 
-        function clearTaskScheduleInputs() {
-            document.getElementById('taskPlannedStartInput').value = '';
-            document.getElementById('taskPlannedEndInput').value = '';
-            document.getElementById('taskRemindInput').value = '';
+        function getTaskSchedulePresetId(field) {
+            const presetMap = {
+                start: 'taskSchedulePresetStart',
+                end: 'taskSchedulePresetEnd',
+                remind: 'taskSchedulePresetRemind'
+            };
+            return presetMap[field] || '';
+        }
+
+        function closeTaskSchedulePresetPanels(exceptField) {
+            ['start', 'end', 'remind'].forEach(function(field) {
+                if (field === exceptField) return;
+                const panel = document.getElementById(getTaskSchedulePresetId(field));
+                if (panel) {
+                    panel.classList.add('hidden');
+                }
+            });
+        }
+
+        function toggleTaskSchedulePreset(field) {
+            const panel = document.getElementById(getTaskSchedulePresetId(field));
+            if (!panel) return;
+
+            const shouldOpen = panel.classList.contains('hidden');
+            closeTaskSchedulePresetPanels(field);
+            panel.classList.toggle('hidden', !shouldOpen);
+        }
+
+        function buildTaskSchedulePresetDate(amount, unit) {
+            const date = new Date();
+
+            if (unit === 'hours') {
+                date.setHours(date.getHours() + Number(amount || 0));
+            } else if (unit === 'days') {
+                date.setDate(date.getDate() + Number(amount || 0));
+            }
+
+            return date;
+        }
+
+        function applyTaskSchedulePreset(field, amount, unit) {
+            const input = document.getElementById(getTaskScheduleInputId(field));
+            if (!input) return;
+
+            input.value = formatLocalDatetimeInput(buildTaskSchedulePresetDate(amount, unit));
+            closeTaskSchedulePresetPanels();
+        }
+
+        function clearTaskScheduleInput(field) {
+            const input = document.getElementById(getTaskScheduleInputId(field));
+            if (input) {
+                input.value = '';
+            }
+            closeTaskSchedulePresetPanels();
         }
 
         function closeTaskScheduleModal() {
             currentScheduleTaskId = 0;
+            closeTaskSchedulePresetPanels();
             document.getElementById('taskScheduleModal').classList.add('hidden');
         }
 
