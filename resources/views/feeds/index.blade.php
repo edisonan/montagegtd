@@ -18,6 +18,10 @@
 
                 <!-- 快速操作按钮 -->
                 <div class="flex items-center space-x-3">
+                    <a href="{{ url('feeds/webpage-rss') }}" class="btn btn-primary">
+                        <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                        网页转RSS
+                    </a>
                     <a href="{{ url('feeds/explorer') }}" class="btn btn-outline">
                         <i class="fas fa-compass mr-2"></i>
                         探索发现
@@ -44,6 +48,10 @@
                         <a href="{{ url('feeds/weixinrss') }}" class="btn btn-sm btn-outline">
                             <i class="fab fa-weixin text-green-500 mr-1"></i>
                             公众号订阅
+                        </a>
+                        <a href="{{ url('feeds/webpage-rss') }}" class="btn btn-sm btn-outline">
+                            <i class="fas fa-wand-magic-sparkles text-amber-500 mr-1"></i>
+                            网页转RSS
                         </a>
                         <a href="{{ url('feeds/opml') }}" class="btn btn-sm btn-outline">
                             <i class="fas fa-file-import text-blue-500 mr-1"></i>

@@ -85,6 +85,13 @@ Route::group([
     Route::get('/feed/{feedSub}', 'FeedController@update');
     Route::post('/feeds/sort', 'FeedController@sort');
     Route::get('/feeds/explorer', 'FeedController@explorer');
+    Route::get('/feeds/webpage-rss', 'FeedController@webpageRss');
+    Route::get('/feeds/webpage-rss/categories', 'FeedController@webpageRssCategories');
+    Route::post('/feeds/webpage-rss/debug', 'FeedController@debugWebpageRss');
+    Route::post('/feeds/webpage-rss/ai-analyze', 'FeedController@aiAnalyzeWebpageRss');
+    Route::post('/feeds/webpage-rss/save', 'FeedController@saveWebpageRss');
+    Route::post('/feeds/webpage-rss/{source}/refresh', 'FeedController@refreshWebpageRss');
+    Route::get('/feeds/webpage-rss/rss/{token}', 'FeedController@webpageRssXml');
     Route::get('/feeds/quickstore', 'FeedController@quickstore');
     Route::get('/feeds/search', 'FeedController@search');
     Route::get('/feeds/weixinrss', 'FeedController@weixinrss');

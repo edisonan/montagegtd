@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Exceptions\CustomException;
 use App\Http\Utils\CommonUtil;
 use App\Http\Utils\ResponseDataUtil;
+use App\Models\Category;
+use App\Models\LlmModel;
+use App\Models\WebpageRssSource;
 use App\Models\FeedSub;
 use App\Services\CategoryService;
 use App\Services\FeedService;
+use App\Services\WebpageRssService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -35,18 +39,26 @@ class FeedController extends Controller
     protected $feedService;
 
     /**
+     * WebpageRssService 实例.
+     *
+     * @var WebpageRssService
+     */
+    protected $webpageRssService;
+
+    /**
      * 构造方法
      *
      * @param CategoryService $categoryService
      * @param FeedService $feedService
      * @return void
      */
-    public function __construct(CategoryService $categoryService, FeedService $feedService)
+    public function __construct(CategoryService $categoryService, FeedService $feedService, WebpageRssService $webpageRssService)
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except('webpageRssXml');
 
         $this->categoryService = $categoryService;
         $this->feedService = $feedService;
+        $this->webpageRssService = $webpageRssService;
     }
 
     /**
@@ -77,6 +89,133 @@ class FeedController extends Controller
     public function search(Request $request)
     {
         return view('feeds.search');
+    }
+
+    /**
+     * 网页转RSS配置页
+     *
+     * @param Request $request
+     * @return
+     *
+     */
+    public function webpageRss(Request $request)
+    {
+        return view('feeds.webpage-rss');
+    }
+
+    /**
+     * 网页转RSS分类列表
+     *
+     * @param Request $request
+     */
+    public function webpageRssCategories(Request $request)
+    {
+        $categories = Category::where('user_id', \Auth::id())
+            ->orderBy('category_order')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($categories));
+    }
+
+    /**
+     * 调试网页转RSS规则
+     *
+     * @param Request $request
+     */
+    public function debugWebpageRss(Request $request)
+    {
+        $config = $this->webpageRssService->normalizeConfig($request->all());
+        if (empty($config['list_url'])) {
+            throw new CustomException('调试时请先填写列表页地址');
+        }
+        $result = $this->webpageRssService->debug($config, (int)$request->input('limit', 10));
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    /**
+     * 保存网页转RSS配置
+     *
+     * @param Request $request
+     */
+    public function saveWebpageRss(Request $request)
+    {
+        $config = $this->webpageRssService->normalizeConfig($request->all());
+        $this->validateWebpageRssCategory($config['category_id']);
+        $result = $this->webpageRssService->save(\Auth::id(), $config);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    /**
+     * AI 解析网页转RSS规则
+     *
+     * @param Request $request
+     */
+    public function aiAnalyzeWebpageRss(Request $request)
+    {
+        $this->validate($request, [
+            'model_id' => 'required|integer|exists:llm_models,id',
+            'list_url' => 'required|string',
+            'ai_mode' => 'nullable|in:list_summary,detail_content,balanced',
+        ]);
+
+        $user = \Auth::user();
+        $model = LlmModel::with('provider')->where('id', $request->input('model_id'))->first();
+        if (!$model || (!$user->is_admin && !in_array((int)$model->user_id, array(0, (int)$user->id), true))) {
+            throw new CustomException('模型不存在或无权限使用');
+        }
+
+        $config = $this->webpageRssService->normalizeConfig($request->all());
+        $result = $this->webpageRssService->analyzeByAi(
+            $config,
+            (int)$request->input('model_id'),
+            (string)$request->input('ai_mode', 'balanced')
+        );
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    /**
+     * 手动刷新网页转RSS配置
+     *
+     * @param Request $request
+     * @param WebpageRssSource $source
+     */
+    public function refreshWebpageRss(Request $request, WebpageRssSource $source)
+    {
+        if ((int)$source->user_id !== (int)\Auth::id()) {
+            throw new CustomException('配置不存在');
+        }
+
+        $result = $this->webpageRssService->refreshSource($source, (int)$request->input('limit', 20));
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    /**
+     * 网页转RSS XML输出
+     *
+     * @param string $token
+     */
+    public function webpageRssXml($token)
+    {
+        $source = WebpageRssSource::where('rss_token', $token)->where('status', 1)->first();
+        if (empty($source)) {
+            abort(404);
+        }
+
+        return response($this->webpageRssService->buildRssXml($source), 200)
+            ->header('Content-Type', 'application/rss+xml; charset=UTF-8');
+    }
+
+    private function validateWebpageRssCategory($categoryId)
+    {
+        $category = Category::where('id', $categoryId)->where('user_id', \Auth::id())->first();
+        if (empty($category)) {
+            throw new CustomException('分类不存在');
+        }
     }
 
     /**
