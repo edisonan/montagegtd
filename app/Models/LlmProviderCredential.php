@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Crypt;
 
 class LlmProviderCredential extends Model
 {
@@ -44,5 +45,22 @@ class LlmProviderCredential extends Model
     public function usageLogs()
     {
         return $this->hasMany(LlmUsageLog::class, 'credential_id');
+    }
+
+    public function getPlainApiKey()
+    {
+        if (empty($this->api_key)) {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($this->api_key);
+        } catch (\Exception $e) {
+            if (preg_match('/^\$2y\$/', $this->api_key) || preg_match('/^\$2a\$/', $this->api_key) || preg_match('/^\$2b\$/', $this->api_key)) {
+                return null;
+            }
+
+            return $this->api_key;
+        }
     }
 }

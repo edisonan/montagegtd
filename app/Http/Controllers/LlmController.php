@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Crypt;
 
 class LlmController extends Controller
 {
@@ -96,7 +97,7 @@ class LlmController extends Controller
                 return response()->json(['message' => '供应商不存在'], 404);
             }
             
-            return response()->json(['result' => $provider]);
+            return response()->json(ResponseDataUtil::genSimpleSucc($provider));
         } catch (\Exception $e) {
             Log::error('获取供应商详情失败: ' . $e->getMessage());
             return response()->json(['message' => '获取供应商详情失败'], 500);
@@ -113,7 +114,7 @@ class LlmController extends Controller
                 'slug' => 'required|string|max:50|unique:llm_providers,slug,' . $id,
                 'description' => 'nullable|string',
                 'base_url' => 'nullable|url',
-                'api_type' => 'required|in:openai,anthropic,custom',
+                'api_type' => 'required|in:openai,anthropic,google,azure,custom',
                 'is_active' => 'boolean',
                 'priority' => 'integer|min:0',
                 'rate_limit_per_minute' => 'nullable|integer|min:0',
@@ -193,7 +194,7 @@ class LlmController extends Controller
             
             $provider->delete();
             
-            return response()->json(['message' => '删除成功']);
+            return response()->json(ResponseDataUtil::genSimpleSucc());
         } catch (\Exception $e) {
             Log::error('删除供应商失败: ' . $e->getMessage());
             return response()->json(['message' => '删除供应商失败'], 500);
@@ -245,7 +246,7 @@ class LlmController extends Controller
                 return response()->json(['message' => '模型不存在'], 404);
             }
             
-            return response()->json(['result' => $model]);
+            return response()->json(ResponseDataUtil::genSimpleSucc($model));
         } catch (\Exception $e) {
             Log::error('获取模型详情失败: ' . $e->getMessage());
             return response()->json(['message' => '获取模型详情失败'], 500);
@@ -257,11 +258,11 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $this->validate($request, [
+            $rules = [
                 'provider_id' => 'required|exists:llm_providers,id',
                 'name' => 'required|string|max:100',
                 'display_name' => 'nullable|string|max:100',
-                'model_type' => 'required|in:chat,completion,embedding,image',
+                'model_type' => 'required|in:chat,completion,embedding,image,audio',
                 'context_length' => 'nullable|integer|min:0',
                 'max_tokens' => 'nullable|integer|min:0',
                 'input_price_per_1k' => 'nullable|numeric|min:0',
@@ -269,7 +270,31 @@ class LlmController extends Controller
                 'capabilities' => 'nullable|array',
                 'sort_order' => 'integer|min:0',
                 'is_active' => 'boolean'
-            ]);
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                Log::warning('保存模型参数校验失败', array('errors' => $errors));
+                return response()->json(
+                    ResponseDataUtil::genFail(ResponseDataUtil::COMMON_ERROR, '参数校验失败', $errors),
+                    422
+                );
+            }
+
+            $modelData = $request->only(array(
+                'provider_id',
+                'name',
+                'display_name',
+                'model_type',
+                'context_length',
+                'max_tokens',
+                'input_price_per_1k',
+                'output_price_per_1k',
+                'capabilities',
+                'sort_order',
+                'is_active'
+            ));
             
             if ($id) {
                 $model = LlmModel::when(!$user->is_admin, function ($query) use ($user) {
@@ -283,14 +308,13 @@ class LlmController extends Controller
                     return response()->json(['message' => '模型不存在'], 404);
                 }
                 
-                $model->update($request->all());
+                $model->update($modelData);
             } else {
-                $validatedData = $request->all();
-                $validatedData['user_id'] = $user->id;
-                $model = LlmModel::create($validatedData);
+                $modelData['user_id'] = $user->id;
+                $model = LlmModel::create($modelData);
             }
             
-            return response()->json(['result' => $model]);
+            return response()->json(ResponseDataUtil::genSimpleSucc($model));
         } catch (\Exception $e) {
             Log::error('保存模型失败: ' . $e->getMessage());
             return response()->json(['message' => '保存模型失败'], 500);
@@ -315,7 +339,7 @@ class LlmController extends Controller
             
             $model->delete();
             
-            return response()->json(['message' => '删除成功']);
+            return response()->json(ResponseDataUtil::genSimpleSucc());
         } catch (\Exception $e) {
             Log::error('删除模型失败: ' . $e->getMessage());
             return response()->json(['message' => '删除模型失败'], 500);
@@ -367,7 +391,7 @@ class LlmController extends Controller
                 return response()->json(['message' => '凭据不存在'], 404);
             }
             
-            return response()->json(['result' => $credential]);
+            return response()->json(ResponseDataUtil::genSimpleSucc($credential));
         } catch (\Exception $e) {
             Log::error('获取凭据详情失败: ' . $e->getMessage());
             return response()->json(['message' => '获取凭据详情失败'], 500);
@@ -379,7 +403,7 @@ class LlmController extends Controller
         try {
             $user = Auth::user();
             
-            $this->validate($request, [
+            $rules = [
                 'provider_id' => 'required|exists:llm_providers,id',
                 'name' => 'required|string|max:100',
                 'api_key' => 'nullable|string', // 不在创建时强制要求，因为更新时不总是提供
@@ -387,7 +411,27 @@ class LlmController extends Controller
                 'is_default' => 'boolean',
                 'is_active' => 'boolean',
                 'quota_limit' => 'nullable|integer|min:0'
-            ]);
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                $errors = $validator->errors()->toArray();
+                Log::warning('保存凭据参数校验失败', array('errors' => $errors));
+                return response()->json(
+                    ResponseDataUtil::genFail(ResponseDataUtil::COMMON_ERROR, '参数校验失败', $errors),
+                    422
+                );
+            }
+
+            $credentialData = $request->only(array(
+                'provider_id',
+                'name',
+                'api_key',
+                'config',
+                'is_default',
+                'is_active',
+                'quota_limit'
+            ));
             
             if ($id) {
                 $credential = LlmProviderCredential::when(!$user->is_admin, function ($query) use ($user) {
@@ -401,21 +445,21 @@ class LlmController extends Controller
                     return response()->json(['message' => '凭据不存在'], 404);
                 }
                 
-                $requestData = $request->all();
+                $requestData = $credentialData;
                 
                 // 处理API密钥更新（如果提供了新密钥）
                 if (isset($requestData['api_key']) && !empty($requestData['api_key'])) {
-                    $credential->api_key = bcrypt($requestData['api_key']);
+                    $credential->api_key = Crypt::encryptString($requestData['api_key']);
                 }
                 unset($requestData['api_key']);
                 
                 $credential->update($requestData);
             } else {
                 // 创建新的凭据
-                $requestData = $request->all();
+                $requestData = $credentialData;
                 $requestData['user_id'] = $user->id;
                 if (isset($requestData['api_key'])) {
-                    $requestData['api_key'] = bcrypt($requestData['api_key']);
+                    $requestData['api_key'] = Crypt::encryptString($requestData['api_key']);
                 }
                 $credential = LlmProviderCredential::create($requestData);
             }
@@ -428,7 +472,7 @@ class LlmController extends Controller
                     ->update(['is_default' => false]);
             }
             
-            return response()->json(['result' => $credential]);
+            return response()->json(ResponseDataUtil::genSimpleSucc($credential));
         } catch (\Exception $e) {
             Log::error('保存凭据失败: ' . $e->getMessage());
             return response()->json(['message' => '保存凭据失败'], 500);
@@ -453,11 +497,165 @@ class LlmController extends Controller
             
             $credential->delete();
             
-            return response()->json(['message' => '删除成功']);
+            return response()->json(ResponseDataUtil::genSimpleSucc());
         } catch (\Exception $e) {
             Log::error('删除凭据失败: ' . $e->getMessage());
             return response()->json(['message' => '删除凭据失败'], 500);
         }
+    }
+
+    private function getCredentialApiKey(LlmProviderCredential $credential)
+    {
+        $apiKey = $credential->getPlainApiKey();
+        if (!$apiKey) {
+            throw new \RuntimeException('API Key 无法解密，请编辑凭据并重新保存 API Key 后再测试');
+        }
+
+        return $apiKey;
+    }
+
+    private function curlJsonRequest($url, $method, array $headers, $payload = null, $timeout = 20)
+    {
+        $curl = curl_init();
+        $responseHeaders = array();
+        $options = array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => $timeout,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_HEADERFUNCTION => function ($ch, $header) use (&$responseHeaders) {
+                $responseHeaders[] = trim($header);
+                return strlen($header);
+            },
+        );
+
+        if ($payload !== null) {
+            $options[CURLOPT_POSTFIELDS] = json_encode($payload);
+        }
+
+        if (filter_var(env('LLM_CURL_INSECURE', false), FILTER_VALIDATE_BOOLEAN)) {
+            $options[CURLOPT_SSL_VERIFYPEER] = false;
+            $options[CURLOPT_SSL_VERIFYHOST] = false;
+        }
+
+        curl_setopt_array($curl, $options);
+        $body = curl_exec($curl);
+        $errno = curl_errno($curl);
+        $error = curl_error($curl);
+        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        $decoded = null;
+        if ($body !== false && $body !== '') {
+            $decoded = json_decode($body, true);
+        }
+
+        return array(
+            'ok' => $errno === 0 && $statusCode >= 200 && $statusCode < 300,
+            'status_code' => $statusCode,
+            'errno' => $errno,
+            'error' => $errno ? $error : null,
+            'body' => $decoded,
+            'raw_body' => is_string($body) ? substr($body, 0, 1000) : null,
+            'headers' => $responseHeaders,
+        );
+    }
+
+    private function testOpenAiCompatibleProvider(LlmProvider $provider, $apiKey, LlmModel $model = null)
+    {
+        $baseUrl = rtrim($provider->base_url, '/');
+        if (!$baseUrl || !filter_var($baseUrl, FILTER_VALIDATE_URL)) {
+            throw new \RuntimeException('供应商 API 基础 URL 未配置或格式不正确');
+        }
+
+        if ($model) {
+            $payload = array(
+                'model' => $model->name,
+                'messages' => array(
+                    array('role' => 'user', 'content' => 'ping')
+                ),
+                'stream' => false,
+                'max_tokens' => 1,
+            );
+
+            return $this->curlJsonRequest(
+                $baseUrl . '/chat/completions',
+                'POST',
+                array(
+                    'Authorization: Bearer ' . $apiKey,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                ),
+                $payload
+            );
+        }
+
+        return $this->curlJsonRequest(
+            $baseUrl . '/models',
+            'GET',
+            array(
+                'Authorization: Bearer ' . $apiKey,
+                'Accept: application/json',
+            )
+        );
+    }
+
+    private function testAnthropicProvider(LlmProvider $provider, $apiKey, LlmModel $model = null)
+    {
+        if (!$model) {
+            throw new \RuntimeException('Anthropic 凭据测试需要先添加一个模型');
+        }
+
+        $baseUrl = rtrim($provider->base_url, '/');
+        if (!$baseUrl || !filter_var($baseUrl, FILTER_VALIDATE_URL)) {
+            throw new \RuntimeException('供应商 API 基础 URL 未配置或格式不正确');
+        }
+
+        return $this->curlJsonRequest(
+            $baseUrl . '/messages',
+            'POST',
+            array(
+                'x-api-key: ' . $apiKey,
+                'anthropic-version: 2023-06-01',
+                'Content-Type: application/json',
+                'Accept: application/json',
+            ),
+            array(
+                'model' => $model->name,
+                'messages' => array(
+                    array('role' => 'user', 'content' => 'ping')
+                ),
+                'max_tokens' => 1,
+            )
+        );
+    }
+
+    private function testProviderRequest(LlmProvider $provider, $apiKey, LlmModel $model = null)
+    {
+        if ($provider->api_type === 'anthropic') {
+            return $this->testAnthropicProvider($provider, $apiKey, $model);
+        }
+
+        return $this->testOpenAiCompatibleProvider($provider, $apiKey, $model);
+    }
+
+    private function getProviderTestError(array $result)
+    {
+        if (!empty($result['error'])) {
+            return $result['error'];
+        }
+
+        if (isset($result['body']['error']['message'])) {
+            return $result['body']['error']['message'];
+        }
+
+        if (isset($result['body']['message'])) {
+            return $result['body']['message'];
+        }
+
+        return '供应商请求失败';
     }
 
     public function testCredential($id)
@@ -489,17 +687,59 @@ class LlmController extends Controller
                 ]);
             }
 
+            $provider = $credential->provider;
+            if (!$provider || (int)$provider->is_active !== 1) {
+                return response()->json([
+                    'code' => 1003,
+                    'msg' => '凭据供应商不可用',
+                    'result' => array(),
+                ]);
+            }
+
+            $apiKey = $this->getCredentialApiKey($credential);
+            $model = LlmModel::where('provider_id', $provider->id)
+                ->where('is_active', 1)
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->first();
+
+            $testResult = $this->testProviderRequest($provider, $apiKey, $model);
+            if (empty($testResult['ok'])) {
+                Log::warning('测试凭据供应商请求失败', array(
+                    'credential_id' => $credential->id,
+                    'provider_id' => $provider->id,
+                    'model_id' => $model ? $model->id : null,
+                    'status_code' => $testResult['status_code'],
+                    'error' => $this->getProviderTestError($testResult),
+                ));
+
+                return response()->json([
+                    'code' => 1004,
+                    'msg' => '供应商请求失败: ' . $this->getProviderTestError($testResult),
+                    'result' => array(
+                        'status_code' => $testResult['status_code'],
+                        'provider_id' => $provider->id,
+                        'provider_name' => $provider->name,
+                        'model_id' => $model ? $model->id : null,
+                        'model_name' => $model ? $model->name : null,
+                    ),
+                ]);
+            }
+
             return response()->json(ResponseDataUtil::genSimpleSucc(array(
                 'credential_id' => $credential->id,
                 'provider_id' => $credential->provider_id,
-                'provider_name' => $credential->provider ? $credential->provider->name : null,
-                'msg' => '连接测试成功',
+                'provider_name' => $provider->name,
+                'model_id' => $model ? $model->id : null,
+                'model_name' => $model ? $model->name : null,
+                'status_code' => $testResult['status_code'],
+                'msg' => '供应商连接测试成功',
             )));
         } catch (\Exception $e) {
             Log::error('测试凭据失败: ' . $e->getMessage());
             return response()->json([
                 'code' => 1003,
-                'msg' => '连接测试失败',
+                'msg' => '连接测试失败: ' . $e->getMessage(),
                 'result' => array(),
             ], 500);
         }
@@ -561,6 +801,31 @@ class LlmController extends Controller
                 ]);
             }
 
+            $apiKey = $this->getCredentialApiKey($credential);
+            $testResult = $this->testProviderRequest($provider, $apiKey, $model);
+            if (empty($testResult['ok'])) {
+                Log::warning('测试模型供应商请求失败', array(
+                    'model_id' => $model->id,
+                    'provider_id' => $provider->id,
+                    'credential_id' => $credential->id,
+                    'status_code' => $testResult['status_code'],
+                    'error' => $this->getProviderTestError($testResult),
+                ));
+
+                return response()->json([
+                    'code' => 1005,
+                    'msg' => '模型请求失败: ' . $this->getProviderTestError($testResult),
+                    'result' => array(
+                        'status_code' => $testResult['status_code'],
+                        'model_id' => $model->id,
+                        'model_name' => $model->name,
+                        'provider_id' => $provider->id,
+                        'provider_name' => $provider->name,
+                        'credential_id' => $credential->id,
+                    ),
+                ]);
+            }
+
             return response()->json(ResponseDataUtil::genSimpleSucc(array(
                 'model_id' => $model->id,
                 'model_name' => $model->name,
@@ -568,13 +833,14 @@ class LlmController extends Controller
                 'provider_name' => $provider->name,
                 'credential_id' => $credential->id,
                 'credential_name' => $credential->name,
-                'msg' => '模型可用性检查通过',
+                'status_code' => $testResult['status_code'],
+                'msg' => '模型真实请求测试通过',
             )));
         } catch (\Exception $e) {
             Log::error('测试模型失败: ' . $e->getMessage());
             return response()->json([
                 'code' => 1005,
-                'msg' => '模型测试失败',
+                'msg' => '模型测试失败: ' . $e->getMessage(),
                 'result' => array(),
             ], 500);
         }
@@ -685,6 +951,8 @@ class LlmController extends Controller
                 return response()->json(['error' => '提供商URL格式错误'], 500);
             }
 
+            $apiKey = $this->getCredentialApiKey($credential);
+
             $systemContent = $agentVersion->system_content;
             if(!empty($referText)) {
                 $systemContent = $systemContent."\n引用文本：\n" .$referText;
@@ -732,7 +1000,7 @@ class LlmController extends Controller
                 'full_request_url' => $provider->base_url . "/chat/completions",
                 'request_headers' => [
                     'Content-Type: application/json',
-                    'Authorization: Bearer ' . substr($credential->api_key, 0, 10) . '...', // 只记录前10位
+                    'Authorization: Bearer ' . substr($apiKey, 0, 10) . '...', // 只记录前10位
                     'Accept: text/event-stream',
                     'Cache-Control: no-cache',
                     'Connection: keep-alive'
@@ -757,7 +1025,7 @@ class LlmController extends Controller
                 CURLOPT_POSTFIELDS => json_encode($requestData),
                 CURLOPT_HTTPHEADER => [
                     'Content-Type: application/json',
-                    'Authorization: Bearer ' . $credential->api_key,
+                    'Authorization: Bearer ' . $apiKey,
                     'Accept: text/event-stream',
                     'Cache-Control: no-cache',
                     'Connection: keep-alive'

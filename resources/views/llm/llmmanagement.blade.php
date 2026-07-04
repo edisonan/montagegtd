@@ -3,90 +3,24 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- 页面标题和导航 -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">LLM供应商管理</h1>
-                <p class="text-gray-600 mt-1">配置AI模型供应商、模型和API凭据</p>
-            </div>
-            <div class="mt-4 md:mt-0 flex items-center space-x-3">
-                <button onclick="openProviderModal()" class="btn btn-primary">
-                    <i class="fas fa-plus mr-2"></i>添加供应商
+
+        <!-- 当前位置 -->
+        <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="flex items-center text-sm text-gray-500">
+                <button type="button"
+                        class="text-primary-600 hover:text-primary-700 font-medium"
+                        onclick="showLlmView('providers')">
+                    供应商
                 </button>
+                <i class="fas fa-chevron-right mx-2 text-gray-300" id="view-separator" style="display:none;"></i>
+                <span class="font-medium text-gray-900" id="current-view-label" style="display:none;"></span>
             </div>
-        </div>
-
-        <!-- 状态指示器 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="card p-4">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-server text-blue-600"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">供应商总数</p>
-                        <p class="text-xl font-semibold text-gray-900" id="providers-count">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card p-4">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-brain text-green-600"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">可用模型</p>
-                        <p class="text-xl font-semibold text-gray-900" id="models-count">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card p-4">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-key text-purple-600"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">API凭据</p>
-                        <p class="text-xl font-semibold text-gray-900" id="credentials-count">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card p-4">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-check-circle text-yellow-600"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">活跃供应商</p>
-                        <p class="text-xl font-semibold text-gray-900" id="active-providers-count">0</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 选项卡导航 -->
-        <div class="mb-8">
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8">
-                    <button id="tab-providers"
-                            onclick="showTab('providers')"
-                            class="py-3 px-1 border-b-2 font-medium text-sm transition-all tab-button active">
-                        <i class="fas fa-server mr-2"></i>供应商管理
-                    </button>
-                    <button id="tab-models"
-                            onclick="showTab('models')"
-                            class="py-3 px-1 border-b-2 font-medium text-sm transition-all tab-button">
-                        <i class="fas fa-brain mr-2"></i>模型管理
-                    </button>
-                    <button id="tab-credentials"
-                            onclick="showTab('credentials')"
-                            class="py-3 px-1 border-b-2 font-medium text-sm transition-all tab-button">
-                        <i class="fas fa-key mr-2"></i>凭据管理
-                    </button>
-                </nav>
-            </div>
+            <button type="button"
+                    id="back-to-providers"
+                    onclick="showLlmView('providers')"
+                    class="btn btn-secondary btn-sm hidden">
+                <i class="fas fa-arrow-left mr-2"></i>返回供应商
+            </button>
         </div>
 
         <!-- 供应商管理视图 -->
@@ -95,7 +29,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900">供应商列表</h2>
-                        <p class="text-sm text-gray-500">配置和管理AI服务提供商</p>
+                        <p class="text-sm text-gray-500">选择供应商后查看和管理模型、API Key</p>
                     </div>
                     <div class="mt-2 md:mt-0">
                         <button onclick="openProviderModal()" class="btn btn-primary btn-sm">
@@ -119,8 +53,8 @@
             <div class="mb-6">
                 <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-900">模型列表</h2>
-                        <p class="text-sm text-gray-500">管理各个供应商的AI模型</p>
+                        <h2 class="text-lg font-semibold text-gray-900" id="models-view-title">模型列表</h2>
+                        <p class="text-sm text-gray-500" id="models-view-subtitle">管理各个供应商的AI模型</p>
                     </div>
                     <div class="mt-2 md:mt-0 flex items-center space-x-3">
                         <select id="model-filter-provider" class="input" onchange="filterModels()">
@@ -141,7 +75,6 @@
                                 <th class="text-left">ID</th>
                                 <th class="text-left">供应商</th>
                                 <th class="text-left">模型名称</th>
-                                <th class="text-left">显示名称</th>
                                 <th class="text-left">类型</th>
                                 <th class="text-left">价格</th>
                                 <th class="text-left">状态</th>
@@ -150,7 +83,7 @@
                             </thead>
                             <tbody id="model-tbody">
                             <tr id="models-loading">
-                                <td colspan="8" class="text-center py-8">
+                                <td colspan="7" class="text-center py-8">
                                     <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mb-4"></div>
                                     <p class="text-gray-500">正在加载模型数据...</p>
                                 </td>
@@ -167,8 +100,8 @@
             <div class="mb-6">
                 <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-900">API凭据</h2>
-                        <p class="text-sm text-gray-500">管理供应商的API密钥和配置</p>
+                        <h2 class="text-lg font-semibold text-gray-900" id="credentials-view-title">API凭据</h2>
+                        <p class="text-sm text-gray-500" id="credentials-view-subtitle">管理供应商的API密钥和配置</p>
                     </div>
                     <div class="mt-2 md:mt-0 flex items-center space-x-3">
                         <select id="credential-filter-provider" class="input" onchange="filterCredentials()">
@@ -669,6 +602,9 @@
         let allProviders = [];
         let allModels = [];
         let allCredentials = [];
+        let activeProviderId = '';
+        let modelsLoaded = false;
+        let credentialsLoaded = false;
 
         // 页面加载完成后初始化数据
         document.addEventListener('DOMContentLoaded', function() {
@@ -678,12 +614,7 @@
         // 加载所有数据
         async function loadAllData() {
             try {
-                await Promise.all([
-                    loadProviders(),
-                    loadModels(),
-                    loadCredentials()
-                ]);
-                updateStatistics();
+                await loadProviders();
             } catch (error) {
                 console.error('加载数据失败:', error);
                 showToast('加载数据失败，请刷新页面重试', 'error');
@@ -835,6 +766,7 @@
 
                 if (data.code === 9999) {
                     allModels = data.result || [];
+                    modelsLoaded = true;
                     filterModels();
 
                     if (loadingElement) {
@@ -849,7 +781,7 @@
                 if (tbody) {
                     tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center py-8">
+                    <td colspan="7" class="text-center py-8">
                         <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mb-4"></i>
                         <p class="text-gray-500">加载模型数据失败</p>
                         <button onclick="loadModels()" class="btn btn-secondary btn-sm mt-2">
@@ -872,6 +804,7 @@
 
                 if (data.code === 9999) {
                     allCredentials = data.result || [];
+                    credentialsLoaded = true;
                     filterCredentials();
 
                     if (loadingElement) {
@@ -901,14 +834,26 @@
 
         // 填充供应商选项
         function populateProviderOptions() {
-            const providerSelects = [
+            const formSelects = [
                 document.getElementById('model_provider_id'),
-                document.getElementById('credential_provider_id'),
+                document.getElementById('credential_provider_id')
+            ];
+
+            formSelects.forEach(select => {
+                if (select) {
+                    select.innerHTML = '<option value="">请选择供应商</option>' +
+                        allProviders.map(provider =>
+                            `<option value="${provider.id}">${provider.name}</option>`
+                        ).join('');
+                }
+            });
+
+            const filterSelects = [
                 document.getElementById('model-filter-provider'),
                 document.getElementById('credential-filter-provider')
             ];
 
-            providerSelects.forEach(select => {
+            filterSelects.forEach(select => {
                 if (select) {
                     select.innerHTML = '<option value="">所有供应商</option>' +
                         allProviders.map(provider =>
@@ -918,43 +863,83 @@
             });
         }
 
-        // 更新统计信息
-        function updateStatistics() {
-            document.getElementById('providers-count').textContent = allProviders.length;
-            document.getElementById('models-count').textContent = allModels.length;
-            document.getElementById('credentials-count').textContent = allCredentials.length;
-            document.getElementById('active-providers-count').textContent =
-                allProviders.filter(p => p.is_active).length;
+        function buildApiErrorMessage(data, fallback) {
+            let errorMessage = (data && data.msg) ? data.msg : fallback;
+            if (data && data.result && typeof data.result === 'object') {
+                const fieldErrors = Object.values(data.result).flat().filter(Boolean);
+                if (fieldErrors.length > 0) {
+                    errorMessage += ': ' + fieldErrors.join('；');
+                }
+            }
+            return errorMessage;
         }
 
-        // 选项卡切换
-        function showTab(tabName) {
-            // 更新选项卡按钮状态
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-                btn.classList.remove('border-primary-500', 'text-primary-600');
-                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            });
+        function getProviderName(providerId) {
+            const provider = providerId ? allProviders.find(p => p.id == providerId) : null;
+            return provider ? provider.name : '全部供应商';
+        }
 
-            // 激活当前选项卡
-            const activeBtn = document.getElementById(`tab-${tabName}`);
-            activeBtn.classList.add('active', 'border-primary-500', 'text-primary-600');
-            activeBtn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+        function updateManagedViewHeader(viewName, providerId) {
+            const providerName = getProviderName(providerId);
+            const currentLabel = document.getElementById('current-view-label');
 
-            // 显示对应内容
+            if (viewName === 'models') {
+                currentLabel.textContent = providerName + ' / 模型';
+                document.getElementById('models-view-title').textContent = providerName + '模型列表';
+                document.getElementById('models-view-subtitle').textContent = providerId ? '管理该供应商下的AI模型' : '管理各个供应商的AI模型';
+            }
+
+            if (viewName === 'credentials') {
+                currentLabel.textContent = providerName + ' / 凭据';
+                document.getElementById('credentials-view-title').textContent = providerName + 'API凭据';
+                document.getElementById('credentials-view-subtitle').textContent = providerId ? '管理该供应商下的API密钥和配置' : '管理供应商的API密钥和配置';
+            }
+        }
+
+        // 视图切换
+        function showLlmView(viewName, providerId = '') {
+            activeProviderId = providerId || '';
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.add('hidden');
                 content.classList.remove('active');
             });
 
-            const activeContent = document.getElementById(`${tabName}-view`);
+            const activeContent = document.getElementById(`${viewName}-view`);
             activeContent.classList.remove('hidden');
             activeContent.classList.add('active');
+
+            const isProviderView = viewName === 'providers';
+            document.getElementById('back-to-providers').classList.toggle('hidden', isProviderView);
+            document.getElementById('view-separator').style.display = isProviderView ? 'none' : '';
+            const currentLabel = document.getElementById('current-view-label');
+            currentLabel.style.display = isProviderView ? 'none' : '';
+
+            if (viewName === 'models') {
+                updateManagedViewHeader('models', activeProviderId);
+                document.getElementById('model-filter-provider').value = activeProviderId;
+                if (!modelsLoaded) {
+                    loadModels();
+                } else {
+                    filterModels();
+                }
+            }
+
+            if (viewName === 'credentials') {
+                updateManagedViewHeader('credentials', activeProviderId);
+                document.getElementById('credential-filter-provider').value = activeProviderId;
+                if (!credentialsLoaded) {
+                    loadCredentials();
+                } else {
+                    filterCredentials();
+                }
+            }
         }
 
         // 过滤模型
         function filterModels() {
             const providerId = document.getElementById('model-filter-provider').value;
+            activeProviderId = providerId;
+            updateManagedViewHeader('models', providerId);
             const filteredModels = providerId ?
                 allModels.filter(model => model.provider_id == providerId) :
                 allModels;
@@ -965,6 +950,8 @@
         // 过滤凭据
         function filterCredentials() {
             const providerId = document.getElementById('credential-filter-provider').value;
+            activeProviderId = providerId;
+            updateManagedViewHeader('credentials', providerId);
             const filteredCredentials = providerId ?
                 allCredentials.filter(cred => cred.provider_id == providerId) :
                 allCredentials;
@@ -980,7 +967,7 @@
             if (models.length === 0) {
                 tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center py-8">
+                <td colspan="7" class="text-center py-8">
                     <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-brain text-gray-400 text-2xl"></i>
                     </div>
@@ -1173,29 +1160,28 @@
 
         // 管理特定供应商的模型
         function manageModelsForProvider(providerId) {
-            showTab('models');
-            document.getElementById('model-filter-provider').value = providerId;
-            filterModels();
+            showLlmView('models', providerId);
         }
 
         // 管理特定供应商的凭据
         function manageCredentialsForProvider(providerId) {
-            showTab('credentials');
-            document.getElementById('credential-filter-provider').value = providerId;
-            filterCredentials();
+            showLlmView('credentials', providerId);
         }
 
         // 打开供应商模态框
-        function openProviderModal() {
+        function openProviderModal(resetForm = true) {
             const modal = document.getElementById('providerModal');
             modal.classList.remove('hidden');
             modal.classList.add('show');
             document.body.style.overflow = 'hidden';
 
-            document.getElementById('providerForm').reset();
-            document.getElementById('provider_id').value = '';
-            document.getElementById('providerModalTitle').textContent = '添加供应商';
-            document.getElementById('submitProviderBtn').innerHTML = '<i class="fas fa-save mr-2"></i>保存供应商';
+            if (resetForm) {
+                document.getElementById('providerForm').reset();
+                document.getElementById('provider_id').value = '';
+                document.getElementById('providerModalTitle').textContent = '添加供应商';
+                document.getElementById('submitProviderBtn').innerHTML = '<i class="fas fa-save mr-2"></i>保存供应商';
+            }
+            document.getElementById('submitProviderBtn').disabled = false;
         }
 
         // 关闭供应商模态框
@@ -1231,7 +1217,7 @@
                     document.getElementById('providerModalTitle').textContent = '编辑供应商';
                     document.getElementById('submitProviderBtn').innerHTML = '<i class="fas fa-save mr-2"></i>更新供应商';
 
-                    openProviderModal();
+                    openProviderModal(false);
                 }
             } catch (error) {
                 console.error('编辑供应商失败:', error);
@@ -1259,6 +1245,7 @@
                 if (data.code === 9999) {
                     showToast('供应商删除成功', 'success');
                     await loadAllData();
+                    showLlmView('providers');
                 } else {
                     throw new Error(data.msg || '删除失败');
                 }
@@ -1325,15 +1312,9 @@
                     showToast(id ? '供应商更新成功' : '供应商创建成功', 'success');
                     closeProviderModal();
                     await loadAllData();
+                    showLlmView('providers');
                 } else {
-                    let errorMessage = data.msg || '保存失败';
-                    if (data.result && typeof data.result === 'object') {
-                        const fieldErrors = Object.values(data.result).flat().filter(Boolean);
-                        if (fieldErrors.length > 0) {
-                            errorMessage += ': ' + fieldErrors.join('；');
-                        }
-                    }
-                    throw new Error(errorMessage);
+                    throw new Error(buildApiErrorMessage(data, '保存失败'));
                 }
             } catch (error) {
                 console.error('保存供应商失败:', error);
@@ -1344,16 +1325,22 @@
         });
 
         // 打开模型模态框
-        function openModelModal() {
+        function openModelModal(resetForm = true) {
             const modal = document.getElementById('modelModal');
             modal.classList.remove('hidden');
             modal.classList.add('show');
             document.body.style.overflow = 'hidden';
 
-            document.getElementById('modelForm').reset();
-            document.getElementById('model_id').value = '';
-            document.getElementById('modelModalTitle').textContent = '添加模型';
-            document.getElementById('submitModelBtn').innerHTML = '<i class="fas fa-save mr-2"></i>保存模型';
+            if (resetForm) {
+                document.getElementById('modelForm').reset();
+                document.getElementById('model_id').value = '';
+                if (activeProviderId) {
+                    document.getElementById('model_provider_id').value = activeProviderId;
+                }
+                document.getElementById('modelModalTitle').textContent = '添加模型';
+                document.getElementById('submitModelBtn').innerHTML = '<i class="fas fa-save mr-2"></i>保存模型';
+            }
+            document.getElementById('submitModelBtn').disabled = false;
         }
 
         // 关闭模型模态框
@@ -1390,7 +1377,7 @@
                     document.getElementById('modelModalTitle').textContent = '编辑模型';
                     document.getElementById('submitModelBtn').innerHTML = '<i class="fas fa-save mr-2"></i>更新模型';
 
-                    openModelModal();
+                    openModelModal(false);
                 }
             } catch (error) {
                 console.error('编辑模型失败:', error);
@@ -1418,7 +1405,6 @@
                 if (data.code === 9999) {
                     showToast('模型删除成功', 'success');
                     await loadModels();
-                    updateStatistics();
                 } else {
                     throw new Error(data.msg || '删除失败');
                 }
@@ -1489,9 +1475,8 @@
                     showToast(id ? '模型更新成功' : '模型创建成功', 'success');
                     closeModelModal();
                     await loadModels();
-                    updateStatistics();
                 } else {
-                    throw new Error(data.msg || '保存失败');
+                    throw new Error(buildApiErrorMessage(data, '保存失败'));
                 }
             } catch (error) {
                 console.error('保存模型失败:', error);
@@ -1502,16 +1487,23 @@
         });
 
         // 打开凭据模态框
-        function openCredentialModal() {
+        function openCredentialModal(resetForm = true) {
             const modal = document.getElementById('credentialModal');
             modal.classList.remove('hidden');
             modal.classList.add('show');
             document.body.style.overflow = 'hidden';
 
-            document.getElementById('credentialForm').reset();
-            document.getElementById('credential_id').value = '';
-            document.getElementById('credentialModalTitle').textContent = '添加凭据';
-            document.getElementById('submitCredentialBtn').innerHTML = '<i class="fas fa-save mr-2"></i>保存凭据';
+            if (resetForm) {
+                document.getElementById('credentialForm').reset();
+                document.getElementById('credential_id').value = '';
+                if (activeProviderId) {
+                    document.getElementById('credential_provider_id').value = activeProviderId;
+                }
+                document.getElementById('credential_api_key').required = true;
+                document.getElementById('credentialModalTitle').textContent = '添加凭据';
+                document.getElementById('submitCredentialBtn').innerHTML = '<i class="fas fa-save mr-2"></i>保存凭据';
+            }
+            document.getElementById('submitCredentialBtn').disabled = false;
         }
 
         // 关闭凭据模态框
@@ -1557,10 +1549,11 @@
                     document.getElementById('credential_is_default').checked = !!credential.is_default;
                     document.getElementById('credential_is_active').checked = !!credential.is_active;
 
+                    document.getElementById('credential_api_key').required = false;
                     document.getElementById('credentialModalTitle').textContent = '编辑凭据';
                     document.getElementById('submitCredentialBtn').innerHTML = '<i class="fas fa-save mr-2"></i>更新凭据';
 
-                    openCredentialModal();
+                    openCredentialModal(false);
                 }
             } catch (error) {
                 console.error('编辑凭据失败:', error);
@@ -1642,7 +1635,6 @@
                 if (data.code === 9999) {
                     showToast('凭据删除成功', 'success');
                     await loadCredentials();
-                    updateStatistics();
                 } else {
                     throw new Error(data.msg || '删除失败');
                 }
@@ -1711,9 +1703,8 @@
                     showToast(id ? '凭据更新成功' : '凭据创建成功', 'success');
                     closeCredentialModal();
                     await loadCredentials();
-                    updateStatistics();
                 } else {
-                    throw new Error(data.msg || '保存失败');
+                    throw new Error(buildApiErrorMessage(data, '保存失败'));
                 }
             } catch (error) {
                 console.error('保存凭据失败:', error);

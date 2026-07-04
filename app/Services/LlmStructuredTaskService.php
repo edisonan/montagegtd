@@ -28,11 +28,12 @@ class LlmStructuredTaskService
         $credential = $model ? $this->resolveCredential($model, $options) : null;
         $provider = $model ? $model->provider : null;
 
-        if (!$model || !$credential || !$provider || empty($provider->base_url)) {
+        $apiKey = $credential ? $credential->getPlainApiKey() : null;
+        if (!$model || !$credential || !$provider || empty($provider->base_url) || empty($apiKey)) {
             return array(
                 'success' => false,
                 'content' => null,
-                'error' => '未找到可用的 LLM 模型或凭据',
+                'error' => '未找到可用的 LLM 模型或凭据，或 API Key 无法读取',
                 'meta' => array(
                     'task_type' => $taskType,
                     'fallback_only' => true,
@@ -60,7 +61,7 @@ class LlmStructuredTaskService
                 rtrim($provider->base_url, '/') . '/chat/completions',
                 $payload,
                 array(
-                    'Authorization: Bearer ' . $credential->api_key,
+                    'Authorization: Bearer ' . $apiKey,
                     'Content-Type: application/json',
                 ),
                 (int)($options['timeout'] ?? 120)
@@ -77,7 +78,7 @@ class LlmStructuredTaskService
                         rtrim($provider->base_url, '/') . '/chat/completions',
                         $payload,
                         array(
-                            'Authorization: Bearer ' . $credential->api_key,
+                            'Authorization: Bearer ' . $apiKey,
                             'Content-Type: application/json',
                         ),
                         (int)($options['timeout'] ?? 120)
