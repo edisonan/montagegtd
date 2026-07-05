@@ -1612,6 +1612,45 @@
             if (input) input.value = '';
         }
 
+        let noteCreatePrefillApplied = false;
+
+        function getEditorContentValue() {
+            if (easymde && typeof easymde.value === 'function') {
+                return easymde.value() || '';
+            }
+
+            const editor = document.getElementById('markdown-editor');
+            return editor ? (editor.value || '') : '';
+        }
+
+        function applyNoteCreatePrefill(content) {
+            if (!content || noteCreatePrefillApplied) {
+                return false;
+            }
+
+            const currentContent = getEditorContentValue();
+            if (currentContent && currentContent.trim() !== '') {
+                return false;
+            }
+
+            if (easymde && typeof easymde.value === 'function') {
+                easymde.value(content);
+                updateCharCount();
+                noteCreatePrefillApplied = true;
+                return true;
+            }
+
+            const editor = document.getElementById('markdown-editor');
+            if (editor) {
+                editor.value = content;
+                updateCharCount();
+                noteCreatePrefillApplied = true;
+                return true;
+            }
+
+            return false;
+        }
+
         function initCreateFormFromQuery() {
             const params = getNoteQueryParams();
             const sourceTypeInput = document.getElementById('source_type_input');
@@ -1628,8 +1667,8 @@
                     input.value = params.add_content;
                     box.style.display = '';
                 }
-            } else if (params.add_content && easymde) {
-                easymde.value(params.add_content);
+            } else if (params.add_content) {
+                applyNoteCreatePrefill(params.add_content);
             }
         }
 
@@ -1783,6 +1822,9 @@
                     last_page: Number(notesPayload.last_page || 1),
                     total: Number(notesPayload.total || notesState.items.length)
                 };
+                if (payloadRoot.add_content) {
+                    applyNoteCreatePrefill(payloadRoot.add_content);
+                }
                 renderNotesList();
             }).catch(function(error) {
                 showToast('笔记列表加载失败: ' + (error && error.message ? error.message : '网络错误'), 'error');

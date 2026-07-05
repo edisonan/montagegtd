@@ -615,6 +615,7 @@
         let easymde = null;
         let currentNoteId = null;
         let currentStatus = 1;
+        let notesLoading = false;
         let notesState = {
             items: [],
             pagination: {
@@ -833,6 +834,10 @@
 
         function renderNotesList() {
             const list = document.getElementById('notes-list');
+            if (notesLoading) {
+                list.innerHTML = '<div class="empty-state"><div><i class="fas fa-spinner fa-spin text-3xl mb-3"></i><div>加载中...</div></div></div>';
+                return;
+            }
             const items = notesState.items.filter(function(note) {
                 return Number(note.user_id || 0) === CURRENT_USER_ID;
             });
@@ -871,6 +876,8 @@
             }
 
             const keyword = document.getElementById('note-search-input').value || '';
+            notesLoading = true;
+            renderNotesList();
             return apiRequest('GET', '/notes', {
                 keyword: keyword,
                 page: page || 1
@@ -887,9 +894,12 @@
                     last_page: Number(notesPayload.last_page || 1),
                     total: Number(notesPayload.total || notesState.items.length)
                 };
+                notesLoading = false;
                 renderNotesList();
                 updatePaginationUI();
             }).catch(function(error) {
+                notesLoading = false;
+                renderNotesList();
                 showToast('笔记加载失败: ' + (error && error.message ? error.message : '网络错误'), 'error');
             });
         }
