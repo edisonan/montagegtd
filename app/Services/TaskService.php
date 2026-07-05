@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Task;
 use App\Models\TaskTagMap;
 use App\Exceptions\CustomException;
-use App\Http\Utils\CommonUtil;
 use Mail;
 use Auth;
 use App\Repositories\PlanRepository;
@@ -242,10 +241,7 @@ class TaskService {
 			], function ($m) use ($user, $task, $title) {
 				$m->to ( $user->email, $user->name )->subject ( $title . $task->name );
 			} );
-			// ifttt通知
-			if (isset ( $task->user->setting->ifttt_notify )) {
-				CommonUtil::iftttNotify ( $title, $task->name,  config('app.url'), $task->user->setting->ifttt_notify );
-			}
+			app(NotificationChannelService::class)->sendToUser($task->user, $title, $task->name, config('app.url'));
 		}
 	}
 	

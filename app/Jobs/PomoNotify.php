@@ -7,7 +7,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use App\Http\Utils\CommonUtil;
+use App\Services\NotificationChannelService;
 use Illuminate\Support\Facades\Log;
 
 class FocusNotify implements ShouldQueue {
@@ -34,10 +34,8 @@ class FocusNotify implements ShouldQueue {
 		$needFocus = \Cache::store ( 'file' )->pull ( 'NEED_POMO' . $this->user->id );
 		
 		if (! empty ( $needFocus )) {
-			if (isset ( $this->user->setting->ifttt_notify )) {
-				$notifyResult = CommonUtil::iftttNotify ( '做专注', $this->message,  config('app.url'), $this->user->setting->ifttt_notify );
-				Log::info ( 'notify result:' . $notifyResult . '|message:' . $this->message . '|user:' . $this->user->name );
-			}
+			$notifyResult = app(NotificationChannelService::class)->sendToUser($this->user, '做专注', $this->message, config('app.url'));
+			Log::info ( 'notify result:' . json_encode($notifyResult) . '|message:' . $this->message . '|user:' . $this->user->name );
 		}
 		return true;
 	}

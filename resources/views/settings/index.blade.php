@@ -255,7 +255,6 @@
                                     </label>
                                     <div class="relative">
                                         <input type="password"
-                                               name="ifttt_notify"
                                                id="ifttt_notify"
                                                class="input w-full pr-10"
                                                value=""
@@ -274,6 +273,101 @@
                                                 查看文档
                                             </a>
                                         </p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                                        IFTTT通知状态
+                                    </label>
+                                    <div class="flex items-center space-x-6">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio"
+                                                   name="notification_ifttt_status"
+                                                   value="0"
+                                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                                   checked>
+                                            <span class="ml-2 text-sm text-gray-700">关闭</span>
+                                        </label>
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="radio"
+                                                   name="notification_ifttt_status"
+                                                   value="1"
+                                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                            <span class="ml-2 text-sm text-gray-700">开启</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="notification_ifttt_key" id="notification_ifttt_key" value="">
+                            </div>
+
+                            <!-- Bark通知设置 -->
+                            <div>
+                                <div class="flex items-center mb-6">
+                                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-mobile-alt text-orange-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-base font-semibold text-gray-900">Bark通知设置</h3>
+                                        <p class="text-sm text-gray-500">配置iOS Bark推送服务</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="notification_bark_server_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                                Bark服务地址
+                                            </label>
+                                            <input type="url"
+                                                   name="notification_bark_server_url"
+                                                   id="notification_bark_server_url"
+                                                   class="input w-full"
+                                                   value="https://api.day.app"
+                                                   placeholder="https://api.day.app">
+                                        </div>
+
+                                        <div>
+                                            <label for="notification_bark_key" class="block text-sm font-medium text-gray-700 mb-2">
+                                                Bark Key
+                                            </label>
+                                            <div class="relative">
+                                                <input type="password"
+                                                       name="notification_bark_key"
+                                                       id="notification_bark_key"
+                                                       class="input w-full pr-10"
+                                                       value=""
+                                                       placeholder="输入Bark设备Key">
+                                                <button type="button"
+                                                        onclick="togglePasswordVisibility('notification_bark_key')"
+                                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                                    <i class="fas fa-eye" id="notification_bark_key_eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                                            Bark通知状态
+                                        </label>
+                                        <div class="flex items-center space-x-6">
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="radio"
+                                                       name="notification_bark_status"
+                                                       value="0"
+                                                       class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                                                       checked>
+                                                <span class="ml-2 text-sm text-gray-700">关闭</span>
+                                            </label>
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="radio"
+                                                       name="notification_bark_status"
+                                                       value="1"
+                                                       class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300">
+                                                <span class="ml-2 text-sm text-gray-700">开启</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -365,6 +459,9 @@
                                 <button onclick="testIFTTT()" class="btn btn-outline w-full justify-center">
                                     <i class="fas fa-bell mr-2"></i>测试IFTTT通知
                                 </button>
+                                <button onclick="testBark()" class="btn btn-outline w-full justify-center">
+                                    <i class="fas fa-mobile-alt mr-2"></i>测试Bark通知
+                                </button>
                                 <button onclick="exportSettings()" class="btn btn-outline w-full justify-center">
                                     <i class="fas fa-download mr-2"></i>导出设置备份
                                 </button>
@@ -398,8 +495,10 @@
     </div>
 
     <script>
+        var settingsApiRequest = null;
+
         document.addEventListener('DOMContentLoaded', function() {
-            var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+            settingsApiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : null;
             function getResultData(resp) {
@@ -417,17 +516,34 @@
                 if (fb) fb.checked = true;
             }
 
-            function applySetting(setting) {
+            function getChannel(channels, type) {
+                if (!channels || !channels[type]) {
+                    return {status: 0, config: {}};
+                }
+                return channels[type];
+            }
+
+            function applySetting(setting, channels) {
                 if (!setting) return;
+                var ifttt = getChannel(channels, 'ifttt');
+                var bark = getChannel(channels, 'bark');
+                var iftttConfig = ifttt.config || {};
+                var barkConfig = bark.config || {};
+
                 document.getElementById('pomo_time').value = setting.pomo_time || 25;
                 document.getElementById('pomo_rest_time').value = setting.pomo_rest_time || 5;
                 document.getElementById('day_pomo_goal').value = setting.day_pomo_goal || 8;
                 document.getElementById('week_pomo_goal').value = setting.week_pomo_goal || 40;
                 document.getElementById('month_pomo_goal').value = setting.month_pomo_goal || 160;
                 document.getElementById('kindle_email').value = setting.kindle_email || '';
-                document.getElementById('ifttt_notify').value = setting.ifttt_notify || '';
+                document.getElementById('ifttt_notify').value = iftttConfig.key || '';
+                document.getElementById('notification_ifttt_key').value = iftttConfig.key || '';
+                document.getElementById('notification_bark_server_url').value = barkConfig.server_url || 'https://api.day.app';
+                document.getElementById('notification_bark_key').value = barkConfig.key || '';
                 setRadioValue('is_start_kindle', String(setting.is_start_kindle || 0), '0');
                 setRadioValue('with_image_push', String(setting.with_image_push || 0), '0');
+                setRadioValue('notification_ifttt_status', String(ifttt.status || 0), '0');
+                setRadioValue('notification_bark_status', String(bark.status || 0), '0');
 
                 var statsPomo = document.getElementById('stats_pomo_time');
                 var statsDay = document.getElementById('stats_day_plan');
@@ -441,11 +557,11 @@
                 }
             }
 
-            if (apiRequest) {
-                apiRequest('GET', '/settings', {}).then(function(resp) {
+            if (settingsApiRequest) {
+                settingsApiRequest('GET', '/settings', {}).then(function(resp) {
                     if (!resp || resp.code !== 9999) return;
                     var result = getResultData(resp);
-                    applySetting(result.setting || {});
+                    applySetting(result.setting || {}, result.notification_channels || {});
                 }).catch(function() {});
             }
 
@@ -453,7 +569,7 @@
             const form = document.getElementById('settings-form');
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                if (!apiRequest) {
+                if (!settingsApiRequest) {
                     showToast('API客户端未初始化', 'error');
                     return;
                 }
@@ -480,12 +596,13 @@
                 submitBtn.disabled = true;
 
                 try {
+                    document.getElementById('notification_ifttt_key').value = document.getElementById('ifttt_notify').value;
                     const formData = new FormData(this);
                     const payload = {};
                     formData.forEach((value, key) => {
                         payload[key] = value;
                     });
-                    const data = await apiRequest('POST', '/settings/current', payload);
+                    const data = await settingsApiRequest('POST', '/settings/current', payload);
 
                     if (data.success || (data.code && data.code === 9999)) {
                         showToast('设置保存成功！', 'success');
@@ -549,6 +666,9 @@
                 document.getElementById('month_pomo_goal').value = 160;
                 document.querySelector('input[name="is_start_kindle"][value="0"]').checked = true;
                 document.querySelector('input[name="with_image_push"][value="0"]').checked = true;
+                document.querySelector('input[name="notification_ifttt_status"][value="0"]').checked = true;
+                document.querySelector('input[name="notification_bark_status"][value="0"]').checked = true;
+                document.getElementById('notification_bark_server_url').value = 'https://api.day.app';
 
                 showToast('已恢复默认设置', 'info');
             }
@@ -556,7 +676,7 @@
 
         // 测试Kindle推送
         async function testKindlePush() {
-            if (!apiRequest) {
+            if (!settingsApiRequest) {
                 showToast('API客户端未初始化', 'error');
                 return;
             }
@@ -574,7 +694,7 @@
             showToast('正在发送测试文章...', 'info');
 
             try {
-                const data = await apiRequest('POST', '/settings/test-kindle', {
+                const data = await settingsApiRequest('POST', '/settings/test-kindle', {
                     email: kindleEmail
                 });
 
@@ -591,7 +711,7 @@
 
         // 测试IFTTT通知
         async function testIFTTT() {
-            if (!apiRequest) {
+            if (!settingsApiRequest) {
                 showToast('API客户端未初始化', 'error');
                 return;
             }
@@ -609,7 +729,7 @@
             showToast('正在发送测试通知...', 'info');
 
             try {
-                const data = await apiRequest('POST', '/settings/test-ifttt', {
+                const data = await settingsApiRequest('POST', '/settings/test-ifttt', {
                     key: iftttKey
                 });
 
@@ -624,20 +744,57 @@
             }
         }
 
+        // 测试Bark通知
+        async function testBark() {
+            if (!settingsApiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
+            const barkKey = document.getElementById('notification_bark_key').value;
+            const serverUrl = document.getElementById('notification_bark_server_url').value || 'https://api.day.app';
+
+            if (!barkKey) {
+                showToast('请先填写Bark Key', 'warning');
+                return;
+            }
+
+            if (!confirm('将发送测试通知到Bark，确定要继续吗？')) {
+                return;
+            }
+
+            showToast('正在发送Bark测试通知...', 'info');
+
+            try {
+                const data = await settingsApiRequest('POST', '/settings/test-bark', {
+                    key: barkKey,
+                    server_url: serverUrl
+                });
+
+                if (data.success || data.code === 9999) {
+                    showToast('Bark测试通知已发送', 'success');
+                } else {
+                    showToast('发送失败：' + (data.message || data.msg || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('发送失败:', error);
+                showToast('发送失败，请检查网络连接', 'error');
+            }
+        }
+
         // 导出设置备份
         async function exportSettings() {
-            if (!apiRequest) {
+            if (!settingsApiRequest) {
                 showToast('API客户端未初始化', 'error');
                 return;
             }
             showToast('正在生成设置备份...', 'info');
 
             try {
-                const data = await apiRequest('GET', '/settings/export', {});
+                const data = await settingsApiRequest('GET', '/settings/export', {});
 
                 if (data.success || data.code === 9999) {
                     // 创建下载链接
-                    const exportData = data.result && data.result.data ? data.result.data : {};
+                    const exportData = data.result || {};
                     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');

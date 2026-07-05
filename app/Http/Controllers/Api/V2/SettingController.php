@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\V2;
 
 use App\Http\Controllers\Controller;
-use App\Http\Utils\CommonUtil;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Setting;
 use App\Services\KindleService;
+use App\Services\NotificationChannelService;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 
@@ -14,11 +14,17 @@ class SettingController extends Controller
 {
     protected $settingService;
     protected $kindleService;
+    protected $notificationChannelService;
 
-    public function __construct(SettingService $settingService, KindleService $kindleService)
+    public function __construct(
+        SettingService $settingService,
+        KindleService $kindleService,
+        NotificationChannelService $notificationChannelService
+    )
     {
         $this->settingService = $settingService;
         $this->kindleService = $kindleService;
+        $this->notificationChannelService = $notificationChannelService;
     }
 
     public function index(Request $request)
@@ -27,6 +33,7 @@ class SettingController extends Controller
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'setting' => $setting,
+            'notification_channels' => $this->notificationChannelService->getSettingsPayload($setting),
         )));
     }
 
@@ -43,6 +50,9 @@ class SettingController extends Controller
             'pomo_rest_time' => 'integer|min:1|max:10',
             'is_start_kindle' => 'integer|min:0|max:1',
             'with_image_push' => 'integer|min:0|max:1',
+            'notification_ifttt_status' => 'integer|min:0|max:1',
+            'notification_bark_status' => 'integer|min:0|max:1',
+            'notification_bark_server_url' => 'nullable|url',
         ));
 
         if ((int)$request->input('is_start_kindle') === 1) {
@@ -52,9 +62,12 @@ class SettingController extends Controller
         }
 
         $setting->update($request->all());
+        $this->notificationChannelService->saveFromSettingRequest($request, $setting);
+        $setting = $setting->fresh();
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'setting' => $setting->fresh(),
+            'setting' => $setting,
+            'notification_channels' => $this->notificationChannelService->getSettingsPayload($setting),
         )));
     }
 
@@ -92,7 +105,10 @@ class SettingController extends Controller
 
         $key = trim((string)$request->input('key', ''));
         if ($key === '') {
-            $key = trim((string)$setting->ifttt_notify);
+            $channels = $this->notificationChannelService->getSettingsPayload($setting);
+            $key = isset($channels['ifttt']['config']['key'])
+                ? trim((string)$channels['ifttt']['config']['key'])
+                : '';
         }
         if ($key === '') {
             return $this->jsonResponse($request, array(
@@ -102,11 +118,50 @@ class SettingController extends Controller
             ));
         }
 
-        $ok = CommonUtil::iftttNotify('测试通知', 'Montage 设置测试通知', config('app.url'), $key);
+        $ok = $this->notificationChannelService->testChannel('ifttt', array(
+            'key' => $key,
+        ));
         if (!$ok) {
             return $this->jsonResponse($request, array(
                 'code' => 1002,
                 'msg' => 'IFTTT 通知发送失败',
+                'result' => array(),
+            ));
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'msg' => '测试通知已发送',
+        )));
+    }
+
+    public function testBark(Request $request)
+    {
+        $setting = $this->settingService->getSettingInfo(true);
+        $this->authorize('destroy', $setting);
+
+        $key = trim((string)$request->input('key', ''));
+        $serverUrl = trim((string)$request->input('server_url', 'https://api.day.app'));
+        if ($key === '') {
+            $channels = $this->notificationChannelService->getSettingsPayload($setting);
+            $key = isset($channels['bark']['config']['key']) ? trim((string)$channels['bark']['config']['key']) : '';
+            $serverUrl = isset($channels['bark']['config']['server_url']) ? trim((string)$channels['bark']['config']['server_url']) : $serverUrl;
+        }
+        if ($key === '') {
+            return $this->jsonResponse($request, array(
+                'code' => 1001,
+                'msg' => 'Bark key 不能为空',
+                'result' => array(),
+            ));
+        }
+
+        $ok = $this->notificationChannelService->testChannel('bark', array(
+            'key' => $key,
+            'server_url' => $serverUrl,
+        ));
+        if (!$ok) {
+            return $this->jsonResponse($request, array(
+                'code' => 1002,
+                'msg' => 'Bark 通知发送失败',
                 'result' => array(),
             ));
         }
@@ -130,12 +185,12 @@ class SettingController extends Controller
             'kindle_email',
             'is_start_kindle',
             'with_image_push',
-            'ifttt_notify',
             'cal_token',
         ));
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'data' => $data,
+            'notification_channels' => $this->notificationChannelService->getSettingsPayload($setting),
         )));
     }
 
@@ -147,6 +202,13 @@ class SettingController extends Controller
         }
         if ($request->has('month_focus_plan') && !$request->has('month_pomo_goal')) {
             $payload['month_pomo_goal'] = $request->input('month_focus_plan');
+        }
+        if ($request->has('ifttt_notify') && !$request->has('notification_ifttt_key')) {
+            $legacyKey = trim((string)$request->input('ifttt_notify'));
+            $payload['notification_ifttt_key'] = $legacyKey;
+            if (!$request->has('notification_ifttt_status')) {
+                $payload['notification_ifttt_status'] = $legacyKey !== '' ? 1 : 0;
+            }
         }
         if (!empty($payload)) {
             $request->merge($payload);

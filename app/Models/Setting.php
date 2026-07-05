@@ -19,8 +19,7 @@ class Setting extends Model {
 			'kindle_email',
 			'is_start_kindle',
 			'with_image_push',
-			'cal_token',
-			'ifttt_notify' 
+			'cal_token'
 	];
 	
 	/**
@@ -29,7 +28,8 @@ class Setting extends Model {
 	 * @var array
 	 */
 	protected $casts = [ 
-			'user_id' => 'int' 
+			'user_id' => 'int',
+			'notify_channels' => 'array'
 	];
 	
 	/**

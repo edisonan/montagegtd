@@ -9323,7 +9323,20 @@ paths:
                   value:
                     code: 9999
                     msg: ok
-                    result: {}
+                    result:
+                      setting: {}
+                      notification_channels:
+                        ifttt:
+                          type: ifttt
+                          status: 1
+                          config:
+                            key: ""
+                        bark:
+                          type: bark
+                          status: 0
+                          config:
+                            server_url: "https://api.day.app"
+                            key: ""
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -9452,6 +9465,54 @@ paths:
                     code: 9999
                     msg: ok
                     result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/settings/test-bark":
+    post:
+      tags:
+        - settings
+      summary: "POST /settings/test-bark"
+      operationId: unknown_handle_post_settings_test_bark
+      description: |
+        Action: Api\\V2\\SettingController@testBark
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: bark_device_key
+                  server_url: "https://api.day.app"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result:
+                      msg: "测试通知已发送"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":

@@ -184,6 +184,7 @@ Route::prefix('v2')->group(function () {
         Route::put('/settings/{setting}', 'Api\\V2\\SettingController@update')->where('setting', '[0-9]+');
         Route::post('/settings/test-kindle', 'Api\\V2\\SettingController@testKindle');
         Route::post('/settings/test-ifttt', 'Api\\V2\\SettingController@testIfttt');
+        Route::post('/settings/test-bark', 'Api\\V2\\SettingController@testBark');
         Route::get('/settings/export', 'Api\\V2\\SettingController@export');
         Route::post('/kindles/test', 'Api\\V2\\KindleController@test');
 

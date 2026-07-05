@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Focus;
 use App\Models\User;
-use App\Http\Utils\CommonUtil;
 use App\Exceptions\CustomException;
 use App\Repositories\FocusRepository;
 use Auth;
@@ -272,10 +271,7 @@ class FocusService {
 			if ($this->focusRepository->existNewFocusByAfterStartTime ( $date, $user->id )) {
 				continue;
 			}
-			// ifttt通知
-			if (isset ( $user->setting->ifttt_notify )) {
-				CommonUtil::iftttNotify ( '专注提醒', '快来开始新的专注吧~',  config('app.url'), $user->setting->ifttt_notify );
-			}
+			app(NotificationChannelService::class)->sendToUser($user, '专注提醒', '快来开始新的专注吧~', config('app.url'));
 		}
 	}
 	
@@ -286,12 +282,9 @@ class FocusService {
 	 * @param unknown $endTime        	
 	 */
 	public function scheduleFocusRecordReminder($startTime, $endTime) {
-        $focus_datas = $this->focusRepository->getAllListByBetweenEndTime ( $startTime, $endTime );
+		$focus_datas = $this->focusRepository->getAllListByBetweenEndTime ( $startTime, $endTime );
 		foreach ( $focus_datas as $focus ) {
-			// ifttt通知
-			if (isset ( $focus->user->setting->ifttt_notify )) {
-				CommonUtil::iftttNotify ( '专注提醒', '您已经完成了一个专注，快来记录一下吧~',  config('app.url'), $focus->user->setting->ifttt_notify );
-			}
+			app(NotificationChannelService::class)->sendToUser($focus->user, '专注提醒', '您已经完成了一个专注，快来记录一下吧~', config('app.url'));
 		}
 	}
 	
@@ -307,9 +300,7 @@ class FocusService {
 			if ($this->focusRepository->existNewFocusById ( $focus->id, $focus->user_id )) {
 				continue;
 			}
-			if (isset ( $focus->user->setting->ifttt_notify )) {
-				CommonUtil::iftttNotify ( '专注提醒', '休息完成，快来开始下一个专注吧~',  config('app.url'), $focus->user->setting->ifttt_notify );
-			}
+			app(NotificationChannelService::class)->sendToUser($focus->user, '专注提醒', '休息完成，快来开始下一个专注吧~', config('app.url'));
 		}
 	}
 }

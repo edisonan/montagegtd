@@ -81,6 +81,55 @@ class CommonUtil
         }
     }
 
+    public static function barkNotify($title, $message, $url, $key, $serverUrl = '')
+    {
+        if (empty($title) || empty($message) || empty($key)) {
+            Log::info("bark params can not empty");
+            return false;
+        }
+
+        $serverUrl = trim($serverUrl);
+        if ($serverUrl === '') {
+            $serverUrl = 'https://api.day.app';
+        }
+        $serverUrl = rtrim($serverUrl, '/');
+
+        $postParams = array(
+            'title' => $title,
+            'body' => $message,
+        );
+        if (!empty($url)) {
+            $postParams['url'] = $url;
+        }
+
+        $curl = curl_init($serverUrl . '/' . rawurlencode($key));
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        curl_setopt($curl, CURLOPT_FAILONERROR, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($postParams));
+
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if (empty($response) || $httpCode >= 400) {
+            Log::info('bark request error:' . $httpCode . '|' . $response);
+            return false;
+        }
+
+        $result = json_decode($response, true);
+        if (is_array($result) && isset($result['code'])) {
+            return (int)$result['code'] === 200;
+        }
+
+        return true;
+    }
+
     public static function shortUrl($url)
     {
         // 配置headers
