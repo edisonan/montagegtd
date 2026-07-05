@@ -2,24 +2,22 @@
 <script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
 
 <!-- 新增手账记录模态框 -->
-<!-- 引入日期选择器 -->
-<script src="{{'/js/My97DatePicker/WdatePicker.js'}}"></script>
-
-<!-- 新增手账记录模态框 -->
 <div id="journalCreateModal" class="hidden fixed inset-0 z-50">
     <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
 
-    <!-- 修复：使用flex居中容器 -->
     <div class="fixed inset-0 overflow-y-auto py-4 sm:py-8 px-4">
-        <!-- 修复：使用flex和items-center实现真正的居中 -->
         <div class="min-h-full flex items-center justify-center">
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
-                <!-- 模态框头部 - 固定 -->
-                <div class="sticky top-0 z-10 bg-white rounded-t-lg flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-                    <div class="flex items-center space-x-2 flex-1 min-w-0">
-                        <h3 class="text-lg sm:text-xl font-semibold text-gray-900 truncate">新增手账记录</h3>
-                        <span class="text-gray-400 hidden sm:inline">|</span>
-                        <a href="/journals" class="text-blue-600 hover:text-blue-800 hover:underline text-xs sm:text-sm font-medium truncate ml-0 sm:ml-2">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-all">
+                <div class="sticky top-0 z-10 bg-white rounded-t-lg flex items-center justify-between px-5 py-4 border-b border-gray-200">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-lg font-semibold text-gray-900 truncate">记录手账</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">快速补记刚完成的事情和耗时</p>
+                        </div>
+                        <a href="/journals" class="hidden sm:inline-flex items-center text-blue-600 hover:text-blue-800 text-xs font-medium ml-auto">
                             <i class="fas fa-external-link-alt mr-1"></i>查看手账列表
                         </a>
                     </div>
@@ -29,145 +27,134 @@
                     </button>
                 </div>
 
-                <!-- 模态框内容 - 可滚动区域 -->
-                <div class="overflow-y-auto max-h-[calc(100vh-200px)] sm:max-h-[calc(100vh-240px)] p-4 sm:p-6">
+                <div class="overflow-y-auto max-h-[calc(100vh-180px)] p-5">
                     @include('common.errors')
 
-                    <form id="journalCreateForm" action="javascript:void(0)" method="POST" class="space-y-4 sm:space-y-6">
+                    <form id="journalCreateForm" action="javascript:void(0)" method="POST" class="space-y-5">
                         {{ csrf_field() }}
 
-                        <!-- 手账内容 -->
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 items-start">
-                            <label for="name" class="font-medium text-gray-700 pt-2">
-                                <i class="fas fa-tasks mr-2 text-blue-500"></i>完成内容
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-pen mr-2 text-blue-500"></i>完成内容
                             </label>
-                            <div class="md:col-span-3">
-                                <input type="text" name="name" id="name"
-                                       class="input w-full text-sm sm:text-base"
-                                       value="{{ old('journal') }}"
-                                       placeholder="请输入完成的手账内容"
-                                       required
-                                       autofocus>
+                            <textarea name="name" id="name"
+                                      class="input w-full min-h-[92px] resize-y text-sm"
+                                      placeholder="写下刚完成的事，例如：整理本周任务、读完一篇文章、复盘上午工作..."
+                                      required
+                                      autofocus>{{ old('journal') }}</textarea>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <button type="button" class="journal-template-btn text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200" data-template="整理任务：">
+                                    整理任务
+                                </button>
+                                <button type="button" class="journal-template-btn text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200" data-template="阅读学习：">
+                                    阅读学习
+                                </button>
+                                <button type="button" class="journal-template-btn text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200" data-template="工作推进：">
+                                    工作推进
+                                </button>
+                                <button type="button" class="journal-template-btn text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200" data-template="复盘总结：">
+                                    复盘总结
+                                </button>
                             </div>
                         </div>
 
-                        <!-- 快速时间选择 -->
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
-                            <div class="font-medium text-gray-700 pt-2">
-                                <i class="fas fa-bolt mr-2 text-purple-500"></i>快速选择
-                            </div>
-                            <div class="md:col-span-3">
-                                <div class="flex flex-wrap gap-2">
-                                    <button type="button" class="btn btn-sm btn-outline quick-time-btn text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-minutes="10">
-                                        <i class="far fa-clock mr-1"></i>10分钟前
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline quick-time-btn text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-minutes="25">
-                                        <i class="fas fa-hourglass-start mr-1"></i>25分钟前
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline quick-time-btn text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-minutes="60">
-                                        <i class="fas fa-hourglass-half mr-1"></i>1小时前
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline quick-time-btn text-xs sm:text-sm px-2 sm:px-3 py-1.5" data-minutes="120">
-                                        <i class="fas fa-hourglass-end mr-1"></i>2小时前
-                                    </button>
+                        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-700">
+                                        <i class="fas fa-bolt mr-2 text-purple-500"></i>快速时间
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-0.5">按“现在往前推”快速生成开始和结束时间</div>
                                 </div>
+                                <button type="button" class="btn btn-sm btn-outline" onclick="setDefaultTimes()">
+                                    <i class="fas fa-redo mr-1"></i>重置
+                                </button>
                             </div>
-                        </div>
 
-                        <!-- 时间选择器组 -->
-                        <div class="space-y-4 sm:space-y-6">
-                            <!-- 开始时间 -->
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 items-start">
-                                <label for="start_time" class="font-medium text-gray-700 pt-2">
-                                    <i class="fas fa-play mr-2 text-green-500"></i>开始时间
-                                </label>
-                                <div class="md:col-span-3">
-                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <button type="button" class="quick-time-btn rounded-lg border border-gray-200 bg-white p-3 text-left hover:border-blue-300 hover:bg-blue-50 transition-colors" data-minutes="10">
+                                    <div class="text-sm font-semibold text-gray-900">10 分钟</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">刚刚完成</div>
+                                </button>
+                                <button type="button" class="quick-time-btn rounded-lg border border-gray-200 bg-white p-3 text-left hover:border-blue-300 hover:bg-blue-50 transition-colors" data-minutes="25">
+                                    <div class="text-sm font-semibold text-gray-900">25 分钟</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">一个番茄钟</div>
+                                </button>
+                                <button type="button" class="quick-time-btn rounded-lg border border-gray-200 bg-white p-3 text-left hover:border-blue-300 hover:bg-blue-50 transition-colors" data-minutes="60">
+                                    <div class="text-sm font-semibold text-gray-900">1 小时</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">整段工作</div>
+                                </button>
+                                <button type="button" class="quick-time-btn rounded-lg border border-gray-200 bg-white p-3 text-left hover:border-blue-300 hover:bg-blue-50 transition-colors" data-minutes="120">
+                                    <div class="text-sm font-semibold text-gray-900">2 小时</div>
+                                    <div class="text-xs text-gray-500 mt-0.5">深度处理</div>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label for="start_time" class="block text-xs font-medium text-gray-600 mb-1">
+                                        <i class="fas fa-play mr-1 text-green-500"></i>开始时间
+                                    </label>
+                                    <div class="space-y-2">
                                         <div class="relative flex-1">
                                             <input type="text" name="start_time" id="start_time"
-                                                   class="input w-full pl-10 text-sm sm:text-base"
+                                                   class="input w-full pl-9 text-sm"
                                                    onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})"
                                                    placeholder="选择开始时间">
-                                            <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                            <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
                                         </div>
-                                        <div class="flex items-center space-x-2 self-start sm:self-center">
-                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-                                                    onclick="changeTime('start_time', -5)">
-                                                <i class="fas fa-minus mr-1"></i>5m
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-                                                    onclick="changeTime('start_time', 5)">
-                                                <i class="fas fa-plus mr-1"></i>5m
-                                            </button>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn" onclick="changeTime('start_time', -5)">-5m</button>
+                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn" onclick="changeTime('start_time', 5)">+5m</button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- 结束时间 -->
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 items-start">
-                                <label for="end_time" class="font-medium text-gray-700 pt-2">
-                                    <i class="fas fa-stop mr-2 text-red-500"></i>结束时间
-                                </label>
-                                <div class="md:col-span-3">
-                                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                                <div>
+                                    <label for="end_time" class="block text-xs font-medium text-gray-600 mb-1">
+                                        <i class="fas fa-stop mr-1 text-red-500"></i>结束时间
+                                    </label>
+                                    <div class="space-y-2">
                                         <div class="relative flex-1">
                                             <input type="text" name="end_time" id="end_time"
-                                                   class="input w-full pl-10 text-sm sm:text-base"
+                                                   class="input w-full pl-9 text-sm"
                                                    onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:00',maxDate:'%y-%M-%d'})"
                                                    placeholder="选择结束时间">
-                                            <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                            <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
                                         </div>
-                                        <div class="flex items-center space-x-2 self-start sm:self-center">
-                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-                                                    onclick="changeTime('end_time', -5)">
-                                                <i class="fas fa-minus mr-1"></i>5m
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn px-2 sm:px-3 py-1.5 text-xs sm:text-sm"
-                                                    onclick="changeTime('end_time', 5)">
-                                                <i class="fas fa-plus mr-1"></i>5m
-                                            </button>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn" onclick="changeTime('end_time', -5)">-5m</button>
+                                            <button type="button" class="btn btn-sm btn-outline time-adjust-btn" onclick="changeTime('end_time', 5)">+5m</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- 时长选择和预览 -->
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
-                            <div class="font-medium text-gray-700 pt-2">
-                                <i class="fas fa-history mr-2 text-orange-500"></i>时长设置
-                            </div>
-                            <div class="md:col-span-3 space-y-3 sm:space-y-4">
-                                <!-- 常用时长选择 -->
-                                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-                                    <div class="relative flex-1">
-                                        <select id="duration" class="input w-full duration-select text-sm sm:text-base">
-                                            <option value="">选择时长自动设置结束时间</option>
-                                            <option value="5">5分钟</option>
-                                            <option value="10">10分钟</option>
-                                            <option value="15">15分钟</option>
-                                            <option value="25">25分钟</option>
-                                            <option value="30">30分钟</option>
-                                            <option value="45">45分钟</option>
-                                            <option value="60">60分钟</option>
-                                            <option value="90">90分钟</option>
-                                            <option value="120">120分钟</option>
-                                        </select>
-                                        <i class="fas fa-clock absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm" onclick="setDefaultTimes()">
-                                        <i class="fas fa-redo mr-1"></i>重置时间
-                                    </button>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label for="duration" class="block text-xs font-medium text-gray-600 mb-1">
+                                        <i class="fas fa-history mr-1 text-orange-500"></i>从开始时间推算结束
+                                    </label>
+                                    <select id="duration" class="input w-full duration-select text-sm">
+                                        <option value="">选择常用时长</option>
+                                        <option value="5">5分钟</option>
+                                        <option value="10">10分钟</option>
+                                        <option value="15">15分钟</option>
+                                        <option value="25">25分钟</option>
+                                        <option value="30">30分钟</option>
+                                        <option value="45">45分钟</option>
+                                        <option value="60">60分钟</option>
+                                        <option value="90">90分钟</option>
+                                        <option value="120">120分钟</option>
+                                    </select>
                                 </div>
 
-                                <!-- 时间预览 -->
-                                <div id="time-preview" class="time-preview card p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div id="time-preview" class="time-preview p-3 bg-white border border-gray-200 rounded-lg">
                                     <div class="flex items-center">
-                                        <i class="fas fa-info-circle text-blue-500 mr-2 sm:mr-3"></i>
+                                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
                                         <div>
-                                            <div class="font-medium text-blue-700 text-sm sm:text-base">时间预览</div>
-                                            <div class="text-xs sm:text-sm text-blue-600">请先设置开始和结束时间</div>
+                                            <div class="font-medium text-gray-800 text-sm">时间预览</div>
+                                            <div class="text-xs text-gray-500">请先设置开始和结束时间</div>
                                         </div>
                                     </div>
                                 </div>
@@ -176,14 +163,18 @@
                     </form>
                 </div>
 
-                <!-- 模态框底部 - 固定 -->
-                <div class="sticky bottom-0 bg-white rounded-b-lg flex items-center justify-end p-4 sm:p-6 border-t border-gray-200 space-x-2 sm:space-x-3">
-                    <button type="button" class="btn btn-outline px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base" onclick="hideJournalCreateModal()">
-                        <i class="fas fa-times mr-1 sm:mr-2"></i>取消
-                    </button>
-                    <button type="button" class="btn btn-primary px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base" onclick="submitJournalCreateForm()">
-                        <i class="fas fa-check mr-1 sm:mr-2"></i>提交记录
-                    </button>
+                <div class="sticky bottom-0 bg-white rounded-b-lg flex items-center justify-between gap-3 px-5 py-4 border-t border-gray-200">
+                    <a href="/journals" class="sm:hidden text-blue-600 text-sm">
+                        <i class="fas fa-list mr-1"></i>手账列表
+                    </a>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button type="button" class="btn btn-outline px-4 py-2 text-sm" onclick="hideJournalCreateModal()">
+                            取消
+                        </button>
+                        <button type="button" class="btn btn-primary px-4 py-2 text-sm" onclick="submitJournalCreateForm()">
+                            <i class="fas fa-check mr-1"></i>提交记录
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -464,13 +455,22 @@
 
             $('#start_time').val(formatDate(start));
             $('#end_time').val(formatDate(now));
+            $('#duration').val('');
             updateTimePreview();
 
-            // 按钮反馈效果
-            $(this).addClass('btn-primary').removeClass('btn-outline');
+            $('.quick-time-btn').removeClass('border-blue-400 bg-blue-50 ring-1 ring-blue-200');
+            $(this).addClass('border-blue-400 bg-blue-50 ring-1 ring-blue-200');
             setTimeout(() => {
-                $(this).removeClass('btn-primary').addClass('btn-outline');
-            }, 300);
+                $(this).removeClass('ring-1 ring-blue-200');
+            }, 500);
+        });
+
+        $('.journal-template-btn').click(function() {
+            const input = $('#name');
+            const template = $(this).data('template') || '';
+            const current = input.val();
+            input.val(current ? current + ' ' + template : template);
+            input.focus();
         });
 
         // 时长选择变化事件
