@@ -21,10 +21,11 @@
             </div>
 
             <div class="p-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <a href="/feeds" class="group"><div class="card hover:card-elevated transition-all duration-200 h-full"><div class="p-5 text-center"><div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-rss text-white text-lg"></i></div><h3 class="font-semibold text-gray-800">直接订阅</h3></div></div></a>
                     <a href="/feeds/weiborss" class="group"><div class="card hover:card-elevated transition-all duration-200 h-full"><div class="p-5 text-center"><div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fab fa-weibo text-white text-lg"></i></div><h3 class="font-semibold text-gray-800">订阅微博</h3></div></div></a>
                     <a href="/feeds/weixinrss" class="group"><div class="card hover:card-elevated transition-all duration-200 h-full"><div class="p-5 text-center"><div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fab fa-weixin text-white text-lg"></i></div><h3 class="font-semibold text-gray-800">订阅公众号</h3></div></div></a>
+                    <a href="/feeds/webpage-rss" class="group"><div class="card hover:card-elevated transition-all duration-200 h-full"><div class="p-5 text-center"><div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-wand-magic-sparkles text-white text-lg"></i></div><h3 class="font-semibold text-gray-800">网页转RSS</h3></div></div></a>
                     <a href="/feeds/opml" class="group"><div class="card hover:card-elevated transition-all duration-200 h-full"><div class="p-5 text-center"><div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-file-import text-white text-lg"></i></div><h3 class="font-semibold text-gray-800">OPML导入</h3></div></div></a>
                 </div>
             </div>

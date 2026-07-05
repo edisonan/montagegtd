@@ -83,7 +83,6 @@
                                     ['url'=>'/articles?status=read_later', 'label'=>'稍后阅读', 'icon'=>'fas fa-bookmark'],
                                     ['url'=>'/articles?status=star', 'label'=>'收藏文章', 'icon'=>'fas fa-star'],
                                     ['url'=>'/feeds', 'label'=>'订阅管理', 'icon'=>'fas fa-rss'],
-                                    ['url'=>'/feeds/webpage-rss', 'label'=>'网页转RSS', 'icon'=>'fas fa-wand-magic-sparkles'],
                                     ['url'=>'/feeds/explorer', 'label'=>'探索发现', 'icon'=>'fas fa-compass'],
                                 ]
                             ],

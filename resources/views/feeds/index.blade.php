@@ -67,7 +67,8 @@
 
             <div class="p-6">
                 <!-- 添加订阅表单 -->
-                <form action="javascript:void(0)" method="POST" id="addFeedForm" class="space-y-6">
+                <form action="{{ url('feed') }}" method="POST" id="addFeedForm" class="space-y-6">
+                    {{ csrf_field() }}
                     <div class="space-y-6">
                         <!-- 订阅地址 -->
                         <div class="space-y-3">
@@ -272,6 +273,8 @@
     </div>
 
         <script>
+            window.__FEED_INDEX_INITIAL__ = @json(isset($indexInfo) ? $indexInfo : array());
+
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : function() { return Promise.reject(new Error("API客户端未初始化")); };
@@ -281,6 +284,7 @@
                 pagination: null,
                 currentPage: 1
             };
+            var initialFeedIndexData = window.__FEED_INDEX_INITIAL__ || {};
 
             function escapeHtml(text) {
                 return String(text || '').replace(/[&<>"']/g, function(c) {
@@ -412,8 +416,11 @@
             }
 
             function loadFeedIndexData(page) {
+                var keepOnError = arguments.length > 1 && arguments[1] && arguments[1].keepOnError === true;
                 if (!apiRequest) {
-                    showToast('error', 'API客户端未初始化');
+                    if (!keepOnError) {
+                        showToast('error', 'API客户端未初始化');
+                    }
                     return;
                 }
                 var currentUrl = ($('#url').val() || '').trim();
@@ -437,8 +444,32 @@
                     renderFeedPagination();
                     filterFeeds();
                 }).catch(function() {
+                    if (keepOnError) {
+                        return;
+                    }
                     $('#feedList').html('<div class="text-center py-12 text-gray-500">订阅加载失败，请稍后重试</div>');
                 });
+            }
+
+            function renderInitialFeedIndex() {
+                var data = initialFeedIndexData || {};
+                feedIndexState.categorys = Array.isArray(data.categorys) ? data.categorys : [];
+                var initialSubs = data.feedSubs && data.feedSubs.data ? data.feedSubs.data : data.feedSubs;
+                feedIndexState.feedSubs = Array.isArray(initialSubs) ? initialSubs : [];
+                feedIndexState.pagination = data.feedSubs && data.feedSubs.current_page ? {
+                    total: data.feedSubs.total,
+                    current_page: data.feedSubs.current_page,
+                    per_page: data.feedSubs.per_page,
+                    last_page: data.feedSubs.last_page,
+                    next_page_url: data.feedSubs.next_page_url,
+                    prev_page_url: data.feedSubs.prev_page_url,
+                    has_more_pages: data.feedSubs.has_more_pages
+                } : null;
+                renderCategoryOptions(feedIndexState.categorys);
+                renderFeedList(feedIndexState.feedSubs);
+                renderFeedStats();
+                renderFeedPagination();
+                filterFeeds();
             }
 
             // 检测订阅地址
@@ -498,6 +529,38 @@
                         showToast('error', '未检测到订阅内容，请确认地址');
                     }
                 }).catch(function() {
+                    if (window.taskApiFetch) {
+                        window.taskApiFetch('/feed/checkFeedUrl?url=' + encodeURIComponent(url), {
+                            method: 'GET'
+                        }).then(function(resp) {
+                            return resp.json();
+                        }).then(function(response) {
+                            if (response && response.code === 9999) {
+                                document.getElementById('feedInfo').classList.remove('hidden');
+                                document.getElementById('feed_name').value = response.result.title;
+                                processTips.innerHTML = `
+                    <div class="flex items-center text-green-600">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        检测成功！发现订阅：<strong class="ml-1">${response.result.title}</strong>
+                    </div>
+                `;
+                                submitBtn.disabled = false;
+                                document.getElementById('feed_name').focus();
+                                showToast('success', '订阅地址检测成功');
+                                return;
+                            }
+                            throw new Error((response && response.msg) ? response.msg : '检测失败');
+                        }).catch(function() {
+                            processTips.innerHTML = `
+                <div class="flex items-center text-red-600">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    网络错误，请稍后重试
+                </div>
+            `;
+                            showToast('error', '网络错误，请检查连接');
+                        });
+                        return;
+                    }
                     processTips.innerHTML = `
                 <div class="flex items-center text-red-600">
                     <i class="fas fa-exclamation-circle mr-2"></i>
@@ -584,7 +647,8 @@
                 if (presetUrl) {
                     document.getElementById('url').value = presetUrl;
                 }
-                loadFeedIndexData(1);
+                renderInitialFeedIndex();
+                loadFeedIndexData(1, { keepOnError: true });
 
                 // 搜索功能
                 if (searchInput) {
@@ -606,6 +670,12 @@
                 const form = document.getElementById('addFeedForm');
                 if (form) {
                     form.addEventListener('submit', function(e) {
+                        var formEl = this;
+                        if (this.dataset.nativeSubmit === '1') {
+                            delete this.dataset.nativeSubmit;
+                            return;
+                        }
+
                         e.preventDefault();
 
                         const urlInput = document.getElementById('url');
@@ -629,7 +699,7 @@
                         }
 
                         if (!apiRequest) {
-                            showToast('error', 'API客户端未初始化');
+                            this.submit();
                             return;
                         }
 
@@ -646,16 +716,21 @@
                             if (resp && resp.code === 9999) {
                                 showToast('success', '订阅添加成功');
                                 resetForm();
-                                loadFeedIndexData(1);
+                                loadFeedIndexData(1, { keepOnError: true });
                                 return;
                             }
                             showToast('error', (resp && resp.msg) ? resp.msg : '添加失败');
-                        }).catch(function() {
+                        }).catch(function(err) {
+                            if (err && (err.status === 401 || err.status === 403 || err.status === 0)) {
+                                formEl.dataset.nativeSubmit = '1';
+                                formEl.submit();
+                                return;
+                            }
                             showToast('error', '添加失败，请稍后重试');
                         }).finally(function() {
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = originalText;
-                        });
+                        }.bind(this));
                     });
                 }
             });
@@ -731,6 +806,7 @@
                     }
                 }, 3000);
             }
+
         </script>
 
         <style>

@@ -19,8 +19,23 @@
             .rss-mini-btn.active { border-color: #60a5fa; background: #eff6ff; color: #1d4ed8; }
             .rss-tab { border: 1px solid var(--panel-border); background: #fff; color: #475569; padding: 8px 12px; border-radius: 10px; font-size: 13px; }
             .rss-tab.active { background: #f1f5f9; color: #0f172a; border-color: #94a3b8; }
-            .rss-split { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
-            @media (max-width: 1024px) { .rss-split { grid-template-columns: 1fr; } }
+            #previewList { max-height: 420px; overflow-y: auto; padding-right: 4px; }
+            #instantPreviewList { max-height: 360px; overflow-y: auto; padding-right: 4px; }
+            #sourceHtmlPreview { max-height: 220px; overflow: auto; }
+            .rss-split { display: grid; grid-template-columns: 1fr; gap: 16px; }
+            .rss-modal { position: fixed; inset: 0; z-index: 60; }
+            .rss-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .5); }
+            .rss-modal-wrap { position: fixed; inset: 0; overflow-y: auto; padding: 16px; }
+            .rss-modal-shell { min-height: 100%; display: flex; align-items: center; justify-content: center; }
+            .rss-modal-card { position: relative; background: #fff; border-radius: 12px; box-shadow: 0 20px 60px rgba(15, 23, 42, .2); width: 100%; }
+            .rss-modal-card-narrow { max-width: 720px; }
+            .rss-modal-card-wide { max-width: 980px; }
+            .rss-modal-head { position: sticky; top: 0; z-index: 10; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid #e5e7eb; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+            .rss-modal-body { max-height: calc(100vh - 180px); overflow-y: auto; padding: 18px; }
+            @media (max-width: 1024px) {
+                .rss-split { grid-template-columns: 1fr; }
+                .rss-modal-wrap { padding: 12px; }
+            }
         </style>
 
         <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6">
@@ -43,8 +58,8 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <a href="{{ url('feeds') }}" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-arrow-left mr-2"></i>返回订阅
+                <a href="{{ url('feeds/webpage-rss') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>返回管理
                 </a>
                 <a href="{{ url('articles') }}" class="btn btn-outline btn-sm">
                     <i class="fas fa-newspaper mr-2"></i>阅读流
@@ -56,6 +71,7 @@
 
         <div class="rss-split">
             <form id="webpageRssForm" action="javascript:void(0)" class="space-y-5">
+                <input type="hidden" id="source_id" name="source_id" value="">
                 <div class="rss-panel">
                     <div class="rss-panel-head">
                         <div>
@@ -89,9 +105,21 @@
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <input id="list_url" name="list_url" type="url" class="input flex-1" placeholder="https://example.com/news" required>
                                 <button type="button" class="btn btn-outline whitespace-nowrap" id="debugTopBtn">
-                                    <i class="fas fa-eye mr-2"></i>读取预览
+                                    <i class="fas fa-code mr-2"></i>读取源码
                                 </button>
                             </div>
+                        </div>
+
+                        <div id="sourcePreviewPanel" class="hidden rounded-lg border border-blue-100 bg-blue-50 p-4">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
+                                <div>
+                                    <div class="text-sm font-semibold text-blue-900">源码即时预览</div>
+                                    <div class="text-xs text-blue-700 mt-1" id="sourcePreviewMeta">读取源码后，修改选择器会即时刷新下方结果。</div>
+                                </div>
+                                <button type="button" class="rss-tab" id="toggleSourceHtmlBtn">查看源码片段</button>
+                            </div>
+                            <div id="instantPreviewList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                            <pre id="sourceHtmlPreview" class="hidden mt-3 rounded-lg border border-blue-100 bg-white p-3 text-xs leading-5 whitespace-pre-wrap"></pre>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -130,9 +158,14 @@
                             <div class="text-sm font-semibold text-gray-900">提取规则</div>
                             <div class="text-xs text-gray-500 mt-1">只要列表页能定位到条目，后面字段就能逐个补齐。</div>
                         </div>
-                        <button type="button" class="rss-mini-btn" id="debugRuleBtn">
-                            <i class="fas fa-vial"></i><span>测试规则</span>
-                        </button>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" class="rss-mini-btn" id="openAiModalBtn">
+                                <i class="fas fa-wand-magic-sparkles"></i><span>AI 生成规则</span>
+                            </button>
+                            <button type="button" class="rss-mini-btn" id="debugRuleBtn">
+                                <i class="fas fa-vial"></i><span>测试规则</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="rss-panel-body space-y-4">
                         <div>
@@ -216,11 +249,8 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                            <button type="button" class="btn btn-outline flex-1 justify-center" id="debugBtn">
-                                <i class="fas fa-vial mr-2"></i>调试当前规则
-                            </button>
-                            <button type="button" class="btn btn-primary flex-1 justify-center" id="saveBtn">
+                        <div class="flex justify-end pt-2">
+                            <button type="button" class="btn btn-primary justify-center w-full sm:w-auto" id="saveBtn">
                                 <i class="fas fa-floppy-disk mr-2"></i>保存配置并生成 RSS
                             </button>
                         </div>
@@ -228,16 +258,22 @@
                 </div>
             </form>
 
-            <aside class="space-y-5">
-                <div class="rss-panel sticky top-24">
-                    <div class="rss-panel-head">
+            <div id="aiModal" class="rss-modal hidden">
+                <div class="rss-modal-backdrop" onclick="closeAiModal()"></div>
+                <div class="rss-modal-wrap">
+                    <div class="rss-modal-shell">
+                        <div class="rss-modal-card rss-modal-card-narrow">
+                            <div class="rss-modal-head">
                         <div>
-                            <div class="text-sm font-semibold text-gray-900">AI 解析</div>
-                            <div class="text-xs text-gray-500 mt-1">先选模型，再点生成规则。</div>
+                            <div class="text-sm font-semibold text-gray-900">AI 生成规则</div>
+                            <div class="text-xs text-gray-500 mt-1">让模型读取页面源码并给出选择器建议。</div>
                         </div>
-                        <a href="{{ url('llm/llmmanagement') }}" class="rss-tab active" target="_blank" rel="noreferrer">模型管理</a>
-                    </div>
-                    <div class="rss-panel-body space-y-4">
+                        <div class="flex items-center gap-2">
+                            <a href="{{ url('llm/llmmanagement') }}" class="rss-tab active" target="_blank" rel="noreferrer">模型管理</a>
+                            <button type="button" class="rss-tab" id="closeAiModalBtn"><i class="fas fa-times mr-1"></i>关闭</button>
+                        </div>
+                            </div>
+                            <div class="rss-modal-body space-y-4">
                         <div class="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
                             <div>
                                 <label for="ai_mode" class="block text-sm font-medium text-gray-700 mb-2">解析模式</label>
@@ -280,7 +316,25 @@
                             </div>
                             <pre id="aiResultJson" class="max-h-72 overflow-auto rounded-lg border border-blue-100 bg-white p-3 text-xs leading-5 whitespace-pre-wrap"></pre>
                         </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <div id="debugModal" class="rss-modal hidden">
+                <div class="rss-modal-backdrop" onclick="closeDebugModal()"></div>
+                <div class="rss-modal-wrap">
+                    <div class="rss-modal-shell">
+                        <div class="rss-modal-card rss-modal-card-wide">
+                            <div class="rss-modal-head">
+                        <div>
+                            <div class="text-sm font-semibold text-gray-900">服务端调试规则</div>
+                            <div class="text-xs text-gray-500 mt-1">完整验证列表页、详情页抓取、字段轨迹和错误信息。</div>
+                        </div>
+                        <button type="button" class="rss-tab" id="closeDebugModalBtn"><i class="fas fa-times mr-1"></i>关闭</button>
+                            </div>
+                            <div class="rss-modal-body space-y-4">
                         <div class="grid grid-cols-3 gap-2" id="debugStats">
                             <div class="rounded-lg bg-gray-50 border border-gray-200 p-3">
                                 <div class="text-xs text-gray-500">匹配</div>
@@ -351,9 +405,11 @@
                         </div>
 
                         <div id="errorList" class="hidden rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </aside>
+            </div>
         </div>
     </div>
 
@@ -362,9 +418,14 @@
             var form = document.getElementById('webpageRssForm');
             var tips = document.getElementById('webpageRssTips');
             var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            var initialSourceId = {{ (int)($sourceId ?? 0) }};
             var lastDebugResult = null;
             var lastAiResult = null;
             var selectedItem = null;
+            var sources = [];
+            var sourceHtml = '';
+            var sourceDoc = null;
+            var sourcePreviewTimer = null;
 
             var presets = {
                 generic: {
@@ -440,6 +501,18 @@
                 });
             }
 
+            function truncate(value, length) {
+                value = String(value || '').replace(/\s+/g, ' ').trim();
+                return value.length > length ? value.slice(0, length) + '...' : value;
+            }
+
+            function formatDate(value) {
+                if (!value) {
+                    return '-';
+                }
+                return String(value).replace('T', ' ').slice(0, 16);
+            }
+
             function collectRuleData() {
                 return {
                     list_url: document.getElementById('list_url').value || '',
@@ -471,14 +544,15 @@
 
             function collectSaveData() {
                 var data = collectRuleData();
+                data.source_id = document.getElementById('source_id').value || '';
                 data.name = document.getElementById('name').value || '';
                 data.category_id = document.getElementById('category_id').value || '';
                 return data;
             }
 
-            function request(url, data) {
+            function request(url, data, method) {
                 return fetch(url, {
-                    method: 'POST',
+                    method: method || 'POST',
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
@@ -513,6 +587,152 @@
                 node.value = value;
             }
 
+            function clearFormForNew() {
+                document.getElementById('source_id').value = '';
+                document.getElementById('name').value = '';
+                document.getElementById('list_url').value = '';
+                document.getElementById('rssUrlText').value = '';
+                document.getElementById('rssUrlBox').classList.add('hidden');
+                document.getElementById('selectedDebug').classList.add('hidden');
+                document.getElementById('previewList').innerHTML = '<div class="rounded-lg border border-gray-200 p-4 text-sm text-gray-500">先点“读取预览”。</div>';
+                document.getElementById('matchedCount').textContent = '-';
+                document.getElementById('validCount').textContent = '-';
+                document.getElementById('elapsedMs').textContent = '-';
+                fillPreset('generic');
+                renderSources();
+                showTips('success', '已切换为新建配置。');
+            }
+
+            function fillSource(source) {
+                if (!source) {
+                    return;
+                }
+                document.getElementById('source_id').value = source.id || '';
+                ['name', 'list_url', 'item_selector', 'title_selector', 'url_selector', 'published_selector', 'image_selector', 'summary_selector', 'detail_summary_selector', 'content_selector', 'exclude_selector', 'author_selector', 'max_content_length', 'failure_strategy', 'refresh_interval', 'dedupe_key', 'encoding', 'category_id'].forEach(function(field) {
+                    setFieldValue(field, source[field]);
+                });
+                document.querySelectorAll('input[name="summary_source"]').forEach(function(input) {
+                    input.checked = input.value === (source.summary_source || 'list');
+                });
+                setFieldValue('detail_enabled', Number(source.detail_enabled || 0) === 1);
+                document.getElementById('rssUrlText').value = source.rss_url || '';
+                document.getElementById('rssUrlBox').classList.remove('hidden');
+                showTips('success', '已加载配置，可以继续修改后保存。');
+            }
+
+            function renderSources() {
+                var list = document.getElementById('sourceList');
+                if (!list) {
+                    return;
+                }
+                var activeId = Number(document.getElementById('source_id').value || 0);
+                if (!sources.length) {
+                    list.innerHTML = '<div class="md:col-span-2 xl:col-span-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-500">还没有保存过网页转RSS配置。</div>';
+                    return;
+                }
+                list.innerHTML = sources.map(function(source) {
+                    var id = Number(source.id || 0);
+                    var active = activeId === id ? ' active' : '';
+                    var rssUrl = escapeHtml(source.rss_url || '');
+                    return '<div class="rss-source-card' + active + '" data-source-card="' + id + '">'
+                        + '<div class="flex items-start justify-between gap-3">'
+                        + '<div class="min-w-0">'
+                        + '<div class="font-semibold text-gray-900 truncate">' + escapeHtml(source.name || '未命名配置') + '</div>'
+                        + '<div class="text-xs text-gray-500 mt-1 truncate">' + escapeHtml(source.list_url || '') + '</div>'
+                        + '</div>'
+                        + '<span class="text-xs px-2 py-1 rounded-full bg-green-50 text-green-700 whitespace-nowrap">启用</span>'
+                        + '</div>'
+                        + '<div class="grid grid-cols-2 gap-2 mt-3 text-xs text-gray-500">'
+                        + '<div>频率：' + Number(source.refresh_interval || 0) + '分钟</div>'
+                        + '<div>检查：' + escapeHtml(formatDate(source.last_checked_at)) + '</div>'
+                        + '</div>'
+                        + '<div class="mt-3 flex flex-wrap gap-2">'
+                        + '<button type="button" class="rss-tab active" data-source-edit="' + id + '"><i class="fas fa-pen mr-1"></i>编辑</button>'
+                        + '<button type="button" class="rss-tab" data-source-refresh="' + id + '"><i class="fas fa-rotate mr-1"></i>刷新</button>'
+                        + '<button type="button" class="rss-tab" data-source-copy="' + id + '" data-rss-url="' + rssUrl + '"><i class="fas fa-copy mr-1"></i>复制</button>'
+                        + '<button type="button" class="rss-tab" data-source-delete="' + id + '"><i class="fas fa-trash mr-1"></i>删除</button>'
+                        + '</div>'
+                        + '</div>';
+                }).join('');
+            }
+
+            function findSource(id) {
+                id = Number(id || 0);
+                for (var i = 0; i < sources.length; i++) {
+                    if (Number(sources[i].id || 0) === id) {
+                        return sources[i];
+                    }
+                }
+                return null;
+            }
+
+            function loadSources() {
+                if (!document.getElementById('sourceList')) {
+                    return;
+                }
+                fetch('/feeds/webpage-rss/sources', {
+                    credentials: 'same-origin',
+                    headers: {'Accept': 'application/json'}
+                }).then(function(resp) {
+                    return resp.json();
+                }).then(function(json) {
+                    if (!json || Number(json.code) !== 9999) {
+                        throw new Error(json && json.msg ? json.msg : '配置读取失败');
+                    }
+                    sources = Array.isArray(json.result) ? json.result : [];
+                    renderSources();
+                }).catch(function(error) {
+                    document.getElementById('sourceList').innerHTML = '<div class="md:col-span-2 xl:col-span-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">' + escapeHtml(error.message || '配置读取失败') + '</div>';
+                });
+            }
+
+            function loadSource(id) {
+                fetch('/feeds/webpage-rss/sources/' + Number(id), {
+                    credentials: 'same-origin',
+                    headers: {'Accept': 'application/json'}
+                }).then(function(resp) {
+                    return resp.json();
+                }).then(function(json) {
+                    if (!json || Number(json.code) !== 9999) {
+                        throw new Error(json && json.msg ? json.msg : '配置读取失败');
+                    }
+                    fillSource(json.result || {});
+                }).catch(function(error) {
+                    showTips('error', error.message || '配置读取失败');
+                });
+            }
+
+            function openAiModal() {
+                document.getElementById('aiModal').classList.remove('hidden');
+            }
+
+            function closeAiModal() {
+                document.getElementById('aiModal').classList.add('hidden');
+            }
+
+            function openDebugModal() {
+                document.getElementById('debugModal').classList.remove('hidden');
+            }
+
+            function closeDebugModal() {
+                document.getElementById('debugModal').classList.add('hidden');
+            }
+
+            function deleteSource(id) {
+                if (!window.confirm('确定删除这个网页转RSS配置？')) {
+                    return;
+                }
+                request('/feeds/webpage-rss/sources/' + Number(id), {}, 'DELETE').then(function() {
+                    if (Number(document.getElementById('source_id').value || 0) === Number(id)) {
+                        document.getElementById('source_id').value = '';
+                    }
+                    showTips('success', '配置已删除。');
+                    loadSources();
+                }).catch(function(error) {
+                    showTips('error', error.message);
+                });
+            }
+
             function fillPreset(key) {
                 var preset = presets[key];
                 if (!preset) {
@@ -545,6 +765,7 @@
                 if (key === 'blog') {
                     document.getElementById('ai_mode').value = 'list_summary';
                 }
+                scheduleInstantPreview();
                 showTips('success', '已套用模板，先补列表页地址，再点“读取预览”。');
             }
 
@@ -659,6 +880,156 @@
                 });
             }
 
+            function splitSelector(selector) {
+                selector = String(selector || '').trim();
+                if (!selector) {
+                    return [];
+                }
+                return selector.split(',').map(function(part) {
+                    return part.trim();
+                }).filter(Boolean);
+            }
+
+            function parseSelectorPart(part) {
+                var attr = 'text';
+                var css = part;
+                if (part.indexOf('@') !== -1) {
+                    var pieces = part.split('@');
+                    attr = pieces.pop().trim() || 'text';
+                    css = pieces.join('@').trim();
+                }
+                return {css: css || '*', attr: attr};
+            }
+
+            function extractFromNode(node, selector, baseUrl) {
+                var parts = splitSelector(selector);
+                for (var i = 0; i < parts.length; i++) {
+                    var parsed = parseSelectorPart(parts[i]);
+                    var target = null;
+                    try {
+                        target = node.querySelector(parsed.css);
+                    } catch (e) {
+                        return {value: '', selector: parts[i], error: e.message};
+                    }
+                    if (!target) {
+                        continue;
+                    }
+                    var value = '';
+                    if (parsed.attr === 'text' || parsed.attr === 'plaintext') {
+                        value = target.textContent || '';
+                    } else if (parsed.attr === 'html' || parsed.attr === 'innertext') {
+                        value = target.innerHTML || '';
+                    } else {
+                        value = target.getAttribute(parsed.attr) || '';
+                    }
+                    value = String(value || '').trim();
+                    if ((parsed.attr === 'href' || parsed.attr === 'src') && value) {
+                        try {
+                            value = new URL(value, baseUrl).toString();
+                        } catch (e2) {}
+                    }
+                    if (value) {
+                        return {value: value, selector: parts[i], error: ''};
+                    }
+                }
+                return {value: '', selector: selector, error: ''};
+            }
+
+            function renderInstantPreview() {
+                var panel = document.getElementById('sourcePreviewPanel');
+                var list = document.getElementById('instantPreviewList');
+                if (!sourceDoc) {
+                    return;
+                }
+                panel.classList.remove('hidden');
+
+                var config = collectRuleData();
+                var items = [];
+                var nodes = [];
+                var errors = [];
+                try {
+                    nodes = Array.prototype.slice.call(sourceDoc.querySelectorAll(config.item_selector || ''));
+                } catch (e) {
+                    errors.push('列表项选择器错误：' + e.message);
+                }
+
+                nodes.slice(0, 12).forEach(function(node, index) {
+                    var title = extractFromNode(node, config.title_selector, config.list_url);
+                    var url = extractFromNode(node, config.url_selector, config.list_url);
+                    var published = extractFromNode(node, config.published_selector, config.list_url);
+                    var image = extractFromNode(node, config.image_selector, config.list_url);
+                    var summary = extractFromNode(node, config.summary_selector, config.list_url);
+                    [title, url, published, image, summary].forEach(function(result) {
+                        if (result.error) {
+                            errors.push(result.error);
+                        }
+                    });
+                    items.push({
+                        index: index + 1,
+                        title: title.value,
+                        url: url.value,
+                        published: published.value,
+                        image: image.value,
+                        summary: summary.value
+                    });
+                });
+
+                document.getElementById('sourcePreviewMeta').textContent = '源码已读取，列表项匹配 ' + nodes.length + ' 个，本地预览前 ' + items.length + ' 个。';
+                if (errors.length) {
+                    list.innerHTML = '<div class="md:col-span-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">' + escapeHtml(errors[0]) + '</div>';
+                    return;
+                }
+                if (!items.length) {
+                    list.innerHTML = '<div class="md:col-span-2 rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-500">当前规则没有匹配到条目。</div>';
+                    return;
+                }
+                list.innerHTML = items.map(function(item) {
+                    var imageHtml = item.image ? '<img src="' + escapeHtml(item.image) + '" alt="" class="w-16 h-16 rounded object-cover border border-gray-200 flex-shrink-0">' : '<div class="w-16 h-16 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400 flex-shrink-0"><i class="fas fa-image"></i></div>';
+                    return '<div class="rounded-lg border border-blue-100 bg-white p-3">'
+                        + '<div class="flex gap-3">'
+                        + imageHtml
+                        + '<div class="min-w-0 flex-1">'
+                        + '<div class="text-xs text-blue-600 mb-1">#' + item.index + '</div>'
+                        + '<div class="font-semibold text-gray-900 truncate">' + escapeHtml(item.title || '未提取到标题') + '</div>'
+                        + '<div class="text-xs text-gray-500 mt-1 truncate">' + escapeHtml(item.url || '未提取到URL') + '</div>'
+                        + '<div class="text-xs text-gray-500 mt-1">' + escapeHtml(truncate(item.published, 60)) + '</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div class="text-sm text-gray-600 mt-2 leading-6">' + escapeHtml(truncate(item.summary || '未提取到摘要', 160)) + '</div>'
+                        + '</div>';
+                }).join('');
+            }
+
+            function scheduleInstantPreview() {
+                if (!sourceDoc) {
+                    return;
+                }
+                clearTimeout(sourcePreviewTimer);
+                sourcePreviewTimer = setTimeout(renderInstantPreview, 180);
+            }
+
+            function loadSourcePreview(button) {
+                var data = collectRuleData();
+                if (!data.list_url) {
+                    showTips('error', '请先填写列表页地址。');
+                    return;
+                }
+                setLoading(button, true);
+                request('/feeds/webpage-rss/source-preview', data).then(function(result) {
+                    sourceHtml = result.html || '';
+                    sourceDoc = new DOMParser().parseFromString(sourceHtml, 'text/html');
+                    document.getElementById('sourceHtmlPreview').textContent = sourceHtml.slice(0, 20000);
+                    document.getElementById('sourcePreviewPanel').classList.remove('hidden');
+                    document.getElementById('sourcePreviewMeta').textContent = '源码已读取：' + (result.page_title || result.page_url || '') + '，长度 ' + Number(result.html_length || sourceHtml.length) + ' 字符。';
+                    renderInstantPreview();
+                    showTips('success', '源码已读取，修改规则会即时刷新预览。');
+                }).catch(function(error) {
+                    showTips('error', error.message);
+                }).then(function() {
+                    setLoading(button, false);
+                });
+            }
+
             function applyAiSuggestion(analysis) {
                 if (!analysis) {
                     return;
@@ -679,6 +1050,7 @@
                 if (analysis.notes) {
                     showTips('success', 'AI 规则已应用到表单。' + (analysis.reason ? ' ' + analysis.reason : ''));
                 }
+                scheduleInstantPreview();
             }
 
             function renderAiResult(result) {
@@ -720,10 +1092,14 @@
             function saveRules(button) {
                 setLoading(button, true);
                 request('/feeds/webpage-rss/save', collectSaveData()).then(function(result) {
+                    if (result.source && result.source.id) {
+                        document.getElementById('source_id').value = result.source.id;
+                    }
                     renderDebug(result.debug || {});
                     document.getElementById('rssUrlText').value = result.rss_url || '';
                     document.getElementById('rssUrlBox').classList.remove('hidden');
                     showTips('success', '配置已保存，RSS地址已生成。');
+                    loadSources();
                 }).catch(function(error) {
                     showTips('error', error.message);
                 }).then(function() {
@@ -732,7 +1108,7 @@
             }
 
             function loadCategories() {
-                fetch('/feeds/webpage-rss/categories', {
+                return fetch('/feeds/webpage-rss/categories', {
                     credentials: 'same-origin',
                     headers: {'Accept': 'application/json'}
                 }).then(function(resp) {
@@ -788,9 +1164,32 @@
             document.getElementById('presetCardBtn').addEventListener('click', function() { fillPreset('card'); });
             document.getElementById('presetDetailBtn').addEventListener('click', function() { fillPreset('detail'); });
             document.getElementById('presetBlogBtn').addEventListener('click', function() { fillPreset('blog'); });
-            document.getElementById('debugBtn').addEventListener('click', function() { debugRules(this); });
-            document.getElementById('debugTopBtn').addEventListener('click', function() { debugRules(this); });
-            document.getElementById('debugRuleBtn').addEventListener('click', function() { debugRules(this); });
+            document.getElementById('openAiModalBtn').addEventListener('click', function() {
+                openAiModal();
+            });
+            document.getElementById('closeAiModalBtn').addEventListener('click', closeAiModal);
+            document.getElementById('aiModal').addEventListener('click', function(event) {
+                if (event.target.id === 'aiModal') {
+                    closeAiModal();
+                }
+            });
+            document.getElementById('closeDebugModalBtn').addEventListener('click', closeDebugModal);
+            document.getElementById('debugModal').addEventListener('click', function(event) {
+                if (event.target.id === 'debugModal') {
+                    closeDebugModal();
+                }
+            });
+            document.getElementById('debugTopBtn').addEventListener('click', function() { loadSourcePreview(this); });
+            document.getElementById('debugRuleBtn').addEventListener('click', function() { openDebugModal(); debugRules(this); });
+            document.getElementById('toggleSourceHtmlBtn').addEventListener('click', function() {
+                document.getElementById('sourceHtmlPreview').classList.toggle('hidden');
+            });
+            ['item_selector', 'title_selector', 'url_selector', 'published_selector', 'image_selector', 'summary_selector'].forEach(function(id) {
+                var node = document.getElementById(id);
+                if (node) {
+                    node.addEventListener('input', scheduleInstantPreview);
+                }
+            });
             document.getElementById('saveBtn').addEventListener('click', function() { saveRules(this); });
             document.getElementById('aiAnalyzeBtn').addEventListener('click', function() { aiAnalyze(this); });
             document.getElementById('applyAiBtn').addEventListener('click', function() {
@@ -824,10 +1223,15 @@
                 });
             });
 
-            loadCategories();
+            var categoriesPromise = loadCategories();
             loadModels();
             fillPreset('generic');
             document.getElementById('ai_mode').value = 'list_summary';
+            if (initialSourceId) {
+                categoriesPromise.then(function() {
+                    loadSource(initialSourceId);
+                });
+            }
         })();
     </script>
 @endsection

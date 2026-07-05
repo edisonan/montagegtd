@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Exceptions\CustomException;
 use App\Http\Utils\CommonUtil;
 use App\Http\Utils\ResponseDataUtil;
+use App\Models\ArticleSub;
 use App\Models\Category;
+use App\Models\Feed;
 use App\Models\LlmModel;
 use App\Models\WebpageRssSource;
 use App\Models\FeedSub;
@@ -14,6 +16,7 @@ use App\Services\FeedService;
 use App\Services\WebpageRssService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 
 /**
@@ -68,7 +71,11 @@ class FeedController extends Controller
      */
     public function index(Request $request)
     {
-        return view('feeds.index');
+        $indexInfo = $this->feedService->getIndexInfo();
+
+        return view('feeds.index', array(
+            'indexInfo' => $indexInfo,
+        ));
     }
 
     /**
@@ -100,7 +107,36 @@ class FeedController extends Controller
      */
     public function webpageRss(Request $request)
     {
-        return view('feeds.webpage-rss');
+        return view('feeds.webpage-rss-list');
+    }
+
+    /**
+     * 网页转RSS配置创建页
+     *
+     * @param Request $request
+     * @return
+     *
+     */
+    public function createWebpageRss(Request $request)
+    {
+        return view('feeds.webpage-rss', array('sourceId' => 0));
+    }
+
+    /**
+     * 网页转RSS配置编辑页
+     *
+     * @param Request $request
+     * @param WebpageRssSource $source
+     * @return
+     *
+     */
+    public function editWebpageRss(Request $request, WebpageRssSource $source)
+    {
+        if ((int)$source->user_id !== (int)\Auth::id() || (int)$source->status !== 1) {
+            throw new CustomException('配置不存在');
+        }
+
+        return view('feeds.webpage-rss', array('sourceId' => (int)$source->id));
     }
 
     /**
@@ -116,6 +152,41 @@ class FeedController extends Controller
             ->get();
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($categories));
+    }
+
+    /**
+     * 网页转RSS配置列表
+     *
+     * @param Request $request
+     */
+    public function webpageRssSources(Request $request)
+    {
+        $sources = WebpageRssSource::with('feed')
+            ->where('user_id', \Auth::id())
+            ->where('status', 1)
+            ->orderBy('updated_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function ($source) {
+                return $this->formatWebpageRssSource($source);
+            });
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($sources));
+    }
+
+    /**
+     * 网页转RSS配置详情
+     *
+     * @param Request $request
+     * @param WebpageRssSource $source
+     */
+    public function webpageRssSource(Request $request, WebpageRssSource $source)
+    {
+        if ((int)$source->user_id !== (int)\Auth::id() || (int)$source->status !== 1) {
+            throw new CustomException('配置不存在');
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($this->formatWebpageRssSource($source)));
     }
 
     /**
@@ -135,6 +206,23 @@ class FeedController extends Controller
     }
 
     /**
+     * 读取网页源码用于前端即时预览
+     *
+     * @param Request $request
+     */
+    public function webpageRssSourcePreview(Request $request)
+    {
+        $config = $this->webpageRssService->normalizeConfig($request->all());
+        if (empty($config['list_url'])) {
+            throw new CustomException('请先填写列表页地址');
+        }
+
+        $result = $this->webpageRssService->fetchPageSource($config);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    /**
      * 保存网页转RSS配置
      *
      * @param Request $request
@@ -142,6 +230,7 @@ class FeedController extends Controller
     public function saveWebpageRss(Request $request)
     {
         $config = $this->webpageRssService->normalizeConfig($request->all());
+        $config['source_id'] = (int)$request->input('source_id', 0);
         $this->validateWebpageRssCategory($config['category_id']);
         $result = $this->webpageRssService->save(\Auth::id(), $config);
 
@@ -178,6 +267,74 @@ class FeedController extends Controller
     }
 
     /**
+     * 删除网页转RSS配置
+     *
+     * @param Request $request
+     * @param WebpageRssSource $source
+     */
+    public function destroyWebpageRssSource(Request $request, WebpageRssSource $source)
+    {
+        if ((int)$source->user_id !== (int)\Auth::id()) {
+            throw new CustomException('配置不存在');
+        }
+
+        $source->status = 2;
+        $source->save();
+
+        if ($source->feed_id) {
+            FeedSub::where('user_id', \Auth::id())
+                ->where('feed_id', $source->feed_id)
+                ->where('status', 1)
+                ->update(array('status' => 2));
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
+    }
+
+    /**
+     * 将网页转RSS配置加入当前订阅
+     *
+     * @param Request $request
+     * @param WebpageRssSource $source
+     */
+    public function subscribeWebpageRssSource(Request $request, WebpageRssSource $source)
+    {
+        if ((int)$source->user_id !== (int)\Auth::id() || (int)$source->status !== 1) {
+            throw new CustomException('配置不存在');
+        }
+        if (!$source->feed_id) {
+            throw new CustomException('订阅源尚未生成，请先编辑保存一次');
+        }
+
+        $feed = Feed::where('id', $source->feed_id)->first();
+        if (empty($feed)) {
+            throw new CustomException('订阅源不存在');
+        }
+
+        $feedSub = FeedSub::where('user_id', \Auth::id())
+            ->where('feed_id', $feed->id)
+            ->first();
+        if (empty($feedSub)) {
+            $feedSub = new FeedSub();
+            $feedSub->user_id = \Auth::id();
+            $feedSub->feed_id = $feed->id;
+        }
+
+        $wasInactive = (int)$feedSub->status !== 1;
+        $feedSub->feed_name = $source->name;
+        $feedSub->category_id = $source->category_id;
+        $feedSub->status = 1;
+        $feedSub->save();
+
+        if ($wasInactive) {
+            $feed->sub_count = (int)$feed->sub_count + 1;
+            $feed->save();
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($feedSub->fresh()));
+    }
+
+    /**
      * 手动刷新网页转RSS配置
      *
      * @param Request $request
@@ -185,7 +342,7 @@ class FeedController extends Controller
      */
     public function refreshWebpageRss(Request $request, WebpageRssSource $source)
     {
-        if ((int)$source->user_id !== (int)\Auth::id()) {
+        if ((int)$source->user_id !== (int)\Auth::id() || (int)$source->status !== 1) {
             throw new CustomException('配置不存在');
         }
 
@@ -216,6 +373,20 @@ class FeedController extends Controller
         if (empty($category)) {
             throw new CustomException('分类不存在');
         }
+    }
+
+    private function formatWebpageRssSource(WebpageRssSource $source)
+    {
+        $data = $source->toArray();
+        $data['rss_url'] = $this->webpageRssService->rssUrl($source);
+        $data['feed_name'] = $source->feed ? $source->feed->feed_name : $source->name;
+        $data['feed_url'] = $source->feed ? $source->feed->url : $data['rss_url'];
+        $data['edit_url'] = url('/feeds/webpage-rss/' . $source->id . '/edit');
+        $data['is_subscribed'] = FeedSub::where('user_id', \Auth::id())
+            ->where('feed_id', $source->feed_id)
+            ->where('status', 1)
+            ->exists() ? 1 : 0;
+        return $data;
     }
 
     /**
@@ -310,7 +481,30 @@ class FeedController extends Controller
         $this->authorize('destroy', $feedSub);
 
         if ($request->method() == 'GET') {
-            return view('feeds.update');
+            $feedSub->load(array('feed', 'category'));
+            $userId = (int)\Auth::id();
+            $feedId = (int)$feedSub->feed_id;
+            $categories = Category::where('user_id', $userId)
+                ->where('status', 1)
+                ->orderBy('category_order')
+                ->orderBy('id', 'desc')
+                ->get();
+
+            $stats = array(
+                'total_articles' => (int)ArticleSub::where('user_id', $userId)->where('feed_id', $feedId)->count(),
+                'unread_articles' => (int)ArticleSub::where('user_id', $userId)->where('feed_id', $feedId)->where('status', 'unread')->count(),
+                'starred_articles' => (int)DB::table('article_subs')
+                    ->where('user_id', $userId)
+                    ->where('feed_id', $feedId)
+                    ->where('mark', 1)
+                    ->count(),
+            );
+
+            return view('feeds.update', array(
+                'feedSub' => $feedSub,
+                'categories' => $categories,
+                'stats' => $stats,
+            ));
         }
 
         $this->validate($request, [

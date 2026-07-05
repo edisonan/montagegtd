@@ -4,7 +4,7 @@
 @section('description', '修改订阅源信息和分类设置')
 
 @section('content')
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">修改订阅</h1>
@@ -27,7 +27,8 @@
                     </div>
 
                     <div class="p-6">
-                        <form class="space-y-6" id="feed-edit-form">
+                        <form class="space-y-6" id="feed-edit-form" method="POST" action="{{ url('feed/' . $feedSub->id) }}">
+                            {{ csrf_field() }}
                             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                 <div class="flex items-center justify-between">
                                     <div>
@@ -93,10 +94,18 @@
     </div>
 
     <script>
+        window.__FEED_EDIT_INITIAL__ = @json(array(
+            'feed_sub' => $feedSub,
+            'categories' => $categories,
+            'stats' => $stats,
+        ));
+    </script>
+    <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
             : null;
         var feedState = { id: 0, feedSub: null, categories: [] };
+        var initialFeedData = window.__FEED_EDIT_INITIAL__ || null;
 
         function showToast(message, type) {
             var node = document.createElement('div');
@@ -186,6 +195,15 @@
             document.getElementById('feed_name').addEventListener('input', updateCounter);
 
             document.getElementById('feed-edit-form').addEventListener('submit', function(e) {
+                if (this.dataset.nativeSubmit === '1') {
+                    delete this.dataset.nativeSubmit;
+                    return;
+                }
+
+                if (!apiRequest) {
+                    return;
+                }
+
                 e.preventDefault();
                 var checked = document.querySelector('input[name="category_id"]:checked');
                 if (!checked) {
@@ -208,7 +226,12 @@
                         return;
                     }
                     showToast((resp && resp.msg) || '保存失败', 'error');
-                }).catch(function() {
+                }).catch(function(err) {
+                    if (err && (err.status === 401 || err.status === 403 || err.status === 0)) {
+                        e.target.dataset.nativeSubmit = '1';
+                        e.target.submit();
+                        return;
+                    }
                     showToast('保存失败，请稍后重试', 'error');
                 }).finally(function() {
                     btn.disabled = false;
@@ -217,6 +240,10 @@
             });
 
             document.getElementById('checkFeedBtn').addEventListener('click', function() {
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    return;
+                }
                 var feedUrl = (feedState.feedSub && feedState.feedSub.feed && feedState.feedSub.feed.url) || '';
                 if (!feedUrl) {
                     showToast('订阅地址为空', 'error');
@@ -234,6 +261,10 @@
             });
 
             document.getElementById('refreshFeedBtn').addEventListener('click', function() {
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    return;
+                }
                 apiRequest('POST', '/feeds/' + feedState.id + '/refresh', {}).then(function(resp) {
                     if (resp && resp.code === 9999) {
                         showToast('同步完成', 'success');
@@ -245,6 +276,10 @@
             });
 
             document.getElementById('toggleStatusBtn').addEventListener('click', function() {
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    return;
+                }
                 var enable = Number(this.getAttribute('data-enable') || 0);
                 apiRequest('POST', '/feeds/' + feedState.id + '/toggle-status', { enable: enable }).then(function(resp) {
                     if (resp && resp.code === 9999) {
@@ -257,6 +292,10 @@
             });
 
             document.getElementById('clearArticlesBtn').addEventListener('click', function() {
+                if (!apiRequest) {
+                    showToast('API客户端未初始化', 'error');
+                    return;
+                }
                 if (!confirm('确定要清空该订阅的所有文章吗？')) return;
                 apiRequest('POST', '/feeds/' + feedState.id + '/clear-articles', {}).then(function(resp) {
                     if (resp && resp.code === 9999) {
@@ -270,8 +309,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            feedState.id = getFeedIdFromPath();
             bindActions();
+            if (initialFeedData) {
+                feedState.id = Number(initialFeedData.feed_sub && initialFeedData.feed_sub.id ? initialFeedData.feed_sub.id : getFeedIdFromPath());
+                renderFeed(initialFeedData);
+                return;
+            }
+
+            feedState.id = getFeedIdFromPath();
             loadFeedDetail();
         });
     </script>

@@ -118,6 +118,26 @@ class WebpageRssService
         );
     }
 
+    public function fetchPageSource(array $config)
+    {
+        $config = array_merge($this->debugDefaults(), $config);
+        $this->validateDebugConfig($config);
+
+        $htmlText = $this->request($config['list_url']);
+        if ($config['encoding'] === 'GBK') {
+            $htmlText = @mb_convert_encoding($htmlText, 'UTF-8', 'GBK,GB2312');
+        } elseif ($config['encoding'] === 'auto') {
+            $htmlText = @mb_convert_encoding($htmlText, 'UTF-8', 'UTF-8,GBK,GB2312,BIG5');
+        }
+
+        return array(
+            'page_url' => $config['list_url'],
+            'page_title' => $this->guessPageTitle($htmlText),
+            'html' => mb_substr($htmlText, 0, 600000, 'UTF-8'),
+            'html_length' => mb_strlen($htmlText, 'UTF-8'),
+        );
+    }
+
     public function analyzeByAi(array $config, $modelId, $mode = 'balanced')
     {
         $config = array_merge($this->debugDefaults(), $config);
@@ -217,10 +237,22 @@ class WebpageRssService
         $this->validateConfig($config);
 
         return DB::transaction(function () use ($userId, $config) {
-            $source = WebpageRssSource::where('user_id', $userId)
-                ->where('list_url', $config['list_url'])
-                ->where('status', 1)
-                ->first();
+            $source = null;
+            if (!empty($config['source_id'])) {
+                $source = WebpageRssSource::where('user_id', $userId)
+                    ->where('id', (int)$config['source_id'])
+                    ->where('status', 1)
+                    ->first();
+                if (empty($source)) {
+                    throw new CustomException('配置不存在');
+                }
+                unset($config['source_id']);
+            } else {
+                $source = WebpageRssSource::where('user_id', $userId)
+                    ->where('list_url', $config['list_url'])
+                    ->where('status', 1)
+                    ->first();
+            }
 
             if (empty($source)) {
                 $source = new WebpageRssSource();
