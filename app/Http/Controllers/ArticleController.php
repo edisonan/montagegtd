@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\CustomException;
+use App\Http\Utils\CommonUtil;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Article;
 use App\Models\ArticleSub;
+use App\Models\FeedSub;
 use App\Services\ArticleAiRenderService;
 use App\Services\ArticleService;
 use Illuminate\Http\Request;
@@ -69,6 +71,91 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         return view('articles.index');
+    }
+
+    /**
+     * 三栏探索阅读页。
+     */
+    public function explorer(Request $request)
+    {
+        return view('articles.explorer');
+    }
+
+    /**
+     * 探索版分类及订阅源目录。
+     */
+    public function explorerFeeds(Request $request)
+    {
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'nav_infos' => array_values($this->articleService->getNavInfo('unread')),
+        )));
+    }
+
+    /**
+     * 探索版文章标题列表。此接口不读取或返回正文。
+     */
+    public function explorerArticleList(Request $request, $feedId)
+    {
+        $feedSub = FeedSub::where('user_id', Auth::id())
+            ->where('feed_id', $feedId)
+            ->first();
+        if (!$feedSub) {
+            abort(404);
+        }
+
+        $pageCount = max(10, min(100, (int)$request->input('page_count', 40)));
+        $articleSubs = ArticleSub::join('articles', 'article_subs.article_id', '=', 'articles.id')
+            ->where('article_subs.user_id', Auth::id())
+            ->where('article_subs.feed_id', $feedId)
+            ->select(array(
+                'article_subs.id',
+                'article_subs.article_id',
+                'article_subs.status',
+                'articles.subject',
+                'articles.published',
+            ))
+            ->orderBy('article_subs.updated_at', 'desc')
+            ->paginate($pageCount);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'feed' => array(
+                'id' => (int)$feedId,
+                'name' => $feedSub->feed_name,
+            ),
+            'articles' => $articleSubs->items(),
+            'pagination' => array(
+                'current_page' => $articleSubs->currentPage(),
+                'last_page' => $articleSubs->lastPage(),
+                'has_more_pages' => $articleSubs->hasMorePages(),
+            ),
+        )));
+    }
+
+    /**
+     * 探索版按需加载单篇正文。
+     */
+    public function explorerArticle(Request $request, ArticleSub $articleSub)
+    {
+        $this->authorize('destroy', $articleSub);
+        $articleSub->load('article.feed');
+        if (!$articleSub->article) {
+            abort(404);
+        }
+
+        $article = $articleSub->article;
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'article_sub_id' => $articleSub->id,
+            'status' => $articleSub->status,
+            'article' => array(
+                'id' => $article->id,
+                'subject' => $article->subject,
+                'url' => $article->url,
+                'published' => $article->published,
+                'content' => CommonUtil::formatContentHtml($article->content),
+                'feed_name' => $article->feed ? $article->feed->feed_name : '',
+            ),
+        )));
     }
 
     /**

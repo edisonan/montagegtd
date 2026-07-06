@@ -108,6 +108,10 @@ Route::group([
     Route::post('/feeds/importOpml', 'FeedController@importOpml');
 
     Route::get('/articles', 'ArticleController@index');
+    Route::get('/articles/explorer', 'ArticleController@explorer');
+    Route::get('/articles/explorer/data/feeds', 'ArticleController@explorerFeeds');
+    Route::get('/articles/explorer/data/feeds/{feedId}/articles', 'ArticleController@explorerArticleList');
+    Route::get('/articles/explorer/data/articles/{articleSub}', 'ArticleController@explorerArticle');
     Route::get('/articles/stream', 'ArticleController@stream');
     Route::post('/article', 'ArticleController@store');
     Route::get('/article/list', 'ArticleController@list');
