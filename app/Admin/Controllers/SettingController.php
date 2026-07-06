@@ -72,11 +72,17 @@ class SettingController extends Controller {
 			$grid->id ( 'ID' )->sortable ();
 			
 			$grid->user ()->name ();
-			$grid->day_pomo_goal ();
-			$grid->week_pomo_goal ();
-			$grid->month_pomo_goal ();
-			$grid->pomo_time ();
-			$grid->pomo_rest_time ();
+			$grid->pomo_config ( '番茄配置' )->display ( function ($config) {
+				$config = Setting::normalizePomoConfig ( $config );
+				return sprintf (
+						'日/周/月目标：%d/%d/%d，专注/休息：%d/%d 分钟',
+						$config['day_goal'],
+						$config['week_goal'],
+						$config['month_goal'],
+						$config['focus_minutes'],
+						$config['rest_minutes']
+				);
+			} );
 			
 			$grid->kindle_email ();
 			

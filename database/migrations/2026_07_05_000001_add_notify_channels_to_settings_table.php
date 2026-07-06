@@ -16,34 +16,36 @@ class AddNotifyChannelsToSettingsTable extends Migration
     {
         if (!Schema::hasColumn('settings', 'notify_channels')) {
             Schema::table('settings', function (Blueprint $table) {
-                $table->text('notify_channels')->nullable()->after('ifttt_notify')->comment('JSON格式通知渠道配置');
+                $table->text('notify_channels')->nullable()->after('cal_token')->comment('JSON格式通知渠道配置');
             });
         }
 
-        DB::table('settings')
-            ->whereNotNull('ifttt_notify')
-            ->where('ifttt_notify', '<>', '')
-            ->orderBy('id')
-            ->chunk(100, function ($settings) {
-                foreach ($settings as $setting) {
-                    if (!empty($setting->notify_channels)) {
-                        continue;
-                    }
+        if (Schema::hasColumn('settings', 'ifttt_notify')) {
+            DB::table('settings')
+                ->whereNotNull('ifttt_notify')
+                ->where('ifttt_notify', '<>', '')
+                ->orderBy('id')
+                ->chunk(100, function ($settings) {
+                    foreach ($settings as $setting) {
+                        if (!empty($setting->notify_channels)) {
+                            continue;
+                        }
 
-                    DB::table('settings')
-                        ->where('id', $setting->id)
-                        ->update(array(
-                            'notify_channels' => json_encode(array(
-                                'ifttt' => array(
-                                    'status' => 1,
-                                    'config' => array(
-                                        'key' => $setting->ifttt_notify,
+                        DB::table('settings')
+                            ->where('id', $setting->id)
+                            ->update(array(
+                                'notify_channels' => json_encode(array(
+                                    'ifttt' => array(
+                                        'status' => 1,
+                                        'config' => array(
+                                            'key' => $setting->ifttt_notify,
+                                        ),
                                     ),
-                                ),
-                            )),
-                        ));
-                }
-            });
+                                )),
+                            ));
+                    }
+                });
+        }
 
         if (Schema::hasTable('user_notification_channels')) {
             DB::table('user_notification_channels')

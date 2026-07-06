@@ -58,13 +58,12 @@
                                     <!-- 专注时间设置 -->
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label for="pomo_time" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <label for="pomo_focus_minutes" class="block text-sm font-medium text-gray-700 mb-2">
                                                 专注专注时间
                                             </label>
                                             <div class="relative">
                                                 <input type="number"
-                                                       name="pomo_time"
-                                                       id="pomo_time"
+                                                       id="pomo_focus_minutes"
                                                        class="input w-full pr-12"
                                                        value="25"
                                                        min="10"
@@ -81,13 +80,12 @@
                                         </div>
 
                                         <div>
-                                            <label for="pomo_rest_time" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <label for="pomo_rest_minutes" class="block text-sm font-medium text-gray-700 mb-2">
                                                 专注休息时间
                                             </label>
                                             <div class="relative">
                                                 <input type="number"
-                                                       name="pomo_rest_time"
-                                                       id="pomo_rest_time"
+                                                       id="pomo_rest_minutes"
                                                        class="input w-full pr-12"
                                                        value="5"
                                                        min="1"
@@ -109,12 +107,11 @@
                                         <h4 class="text-sm font-medium text-gray-700 mb-4">🎯 计划设置</h4>
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <div>
-                                                <label for="day_pomo_goal" class="block text-xs font-medium text-gray-500 mb-2">
+                                                <label for="pomo_day_goal" class="block text-xs font-medium text-gray-500 mb-2">
                                                     <i class="fas fa-sun text-yellow-500 mr-1"></i> 日计划
                                                 </label>
                                                 <input type="number"
-                                                       name="day_pomo_goal"
-                                                       id="day_pomo_goal"
+                                                       id="pomo_day_goal"
                                                        class="input w-full text-center"
                                                        value="8"
                                                        min="1"
@@ -123,12 +120,11 @@
                                             </div>
 
                                             <div>
-                                                <label for="week_pomo_goal" class="block text-xs font-medium text-gray-500 mb-2">
+                                                <label for="pomo_week_goal" class="block text-xs font-medium text-gray-500 mb-2">
                                                     <i class="fas fa-calendar-week text-green-500 mr-1"></i> 周计划
                                                 </label>
                                                 <input type="number"
-                                                       name="week_pomo_goal"
-                                                       id="week_pomo_goal"
+                                                       id="pomo_week_goal"
                                                        class="input w-full text-center"
                                                        value="40"
                                                        min="1"
@@ -137,12 +133,11 @@
                                             </div>
 
                                             <div>
-                                                <label for="month_pomo_goal" class="block text-xs font-medium text-gray-500 mb-2">
+                                                <label for="pomo_month_goal" class="block text-xs font-medium text-gray-500 mb-2">
                                                     <i class="fas fa-calendar-alt text-blue-500 mr-1"></i> 月计划
                                                 </label>
                                                 <input type="number"
-                                                       name="month_pomo_goal"
-                                                       id="month_pomo_goal"
+                                                       id="pomo_month_goal"
                                                        class="input w-full text-center"
                                                        value="160"
                                                        min="1"
@@ -250,19 +245,20 @@
                                 </div>
 
                                 <div>
-                                    <label for="ifttt_notify" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <label for="notification_ifttt_key" class="block text-sm font-medium text-gray-700 mb-2">
                                         IFTTT Webhook Key
                                     </label>
                                     <div class="relative">
                                         <input type="password"
-                                               id="ifttt_notify"
+                                               name="notification_ifttt_key"
+                                               id="notification_ifttt_key"
                                                class="input w-full pr-10"
                                                value=""
                                                placeholder="输入您的IFTTT Webhook密钥">
                                         <button type="button"
-                                                onclick="togglePasswordVisibility('ifttt_notify')"
+                                                onclick="togglePasswordVisibility('notification_ifttt_key')"
                                                 class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                            <i class="fas fa-eye" id="ifttt_notify_eye"></i>
+                                            <i class="fas fa-eye" id="notification_ifttt_key_eye"></i>
                                         </button>
                                     </div>
                                     <div class="mt-2 flex items-start">
@@ -298,7 +294,6 @@
                                         </label>
                                     </div>
                                 </div>
-                                <input type="hidden" name="notification_ifttt_key" id="notification_ifttt_key" value="">
                             </div>
 
                             <!-- Bark通知设置 -->
@@ -525,18 +520,18 @@
 
             function applySetting(setting, channels) {
                 if (!setting) return;
+                var pomoConfig = setting.pomo_config || {};
                 var ifttt = getChannel(channels, 'ifttt');
                 var bark = getChannel(channels, 'bark');
                 var iftttConfig = ifttt.config || {};
                 var barkConfig = bark.config || {};
 
-                document.getElementById('pomo_time').value = setting.pomo_time || 25;
-                document.getElementById('pomo_rest_time').value = setting.pomo_rest_time || 5;
-                document.getElementById('day_pomo_goal').value = setting.day_pomo_goal || 8;
-                document.getElementById('week_pomo_goal').value = setting.week_pomo_goal || 40;
-                document.getElementById('month_pomo_goal').value = setting.month_pomo_goal || 160;
+                document.getElementById('pomo_focus_minutes').value = pomoConfig.focus_minutes || 25;
+                document.getElementById('pomo_rest_minutes').value = pomoConfig.rest_minutes || 5;
+                document.getElementById('pomo_day_goal').value = pomoConfig.day_goal || 8;
+                document.getElementById('pomo_week_goal').value = pomoConfig.week_goal || 40;
+                document.getElementById('pomo_month_goal').value = pomoConfig.month_goal || 160;
                 document.getElementById('kindle_email').value = setting.kindle_email || '';
-                document.getElementById('ifttt_notify').value = iftttConfig.key || '';
                 document.getElementById('notification_ifttt_key').value = iftttConfig.key || '';
                 document.getElementById('notification_bark_server_url').value = barkConfig.server_url || 'https://api.day.app';
                 document.getElementById('notification_bark_key').value = barkConfig.key || '';
@@ -548,8 +543,8 @@
                 var statsPomo = document.getElementById('stats_pomo_time');
                 var statsDay = document.getElementById('stats_day_plan');
                 var statsKindle = document.getElementById('stats_kindle_status');
-                if (statsPomo) statsPomo.textContent = (setting.pomo_time || 25) + '分钟';
-                if (statsDay) statsDay.textContent = '0/' + (setting.day_pomo_goal || 8);
+                if (statsPomo) statsPomo.textContent = (pomoConfig.focus_minutes || 25) + '分钟';
+                if (statsDay) statsDay.textContent = '0/' + (pomoConfig.day_goal || 8);
                 if (statsKindle) {
                     var on = parseInt(setting.is_start_kindle || 0, 10) === 1;
                     statsKindle.textContent = on ? '已开启' : '已关闭';
@@ -575,8 +570,8 @@
                 }
 
                 // 验证专注时间范围
-                const focusTime = parseInt(document.getElementById('pomo_time').value);
-                const focusRestTime = parseInt(document.getElementById('pomo_rest_time').value);
+                const focusTime = parseInt(document.getElementById('pomo_focus_minutes').value);
+                const focusRestTime = parseInt(document.getElementById('pomo_rest_minutes').value);
 
                 if (focusTime < 10 || focusTime > 60) {
                     showToast('专注时间应在10-60分钟之间', 'error');
@@ -596,12 +591,18 @@
                 submitBtn.disabled = true;
 
                 try {
-                    document.getElementById('notification_ifttt_key').value = document.getElementById('ifttt_notify').value;
                     const formData = new FormData(this);
                     const payload = {};
                     formData.forEach((value, key) => {
                         payload[key] = value;
                     });
+                    payload.pomo_config = {
+                        day_goal: parseInt(document.getElementById('pomo_day_goal').value),
+                        week_goal: parseInt(document.getElementById('pomo_week_goal').value),
+                        month_goal: parseInt(document.getElementById('pomo_month_goal').value),
+                        focus_minutes: focusTime,
+                        rest_minutes: focusRestTime
+                    };
                     const data = await settingsApiRequest('POST', '/settings/current', payload);
 
                     if (data.success || (data.code && data.code === 9999)) {
@@ -627,8 +628,8 @@
             });
 
             // 实时验证输入
-            const focusTimeInput = document.getElementById('pomo_time');
-            const focusRestInput = document.getElementById('pomo_rest_time');
+            const focusTimeInput = document.getElementById('pomo_focus_minutes');
+            const focusRestInput = document.getElementById('pomo_rest_minutes');
 
             function validateTime(input, min, max) {
                 const value = parseInt(input.value);
@@ -659,11 +660,11 @@
         // 恢复默认设置
         function resetToDefaults() {
             if (confirm('确定要恢复默认设置吗？当前的自定义设置将会被覆盖。')) {
-                document.getElementById('pomo_time').value = 25;
-                document.getElementById('pomo_rest_time').value = 5;
-                document.getElementById('day_pomo_goal').value = 8;
-                document.getElementById('week_pomo_goal').value = 40;
-                document.getElementById('month_pomo_goal').value = 160;
+                document.getElementById('pomo_focus_minutes').value = 25;
+                document.getElementById('pomo_rest_minutes').value = 5;
+                document.getElementById('pomo_day_goal').value = 8;
+                document.getElementById('pomo_week_goal').value = 40;
+                document.getElementById('pomo_month_goal').value = 160;
                 document.querySelector('input[name="is_start_kindle"][value="0"]').checked = true;
                 document.querySelector('input[name="with_image_push"][value="0"]').checked = true;
                 document.querySelector('input[name="notification_ifttt_status"][value="0"]').checked = true;
@@ -715,7 +716,7 @@
                 showToast('API客户端未初始化', 'error');
                 return;
             }
-            const iftttKey = document.getElementById('ifttt_notify').value;
+            const iftttKey = document.getElementById('notification_ifttt_key').value;
 
             if (!iftttKey) {
                 showToast('请先填写IFTTT Webhook密钥', 'warning');

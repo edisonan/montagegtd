@@ -107,7 +107,8 @@ class FocusService {
 		// 获取当前用户设置
 		$setting = $user->setting;
 		
-		$focusIntervalTime = isset ( $setting->pomo_time ) && ! empty ( $setting->pomo_time ) ? $setting->pomo_time * 60 : Focus::DEFAULT_INTERVAL;
+		$pomoConfig = $setting->getPomoConfigValues ();
+		$focusIntervalTime = ! empty ( $pomoConfig['focus_minutes'] ) ? $pomoConfig['focus_minutes'] * 60 : Focus::DEFAULT_INTERVAL;
 		$currentTime = time ();
 		$startTime = date ( 'Y-m-d H:i:s', $currentTime );
 		$endTime = date ( 'Y-m-d H:i:s', time () + $focusIntervalTime );
@@ -201,7 +202,8 @@ class FocusService {
 		$user = \Auth::user ();
 		$setting = $user->setting;
 		
-		$focusIntervalTime = isset ( $setting->pomo_rest_time ) && ! empty ( $setting->pomo_rest_time ) ? $setting->pomo_rest_time * 60 : Focus::DEFAULT_REST_INTERVAL;
+		$pomoConfig = $setting->getPomoConfigValues ();
+		$focusIntervalTime = ! empty ( $pomoConfig['rest_minutes'] ) ? $pomoConfig['rest_minutes'] * 60 : Focus::DEFAULT_REST_INTERVAL;
 		$currentTime = time ();
 		$startTime = date ( 'Y-m-d H:i:s', $currentTime );
 		$endTime = date ( 'Y-m-d H:i:s', time () + $focusIntervalTime );

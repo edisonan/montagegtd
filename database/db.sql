@@ -432,16 +432,12 @@ CREATE TABLE IF NOT EXISTS `pomos` (
 CREATE TABLE IF NOT EXISTS `settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL COMMENT '用户id',
-  `day_pomo_goal` tinyint(4) DEFAULT '8' COMMENT '日番茄数',
-  `week_pomo_goal` int(11) DEFAULT '40' COMMENT '周番茄数',
-  `month_pomo_goal` int(11) DEFAULT '160' COMMENT '月番茄数',
-  `pomo_time` int(11) NOT NULL DEFAULT '25' COMMENT '番茄时间',
-  `pomo_rest_time` int(11) NOT NULL DEFAULT '5' COMMENT '番茄休息时间',
+  `pomo_config` text COLLATE utf8mb4_unicode_ci COMMENT 'JSON格式番茄目标及计时配置',
   `is_start_kindle` tinyint(4) DEFAULT '0' COMMENT '是否开启kindle推送（0 未开启 1开启）',
   `kindle_email` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'kindle推送地址',
   `with_image_push` tinyint(4) DEFAULT '0' COMMENT 'kindle是否带图推送',
   `cal_token` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '任务日历token',
-  `ifttt_notify` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ifttt通知token',
+  `notify_channels` text COLLATE utf8mb4_unicode_ci COMMENT 'JSON格式通知渠道配置',
   `created_at` datetime NOT NULL COMMENT '创建时间',
   `updated_at` datetime NOT NULL COMMENT '修改时间',
   PRIMARY KEY (`id`),
@@ -728,4 +724,3 @@ INSERT INTO `admin_role_users` (`role_id`, `user_id`, `created_at`, `updated_at`
 INSERT INTO `admin_users` (`id`, `username`, `password`, `name`, `avatar`, `remember_token`, `created_at`, `updated_at`, `last_login`) VALUES
   (1, 'admin', 'execute cmd genarate password:** php artisan admin:install **', 'Administrator', 'images/qrcode20170921114041.png', '', '2018-01-06 00:15:18', '2018-01-06 00:15:18', '2018-01-06 00:15:18');
 /*!40000 ALTER TABLE `admin_users` ENABLE KEYS */;
-

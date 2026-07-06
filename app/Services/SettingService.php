@@ -60,6 +60,7 @@ class SettingService {
 	public function createDefaultSetting($userId) {
 		$setting = new Setting ();
 		$setting->user_id = $userId;
+		$setting->pomo_config = Setting::defaultPomoConfig ();
 		$setting->save ();
 		return $setting;
 	}

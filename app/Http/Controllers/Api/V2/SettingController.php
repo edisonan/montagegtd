@@ -40,14 +40,15 @@ class SettingController extends Controller
     public function update(Request $request, Setting $setting)
     {
         $this->authorize('destroy', $setting);
-        $this->normalizeLegacySettingKeys($request);
+        $this->normalizePomoSettingKeys($request, $setting);
 
         $this->validate($request, array(
-            'day_pomo_goal' => 'integer|min:1',
-            'week_pomo_goal' => 'integer|min:1',
-            'month_pomo_goal' => 'integer|min:1',
-            'pomo_time' => 'integer|min:10|max:60',
-            'pomo_rest_time' => 'integer|min:1|max:10',
+            'pomo_config' => 'array',
+            'pomo_config.day_goal' => 'integer|min:1',
+            'pomo_config.week_goal' => 'integer|min:1',
+            'pomo_config.month_goal' => 'integer|min:1',
+            'pomo_config.focus_minutes' => 'integer|min:10|max:60',
+            'pomo_config.rest_minutes' => 'integer|min:1|max:10',
             'is_start_kindle' => 'integer|min:0|max:1',
             'with_image_push' => 'integer|min:0|max:1',
             'notification_ifttt_status' => 'integer|min:0|max:1',
@@ -61,6 +62,11 @@ class SettingController extends Controller
             ));
         }
 
+        if ($request->has('pomo_config')) {
+            $request->merge(array(
+                'pomo_config' => Setting::normalizePomoConfig($request->input('pomo_config')),
+            ));
+        }
         $setting->update($request->all());
         $this->notificationChannelService->saveFromSettingRequest($request, $setting);
         $setting = $setting->fresh();
@@ -177,11 +183,7 @@ class SettingController extends Controller
         $this->authorize('destroy', $setting);
 
         $data = $setting->only(array(
-            'day_pomo_goal',
-            'week_pomo_goal',
-            'month_pomo_goal',
-            'pomo_time',
-            'pomo_rest_time',
+            'pomo_config',
             'kindle_email',
             'is_start_kindle',
             'with_image_push',
@@ -194,24 +196,37 @@ class SettingController extends Controller
         )));
     }
 
-    protected function normalizeLegacySettingKeys(Request $request): void
+    protected function normalizePomoSettingKeys(Request $request, Setting $setting): void
     {
-        $payload = array();
-        if ($request->has('week_focus_plan') && !$request->has('week_pomo_goal')) {
-            $payload['week_pomo_goal'] = $request->input('week_focus_plan');
+        $config = $setting->getPomoConfigValues();
+        $hasConfig = false;
+        if ($request->has('pomo_config')) {
+            $submitted = $request->input('pomo_config');
+            if (!is_array($submitted)) {
+                return;
+            }
+            $config = array_merge($config, $submitted);
+            $hasConfig = true;
         }
-        if ($request->has('month_focus_plan') && !$request->has('month_pomo_goal')) {
-            $payload['month_pomo_goal'] = $request->input('month_focus_plan');
-        }
-        if ($request->has('ifttt_notify') && !$request->has('notification_ifttt_key')) {
-            $legacyKey = trim((string)$request->input('ifttt_notify'));
-            $payload['notification_ifttt_key'] = $legacyKey;
-            if (!$request->has('notification_ifttt_status')) {
-                $payload['notification_ifttt_status'] = $legacyKey !== '' ? 1 : 0;
+
+        $legacyKeys = array(
+            'day_pomo_goal' => 'day_goal',
+            'week_pomo_goal' => 'week_goal',
+            'month_pomo_goal' => 'month_goal',
+            'pomo_time' => 'focus_minutes',
+            'pomo_rest_time' => 'rest_minutes',
+            'week_focus_plan' => 'week_goal',
+            'month_focus_plan' => 'month_goal',
+        );
+        foreach ($legacyKeys as $legacyKey => $configKey) {
+            if ($request->has($legacyKey)) {
+                $config[$configKey] = $request->input($legacyKey);
+                $hasConfig = true;
             }
         }
-        if (!empty($payload)) {
-            $request->merge($payload);
+
+        if ($hasConfig) {
+            $request->merge(array('pomo_config' => $config));
         }
     }
 }
