@@ -1,6 +1,6 @@
 ---
 name: montage-gtd
-description: Montage GTD 平台能力使用 skill。用于通过 PAT/UAT 鉴权和 CLI 处理个人 GTD 工作流：待办任务的收集、拆分、排序、开始、完成、复盘；笔记的记录、检索、更新、来源绑定；文章的未读队列、已读/稍后读/收藏、划线摘录、AI 阅读页生成；订阅源、专注、计划、学习、日报、LLM 会话、摘要页和个人访问令牌管理。用户提到“待办、任务、笔记、文章、阅读、订阅、专注、计划、复盘、日报、摘要、token、PAT、CLI、Montage”时优先使用。
+description: Use the Montage GTD CLI with PAT/UAT authentication to manage personal tasks and notes, including task capture, listing, prioritization, scheduling, start/stop, completion, review and archiving; note creation, search, tags, source binding, updates and deletion. Also supports articles, feeds, focus, plans, daily summaries, tokens and generic API requests. Use when the user mentions Montage, GTD, tasks, todos, notes, CLI automation, PAT, reading queues, focus, plans or daily reviews.
 ---
 
 # Montage GTD
@@ -29,10 +29,10 @@ description: Montage GTD 平台能力使用 skill。用于通过 PAT/UAT 鉴权�
 5. 不向用户展示完整 token。必要时只说明 token 类型或脱敏前后缀。
 6. 最终反馈要说业务结果，不要只贴 API 响应：例如“已创建任务，id=...”，“已标记 12 篇文章为已读”。
 
-## 运行配置
+## 配置
 
 ```bash
-export MONTAGE_GTD_BASE_URL="https://pretask.congcong.us/api/v2"
+export MONTAGE_GTD_BASE_URL="http://testtask.congcong.us/api/v2"
 export MONTAGE_GTD_TOKEN="pat_or_uat_token"
 ```
 
@@ -48,47 +48,50 @@ export MONTAGE_GTD_TOKEN="pat_or_uat_token"
 - 自动写入、状态流转、创建笔记/任务/文章状态：`read,write`
 - 管理 LLM provider/model/credential：`read,write,admin`
 
-## 常用能力入口
+CLI 入口：
 
 ```bash
-# 看当前 token 对应用户
-skills/montage-gtd/scripts/montage_cli.py me
-
-# 待办
-skills/montage-gtd/scripts/montage_cli.py task-list --status 1
-skills/montage-gtd/scripts/montage_cli.py task-create --name "整理 inbox" --mode 1 --priority 2
-skills/montage-gtd/scripts/montage_cli.py task-doing 123
-skills/montage-gtd/scripts/montage_cli.py task-complete 123 --rating 5 --review-note "按计划完成"
-
-# 笔记
-skills/montage-gtd/scripts/montage_cli.py note-list --keyword "会议"
-skills/montage-gtd/scripts/montage_cli.py note-create --name "今天复盘：..." --status 1
-skills/montage-gtd/scripts/montage_cli.py note-show 45
-
-# 文章
-skills/montage-gtd/scripts/montage_cli.py article-list --status unread --page-count 10
-skills/montage-gtd/scripts/montage_cli.py article-status 88 --status read
-skills/montage-gtd/scripts/montage_cli.py article-mark --article-id 1001 --content "关键观点"
-skills/montage-gtd/scripts/montage_cli.py article-ai-render 1001 --article-sub-id 88
-
-# 其他平台能力
-skills/montage-gtd/scripts/montage_cli.py focus-start
-skills/montage-gtd/scripts/montage_cli.py plan-create --name "本周输出计划"
-skills/montage-gtd/scripts/montage_cli.py daily-summary-create --summary-date 2026-06-29 --work-content "..."
+CLI=skills/montage-gtd/scripts/montage
 ```
 
-## 需要读取哪个参考
+## 首选命令
 
-- 用户要处理待办、任务状态、优先级、截止时间、复盘：读 `references/tasks.md`。
-- 用户要处理笔记、搜索、来源绑定、语音记录：读 `references/notes.md`。
-- 用户要处理文章阅读队列、状态、摘录、AI 阅读页、订阅源：读 `references/articles.md`。
-- 用户要处理鉴权、PAT、专注、计划、日报、学习、LLM、摘要页、通用请求：读 `references/platform.md`。
+```bash
+# 当前用户
+$CLI me
 
-## 能力封装策略
+# 待办
+$CLI task list --status 1
+$CLI task create --name "整理 inbox" --priority 2
+$CLI task doing 123
+$CLI task complete 123 --rating 5 --review-note "按计划完成"
 
-新增 CLI 命令时遵循这几个规则：
+# 笔记
+$CLI note list --keyword "会议"
+$CLI note create --title "日复盘" --content "今天完成了..."
+$CLI note show 45
 
-- 命令名按业务动作命名，例如 `task-complete`、`article-mark`、`daily-summary-create`。
-- 高频稳定字段做成参数；不稳定复杂字段保留 `--data` JSON。
-- 业务命令必须比裸 API 更不容易误用，例如文章状态命令显式使用 `article_sub_id`。
-- 保留 `request` 作为兜底，不把所有 OpenAPI 端点都写进主文档。
+# 文章
+$CLI article list --status unread --page-count 10
+$CLI article status 88 read
+$CLI article mark 1001 --content "关键观点"
+```
+
+使用 `--output table` 做人工查看；默认 JSON 适合 Codex 和脚本解析。
+
+## 读取参考
+
+- 处理待办时读 `references/tasks.md`。
+- 处理笔记时读 `references/notes.md`。
+- 处理文章或订阅时读 `references/articles.md`。
+- 处理鉴权、PAT、专注、计划、日报、学习、LLM 或通用请求时读 `references/platform.md`。
+
+## 执行约束
+
+- 优先使用 `task ...` 和 `note ...` 分组命令；旧扁平命令只用于兼容。
+- 查询可直接执行。写操作要确保目标、字段和 ID 明确。
+- 批量或破坏性操作先列出候选项；用户已给明确 ID 时直接执行。
+- 不显示完整 token。
+- 非 2xx 或响应 `code != 9999` 视为失败。
+- 领域命令未覆盖时使用 `request METHOD /path --data ...`。
+- 最终反馈业务结果和对象 ID，不要只粘贴原始响应。

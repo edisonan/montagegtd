@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 
 
-DEFAULT_BASE_URL = "https://pretask.congcong.us/api/v2"
+DEFAULT_BASE_URL = "http://testtask.congcong.us/api/v2"
 SUCCESS_CODE = 9999
 
 
@@ -38,6 +38,14 @@ def load_json(raw):
 def add_if_present(body, key, value):
     if value is not None:
         body[key] = value
+
+
+def text_value(value, file_path=None):
+    if file_path:
+        return Path(file_path).read_text()
+    if value == "-":
+        return sys.stdin.read()
+    return value
 
 
 def build_url(base_url, path, query_items):
@@ -90,9 +98,98 @@ def parse_json(raw):
         return None
 
 
-def emit(status, parsed, raw, raw_output=False, check_code=True):
-    if raw_output:
+def nested_value(data, path, default=None):
+    current = data
+    for key in path:
+        if not isinstance(current, dict) or key not in current:
+            return default
+        current = current[key]
+    return current
+
+
+def clean_text(value):
+    if value is None:
+        return ""
+    return " ".join(str(value).replace("<br />", " ").replace("<br>", " ").split())
+
+
+def render_table(headers, rows):
+    string_rows = [[clean_text(value) for value in row] for row in rows]
+    widths = [len(header) for header in headers]
+    for row in string_rows:
+        for index, value in enumerate(row):
+            widths[index] = max(widths[index], len(value))
+    print("  ".join(header.ljust(widths[index]) for index, header in enumerate(headers)))
+    print("  ".join("-" * width for width in widths))
+    for row in string_rows:
+        print("  ".join(value.ljust(widths[index]) for index, value in enumerate(row)))
+
+
+def render_task_list(parsed):
+    tasks = nested_value(parsed, ("result", "tasks"), []) or []
+    rows = []
+    for task in tasks:
+        rows.append((
+            task.get("id"),
+            task.get("status"),
+            task.get("is_doing"),
+            task.get("priority"),
+            task.get("mode"),
+            task.get("deadline") or "",
+            task.get("name") or "",
+        ))
+    render_table(("ID", "STATUS", "DOING", "PRI", "MODE", "DEADLINE", "NAME"), rows)
+
+
+def render_note_list(parsed):
+    notes = nested_value(parsed, ("result", "notes"), {}) or {}
+    if isinstance(notes, dict):
+        notes = notes.get("data", [])
+    rows = []
+    for note in notes or []:
+        summary = note.get("name") or note.get("content") or ""
+        rows.append((
+            note.get("id"),
+            note.get("status"),
+            note.get("source_type"),
+            note.get("source_id"),
+            note.get("updated_at") or "",
+            clean_text(summary)[:80],
+        ))
+    render_table(("ID", "STATUS", "SOURCE", "SOURCE_ID", "UPDATED", "NOTE"), rows)
+
+
+def render_article_list(parsed):
+    articles = nested_value(parsed, ("result", "articles"), []) or []
+    rows = []
+    for article_sub in articles:
+        article = article_sub.get("article") or {}
+        feed = article.get("feed") or {}
+        rows.append((
+            article_sub.get("id"),
+            article_sub.get("article_id"),
+            article_sub.get("status"),
+            article_sub.get("personalized_score"),
+            feed.get("feed_name") or "",
+            article.get("published") or "",
+            clean_text(article.get("subject") or "")[:90],
+        ))
+    render_table(("SUB_ID", "ARTICLE_ID", "STATUS", "SCORE", "FEED", "PUBLISHED", "SUBJECT"), rows)
+
+
+def render_record(parsed):
+    result = parsed.get("result") if isinstance(parsed, dict) else parsed
+    if not isinstance(result, dict):
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+    render_table(("FIELD", "VALUE"), [(key, value) for key, value in sorted(result.items())])
+
+
+def emit(status, parsed, raw, raw_output=False, check_code=True, output="json", renderer=None):
+    if raw_output or output == "raw":
         print(raw)
+    elif output == "table" and renderer is not None and parsed is not None:
+        renderer(parsed)
     elif parsed is not None:
         print(json.dumps(parsed, ensure_ascii=False, indent=2))
     elif raw:
@@ -106,9 +203,17 @@ def emit(status, parsed, raw, raw_output=False, check_code=True):
         raise SystemExit(1)
 
 
-def call(args, method, path, data=None, query=None, token=None, check_code=True):
+def call(args, method, path, data=None, query=None, token=None, check_code=True, renderer=None):
     status, parsed, raw = api_request(args, method, path, data=data, query=query, token=token)
-    emit(status, parsed, raw, args.raw, check_code=check_code)
+    emit(
+        status,
+        parsed,
+        raw,
+        getattr(args, "raw", False),
+        check_code=check_code,
+        output=getattr(args, "output", "json"),
+        renderer=renderer,
+    )
 
 
 def find_openapi(explicit):
@@ -208,7 +313,35 @@ def cmd_task_list(args):
     query = []
     add_if_present_query(query, "status", args.status)
     add_if_present_query(query, "page_count", args.page_count)
-    call(args, "GET", "/tasks", query=query)
+    call(args, "GET", "/tasks", query=query, renderer=render_task_list)
+
+
+def cmd_task_show(args):
+    call(args, "GET", "/tasks/%s" % args.task_id, renderer=render_record)
+
+
+def cmd_task_counts(args):
+    call(args, "GET", "/tasks/tab-counts", renderer=render_record)
+
+
+def cmd_task_all(args):
+    query = []
+    add_if_present_query(query, "status", args.status)
+    add_if_present_query(query, "mode", args.mode)
+    call(args, "GET", "/tasks/all", query=query)
+
+
+def cmd_task_priority(args):
+    query = []
+    add_if_present_query(query, "status", args.status)
+    add_if_present_query(query, "mode", args.mode)
+    call(args, "GET", "/tasks/priority", query=query)
+
+
+def cmd_task_parents(args):
+    query = []
+    add_if_present_query(query, "exclude_task_id", args.exclude_task_id)
+    call(args, "GET", "/tasks/parent-tasks", query=query)
 
 
 def cmd_task_create(args):
@@ -220,8 +353,10 @@ def cmd_task_create(args):
     add_if_present(body, "deadline", args.deadline)
     add_if_present(body, "parent_task_id", args.parent_task_id)
     add_if_present(body, "plan_id", args.plan_id)
-    if not body.get("name") or body.get("mode") is None:
-        raise SystemExit("task-create requires --name and --mode, or --data with name/mode.")
+    if body.get("mode") is None:
+        body["mode"] = 1
+    if not body.get("name"):
+        raise SystemExit("task create requires --name, or --data with name.")
     call(args, "POST", "/tasks", data=body)
 
 
@@ -229,6 +364,13 @@ def cmd_task_update(args):
     body = load_json(args.data) or {}
     add_if_present(body, "status", args.status)
     add_if_present(body, "is_doing", args.is_doing)
+    add_if_present(body, "name", args.name)
+    add_if_present(body, "content", args.content)
+    add_if_present(body, "mode", args.mode)
+    add_if_present(body, "priority", args.priority)
+    add_if_present(body, "parent_task_id", args.parent_task_id)
+    add_if_present(body, "plan_id", args.plan_id)
+    add_if_present(body, "is_top", args.is_top)
     add_if_present(body, "rating", args.rating)
     add_if_present(body, "review_note", args.review_note)
     add_if_present(body, "planned_start_time", args.planned_start_time)
@@ -251,6 +393,18 @@ def cmd_task_doing(args):
     call(args, "PUT", "/tasks/%s" % args.task_id, data={"is_doing": 1})
 
 
+def cmd_task_stop(args):
+    call(args, "PUT", "/tasks/%s" % args.task_id, data={"is_doing": 0})
+
+
+def cmd_task_reopen(args):
+    call(args, "PUT", "/tasks/%s" % args.task_id, data={"status": 1, "is_doing": 0})
+
+
+def cmd_task_archive(args):
+    call(args, "PUT", "/tasks/%s" % args.task_id, data={"status": 3, "is_doing": 0})
+
+
 def cmd_task_delete(args):
     query = []
     add_if_present_query(query, "type", args.type)
@@ -261,28 +415,34 @@ def cmd_note_list(args):
     query = []
     for key in ("type", "add_content", "source_type", "source_id", "tag_id", "keyword"):
         add_if_present_query(query, key, getattr(args, key))
-    call(args, "GET", "/notes", query=query)
+    call(args, "GET", "/notes", query=query, renderer=render_note_list)
 
 
 def cmd_note_create(args):
     body = load_json(args.data) or {}
     add_if_present(body, "name", args.name)
+    add_if_present(body, "content", text_value(args.content, args.content_file))
     add_if_present(body, "status", args.status)
     add_if_present(body, "add_image", args.add_image)
     add_if_present(body, "fname", args.fname)
     add_if_present(body, "source_type", args.source_type)
     add_if_present(body, "source_id", args.source_id)
-    if not body.get("name") or body.get("status") is None:
-        raise SystemExit("note-create requires --name and --status, or --data with name/status.")
+    add_if_present(body, "tags", args.tags)
+    if not body.get("name") and not body.get("content"):
+        raise SystemExit("note create requires --content/--name, or --data with content/name.")
+    if body.get("status") is None:
+        body["status"] = 1
     call(args, "POST", "/notes", data=body)
 
 
 def cmd_note_update(args):
     body = load_json(args.data) or {}
     add_if_present(body, "name", args.name)
+    add_if_present(body, "content", text_value(args.content, args.content_file))
     add_if_present(body, "status", args.status)
-    if not body.get("name") or body.get("status") is None:
-        raise SystemExit("note-update requires --name and --status, or --data with name/status.")
+    add_if_present(body, "tags", args.tags)
+    if body.get("status") is None or ("name" not in body and "content" not in body):
+        raise SystemExit("note update requires --status and --content/--name, or equivalent --data.")
     call(args, "PUT", "/notes/%s" % args.note_id, data=body)
 
 
@@ -291,14 +451,41 @@ def cmd_note_delete(args):
 
 
 def cmd_note_show(args):
-    call(args, "GET", "/notes/%s" % args.note_id)
+    call(args, "GET", "/notes/%s" % args.note_id, renderer=render_record)
+
+
+def cmd_note_like(args):
+    call(args, "POST", "/notes/%s/like" % args.note_id)
 
 
 def cmd_article_list(args):
     query = []
-    for key in ("status", "page_count", "category_id", "feed_id"):
+    for key in (
+        "status",
+        "page_count",
+        "category_id",
+        "feed_id",
+        "view_mode",
+        "primary_category",
+        "min_quality_score",
+    ):
         add_if_present_query(query, key, getattr(args, key))
-    call(args, "GET", "/articles", query=query)
+    call(args, "GET", "/articles", query=query, renderer=render_article_list)
+
+
+def cmd_article_feed_list(args):
+    query = ["feed_id=%s" % args.feed_id]
+    for key in ("page_count", "view_mode", "primary_category", "min_quality_score"):
+        add_if_present_query(query, key, getattr(args, key))
+    call(args, "GET", "/articles/list", query=query, renderer=render_article_list)
+
+
+def cmd_article_nav(args):
+    call(args, "GET", "/articles/navinfo", query=["status=%s" % args.status])
+
+
+def cmd_article_counts(args):
+    call(args, "GET", "/articles/navcountinfo", query=["status=%s" % args.status])
 
 
 def cmd_article_status(args):
@@ -334,6 +521,16 @@ def cmd_article_ai_render(args):
     if args.force:
         body["force"] = 1
     call(args, "POST", "/articles/%s/ai-render/generate" % args.article_id, data=body)
+
+
+def cmd_article_ai_show(args):
+    query = []
+    add_if_present_query(query, "article_sub_id", args.article_sub_id)
+    call(args, "GET", "/articles/%s/ai-render" % args.article_id, query=query)
+
+
+def cmd_article_delete(args):
+    call(args, "DELETE", "/articles/%s" % args.article_sub_id)
 
 
 def cmd_feed_list(args):
@@ -405,13 +602,171 @@ def common(parser, token=True):
     parser.add_argument("--base-url", default=env_value("MONTAGE_GTD_BASE_URL", "TASK_GITEE_BASE_URL", DEFAULT_BASE_URL))
     parser.add_argument("--timeout", type=int, default=30)
     parser.add_argument("--raw", action="store_true")
+    parser.add_argument("--output", choices=("json", "table", "raw"), default="json")
     if token:
         parser.add_argument("--token", default=env_value("MONTAGE_GTD_TOKEN", "TASK_GITEE_TOKEN"))
+
+
+def add_task_create_arguments(parser):
+    parser.add_argument("--name")
+    parser.add_argument("--mode", type=int, choices=(1, 2, 3))
+    parser.add_argument("--priority", type=int, choices=(1, 2, 3, 4))
+    parser.add_argument("--remindtime")
+    parser.add_argument("--deadline")
+    parser.add_argument("--parent-task-id", type=int)
+    parser.add_argument("--plan-id", type=int)
+    parser.add_argument("--data")
+
+
+def add_task_update_arguments(parser):
+    parser.add_argument("task_id", type=int)
+    parser.add_argument("--data")
+    parser.add_argument("--name")
+    parser.add_argument("--content")
+    parser.add_argument("--mode", type=int, choices=(1, 2, 3))
+    parser.add_argument("--priority", type=int, choices=(1, 2, 3, 4))
+    parser.add_argument("--status", type=int, choices=(1, 2, 3))
+    parser.add_argument("--is-doing", type=int, choices=(0, 1))
+    parser.add_argument("--is-top", type=int, choices=(0, 1))
+    parser.add_argument("--parent-task-id", type=int)
+    parser.add_argument("--plan-id", type=int)
+    parser.add_argument("--rating", type=int, choices=(1, 2, 3, 4, 5))
+    parser.add_argument("--review-note")
+    parser.add_argument("--planned-start-time")
+    parser.add_argument("--planned-end-time")
+    parser.add_argument("--remindtime")
+    parser.add_argument("--deadline")
+
+
+def add_note_list_arguments(parser):
+    parser.add_argument("--type")
+    parser.add_argument("--add-content")
+    parser.add_argument("--source-type", type=int, choices=(1, 2, 3, 4))
+    parser.add_argument("--source-id", type=int)
+    parser.add_argument("--tag-id", type=int)
+    parser.add_argument("--keyword")
+
+
+def add_note_write_arguments(parser, update=False):
+    if update:
+        parser.add_argument("note_id", type=int)
+    parser.add_argument("--name", "--title", dest="name")
+    parser.add_argument("--content")
+    parser.add_argument("--content-file")
+    parser.add_argument("--status", type=int, choices=(1, 2))
+    parser.add_argument("--tag", dest="tags", action="append")
+    if not update:
+        parser.add_argument("--add-image")
+        parser.add_argument("--fname")
+        parser.add_argument("--source-type", type=int, choices=(1, 2, 3, 4))
+        parser.add_argument("--source-id", type=int)
+    parser.add_argument("--data")
+
+
+def add_article_list_arguments(parser):
+    parser.add_argument("--status", default="unread", choices=("unread", "read", "read_later", "star"))
+    parser.add_argument("--page-count", type=int)
+    parser.add_argument("--category-id", type=int)
+    parser.add_argument("--feed-id", type=int)
+    parser.add_argument(
+        "--view-mode",
+        choices=("all", "personalized", "tech", "product", "read_later_suggest", "low_priority"),
+    )
+    parser.add_argument("--primary-category")
+    parser.add_argument("--min-quality-score", type=int)
+
+
+def add_article_filter_arguments(parser):
+    parser.add_argument("--page-count", type=int)
+    parser.add_argument(
+        "--view-mode",
+        choices=("all", "personalized", "tech", "product", "read_later_suggest", "low_priority"),
+    )
+    parser.add_argument("--primary-category")
+    parser.add_argument("--min-quality-score", type=int)
+
+
+def add_grouped_task_parser(sub):
+    task = sub.add_parser("task", help="Manage tasks.")
+    commands = task.add_subparsers(dest="task_command", required=True)
+
+    p = commands.add_parser("list", aliases=["ls"]); common(p)
+    p.add_argument("--status", type=int, choices=(1, 2, 3)); p.add_argument("--page-count", type=int)
+    p.set_defaults(func=cmd_task_list)
+    p = commands.add_parser("show"); common(p); p.add_argument("task_id", type=int); p.set_defaults(func=cmd_task_show)
+    p = commands.add_parser("counts"); common(p); p.set_defaults(func=cmd_task_counts)
+    p = commands.add_parser("all"); common(p)
+    p.add_argument("--status", type=int, default=1, choices=(1, 2, 3))
+    p.add_argument("--mode", type=int, default=1, choices=(1, 2, 3)); p.set_defaults(func=cmd_task_all)
+    p = commands.add_parser("priority"); common(p)
+    p.add_argument("--status", type=int, default=1, choices=(1, 2, 3))
+    p.add_argument("--mode", type=int, default=1, choices=(1, 2, 3)); p.set_defaults(func=cmd_task_priority)
+    p = commands.add_parser("parents"); common(p)
+    p.add_argument("--exclude-task-id", type=int); p.set_defaults(func=cmd_task_parents)
+    p = commands.add_parser("create", aliases=["add"]); common(p); add_task_create_arguments(p); p.set_defaults(func=cmd_task_create)
+    p = commands.add_parser("update", aliases=["edit"]); common(p); add_task_update_arguments(p); p.set_defaults(func=cmd_task_update)
+    p = commands.add_parser("doing", aliases=["start"]); common(p); p.add_argument("task_id", type=int); p.set_defaults(func=cmd_task_doing)
+    p = commands.add_parser("stop"); common(p); p.add_argument("task_id", type=int); p.set_defaults(func=cmd_task_stop)
+    p = commands.add_parser("complete", aliases=["done"]); common(p)
+    p.add_argument("task_id", type=int); p.add_argument("--rating", type=int, choices=(1, 2, 3, 4, 5))
+    p.add_argument("--review-note"); p.set_defaults(func=cmd_task_complete)
+    p = commands.add_parser("reopen"); common(p); p.add_argument("task_id", type=int); p.set_defaults(func=cmd_task_reopen)
+    p = commands.add_parser("archive"); common(p); p.add_argument("task_id", type=int); p.set_defaults(func=cmd_task_archive)
+    p = commands.add_parser("delete", aliases=["rm"]); common(p)
+    p.add_argument("task_id", type=int); p.add_argument("--type"); p.set_defaults(func=cmd_task_delete)
+
+
+def add_grouped_note_parser(sub):
+    note = sub.add_parser("note", help="Manage notes.")
+    commands = note.add_subparsers(dest="note_command", required=True)
+
+    p = commands.add_parser("list", aliases=["ls", "search"]); common(p); add_note_list_arguments(p); p.set_defaults(func=cmd_note_list)
+    p = commands.add_parser("show"); common(p); p.add_argument("note_id", type=int); p.set_defaults(func=cmd_note_show)
+    p = commands.add_parser("create", aliases=["add"]); common(p); add_note_write_arguments(p); p.set_defaults(func=cmd_note_create)
+    p = commands.add_parser("update", aliases=["edit"]); common(p); add_note_write_arguments(p, update=True); p.set_defaults(func=cmd_note_update)
+    p = commands.add_parser("delete", aliases=["rm"]); common(p); p.add_argument("note_id", type=int); p.set_defaults(func=cmd_note_delete)
+    p = commands.add_parser("like"); common(p); p.add_argument("note_id", type=int); p.set_defaults(func=cmd_note_like)
+
+
+def add_grouped_article_parser(sub):
+    article = sub.add_parser("article", help="Manage reading queue articles.")
+    commands = article.add_subparsers(dest="article_command", required=True)
+
+    p = commands.add_parser("list", aliases=["ls"]); common(p); add_article_list_arguments(p); p.set_defaults(func=cmd_article_list)
+    p = commands.add_parser("by-feed"); common(p)
+    p.add_argument("feed_id", type=int); add_article_filter_arguments(p); p.set_defaults(func=cmd_article_feed_list)
+    p = commands.add_parser("show"); common(p); p.add_argument("article_id", type=int); p.set_defaults(func=cmd_article_show)
+    p = commands.add_parser("reader", aliases=["read"]); common(p)
+    p.add_argument("article_id", type=int); p.add_argument("--article-sub-id", type=int); p.set_defaults(func=cmd_article_reader)
+    p = commands.add_parser("status"); common(p)
+    p.add_argument("article_sub_id", type=int)
+    p.add_argument("status", choices=("read", "unread", "read_later", "star")); p.set_defaults(func=cmd_article_status)
+    p = commands.add_parser("batch-status"); common(p)
+    p.add_argument("status", choices=("read", "unread", "read_later", "star"))
+    p.add_argument("--ids"); p.add_argument("--feed-id", type=int); p.set_defaults(func=cmd_articles_status)
+    p = commands.add_parser("mark"); common(p)
+    p.add_argument("article_id", type=int); p.add_argument("--content", required=True); p.set_defaults(func=cmd_article_mark)
+    p = commands.add_parser("ai-show"); common(p)
+    p.add_argument("article_id", type=int); p.add_argument("--article-sub-id", type=int); p.set_defaults(func=cmd_article_ai_show)
+    p = commands.add_parser("ai-render", aliases=["ai-generate"]); common(p)
+    p.add_argument("article_id", type=int); p.add_argument("--article-sub-id", type=int)
+    p.add_argument("--template-style", default="magazine"); p.add_argument("--force", action="store_true")
+    p.set_defaults(func=cmd_article_ai_render)
+    p = commands.add_parser("nav"); common(p)
+    p.add_argument("--status", default="unread", choices=("unread", "read", "read_later", "star")); p.set_defaults(func=cmd_article_nav)
+    p = commands.add_parser("counts"); common(p)
+    p.add_argument("--status", default="unread", choices=("unread", "read", "read_later", "star")); p.set_defaults(func=cmd_article_counts)
+    p = commands.add_parser("delete", aliases=["rm"]); common(p)
+    p.add_argument("article_sub_id", type=int); p.set_defaults(func=cmd_article_delete)
 
 
 def build_parser():
     parser = argparse.ArgumentParser(description="Montage GTD 领域能力 CLI。")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    add_grouped_task_parser(sub)
+    add_grouped_note_parser(sub)
+    add_grouped_article_parser(sub)
 
     p = sub.add_parser("health"); common(p, token=False); p.set_defaults(func=cmd_health)
     p = sub.add_parser("me"); common(p); p.set_defaults(func=cmd_me)
@@ -434,20 +789,15 @@ def build_parser():
     p.set_defaults(func=cmd_pat_revoke)
 
     p = sub.add_parser("task-list"); common(p)
-    p.add_argument("--status"); p.add_argument("--page-count")
+    p.add_argument("--status", type=int, choices=(1, 2, 3)); p.add_argument("--page-count", type=int)
     p.set_defaults(func=cmd_task_list)
 
     p = sub.add_parser("task-create"); common(p)
-    p.add_argument("--name"); p.add_argument("--mode"); p.add_argument("--priority")
-    p.add_argument("--remindtime"); p.add_argument("--deadline")
-    p.add_argument("--parent-task-id"); p.add_argument("--plan-id"); p.add_argument("--data")
+    add_task_create_arguments(p)
     p.set_defaults(func=cmd_task_create)
 
     p = sub.add_parser("task-update"); common(p)
-    p.add_argument("task_id"); p.add_argument("--data")
-    p.add_argument("--status"); p.add_argument("--is-doing"); p.add_argument("--rating")
-    p.add_argument("--review-note"); p.add_argument("--planned-start-time")
-    p.add_argument("--planned-end-time"); p.add_argument("--remindtime"); p.add_argument("--deadline")
+    add_task_update_arguments(p)
     p.set_defaults(func=cmd_task_update)
 
     p = sub.add_parser("task-complete"); common(p)
@@ -462,17 +812,14 @@ def build_parser():
     p.set_defaults(func=cmd_task_delete)
 
     p = sub.add_parser("note-list"); common(p)
-    p.add_argument("--type"); p.add_argument("--add-content"); p.add_argument("--source-type")
-    p.add_argument("--source-id"); p.add_argument("--tag-id"); p.add_argument("--keyword")
+    add_note_list_arguments(p)
     p.set_defaults(func=cmd_note_list)
 
     p = sub.add_parser("note-create"); common(p)
-    p.add_argument("--name"); p.add_argument("--status"); p.add_argument("--add-image")
-    p.add_argument("--fname"); p.add_argument("--source-type"); p.add_argument("--source-id")
-    p.add_argument("--data"); p.set_defaults(func=cmd_note_create)
+    add_note_write_arguments(p); p.set_defaults(func=cmd_note_create)
 
     p = sub.add_parser("note-update"); common(p)
-    p.add_argument("note_id"); p.add_argument("--name"); p.add_argument("--status"); p.add_argument("--data")
+    add_note_write_arguments(p, update=True)
     p.set_defaults(func=cmd_note_update)
 
     p = sub.add_parser("note-delete"); common(p)
@@ -482,8 +829,7 @@ def build_parser():
     p.add_argument("note_id"); p.set_defaults(func=cmd_note_show)
 
     p = sub.add_parser("article-list"); common(p)
-    p.add_argument("--status", choices=["unread", "read", "read_later", "star"])
-    p.add_argument("--page-count"); p.add_argument("--category-id"); p.add_argument("--feed-id")
+    add_article_list_arguments(p)
     p.set_defaults(func=cmd_article_list)
 
     p = sub.add_parser("article-status"); common(p)

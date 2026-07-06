@@ -1,4 +1,4 @@
-# 文章和订阅能力
+# Article CLI
 
 ## 使用心智
 
@@ -14,7 +14,7 @@
 列出未读：
 
 ```bash
-montage_cli.py article-list --status unread --page-count 20
+montage article list --status unread --page-count 20
 ```
 
 状态可选：
@@ -27,15 +27,16 @@ montage_cli.py article-list --status unread --page-count 20
 按订阅源或分类筛选：
 
 ```bash
-montage_cli.py article-list --status unread --feed-id 12
-montage_cli.py article-list --status unread --category-id 3
+montage article list --status unread --feed-id 12
+montage article list --status unread --category-id 3
+montage article by-feed 12 --page-count 20
 ```
 
 查看文章：
 
 ```bash
-montage_cli.py article-show 1001
-montage_cli.py article-reader 1001 --article-sub-id 88
+montage article show 1001
+montage article reader 1001 --article-sub-id 88
 ```
 
 ## 状态流转
@@ -43,16 +44,16 @@ montage_cli.py article-reader 1001 --article-sub-id 88
 单篇状态：
 
 ```bash
-montage_cli.py article-status 88 --status read
-montage_cli.py article-status 88 --status read_later
-montage_cli.py article-status 88 --status star
+montage article status 88 read
+montage article status 88 read_later
+montage article status 88 star
 ```
 
 批量状态：
 
 ```bash
-montage_cli.py articles-status --ids 88,89,90 --status read
-montage_cli.py articles-status --feed-id 12 --status read
+montage article batch-status read --ids 88,89,90
+montage article batch-status read --feed-id 12
 ```
 
 判断规则：
@@ -68,25 +69,44 @@ montage_cli.py articles-status --feed-id 12 --status read
 创建文章摘录：
 
 ```bash
-montage_cli.py article-mark --article-id 1001 --content "这个观点可以用于任务拆解"
+montage article mark 1001 --content "这个观点可以用于任务拆解"
 ```
 
 生成 AI 阅读页：
 
 ```bash
-montage_cli.py article-ai-render 1001 --article-sub-id 88 --template-style magazine
+montage article ai-render 1001 --article-sub-id 88 --template-style magazine
 ```
 
 强制重新生成：
 
 ```bash
-montage_cli.py article-ai-render 1001 --article-sub-id 88 --force
+montage article ai-render 1001 --article-sub-id 88 --force
+```
+
+查看已有 AI 渲染状态：
+
+```bash
+montage article ai-show 1001 --article-sub-id 88
+```
+
+查看订阅导航和数量：
+
+```bash
+montage article nav --status unread
+montage article counts --status unread
+```
+
+删除个人阅读记录，参数必须是 `article_sub_id`：
+
+```bash
+montage article delete 88
 ```
 
 判断规则：
 
-- 用户说“划线、摘录、标注这句话”用 `article-mark`。
-- 用户说“生成阅读页、AI 整理、沉浸阅读”用 `article-ai-render`。
+- 用户说“划线、摘录、标注这句话”用 `article mark`。
+- 用户说“生成阅读页、AI 整理、沉浸阅读”用 `article ai-render`。
 - 如果用户只给文章 ID，生成阅读页时尽量先查 `article_sub_id`；查不到再请求用户提供。
 
 ## 订阅源
@@ -94,23 +114,23 @@ montage_cli.py article-ai-render 1001 --article-sub-id 88 --force
 列出订阅：
 
 ```bash
-montage_cli.py feed-list
+montage feed-list
 ```
 
 刷新订阅：
 
 ```bash
-montage_cli.py feed-refresh 12
+montage feed-refresh 12
 ```
 
 快速添加订阅：
 
 ```bash
-montage_cli.py feed-quickstore --url "https://example.com/feed.xml"
+montage feed-quickstore --url "https://example.com/feed.xml"
 ```
 
 复杂订阅字段用 `--data`：
 
 ```bash
-montage_cli.py feed-quickstore --data '{"url":"https://example.com/feed.xml","category_id":3}'
+montage feed-quickstore --data '{"url":"https://example.com/feed.xml","category_id":3}'
 ```

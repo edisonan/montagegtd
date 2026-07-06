@@ -1,4 +1,4 @@
-# 笔记能力
+# Note CLI
 
 ## 使用心智
 
@@ -17,52 +17,71 @@
 搜索笔记：
 
 ```bash
-montage_cli.py note-list --keyword "会议" --add-content 1
+montage note list --keyword "会议" --output table
 ```
 
-创建普通笔记：
+创建带标题、正文和标签的笔记：
 
 ```bash
-montage_cli.py note-create --name "今天复盘：上午被会议打断，下午完成文章阅读页优化。" --status 1
+montage note create \
+  --title "日复盘" \
+  --content "上午被会议打断，下午完成文章阅读页优化。" \
+  --tag 复盘 \
+  --tag 工作
+```
+
+长正文可从文件或标准输入读取：
+
+```bash
+montage note create --title "会议纪要" --content-file ./meeting.md
+printf '%s\n' "临时想法" | montage note create --content -
 ```
 
 创建来源关联笔记：
 
 ```bash
-montage_cli.py note-create \
-  --name "这篇文章的关键点是先建立输入系统" \
-  --status 1 \
-  --source-type 1 \
+montage note create \
+  --content "这篇文章的关键点是先建立输入系统" \
+  --source-type 2 \
   --source-id 1001
 ```
 
 查看详情：
 
 ```bash
-montage_cli.py note-show 45
+montage note show 45
 ```
 
 更新笔记：
 
 ```bash
-montage_cli.py note-update 45 --name "更新后的笔记内容" --status 1
+montage note update 45 --title "更新后的标题" --content "完整正文" --status 1
 ```
 
 删除笔记：
 
 ```bash
-montage_cli.py note-delete 45
+montage note delete 45
 ```
 
 ## 字段
 
 创建：
 
-- `name`：必填。当前后端把它作为主要笔记内容/标题字段。
-- `status`：必填。沿用平台状态。
+- `name` / `--title`：可选标题。
+- `content`：正文。创建时标题和正文至少有一个非空。
+- `status`：`1` 私有，`2` 公开；CLI 创建默认 `1`。
+- `tags` / `--tag`：标签名数组，可重复传入。
 - `add_image`：可选图片附加信息。
 - `fname`：可选语音文件名。
 - `source_type` / `source_id`：可选来源关联。
+
+来源类型：
+
+- `1`：专注。
+- `2`：文章。
+- `3`：任务。
+- `4`：手账。
 
 查询：
 
@@ -74,8 +93,9 @@ montage_cli.py note-delete 45
 
 ## 判断规则
 
-- 用户说“记一下、保存一条、做个记录”时用 `note-create`。
+- 用户说“记一下、保存一条、做个记录”时用 `note create`。
+- 更新接口是完整内容更新：必须同时提供 `status`，并提供最终标题/正文，不要假设 PATCH 语义。
 - 用户说“提醒我、帮我做、安排”时不要创建笔记，应该转成任务。
-- 用户要求“从这篇文章摘出来保存”时，如果是文章划线用 `article-mark`；如果是个人理解或总结用 `note-create` 并带来源。
+- 用户要求“从这篇文章摘出来保存”时，如果是文章划线用 `article mark`；如果是个人理解或总结用 `note create` 并带来源。
 - 创建笔记可能触发积分和成就评估。
 - 音频接口只支持 MP3，`GET /notes/{id}/record` 返回文件，不是 JSON。

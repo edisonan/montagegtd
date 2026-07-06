@@ -1,4 +1,4 @@
-# 待办任务能力
+# Task CLI
 
 ## 使用心智
 
@@ -10,24 +10,27 @@
 - 完成：把状态改成完成，同时可写评分和复盘。
 - 归档/删除：折叠、删除或按后端 `type` 参数执行删除语义。
 
-## 常用命令
+## 命令
 
 列出未完成任务：
 
 ```bash
-montage_cli.py task-list --status 1 --page-count 20
+montage task list --status 1 --page-count 20
 ```
 
-创建任务：
+查看详情、计数、优先级和可选父任务：
 
 ```bash
-montage_cli.py task-create --name "写周报" --mode 1 --priority 2
+montage task show 123
+montage task counts
+montage task priority --status 1 --mode 1
+montage task parents --exclude-task-id 123
 ```
 
-创建带提醒和截止时间的任务：
+创建任务；`mode` 默认 `1`：
 
 ```bash
-montage_cli.py task-create \
+montage task create \
   --name "提交发票" \
   --mode 1 \
   --priority 3 \
@@ -38,19 +41,29 @@ montage_cli.py task-create \
 设为正在做：
 
 ```bash
-montage_cli.py task-doing 123
+montage task doing 123
+montage task stop 123
 ```
 
 完成任务并复盘：
 
 ```bash
-montage_cli.py task-complete 123 --rating 5 --review-note "按计划完成，后续可模板化"
+montage task complete 123 --rating 5 --review-note "按计划完成，后续可模板化"
 ```
 
-更新任务任意字段：
+恢复、归档、删除：
 
 ```bash
-montage_cli.py task-update 123 --data '{"deadline":"2026-06-30 18:00:00"}'
+montage task reopen 123
+montage task archive 123
+montage task delete 123
+```
+
+更新任务字段：
+
+```bash
+montage task update 123 --priority 3 --deadline "2026-06-30 18:00:00"
+montage task update 123 --data '{"parent_task_id":45,"is_top":1}'
 ```
 
 ## 字段和状态
@@ -64,6 +77,7 @@ montage_cli.py task-update 123 --data '{"deadline":"2026-06-30 18:00:00"}'
 - `deadline`：截止时间，格式 `YYYY-mm-dd HH:MM:SS`。
 - `parent_task_id`：父任务。
 - `plan_id`：所属计划。
+- `mode`：`1` 工作，`2` 生活，`3` 学习。
 
 更新任务：
 
@@ -72,19 +86,20 @@ montage_cli.py task-update 123 --data '{"deadline":"2026-06-30 18:00:00"}'
 - `planned_start_time` / `planned_end_time`：计划执行时间。
 - `rating`：`1..5`。
 - `review_note`：复盘文字。
+- `name` / `content` / `priority` / `mode` / `parent_task_id` / `plan_id` / `is_top` 也可更新。
 
 ## 判断规则
 
-- 用户说“完成、搞定、已做完”时优先用 `task-complete`，不要只改标题。
-- 用户说“现在做、正在做、开始处理”时用 `task-doing`。
+- 用户说“完成、搞定、已做完”时优先用 `task complete`，不要只改标题。
+- 用户说“现在做、正在做、开始处理”时用 `task doing`。
 - 用户只给自然语言日期时，先转换成 `YYYY-mm-dd HH:MM:SS`；无法确定时问一句。
 - 完成任务会触发积分逻辑，重复完成前要确认当前状态。
+- `task complete` 使用更新接口，触发任务完成积分；`task delete --type finish` 使用旧完成语义并会写手账，不要混用。
 - 如果用户要求批量处理，先列出候选任务并确认 ID，除非用户已经给出明确 ID 列表。
 
 ## 兜底调用
 
 ```bash
-montage_cli.py request GET /tasks/tab-counts
-montage_cli.py request GET /tasks/priority --query status=1 --query mode=1
-montage_cli.py request GET /tasks/parent-tasks --query exclude_task_id=123
+montage request GET /tasks/tab-counts
+montage request GET /tasks/priority --query status=1 --query mode=1
 ```
