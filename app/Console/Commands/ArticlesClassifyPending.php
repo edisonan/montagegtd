@@ -31,11 +31,12 @@ class ArticlesClassifyPending extends Command
         $result = $this->articleAiService->processPendingTasks($limit);
 
         $this->info(sprintf(
-            'processed=%d succeeded=%d failed=%d skipped=%d',
+            'processed=%d succeeded=%d failed=%d skipped=%d throttled=%d',
             (int)$result['processed'],
             (int)$result['succeeded'],
             (int)$result['failed'],
-            (int)$result['skipped']
+            (int)$result['skipped'],
+            (int)$result['throttled']
         ));
 
         return 0;

@@ -70,6 +70,7 @@ class ArticleAiService
         $succeeded = 0;
         $failed = 0;
         $skipped = 0;
+        $throttled = 0;
 
         foreach ($tasks as $task) {
             $processed++;
@@ -79,6 +80,9 @@ class ArticleAiService
                 $succeeded++;
             } elseif ($result['status'] === 'skipped') {
                 $skipped++;
+            } elseif ($result['status'] === 'throttled') {
+                $throttled++;
+                break;
             } else {
                 $failed++;
             }
@@ -89,6 +93,7 @@ class ArticleAiService
             'succeeded' => $succeeded,
             'failed' => $failed,
             'skipped' => $skipped,
+            'throttled' => $throttled,
         );
     }
 
@@ -120,6 +125,17 @@ class ArticleAiService
             $classification = $this->classificationService->classify($article);
             if (!$classification['success'] || empty($classification['result'])) {
                 $status = $classification['meta']['status'] ?? 'failed';
+
+                if ($status === 'throttled') {
+                    $this->taskRepository->update($task->id, array(
+                        'status' => 'pending',
+                        'scheduled_at' => date('Y-m-d H:i:s', time() + 300),
+                        'started_at' => null,
+                        'error_message' => $classification['error'] ?? 'classification throttled',
+                    ));
+
+                    return array('status' => 'throttled', 'message' => $classification['error'] ?? 'classification throttled');
+                }
 
                 $this->taskRepository->update($task->id, array(
                     'status' => $status,

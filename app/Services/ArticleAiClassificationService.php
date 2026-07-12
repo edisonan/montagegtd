@@ -46,6 +46,7 @@ class ArticleAiClassificationService
             array(
                 'response_format' => array('type' => 'json_object'),
                 'timeout' => 120,
+                'throttle_minutes' => 5,
             )
         );
 

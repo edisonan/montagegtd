@@ -72,7 +72,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('feed_common', array(
             1
         ))->everyTenMinutes();
-        $schedule->command('articles:classify-pending --limit=20 --backfill=50')->everyTenMinutes();
+        $schedule->command('articles:classify-pending --limit=20 --backfill=50')->everyFiveMinutes();
         $schedule->command('feed_common', array(
             2
         ))->hourly();

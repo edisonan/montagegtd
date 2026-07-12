@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LlmModel;
 use App\Models\LlmProviderCredential;
 use App\Models\LlmUsageLog;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 class LlmStructuredTaskService
@@ -39,6 +40,23 @@ class LlmStructuredTaskService
                     'fallback_only' => true,
                 ),
             );
+        }
+
+        $throttleMinutes = max(0, (int)($options['throttle_minutes'] ?? 0));
+        if ($throttleMinutes > 0) {
+            $throttleKey = 'llm-task-throttle:' . $taskType;
+            if (!Cache::add($throttleKey, time(), $throttleMinutes)) {
+                return array(
+                    'success' => false,
+                    'content' => null,
+                    'error' => '任务请求频率限制，请稍后重试',
+                    'meta' => array(
+                        'task_type' => $taskType,
+                        'status' => 'throttled',
+                        'retry_after' => $throttleMinutes * 60,
+                    ),
+                );
+            }
         }
 
         $payload = array(
