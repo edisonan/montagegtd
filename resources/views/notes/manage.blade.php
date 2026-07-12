@@ -175,6 +175,7 @@
             border-radius: 50%;
             background: #ef4444;
             flex: 0 0 auto;
+            cursor: help;
         }
 
         .status-dot.public {
@@ -852,10 +853,11 @@
                 const title = getNoteTitle(note);
                 const preview = stripHtml(note.content || note.name || '');
                 const isPublic = Number(note.status || 1) === 2;
+                const statusLabel = isPublic ? '公开' : '私密';
                 return '<button type="button" class="note-list-item ' + (active ? 'active' : '') + '" onclick="openNote(' + Number(note.id) + ')">' +
-                    '<div class="note-list-title"><i class="fas fa-file-alt text-gray-400"></i><span>' + escapeHtml(title) + '</span></div>' +
+                    '<div class="note-list-title"><span class="status-dot ' + (isPublic ? 'public' : '') + '" title="' + statusLabel + '" aria-label="' + statusLabel + '"></span><i class="fas fa-file-alt text-gray-400"></i><span>' + escapeHtml(title) + '</span></div>' +
                     '<div class="note-list-preview">' + escapeHtml(preview || '空笔记') + '</div>' +
-                    '<div class="note-list-meta"><span>' + escapeHtml(formatRelativeTime(note.updated_at || note.created_at)) + '</span><span class="status-dot ' + (isPublic ? 'public' : '') + '"></span></div>' +
+                    '<div class="note-list-meta"><span>' + escapeHtml(formatRelativeTime(note.updated_at || note.created_at)) + '</span></div>' +
                     '</button>';
             }).join('');
         }
