@@ -55,6 +55,13 @@ Route::group ( [
     $router->post('applications/{id}/codes/{codeId}/ai-generate', 'ApplicationController@generateCode');
     $router->get('applications/{id}/codes/{codeId}/history', 'ApplicationController@getCodeHistory');
     $router->post('applications/{id}/codes/{codeId}/history/{historyId}/rollback', 'ApplicationController@rollbackCodeHistory');
+    $router->get('applications/{id}/virtual-tables', 'ApplicationController@virtualTables');
+    $router->post('applications/{id}/virtual-tables', 'ApplicationController@storeVirtualTable');
+    $router->post('applications/{id}/virtual-tables/{tableId}/fields', 'ApplicationController@storeVirtualField');
+    $router->get('applications/{id}/virtual-tables/{tableId}/records', 'ApplicationController@virtualTableRecords');
+    $router->post('applications/{id}/virtual-tables/{tableId}/records', 'ApplicationController@storeVirtualRecord');
+    $router->put('applications/{id}/virtual-tables/{tableId}/records/{recordId}', 'ApplicationController@updateVirtualRecord');
+    $router->delete('applications/{id}/virtual-tables/{tableId}/records/{recordId}', 'ApplicationController@deleteVirtualRecord');
     $router->get('applications/{id}', 'ApplicationController@show');
     $router->get('applications', 'ApplicationController@index');
 } );

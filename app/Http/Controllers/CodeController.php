@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\OnlineInfo;
 use App\Models\Code;
+use App\Services\AppCodeDatabase;
+use ReflectionFunction;
 use Throwable;
 
 /**
@@ -47,7 +49,14 @@ class CodeController extends Controller
                 // 对于 eval 的使用，尽量避免，因为它可能带来安全风险
                 // 以下是一种临时处理方式，更安全的做法是将代码逻辑封装在类或函数中调用
                 @eval($phpContent);
-                $resultData = myFunction($data);
+                $db = new AppCodeDatabase($codeInfo->application);
+                $resultData = null;
+                if (function_exists('myFunction')) {
+                    $function = new ReflectionFunction('myFunction');
+                    $resultData = $function->getNumberOfParameters() >= 2
+                        ? myFunction($data, $db)
+                        : myFunction($data);
+                }
                 $result['result_data'] = $resultData;
                 $result['result_code'] = '0000';
                 $result['result_msg'] = 'success';

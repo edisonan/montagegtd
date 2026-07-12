@@ -4,12 +4,15 @@ namespace App\Admin\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\AppVirtualTable;
 use App\Models\Code;
 use App\Models\CodeHistory;
+use App\Services\AppVirtualTableService;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use InvalidArgumentException;
 use Throwable;
 
 class ApplicationController extends Controller
@@ -36,14 +39,25 @@ class ApplicationController extends Controller
                     'codes_count' => (int) $application->codes_count,
                     'updated_at' => optional($application->updated_at)->toDateTimeString(),
                     'preview_url' => $entry ? $this->buildPreviewUrl($application->slug, $entry->path) : null,
+                    'has_entry' => $entry ? true : false,
+                    'entry_path' => $entry ? $entry->path : null,
                 );
             });
 
-        return Admin::content(function (Content $content) use ($applications) {
+        $stats = array(
+            'total' => $applications->count(),
+            'running' => $applications->where('status', 2)->count(),
+            'draft' => $applications->where('status', 1)->count(),
+            'files' => $applications->sum('codes_count'),
+            'with_entry' => $applications->where('has_entry', true)->count(),
+        );
+
+        return Admin::content(function (Content $content) use ($applications, $stats) {
             $content->header('应用工作台');
             $content->description('卡片列表');
             $content->body(view('admin.applications.index', array(
                 'applications' => $applications,
+                'stats' => $stats,
                 'statusOptions' => $this->statusOptions(),
             )));
         });
@@ -367,6 +381,183 @@ class ApplicationController extends Controller
         ));
     }
 
+    public function virtualTables($id)
+    {
+        $application = Application::findOrFail($id);
+        $service = new AppVirtualTableService();
+
+        $tables = $service->listTablesForApplication($application)
+            ->map(function (AppVirtualTable $table) use ($service) {
+                return $service->serializeTable($table);
+            })
+            ->values();
+
+        return response()->json(array(
+            'code' => 9999,
+            'message' => 'success',
+            'data' => array(
+                'tables' => $tables,
+            ),
+        ));
+    }
+
+    public function storeVirtualTable(Request $request, $id)
+    {
+        $application = Application::findOrFail($id);
+        $data = $this->validate($request, array(
+            'name' => 'required|string|max:120',
+            'slug' => 'required|string|max:80',
+            'description' => 'nullable|string',
+            'status' => 'nullable|integer|in:0,1',
+        ));
+
+        $service = new AppVirtualTableService();
+
+        try {
+            $table = $service->createTable($application, $data)->load('fields');
+            return response()->json(array(
+                'code' => 9999,
+                'message' => 'success',
+                'data' => array(
+                    'table' => $service->serializeTable($table),
+                ),
+            ));
+        } catch (InvalidArgumentException $e) {
+            return $this->jsonError($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            return $this->jsonError('创建虚拟表失败', 500, $e);
+        }
+    }
+
+    public function storeVirtualField(Request $request, $id, $tableId)
+    {
+        $application = Application::findOrFail($id);
+        $service = new AppVirtualTableService();
+
+        $data = $this->validate($request, array(
+            'name' => 'required|string|max:120',
+            'slug' => 'required|string|max:80',
+            'type' => 'required|string|in:string,text,integer,decimal,boolean,date,datetime,json',
+            'length' => 'nullable|integer|min:1|max:1000',
+            'nullable' => 'nullable|integer|in:0,1',
+            'default_enabled' => 'nullable|integer|in:0,1',
+            'default_value' => 'nullable|string|max:255',
+            'indexed' => 'nullable|integer|in:0,1',
+            'description' => 'nullable|string',
+            'sort_order' => 'nullable|integer|min:0',
+            'status' => 'nullable|integer|in:0,1',
+        ));
+
+        try {
+            $table = $service->findTableForApplication($application, $tableId);
+            $field = $service->createField($table, $data);
+            $table = $table->fresh()->load('fields');
+
+            return response()->json(array(
+                'code' => 9999,
+                'message' => 'success',
+                'data' => array(
+                    'field' => $service->serializeField($field),
+                    'table' => $service->serializeTable($table),
+                ),
+            ));
+        } catch (InvalidArgumentException $e) {
+            return $this->jsonError($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            return $this->jsonError('添加字段失败', 500, $e);
+        }
+    }
+
+    public function virtualTableRecords(Request $request, $id, $tableId)
+    {
+        $application = Application::findOrFail($id);
+        $service = new AppVirtualTableService();
+
+        try {
+            $table = $service->findTableForApplication($application, $tableId);
+            $records = $service->listRecords($table, $request->query('page', 1), $request->query('per_page', 100));
+
+            return response()->json(array(
+                'code' => 9999,
+                'message' => 'success',
+                'data' => $records,
+            ));
+        } catch (InvalidArgumentException $e) {
+            return $this->jsonError($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            return $this->jsonError('加载记录失败', 500, $e);
+        }
+    }
+
+    public function storeVirtualRecord(Request $request, $id, $tableId)
+    {
+        $application = Application::findOrFail($id);
+        $service = new AppVirtualTableService();
+
+        try {
+            $table = $service->findTableForApplication($application, $tableId);
+            $record = $service->createRecord($table, $request->except(array('_token', '_method')));
+
+            return response()->json(array(
+                'code' => 9999,
+                'message' => 'success',
+                'data' => array(
+                    'record' => $record,
+                ),
+            ));
+        } catch (InvalidArgumentException $e) {
+            return $this->jsonError($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            return $this->jsonError('保存记录失败', 500, $e);
+        }
+    }
+
+    public function updateVirtualRecord(Request $request, $id, $tableId, $recordId)
+    {
+        $application = Application::findOrFail($id);
+        $service = new AppVirtualTableService();
+
+        try {
+            $table = $service->findTableForApplication($application, $tableId);
+            $record = $service->updateRecord($table, $recordId, $request->except(array('_token', '_method')));
+
+            return response()->json(array(
+                'code' => 9999,
+                'message' => 'success',
+                'data' => array(
+                    'record' => $record,
+                ),
+            ));
+        } catch (InvalidArgumentException $e) {
+            return $this->jsonError($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            return $this->jsonError('保存记录失败', 500, $e);
+        }
+    }
+
+    public function deleteVirtualRecord($id, $tableId, $recordId)
+    {
+        $application = Application::findOrFail($id);
+        $service = new AppVirtualTableService();
+
+        try {
+            $table = $service->findTableForApplication($application, $tableId);
+            $deleted = $service->deleteRecord($table, $recordId);
+
+            return response()->json(array(
+                'code' => 9999,
+                'message' => 'success',
+                'data' => array(
+                    'deleted' => (int) $deleted,
+                ),
+            ));
+        } catch (InvalidArgumentException $e) {
+            return $this->jsonError($e->getMessage(), 422);
+        } catch (Throwable $e) {
+            return $this->jsonError('删除记录失败', 500, $e);
+        }
+    }
+
     private function serializeApplication(Application $application)
     {
         return array(
@@ -404,6 +595,21 @@ class ApplicationController extends Controller
             'preview_url' => $this->buildPreviewUrl($application->slug, $code->path),
             'is_previewable' => in_array((int) $code->type, array(2, 3, 4, 5), true),
         );
+    }
+
+    private function jsonError($message, $status = 422, Throwable $exception = null)
+    {
+        if ($exception) {
+            \Log::error($message . ': ' . $exception->getMessage(), array(
+                'exception' => get_class($exception),
+            ));
+        }
+
+        return response()->json(array(
+            'code' => 1001,
+            'message' => $message,
+            'data' => array(),
+        ), $status);
     }
 
     private function buildPreviewUrl($appSlug, $path)

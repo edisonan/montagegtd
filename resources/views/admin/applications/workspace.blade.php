@@ -10,7 +10,10 @@
                 <span class="workspace-glance-pill">{{ count($files) }} 个文件</span>
                 <span class="workspace-glance-pill workspace-glance-pill-accent">实时预览</span>
             </div>
+            <button id="quickSaveBtn" class="workspace-btn workspace-btn-primary" type="button">保存</button>
+            <button id="quickPreviewBtn" class="workspace-btn workspace-btn-light" type="button">预览</button>
             <button id="toggleMetaBtn" class="workspace-btn workspace-btn-light" type="button">基础信息</button>
+            <button id="toggleDataTablesBtn" class="workspace-btn workspace-btn-light" type="button">数据表</button>
             <a href="/admin/applications" class="workspace-btn workspace-btn-light">返回应用列表</a>
         </div>
     </div>
@@ -41,6 +44,76 @@
                     @endforeach
                 </select>
             </label>
+        </div>
+    </div>
+
+    <div id="dataTablesPanel" class="workspace-panel workspace-data-panel" style="display:none;">
+        <div class="workspace-panel-header">
+            <div class="workspace-panel-titlebox">
+                <h3>虚拟数据表</h3>
+                <span class="workspace-panel-subtitle">界面定义表和字段，系统自动创建 app_vt_ 前缀物理表</span>
+            </div>
+            <button id="reloadVirtualTablesBtn" class="workspace-btn workspace-btn-light" type="button">刷新</button>
+        </div>
+
+        <div class="workspace-data-layout">
+            <aside class="workspace-data-left">
+                <div class="workspace-data-create">
+                    <h4>新建虚拟表</h4>
+                    <input id="vtName" class="workspace-input" type="text" placeholder="表名称，例如：客户">
+                    <input id="vtSlug" class="workspace-input" type="text" placeholder="标识，例如：customer">
+                    <textarea id="vtDescription" class="workspace-textarea" rows="3" placeholder="表说明"></textarea>
+                    <button id="createVirtualTableBtn" class="workspace-btn workspace-btn-primary" type="button">创建虚拟表</button>
+                </div>
+                <div id="virtualTableList" class="workspace-vt-list"></div>
+            </aside>
+
+            <section class="workspace-data-main">
+                <div id="virtualTableEmpty" class="workspace-vt-empty">选择或创建一个虚拟表</div>
+                <div id="virtualTableDetail" style="display:none;">
+                    <div class="workspace-vt-head">
+                        <div>
+                            <h4 id="selectedVtName">-</h4>
+                            <p id="selectedVtMeta">-</p>
+                        </div>
+                        <span id="selectedVtPhysical" class="workspace-meta-badge workspace-meta-badge-soft">-</span>
+                    </div>
+
+                    <div class="workspace-vt-section">
+                        <div class="workspace-vt-section-head">
+                            <h4>字段定义</h4>
+                            <span>字段会同步为物理表列，列名统一加 f_ 前缀</span>
+                        </div>
+                        <div class="workspace-field-form">
+                            <input id="vfName" class="workspace-input" type="text" placeholder="字段名，例如：客户名称">
+                            <input id="vfSlug" class="workspace-input" type="text" placeholder="字段标识，例如：name">
+                            <select id="vfType" class="workspace-input">
+                                @foreach($virtualTableFieldTypeOptions as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <input id="vfLength" class="workspace-input" type="number" min="1" max="1000" placeholder="长度，可选">
+                            <label class="workspace-inline-check"><input id="vfNullable" type="checkbox" checked> 可空</label>
+                            <label class="workspace-inline-check"><input id="vfIndexed" type="checkbox"> 建索引</label>
+                            <button id="createVirtualFieldBtn" class="workspace-btn workspace-btn-primary" type="button">添加字段</button>
+                        </div>
+                        <div id="virtualFieldList" class="workspace-field-list"></div>
+                    </div>
+
+                    <div class="workspace-vt-section">
+                        <div class="workspace-vt-section-head">
+                            <h4>数据记录</h4>
+                            <span>这里的增删改查最终落到对应物理表</span>
+                        </div>
+                        <div id="recordForm" class="workspace-record-form"></div>
+                        <div class="workspace-record-actions">
+                            <button id="createRecordBtn" class="workspace-btn workspace-btn-primary" type="button">新增记录</button>
+                            <button id="reloadRecordsBtn" class="workspace-btn workspace-btn-light" type="button">刷新记录</button>
+                        </div>
+                        <div id="recordList" class="workspace-record-list"></div>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -77,12 +150,15 @@
                     </div>
                     <div class="workspace-header-actions">
                         <span id="saveState" class="workspace-save-state">已保存</span>
+                        <button id="toggleFilesBtn" class="workspace-btn workspace-btn-light" type="button">文件</button>
                         <button id="openHistoryBtn" class="workspace-btn workspace-btn-light" type="button">历史版本</button>
                         <button id="formatCodeBtn" class="workspace-btn workspace-btn-light" type="button">格式化</button>
                         <button id="openAiBtn" class="workspace-btn workspace-btn-light" type="button">AI 生成/优化</button>
+                        <button id="toggleEditorFullscreenBtn" class="workspace-btn workspace-btn-light" type="button">全屏</button>
                         <button id="saveFileBtn" class="workspace-btn workspace-btn-primary" type="button">保存文件</button>
                     </div>
                 </div>
+                <div id="workspaceTabs" class="workspace-tabs"></div>
                 <div class="workspace-editor-meta">
                     <label>
                         <span>标题</span>
@@ -119,16 +195,32 @@
                 <div class="workspace-editor-wrap">
                     <div id="codeEditor"></div>
                 </div>
+                <div class="workspace-statusbar">
+                    <span id="statusPath">未选择文件</span>
+                    <span id="statusType">-</span>
+                    <span id="statusSize">0 字符</span>
+                    <span id="statusUpdated">-</span>
+                    <span class="workspace-shortcut">⌘/Ctrl + S 保存</span>
+                </div>
             </div>
         </section>
 
         <aside class="workspace-preview">
             <div class="workspace-panel workspace-preview-panel">
                 <div class="workspace-panel-header">
-                    <h3>预览</h3>
-                    <span id="previewHint" class="workspace-preview-hint">当前文件可预览时显示</span>
+                    <div class="workspace-panel-titlebox">
+                        <h3>预览</h3>
+                        <span id="previewHint" class="workspace-preview-hint">当前文件可预览时显示</span>
+                    </div>
+                    <div class="workspace-device-switch">
+                        <button class="workspace-device is-active" type="button" data-device="desktop">桌面</button>
+                        <button class="workspace-device" type="button" data-device="tablet">平板</button>
+                        <button class="workspace-device" type="button" data-device="phone">手机</button>
+                    </div>
                 </div>
-                <iframe id="previewFrame" class="workspace-iframe" title="preview"></iframe>
+                <div class="workspace-preview-canvas">
+                    <iframe id="previewFrame" class="workspace-iframe" title="preview"></iframe>
+                </div>
             </div>
         </aside>
     </div>
@@ -229,6 +321,7 @@
 </div>
 
 <style>
+    .content-wrapper .content { padding-top: 12px; }
     .workspace-shell {
         --ws-bg: #f6f9fc;
         --ws-panel: rgba(255, 255, 255, 0.94);
@@ -243,7 +336,7 @@
         --ws-soft-blue: #eef6ff;
         --ws-soft-green: #eef7f3;
         --ws-soft-slate: #f3f6f9;
-        padding: 6px 2px 24px;
+        padding: 0 0 24px;
         color: var(--ws-text);
     }
     .workspace-topbar {
@@ -252,7 +345,7 @@
         align-items: center;
         gap: 16px;
         margin-bottom: 18px;
-        padding: 22px 24px;
+        padding: 18px 22px;
         border-radius: 20px;
         background:
             radial-gradient(circle at top right, rgba(95, 154, 224, 0.16), transparent 32%),
@@ -262,9 +355,9 @@
         box-shadow: 0 18px 42px rgba(87, 113, 138, 0.09);
     }
     .workspace-kicker { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ws-secondary); margin-bottom: 8px; }
-    .workspace-titleblock h2 { margin: 0; font-size: 30px; color: var(--ws-text); }
+    .workspace-titleblock h2 { margin: 0; font-size: 28px; color: var(--ws-text); }
     .workspace-slug { margin-top: 6px; color: var(--ws-muted); }
-    .workspace-top-actions { display: flex; gap: 10px; }
+    .workspace-top-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
     .workspace-app-glance { display: flex; align-items: center; gap: 8px; margin-right: 4px; }
     .workspace-glance-pill {
         display: inline-flex;
@@ -283,11 +376,24 @@
     }
     .workspace-layout {
         display: grid;
-        grid-template-columns: 280px minmax(0, 1fr) 32%;
+        grid-template-columns: minmax(640px, 2fr) minmax(360px, 1fr);
         gap: 16px;
         align-items: start;
     }
     .workspace-sidebar, .workspace-main, .workspace-preview { min-width: 0; }
+    .workspace-sidebar {
+        position: fixed;
+        top: 80px;
+        bottom: 24px;
+        left: 24px;
+        width: 320px;
+        max-width: calc(100vw - 48px);
+        z-index: 2100;
+        display: none;
+        overflow: auto;
+        box-shadow: 0 24px 60px rgba(35, 50, 72, .18);
+    }
+    .workspace-shell.files-open .workspace-sidebar { display: block; }
     .workspace-panel {
         background: var(--ws-panel);
         border: 1px solid var(--ws-border);
@@ -307,6 +413,196 @@
     .workspace-panel-titlebox { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
     .workspace-panel-subtitle { font-size: 12px; color: var(--ws-muted); }
     .workspace-meta-panel { margin-bottom: 16px; }
+    .workspace-data-panel { margin-bottom: 16px; overflow: hidden; }
+    .workspace-data-layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 0;
+        min-height: 520px;
+    }
+    .workspace-data-left {
+        border-right: 1px solid #e9f0f5;
+        background: #f8fbfd;
+        padding: 16px;
+    }
+    .workspace-data-create {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px;
+        border-radius: 16px;
+        background: #fff;
+        border: 1px solid var(--ws-border);
+        margin-bottom: 14px;
+    }
+    .workspace-data-create h4,
+    .workspace-vt-section h4,
+    .workspace-vt-head h4 {
+        margin: 0;
+        font-weight: 800;
+        color: var(--ws-text);
+    }
+    .workspace-vt-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 520px;
+        overflow: auto;
+    }
+    .workspace-vt-item {
+        border: 1px solid var(--ws-border);
+        border-radius: 15px;
+        background: #fff;
+        padding: 12px;
+        cursor: pointer;
+    }
+    .workspace-vt-item.active {
+        border-color: #9bc9c8;
+        background: linear-gradient(135deg, var(--ws-soft-green) 0%, var(--ws-soft-blue) 100%);
+    }
+    .workspace-vt-item-title {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-weight: 800;
+    }
+    .workspace-vt-item-meta {
+        margin-top: 6px;
+        color: var(--ws-muted);
+        font-size: 12px;
+        word-break: break-all;
+    }
+    .workspace-data-main {
+        padding: 18px;
+        min-width: 0;
+    }
+    .workspace-vt-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 420px;
+        border: 1px dashed var(--ws-border-strong);
+        border-radius: 18px;
+        color: var(--ws-muted);
+        background: #fbfdff;
+    }
+    .workspace-vt-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        padding: 16px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #fff 0%, #f5faff 100%);
+        border: 1px solid var(--ws-border);
+    }
+    .workspace-vt-head p {
+        margin: 6px 0 0;
+        color: var(--ws-muted);
+    }
+    .workspace-vt-section {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid var(--ws-border);
+    }
+    .workspace-vt-section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: var(--ws-muted);
+        font-size: 12px;
+    }
+    .workspace-field-form,
+    .workspace-record-form {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        align-items: center;
+    }
+    .workspace-inline-check {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        color: #4f6478;
+        font-weight: 700;
+        margin: 0;
+    }
+    .workspace-field-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .workspace-field-pill {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 120px;
+        border: 1px solid #e0e9f2;
+        border-radius: 13px;
+        padding: 9px 10px;
+        background: #f8fbfd;
+    }
+    .workspace-field-pill strong { font-size: 13px; }
+    .workspace-field-pill span { color: var(--ws-muted); font-size: 12px; }
+    .workspace-record-form label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        color: #4f6478;
+        font-weight: 700;
+        margin: 0;
+    }
+    .workspace-record-actions {
+        display: flex;
+        gap: 10px;
+        margin: 12px 0;
+    }
+    .workspace-record-list {
+        overflow: auto;
+        border: 1px solid #e9f0f5;
+        border-radius: 14px;
+    }
+    .workspace-record-table {
+        width: 100%;
+        min-width: 720px;
+        border-collapse: collapse;
+        background: #fff;
+    }
+    .workspace-record-table th,
+    .workspace-record-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #edf2f7;
+        text-align: left;
+        vertical-align: top;
+        font-size: 12px;
+    }
+    .workspace-record-table th {
+        background: #f8fbfd;
+        color: #52667c;
+        font-weight: 800;
+    }
+    .workspace-record-table td {
+        color: #31445a;
+        max-width: 260px;
+        word-break: break-word;
+    }
+    .workspace-record-table .workspace-record-op {
+        white-space: nowrap;
+        width: 120px;
+    }
+    .workspace-link-btn {
+        border: 0;
+        background: transparent;
+        color: var(--ws-secondary);
+        font-weight: 800;
+        padding: 0 6px 0 0;
+        cursor: pointer;
+    }
     .workspace-form-grid, .workspace-editor-meta {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -379,8 +675,48 @@
         color: var(--ws-primary-deep);
         border-color: #a7cfd0;
     }
+    .workspace-tabs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 12px 18px 0;
+        background: linear-gradient(180deg, #fff 0%, #f8fbfd 100%);
+    }
+    .workspace-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 220px;
+        border: 1px solid var(--ws-border);
+        border-bottom-color: #cbd8e5;
+        border-radius: 12px 12px 0 0;
+        background: #eef3f8;
+        color: #607287;
+        padding: 9px 11px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .workspace-tab.active {
+        background: #172033;
+        border-color: #172033;
+        color: #fff;
+    }
+    .workspace-tab.dirty:after {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #ffc857;
+        flex: 0 0 auto;
+    }
+    .workspace-tab-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     .workspace-file-list {
-        max-height: calc(100vh - 290px);
+        max-height: calc(100vh - 310px);
         overflow: auto;
         padding: 0 12px 12px;
     }
@@ -475,6 +811,7 @@
         white-space: nowrap;
     }
     .workspace-header-actions { display: flex; align-items: center; gap: 10px; }
+    .workspace-header-actions { flex-wrap: wrap; justify-content: flex-end; }
     .workspace-save-state {
         font-size: 12px;
         padding: 6px 10px;
@@ -488,12 +825,67 @@
     }
     .workspace-editor-wrap { padding: 0 18px 18px; }
     #codeEditor {
-        height: calc(100vh - 360px);
-        min-height: 480px;
+        height: calc(100vh - 390px);
+        min-height: 520px;
         border-radius: 16px;
         border: 1px solid var(--ws-border);
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
         overflow: hidden;
+    }
+    .workspace-shell.editor-fullscreen .workspace-main {
+        position: fixed;
+        inset: 16px;
+        z-index: 2300;
+        overflow: auto;
+    }
+    .workspace-shell.editor-fullscreen .workspace-main > .workspace-panel {
+        min-height: calc(100vh - 32px);
+        display: flex;
+        flex-direction: column;
+    }
+    .workspace-shell.editor-fullscreen .workspace-editor-wrap {
+        flex: 1;
+        display: flex;
+        min-height: 0;
+    }
+    .workspace-shell.editor-fullscreen #codeEditor {
+        flex: 1;
+        height: auto;
+        min-height: calc(100vh - 260px);
+    }
+    .workspace-shell.editor-fullscreen .workspace-preview,
+    .workspace-shell.editor-fullscreen .workspace-topbar,
+    .workspace-shell.editor-fullscreen #metaPanel,
+    .workspace-shell.editor-fullscreen #dataTablesPanel {
+        display: none;
+    }
+    body.workspace-editor-fullscreen {
+        overflow: hidden;
+    }
+    .workspace-statusbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 18px 14px;
+        color: #687b8f;
+        font-size: 12px;
+        border-top: 1px solid #e9f0f5;
+        background: #fbfdff;
+        border-radius: 0 0 18px 18px;
+    }
+    .workspace-statusbar span {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #f2f6fa;
+    }
+    .workspace-statusbar .workspace-shortcut {
+        margin-left: auto;
+        background: #172033;
+        color: #dbe7f3;
     }
     .workspace-preview-actions {
         grid-column: span 2;
@@ -525,12 +917,60 @@
     }
     .workspace-preview-panel { overflow: hidden; }
     .workspace-preview-hint { font-size: 12px; color: var(--ws-muted); }
+    .workspace-device-switch {
+        display: flex;
+        gap: 6px;
+        padding: 4px;
+        border-radius: 999px;
+        background: #eef3f8;
+        border: 1px solid var(--ws-border);
+    }
+    .workspace-device {
+        border: 0;
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: transparent;
+        color: #607287;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+    .workspace-device.is-active {
+        color: #fff;
+        background: #172033;
+        box-shadow: 0 8px 18px rgba(23,32,51,.16);
+    }
+    .workspace-preview-canvas {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 14px;
+        min-height: calc(100vh - 250px);
+        background:
+            linear-gradient(45deg, rgba(148,163,184,.14) 25%, transparent 25%),
+            linear-gradient(-45deg, rgba(148,163,184,.14) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, rgba(148,163,184,.14) 75%),
+            linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.14) 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    }
     .workspace-iframe {
         width: 100%;
         height: calc(100vh - 250px);
         min-height: 620px;
-        border: 0;
+        border: 1px solid #d8e2ec;
+        border-radius: 16px;
         background: #fbfdff;
+        box-shadow: 0 18px 40px rgba(35, 50, 72, .12);
+        transition: width .22s ease;
+    }
+    .workspace-preview-canvas.device-tablet .workspace-iframe {
+        width: 768px;
+        max-width: 100%;
+    }
+    .workspace-preview-canvas.device-phone .workspace-iframe {
+        width: 390px;
+        max-width: 100%;
     }
     .workspace-modal {
         position: fixed;
@@ -611,7 +1051,7 @@
         word-break: break-word;
     }
     @media (max-width: 1400px) {
-        .workspace-layout { grid-template-columns: 260px minmax(0, 1fr); }
+        .workspace-layout { grid-template-columns: minmax(0, 1fr); }
         .workspace-preview { grid-column: 1 / -1; }
         .workspace-iframe { height: 520px; min-height: 520px; }
     }
@@ -621,6 +1061,9 @@
         .workspace-app-glance { margin-right: 0; flex-wrap: wrap; }
         .workspace-layout { grid-template-columns: 1fr; }
         .workspace-editor-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .workspace-data-layout { grid-template-columns: 1fr; }
+        .workspace-data-left { border-right: 0; border-bottom: 1px solid #e9f0f5; }
+        .workspace-field-form, .workspace-record-form { grid-template-columns: 1fr; }
         .workspace-preview-actions { grid-column: 1 / -1; }
         #codeEditor { height: 420px; min-height: 420px; }
         .workspace-history-body { grid-template-columns: 1fr; }
@@ -642,7 +1085,11 @@
             items: [],
             selectedId: null
         };
+        var virtualTables = [];
+        var selectedVirtualTable = null;
+        var selectedRecords = [];
         var activeFileFilter = 'all';
+        var openTabs = [];
 
         editor.setTheme('ace/theme/chrome');
         editor.session.setUseWrapMode(true);
@@ -652,6 +1099,7 @@
                 return;
             }
             setDirty(true);
+            updateStatusbar();
             schedulePreviewRefresh();
         });
 
@@ -677,6 +1125,52 @@
         function setDirty(value) {
             dirty = value;
             $('#saveState').toggleClass('dirty', !!value).text(value ? '未保存' : '已保存');
+            renderTabs();
+            updateStatusbar();
+        }
+
+        function renderTabs() {
+            var html = '';
+
+            openTabs.forEach(function (file) {
+                var active = currentFile && Number(currentFile.id) === Number(file.id) ? ' active' : '';
+                var isDirty = active && dirty ? ' dirty' : '';
+                html += '<button class="workspace-tab' + active + isDirty + '" type="button" data-id="' + file.id + '">'
+                    + '<span class="workspace-tab-name">' + escapeHtml(file.basename || file.name || file.path || '未命名') + '</span>'
+                    + '</button>';
+            });
+
+            $('#workspaceTabs').html(html || '<button class="workspace-tab active" type="button">未打开文件</button>');
+        }
+
+        function ensureTab(file) {
+            var exists = openTabs.some(function (item) {
+                return Number(item.id) === Number(file.id);
+            });
+
+            if (!exists) {
+                openTabs.push($.extend({}, file));
+            } else {
+                openTabs = openTabs.map(function (item) {
+                    return Number(item.id) === Number(file.id) ? $.extend({}, item, file) : item;
+                });
+            }
+        }
+
+        function updateStatusbar() {
+            if (!currentFile) {
+                $('#statusPath').text('未选择文件');
+                $('#statusType').text('-');
+                $('#statusSize').text('0 字符');
+                $('#statusUpdated').text('-');
+                return;
+            }
+
+            var content = editor ? editor.getValue() : (currentFile.content || '');
+            $('#statusPath').text(currentFile.path || '-');
+            $('#statusType').text((currentFile.type_text || '-').toUpperCase());
+            $('#statusSize').text(String(content.length) + ' 字符');
+            $('#statusUpdated').text(currentFile.updated_at ? '更新 ' + currentFile.updated_at : '暂无更新时间');
         }
 
         function renderFiles() {
@@ -768,6 +1262,7 @@
             }
 
             currentFile = $.extend({}, next);
+            ensureTab(currentFile);
             $('#fileName').val(currentFile.name || '');
             $('#filePath').val(currentFile.path || '');
             $('#fileType').val(String(currentFile.type || 2));
@@ -781,6 +1276,8 @@
             refreshPreview(false);
             renderFiles();
             setDirty(false);
+            renderTabs();
+            updateStatusbar();
         }
 
         function refreshPreview(force) {
@@ -844,6 +1341,10 @@
             } else {
                 files[index] = file;
             }
+
+            openTabs = openTabs.map(function (item) {
+                return Number(item.id) === Number(file.id) ? $.extend({}, item, file) : item;
+            });
         }
 
         function suggestTitleFromPath(path) {
@@ -959,11 +1460,211 @@
             });
         }
 
+        function loadVirtualTables() {
+            $.get('/admin/applications/' + appId + '/virtual-tables', function (response) {
+                if (Number(response.code) !== 9999) {
+                    alert(response.message || '加载虚拟表失败');
+                    return;
+                }
+
+                virtualTables = response.data.tables || [];
+                if (selectedVirtualTable) {
+                    var matched = virtualTables.find(function (table) {
+                        return Number(table.id) === Number(selectedVirtualTable.id);
+                    });
+                    selectedVirtualTable = matched || null;
+                }
+
+                renderVirtualTables();
+                renderVirtualTableDetail();
+            }).fail(function (xhr) {
+                alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : '加载虚拟表失败');
+            });
+        }
+
+        function renderVirtualTables() {
+            var html = '';
+
+            virtualTables.forEach(function (table) {
+                var active = selectedVirtualTable && Number(selectedVirtualTable.id) === Number(table.id) ? ' active' : '';
+                html += '<div class="workspace-vt-item' + active + '" data-id="' + table.id + '">'
+                    + '<div class="workspace-vt-item-title"><span>' + escapeHtml(table.name) + '</span><span>' + table.fields_count + ' 字段</span></div>'
+                    + '<div class="workspace-vt-item-meta">/' + escapeHtml(table.slug) + '</div>'
+                    + '<div class="workspace-vt-item-meta">' + escapeHtml(table.physical_table || '未同步物理表') + '</div>'
+                    + '</div>';
+            });
+
+            $('#virtualTableList').html(html || '<div class="workspace-vt-empty" style="min-height:140px;">暂无虚拟表</div>');
+        }
+
+        function renderVirtualTableDetail() {
+            if (!selectedVirtualTable) {
+                $('#virtualTableEmpty').show();
+                $('#virtualTableDetail').hide();
+                return;
+            }
+
+            $('#virtualTableEmpty').hide();
+            $('#virtualTableDetail').show();
+            $('#selectedVtName').text(selectedVirtualTable.name);
+            $('#selectedVtMeta').text('/' + selectedVirtualTable.slug + ' · ' + (selectedVirtualTable.description || '暂无说明'));
+            $('#selectedVtPhysical').text(selectedVirtualTable.physical_table || '-');
+            renderVirtualFields();
+            renderRecordForm();
+            loadRecords();
+        }
+
+        function renderVirtualFields() {
+            var fields = selectedVirtualTable.fields || [];
+            var html = '';
+
+            fields.forEach(function (field) {
+                html += '<div class="workspace-field-pill">'
+                    + '<strong>' + escapeHtml(field.name) + '</strong>'
+                    + '<span>' + escapeHtml(field.slug) + ' → ' + escapeHtml(field.physical_name) + '</span>'
+                    + '<span>' + escapeHtml(field.type) + (field.nullable ? ' · 可空' : ' · 必填') + (field.indexed ? ' · 索引' : '') + '</span>'
+                    + '</div>';
+            });
+
+            $('#virtualFieldList').html(html || '<div class="workspace-file-path">还没有字段，先添加字段后再录入数据。</div>');
+        }
+
+        function renderRecordForm(record) {
+            if (!selectedVirtualTable) {
+                return;
+            }
+
+            var fields = selectedVirtualTable.fields || [];
+            var html = '';
+
+            fields.forEach(function (field) {
+                var value = record && record[field.physical_name] !== undefined && record[field.physical_name] !== null
+                    ? record[field.physical_name]
+                    : '';
+                var input = '<input class="workspace-input record-input" data-slug="' + escapeHtml(field.slug) + '" type="text" value="' + escapeHtml(value) + '">';
+
+                if (field.type === 'text' || field.type === 'json') {
+                    input = '<textarea class="workspace-textarea record-input" data-slug="' + escapeHtml(field.slug) + '" rows="3">' + escapeHtml(value) + '</textarea>';
+                } else if (field.type === 'boolean') {
+                    input = '<select class="workspace-input record-input" data-slug="' + escapeHtml(field.slug) + '">'
+                        + '<option value="0"' + (String(value) === '0' ? ' selected' : '') + '>否</option>'
+                        + '<option value="1"' + (String(value) === '1' ? ' selected' : '') + '>是</option>'
+                        + '</select>';
+                } else if (field.type === 'date') {
+                    input = '<input class="workspace-input record-input" data-slug="' + escapeHtml(field.slug) + '" type="date" value="' + escapeHtml(value) + '">';
+                } else if (field.type === 'datetime') {
+                    input = '<input class="workspace-input record-input" data-slug="' + escapeHtml(field.slug) + '" type="text" placeholder="YYYY-MM-DD HH:MM:SS" value="' + escapeHtml(value) + '">';
+                } else if (field.type === 'integer' || field.type === 'decimal') {
+                    input = '<input class="workspace-input record-input" data-slug="' + escapeHtml(field.slug) + '" type="number" value="' + escapeHtml(value) + '">';
+                }
+
+                html += '<label><span>' + escapeHtml(field.name) + ' <em style="font-style:normal;color:#98a6b7;">' + escapeHtml(field.slug) + '</em></span>' + input + '</label>';
+            });
+
+            $('#recordForm').html(html || '<div class="workspace-file-path">没有可录入字段</div>');
+            $('#createRecordBtn').data('editing-id', record && record.id ? record.id : '');
+            $('#createRecordBtn').text(record && record.id ? '保存修改' : '新增记录');
+        }
+
+        function collectRecordPayload() {
+            var payload = {};
+            $('#recordForm .record-input').each(function () {
+                payload[$(this).data('slug')] = $(this).val();
+            });
+            payload._token = '{{ csrf_token() }}';
+            return payload;
+        }
+
+        function loadRecords() {
+            if (!selectedVirtualTable) {
+                return;
+            }
+
+            $.get('/admin/applications/' + appId + '/virtual-tables/' + selectedVirtualTable.id + '/records', function (response) {
+                if (Number(response.code) !== 9999) {
+                    alert(response.message || '加载记录失败');
+                    return;
+                }
+                selectedRecords = response.data.items || [];
+                renderRecords();
+            }).fail(function (xhr) {
+                $('#recordList').html('<div class="workspace-vt-empty" style="min-height:120px;">' + escapeHtml(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : '加载记录失败') + '</div>');
+            });
+        }
+
+        function renderRecords() {
+            var fields = selectedVirtualTable ? (selectedVirtualTable.fields || []) : [];
+            var html = '<table class="workspace-record-table"><thead><tr><th>ID</th>';
+
+            fields.forEach(function (field) {
+                html += '<th>' + escapeHtml(field.name) + '</th>';
+            });
+
+            html += '<th>更新时间</th><th>操作</th></tr></thead><tbody>';
+
+            selectedRecords.forEach(function (record) {
+                html += '<tr><td>' + record.id + '</td>';
+                fields.forEach(function (field) {
+                    html += '<td>' + escapeHtml(record[field.physical_name]) + '</td>';
+                });
+                html += '<td>' + escapeHtml(record.updated_at || '') + '</td>'
+                    + '<td class="workspace-record-op">'
+                    + '<button class="workspace-link-btn edit-record" type="button" data-id="' + record.id + '">编辑</button>'
+                    + '<button class="workspace-link-btn delete-record" type="button" data-id="' + record.id + '">删除</button>'
+                    + '</td></tr>';
+            });
+
+            if (!selectedRecords.length) {
+                html += '<tr><td colspan="' + (fields.length + 3) + '">暂无记录</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            $('#recordList').html(html);
+        }
+
         $('#fileList').on('click', '.workspace-file-item[data-id]', function () {
+            selectFile($(this).data('id'));
+            $('.workspace-shell').removeClass('files-open');
+        });
+
+        $('#workspaceTabs').on('click', '.workspace-tab[data-id]', function () {
             selectFile($(this).data('id'));
         });
 
         $('#fileSearch').on('input', renderFiles);
+
+        $('#toggleFilesBtn').on('click', function () {
+            $('.workspace-shell').toggleClass('files-open');
+        });
+
+        $('#toggleEditorFullscreenBtn').on('click', function () {
+            var enabled = !$('.workspace-shell').hasClass('editor-fullscreen');
+            $('.workspace-shell').toggleClass('editor-fullscreen', enabled).removeClass('files-open');
+            $('body').toggleClass('workspace-editor-fullscreen', enabled);
+            $(this).text(enabled ? '退出全屏' : '全屏');
+            setTimeout(function () {
+                editor.resize();
+                editor.focus();
+            }, 80);
+        });
+
+        $('#fileName, #filePath, #fileStatus').on('input change', function () {
+            if (!currentFile) {
+                return;
+            }
+            setDirty(true);
+            updateStatusbar();
+        });
+
+        $('#fileType').on('change', function () {
+            if (!currentFile) {
+                return;
+            }
+            editor.session.setMode(modeByType(Number($(this).val())));
+            setDirty(true);
+            updateStatusbar();
+            schedulePreviewRefresh();
+        });
 
         $('.workspace-chip').on('click', function () {
             activeFileFilter = $(this).data('filter');
@@ -974,6 +1675,18 @@
 
         document.addEventListener('keydown', function (event) {
             var isSave = (event.metaKey || event.ctrlKey) && String(event.key).toLowerCase() === 's';
+            if (event.key === 'Escape') {
+                $('.workspace-shell').removeClass('files-open');
+                if ($('.workspace-shell').hasClass('editor-fullscreen')) {
+                    $('.workspace-shell').removeClass('editor-fullscreen');
+                    $('body').removeClass('workspace-editor-fullscreen');
+                    $('#toggleEditorFullscreenBtn').text('全屏');
+                    setTimeout(function () {
+                        editor.resize();
+                    }, 80);
+                }
+                return;
+            }
             if (!isSave) {
                 return;
             }
@@ -983,6 +1696,181 @@
 
         $('#toggleMetaBtn').on('click', function () {
             $('#metaPanel').toggle();
+        });
+
+        $('#toggleDataTablesBtn').on('click', function () {
+            $('#dataTablesPanel').toggle();
+            if ($('#dataTablesPanel').is(':visible')) {
+                loadVirtualTables();
+            }
+        });
+
+        $('#reloadVirtualTablesBtn').on('click', function () {
+            loadVirtualTables();
+        });
+
+        $('#virtualTableList').on('click', '.workspace-vt-item[data-id]', function () {
+            var tableId = Number($(this).data('id'));
+            selectedVirtualTable = virtualTables.find(function (table) {
+                return Number(table.id) === tableId;
+            }) || null;
+            renderVirtualTables();
+            renderVirtualTableDetail();
+        });
+
+        $('#createVirtualTableBtn').on('click', function () {
+            $.ajax({
+                url: '/admin/applications/' + appId + '/virtual-tables',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    name: $('#vtName').val(),
+                    slug: $('#vtSlug').val(),
+                    description: $('#vtDescription').val(),
+                    status: 1
+                }
+            }).done(function (response) {
+                if (Number(response.code) !== 9999) {
+                    alert(response.message || '创建虚拟表失败');
+                    return;
+                }
+                $('#vtName, #vtSlug, #vtDescription').val('');
+                selectedVirtualTable = response.data.table;
+                loadVirtualTables();
+            }).fail(function (xhr) {
+                alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : '创建虚拟表失败');
+            });
+        });
+
+        $('#createVirtualFieldBtn').on('click', function () {
+            if (!selectedVirtualTable) {
+                alert('请先选择虚拟表');
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/applications/' + appId + '/virtual-tables/' + selectedVirtualTable.id + '/fields',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    name: $('#vfName').val(),
+                    slug: $('#vfSlug').val(),
+                    type: $('#vfType').val(),
+                    length: $('#vfLength').val(),
+                    nullable: $('#vfNullable').is(':checked') ? 1 : 0,
+                    default_enabled: 0,
+                    default_value: '',
+                    indexed: $('#vfIndexed').is(':checked') ? 1 : 0,
+                    description: '',
+                    sort_order: 0,
+                    status: 1
+                }
+            }).done(function (response) {
+                if (Number(response.code) !== 9999) {
+                    alert(response.message || '添加字段失败');
+                    return;
+                }
+                $('#vfName, #vfSlug, #vfLength').val('');
+                $('#vfNullable').prop('checked', true);
+                $('#vfIndexed').prop('checked', false);
+                loadVirtualTables();
+            }).fail(function (xhr) {
+                alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : '添加字段失败');
+            });
+        });
+
+        $('#createRecordBtn').on('click', function () {
+            if (!selectedVirtualTable) {
+                alert('请先选择虚拟表');
+                return;
+            }
+
+            var editingId = $(this).data('editing-id');
+            var payload = collectRecordPayload();
+            var url = '/admin/applications/' + appId + '/virtual-tables/' + selectedVirtualTable.id + '/records';
+
+            if (editingId) {
+                payload._method = 'PUT';
+                url += '/' + editingId;
+            }
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: payload
+            }).done(function (response) {
+                if (Number(response.code) !== 9999) {
+                    alert(response.message || '保存记录失败');
+                    return;
+                }
+                renderRecordForm();
+                loadRecords();
+            }).fail(function (xhr) {
+                alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : '保存记录失败');
+            });
+        });
+
+        $('#reloadRecordsBtn').on('click', function () {
+            loadRecords();
+        });
+
+        $('#recordList').on('click', '.edit-record', function () {
+            var recordId = Number($(this).data('id'));
+            var record = selectedRecords.find(function (item) {
+                return Number(item.id) === recordId;
+            });
+            if (record) {
+                renderRecordForm(record);
+            }
+        });
+
+        $('#recordList').on('click', '.delete-record', function () {
+            if (!selectedVirtualTable) {
+                return;
+            }
+
+            var recordId = Number($(this).data('id'));
+            if (!window.confirm('确认删除这条记录吗？')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/applications/' + appId + '/virtual-tables/' + selectedVirtualTable.id + '/records/' + recordId,
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'DELETE'
+                }
+            }).done(function (response) {
+                if (Number(response.code) !== 9999) {
+                    alert(response.message || '删除记录失败');
+                    return;
+                }
+                loadRecords();
+            }).fail(function (xhr) {
+                alert(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : '删除记录失败');
+            });
+        });
+
+        $('#quickSaveBtn').on('click', function () {
+            $('#saveFileBtn').trigger('click');
+        });
+
+        $('#quickPreviewBtn').on('click', function () {
+            if (!currentFile || !currentFile.preview_url) {
+                refreshPreview(true);
+                return;
+            }
+            window.open(currentFile.preview_url, '_blank');
+        });
+
+        $('.workspace-device').on('click', function () {
+            var device = $(this).data('device');
+            $('.workspace-device').removeClass('is-active');
+            $(this).addClass('is-active');
+            $('.workspace-preview-canvas')
+                .removeClass('device-desktop device-tablet device-phone')
+                .addClass('device-' + device);
         });
 
         $('#saveMetaBtn').on('click', function () {
@@ -1242,17 +2130,6 @@
             formatCurrentCode();
         });
 
-        $('#fileType').on('change', function () {
-            editor.session.setMode(modeByType(Number($(this).val())));
-            setDirty(true);
-            schedulePreviewRefresh();
-        });
-
-        $('#fileName, #filePath, #fileStatus').on('input change', function () {
-            setDirty(true);
-            schedulePreviewRefresh();
-        });
-
         $('#filePath').on('blur', function () {
             var currentName = $.trim($('#fileName').val());
             if (!currentName) {
@@ -1277,6 +2154,8 @@
             editor.session.setMode('ace/mode/html');
             editor.setValue('', -1);
             $('#previewHint').text('先创建一个文件');
+            renderTabs();
+            updateStatusbar();
         }
     })();
 </script>

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V2;
 
 use App\Http\Controllers\Controller;
 use App\Models\Code;
+use App\Services\AppCodeDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use ReflectionFunction;
 use Throwable;
 
 class CodeController extends Controller
@@ -41,7 +43,14 @@ class CodeController extends Controller
                 }
                 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
                 @eval($phpContent);
-                $resultData = myFunction($data);
+                $db = new AppCodeDatabase($codeInfo->application);
+                $resultData = null;
+                if (function_exists('myFunction')) {
+                    $function = new ReflectionFunction('myFunction');
+                    $resultData = $function->getNumberOfParameters() >= 2
+                        ? myFunction($data, $db)
+                        : myFunction($data);
+                }
                 $result['result_data'] = $resultData;
                 $result['result_code'] = '0000';
                 $result['result_msg'] = 'success';
@@ -68,4 +77,3 @@ class CodeController extends Controller
         return response($codeInfo->content);
     }
 }
-
