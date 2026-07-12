@@ -88,6 +88,22 @@ Production frontend build:
 npm run prod
 ```
 
+## Session And Deployment Workflow
+
+- For each Codex session in this project, call the Bark notification script once to signal activity:
+
+```bash
+bash scripts/bark_notify.sh
+```
+
+- After making changes, run the narrowest useful checks from the Verification section. If the checks pass and deployment is requested or expected for the completed change, deploy with:
+
+```bash
+bash scripts/deploy_task_rsync.sh
+```
+
+- Before deploying, check the working tree and avoid deploying unrelated local changes unintentionally, because the deploy script syncs the project directory to the remote host.
+
 ## API Notes
 
 The modern API surface is under `/api/v2`.
