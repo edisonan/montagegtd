@@ -132,6 +132,15 @@ class MindController extends Controller {
 
 		return view('minds.view', []);
 	}
+
+	/**
+	 * 探索版思维导图：保留原编辑页，同时提供更适合浏览和聚焦的沉浸式渲染。
+	 */
+	public function exploreView(Request $request, Mind $mind) {
+		$this->authorize ( 'destroy', $mind );
+
+		return view('minds.explore', []);
+	}
 	
 	/**
 	 * 大纲模式思维导图思维导图

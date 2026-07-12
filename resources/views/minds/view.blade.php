@@ -300,6 +300,10 @@
                             <i class="fas fa-list-alt mr-2"></i>
                             大纲视图
                         </a>
+                        <a href="#" id="mind_explore_link" class="btn btn-primary btn-sm">
+                            <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                            探索版
+                        </a>
                         <a href="{{ '/minds' }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left mr-2"></i>
                             返回列表
@@ -611,6 +615,7 @@
                 mindManager.mindName = mind.name || mindManager.mindName;
                 $('#mind_name_text').text(mindManager.mindName);
                 $('#mind_outline_link').attr('href', '/mindoutlineviewv2/' + mindManager.mindId);
+                $('#mind_explore_link').attr('href', '/mind/' + mindManager.mindId + '/explore');
                 $('#mind_updated_text').text(formatDateTime(mind.updated_at));
                 if (mind.content) {
                     $('#mind_content').val(String(mind.content).replace(/<br\s*\/?>/ig, '\n'));
