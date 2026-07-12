@@ -21,3 +21,6 @@ Encore\Admin\Form::forget ( [
 		'map',
 		'editor' 
 ] );
+
+// 后台菜单默认展开，仍保留 AdminLTE 原有的点击收起行为。
+Encore\Admin\Admin::js('/js/admin-menu-default-open.js');

@@ -48,6 +48,7 @@ Route::group ( [
     $router->resource('courses', CourseController::class);
     
     $router->get('applications/{id}/workspace-data', 'ApplicationController@workspaceData');
+    $router->get('applications/{id}/codes/{codeId}', 'ApplicationController@showCode');
     $router->post('applications', 'ApplicationController@store');
     $router->put('applications/{id}/meta', 'ApplicationController@updateMeta');
     $router->post('applications/{id}/codes', 'ApplicationController@storeCode');
