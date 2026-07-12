@@ -15,7 +15,7 @@ class ApplicationController extends Controller
 {
     public function show(Request $request, $appSlug, $codePath)
     {
-        $application = Application::where('slug', $appSlug)
+        $application = Application::whereIn('slug', array($appSlug, '/' . ltrim($appSlug, '/')))
             ->where('status', '<', 4)
             ->firstOrFail();
 

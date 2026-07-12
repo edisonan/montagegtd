@@ -615,7 +615,7 @@ class ApplicationController extends Controller
 
     private function buildPreviewUrl($appSlug, $path)
     {
-        return url('/app/' . $appSlug . '/' . ltrim((string) $path, '/'));
+        return url('/app/' . trim((string) $appSlug, '/') . '/' . ltrim((string) $path, '/'));
     }
 
     private function normalizePath($path)
