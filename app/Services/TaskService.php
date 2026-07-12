@@ -199,7 +199,7 @@ class TaskService {
 	 * 
 	 * @param unknown $task        	
 	 * @param unknown $type
-	 *        	（finish 完成 其他 删除）
+	 *        	（finish 完成 restore 恢复 fold/collapse 折叠 其他 删除）
 	 */
 	public function updateTaskByType($task, $type) {
 		$params = array ();
@@ -209,6 +209,12 @@ class TaskService {
 			$params ['is_doing'] = 0;
 			
 			$this->journalService->storeJournal ( 2, $task->name, $task->created_at, date ( 'Y-m-d H:i:s' ) );
+		} elseif ($type == 'restore') {
+			$params ['status'] = 1;
+			$params ['is_doing'] = 0;
+		} elseif ($type == 'fold' || $type == 'collapse') {
+			$params ['status'] = 4;
+			$params ['is_doing'] = 0;
 		} else {
 			$params ['status'] = 3;
 			$params ['is_doing'] = 0;

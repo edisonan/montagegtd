@@ -127,6 +127,7 @@
                 '<div class="task-actions">' +
                 '<button class="task-action-btn complete" title="标记完成" onclick="toggleComplete(' + task.id + ', ' + (completed ? 1 : 2) + ')"><i class="fas ' + (completed ? 'fa-undo' : 'fa-check') + '"></i></button>' +
                 '<button class="task-action-btn edit" title="编辑任务" onclick="editTask(' + task.id + ')"><i class="fas fa-edit"></i></button>' +
+                (!completed ? '<button class="task-action-btn" title="折叠任务" onclick="foldTask(' + task.id + ')"><i class="fas fa-folder"></i></button>' : '') +
                 '<button class="task-action-btn delete" title="删除任务" onclick="deleteTask(' + task.id + ')"><i class="fas fa-trash"></i></button>' +
                 '</div>' +
                 '</div>';
@@ -222,6 +223,26 @@
                     loadPriorityTasks();
                 } else {
                     alert('删除失败：' + (response.msg || '请稍后重试'));
+                }
+            }).catch(function() {
+                alert('请求失败，请检查网络连接');
+            });
+        }
+
+        function foldTask(taskId) {
+            if (!confirm('确认要折叠此任务吗？')) {
+                return;
+            }
+            var apiRequest = getApiRequest();
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+            apiRequest('DELETE', '/tasks/' + taskId, {type: 'fold'}).then(function(response) {
+                if (response.code === 9999) {
+                    loadPriorityTasks();
+                } else {
+                    alert('折叠失败：' + (response.msg || '请稍后重试'));
                 }
             }).catch(function() {
                 alert('请求失败，请检查网络连接');

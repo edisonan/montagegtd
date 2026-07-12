@@ -51,7 +51,8 @@
                         <div class="col-md-8">
                             <label class="radio-inline"><input type="radio" name="status" value="1"><span>进行中</span></label>
                             <label class="radio-inline"><input type="radio" name="status" value="2"><span>已完成</span></label>
-                            <label class="radio-inline"><input type="radio" name="status" value="3"><span>已折叠</span></label>
+                            <label class="radio-inline"><input type="radio" name="status" value="3"><span>已删除</span></label>
+                            <label class="radio-inline"><input type="radio" name="status" value="4"><span>已折叠</span></label>
                         </div>
                     </div>
 

@@ -87,7 +87,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
                             <div class="font-medium text-gray-700 pt-2">待办状态</div>
                             <div class="md:col-span-3">
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-3">
                                     <label class="flex items-center space-x-2 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer text-sm sm:text-base">
                                         <input type="radio" name="status" value="1"
                                                class="w-4 h-4 text-blue-600">
@@ -108,6 +108,15 @@
 
                                     <label class="flex items-center space-x-2 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer text-sm sm:text-base">
                                         <input type="radio" name="status" value="3"
+                                               class="w-4 h-4 text-blue-600">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-trash-alt text-red-500 text-sm"></i>
+                                            <span class="text-gray-700">已删除</span>
+                                        </div>
+                                    </label>
+
+                                    <label class="flex items-center space-x-2 p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer text-sm sm:text-base">
+                                        <input type="radio" name="status" value="4"
                                                class="w-4 h-4 text-blue-600">
                                         <div class="flex items-center space-x-2">
                                             <i class="fas fa-folder text-gray-500 text-sm"></i>
@@ -348,7 +357,7 @@
 
                 $.each(response.result, function(index, task) {
                     var type = task.mode == 1 ? '[工作]' : '[生活]';
-                    var statusIcon = task.status == 2 ? '✓ ' : task.status == 3 ? '🗂 ' : '';
+                    var statusIcon = task.status == 2 ? '✓ ' : task.status == 4 ? '[折叠] ' : '';
                     selectElement.append('<option value="' + task.id + '">' + type + ' ' + statusIcon + task.name + '</option>');
                 });
 

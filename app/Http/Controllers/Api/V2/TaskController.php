@@ -77,7 +77,8 @@ class TaskController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'active' => (int)$counts['1'],
             'completed' => (int)$counts['2'],
-            'folded' => (int)$counts['3'],
+            'deleted' => (int)$counts['3'],
+            'folded' => (int)$counts['4'],
             'total' => (int)$counts['all'],
         )));
     }
@@ -154,7 +155,7 @@ class TaskController extends Controller
         $this->authorize('destroy', $task);
         $this->validate($request, array(
             'is_doing' => 'nullable|in:0,1',
-            'status' => 'nullable|in:1,2,3',
+            'status' => 'nullable|in:1,2,3,4',
             'planned_start_time' => 'nullable|date_format:Y-m-d H:i:s',
             'planned_end_time' => 'nullable|date_format:Y-m-d H:i:s',
             'remindtime' => 'nullable|date_format:Y-m-d H:i:s',

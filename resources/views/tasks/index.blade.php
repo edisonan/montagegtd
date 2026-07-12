@@ -33,6 +33,10 @@
                     <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs" id="count-completed">0</span>
                 </button>
                 <button type="button" class="px-4 py-2 rounded-md text-sm font-medium transition-colors" data-status="3">
+                    <i class="fas fa-trash-alt mr-2"></i>已删除
+                    <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs" id="count-deleted">0</span>
+                </button>
+                <button type="button" class="px-4 py-2 rounded-md text-sm font-medium transition-colors" data-status="4">
                     <i class="fas fa-folder mr-2"></i>已折叠
                     <span class="ml-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs" id="count-folded">0</span>
                 </button>
@@ -134,6 +138,7 @@
             statusCounts: {
                 active: 0,
                 completed: 0,
+                deleted: 0,
                 folded: 0,
                 total: 0
             },
@@ -178,6 +183,9 @@
                 return '<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>已完成</span>';
             }
             if (Number(status) === 3) {
+                return '<span class="badge bg-red-100 text-red-700"><i class="fas fa-trash-alt mr-1"></i>已删除</span>';
+            }
+            if (Number(status) === 4) {
                 return '<span class="badge badge-secondary"><i class="fas fa-folder mr-1"></i>已折叠</span>';
             }
             return '<span class="badge badge-primary"><i class="fas fa-spinner mr-1"></i>进行中</span>';
@@ -221,6 +229,7 @@
                     '<a href="/notes?source_type=3&source_id=' + task.id + '" class="text-gray-400 hover:text-blue-600" title="添加笔记"><i class="fas fa-sticky-note"></i></a>' +
                     '<button onclick="editTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="编辑任务"><i class="fas fa-edit"></i></button>' +
                     (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="标记完成"><i class="fas fa-check"></i></button>' : '') +
+                    (Number(task.status) === 1 ? '<button onclick="foldTask(' + task.id + ')" class="text-gray-400 hover:text-gray-700" title="折叠任务"><i class="fas fa-folder"></i></button>' : '') +
                     '</div>' +
                     '</td>' +
                     '</tr>';
@@ -234,6 +243,7 @@
                     '<div class="flex items-center space-x-3">' +
                     '<button onclick="editTask(' + task.id + ')" class="text-sm text-gray-600 hover:text-green-600"><i class="fas fa-edit mr-1"></i>编辑</button>' +
                     (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-sm text-green-600 hover:text-green-800"><i class="fas fa-check mr-1"></i>完成</button>' : '') +
+                    (Number(task.status) === 1 ? '<button onclick="foldTask(' + task.id + ')" class="text-sm text-gray-600 hover:text-gray-800"><i class="fas fa-folder mr-1"></i>折叠</button>' : '') +
                     '</div></div></div></div>';
 
                 tbody.append(desktopRow);
@@ -273,12 +283,14 @@
                 taskPageState.statusCounts = {
                     active: Number(resp.result.active || 0),
                     completed: Number(resp.result.completed || 0),
+                    deleted: Number(resp.result.deleted || 0),
                     folded: Number(resp.result.folded || 0),
                     total: Number(resp.result.total || 0)
                 };
                 taskPageState.hasStatsLoaded = true;
                 $('#count-active').text(taskPageState.statusCounts.active);
                 $('#count-completed').text(taskPageState.statusCounts.completed);
+                $('#count-deleted').text(taskPageState.statusCounts.deleted);
                 $('#count-folded').text(taskPageState.statusCounts.folded);
                 $('#count-total').text(taskPageState.statusCounts.total);
             }).catch(function() {
@@ -312,6 +324,8 @@
                     if (currentStatus === '2') {
                         totalByStatus = taskPageState.statusCounts.completed;
                     } else if (currentStatus === '3') {
+                        totalByStatus = taskPageState.statusCounts.deleted;
+                    } else if (currentStatus === '4') {
                         totalByStatus = taskPageState.statusCounts.folded;
                     } else if (currentStatus === 'all') {
                         totalByStatus = taskPageState.statusCounts.total;
@@ -353,6 +367,28 @@
             apiRequest('PUT', '/tasks/' + taskId, {status: 2}).then(function(response) {
                 if (response.code === 9999) {
                     loadTasks();
+                } else {
+                    alert('操作失败: ' + (response.msg || '未知错误'));
+                }
+            }).catch(function() {
+                alert('请求失败，请稍后重试');
+            });
+        }
+
+        function foldTask(taskId) {
+            if (!confirm('确认折叠此任务吗？')) {
+                return;
+            }
+            var apiRequest = getApiRequest();
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+            apiRequest('DELETE', '/tasks/' + taskId, {type: 'fold'}).then(function(response) {
+                if (response.code === 9999) {
+                    loadTaskStats().finally(function() {
+                        loadTasks();
+                    });
                 } else {
                     alert('操作失败: ' + (response.msg || '未知错误'));
                 }

@@ -478,7 +478,7 @@ CREATE TABLE IF NOT EXISTS `tasks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL COMMENT '用户id',
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '待办内容',
-  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态（1 进行中 2已完成 3已折叠）',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态（1 进行中 2已完成 3已删除 4已折叠）',
   `deadline` timestamp NULL DEFAULT NULL COMMENT '截止时间',
   `remindtime` timestamp NULL DEFAULT NULL COMMENT '提醒时间',
   `priority` tinyint(4) NOT NULL DEFAULT '1' COMMENT '优先级（1不重要不紧急/2不重要紧急/3重要不紧急/4重要紧急）',

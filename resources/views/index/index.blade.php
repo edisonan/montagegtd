@@ -123,7 +123,7 @@
                             </div>
                         </div>
 
-                        <!-- 今日专注统计 -->
+                        <!-- 今日手账统计 -->
                         <div class="border-t border-gray-200 pt-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center gap-2">
@@ -133,18 +133,18 @@
                                     <h3 class="font-medium text-gray-800">今日成果</h3>
                                 </div>
                                 <div class="text-sm text-gray-500">
-                                    已完成 <span id="focusCount" class="font-semibold text-gray-900">0</span> 个专注
+                                    已记录 <span id="focusCount" class="font-semibold text-gray-900">0</span> 条手账
                                 </div>
                             </div>
 
-                            <!-- 专注列表 -->
+                            <!-- 手账列表 -->
                             <div class="space-y-2">
                                 <div id="focussLoading" class="text-center py-8">
                                     <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
-                                    <p class="text-sm text-gray-500 mt-2">加载专注记录...</p>
+                                    <p class="text-sm text-gray-500 mt-2">加载手账记录...</p>
                                 </div>
                                 <ul id="focuss" class="space-y-2 hidden">
-                                    <!-- 专注列表动态加载 -->
+                                    <!-- 手账列表动态加载 -->
                                 </ul>
                             </div>
                         </div>
@@ -1297,11 +1297,89 @@
     `;
         }
 
+        function getJournalTypeMeta(type) {
+            const id = Number(type || 1);
+            const map = {
+                1: {label: '手动记录', icon: 'fa-pen-to-square', color: 'text-blue-600', bg: 'bg-blue-50'},
+                2: {label: '待办完成', icon: 'fa-list-check', color: 'text-emerald-600', bg: 'bg-emerald-50'},
+                3: {label: '专注完成', icon: 'fa-clock', color: 'text-purple-600', bg: 'bg-purple-50'}
+            };
+            return map[id] || map[1];
+        }
+
+        function renderIndexJournalType(type) {
+            const meta = getJournalTypeMeta(type);
+            return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${meta.bg} ${meta.color}">
+                <i class="fas ${meta.icon} mr-1"></i>${meta.label}
+            </span>`;
+        }
+
+        function computeJournalDuration(journal) {
+            const start = journal.start_time ? new Date(String(journal.start_time).replace(' ', 'T')).getTime() : NaN;
+            const end = journal.end_time ? new Date(String(journal.end_time).replace(' ', 'T')).getTime() : NaN;
+            if (isNaN(start) || isNaN(end) || end <= start) {
+                return 0;
+            }
+            return Math.round((end - start) / 60000);
+        }
+
+        function formatDurationMinutes(minutes) {
+            minutes = Number(minutes || 0);
+            if (minutes <= 0) {
+                return '';
+            }
+            if (minutes < 60) {
+                return minutes + 'min';
+            }
+            const hours = Math.floor(minutes / 60);
+            const remain = minutes % 60;
+            return remain ? (hours + 'h ' + remain + 'min') : (hours + 'h');
+        }
+
+        function createJournalListItem(journal) {
+            const start = formatDateTime(journal.start_time);
+            const end = formatDateTime(journal.end_time);
+            const timeText = [start, end].filter(Boolean).join(' ~ ');
+            const duration = formatDurationMinutes(computeJournalDuration(journal));
+            const name = escapeHtml(journal.name || '未命名手账');
+            const typeHtml = renderIndexJournalType(journal.type);
+
+            return `
+    <li id="journal${journal.id}" class="focus-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+        <div class="flex items-center justify-between gap-3">
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-medium text-gray-800 truncate" title="${name}">${name}</span>
+                    ${typeHtml}
+                </div>
+                <div class="flex flex-wrap items-center gap-2 mt-1 text-xs text-gray-500">
+                    <span><i class="far fa-clock mr-1"></i>${timeText || '未设置时间'}</span>
+                    ${duration ? `<span><i class="fas fa-hourglass-half mr-1"></i>${duration}</span>` : ''}
+                </div>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <a href="/notes?source_type=4&source_id=${Number(journal.id)}"
+                   class="action-button text-gray-400 hover:text-blue-500"
+                   target="_blank"
+                   title="记录更多想法">
+                    <i class="fas fa-sticky-note"></i>
+                </a>
+                <a href="/journals"
+                   class="action-button text-gray-400 hover:text-green-500"
+                   title="查看手账">
+                    <i class="fas fa-book-open"></i>
+                </a>
+            </div>
+        </div>
+    </li>
+    `;
+        }
+
         // 创建任务列表项
         function createTaskListItem(data, listType) {
             const isChild = data.parent_task_id !== null;
             const isTop = data.is_top == 1;
-            const isCompleted = data.status == 3;
+            const isCompleted = data.status == 2;
             const isDoing = Number(data.is_doing || 0) === 1;
             const isDoingList = listType === 'doing';
             const fullTaskName = escapeHtml(data.name || '');
@@ -1382,6 +1460,12 @@
                 <i class="fas fa-trash-alt"></i>
             </button>
 
+            <button class="action-button text-gray-400 hover:text-gray-600"
+                    onclick="foldTask(${data.id})"
+                    title="折叠">
+                <i class="fas fa-folder"></i>
+            </button>
+
             <a href="/notes?source_type=3&source_id=${data.id}"
                class="action-button text-gray-400 hover:text-purple-500"
                target="_blank"
@@ -1439,6 +1523,11 @@
                         onclick="deleteTask(${task.id})"
                         title="删除">
                     <i class="fas fa-trash-alt"></i>
+                </button>
+                <button class="action-button text-gray-400 hover:text-gray-600"
+                        onclick="foldTask(${task.id})"
+                        title="折叠">
+                    <i class="fas fa-folder"></i>
                 </button>
             </div>
         </div>
@@ -1606,6 +1695,28 @@
                         showNotification('error', '删除失败');
                     });
             }
+        }
+
+        function foldTask(taskId) {
+            if (!confirm('确定要折叠这个任务吗？')) {
+                return;
+            }
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            apiRequest('DELETE', '/tasks/' + taskId, {
+                type: 'fold'
+            }).then(function(response) {
+                if (response.code == 9999) {
+                    showtasks();
+                    showNotification('success', '任务已折叠');
+                } else {
+                    showNotification('error', '折叠失败');
+                }
+            }).catch(function() {
+                showNotification('error', '折叠失败');
+            });
         }
 
         function toggleTaskTop(taskId, isTop) {
@@ -1845,9 +1956,9 @@
                 });
         }
 
-        // 显示专注列表
+        // 显示今日手账列表
         function showfocuss() {
-            indexDebug('showfocuss start');
+            indexDebug('show journals start');
             const focussList = document.getElementById('focuss');
             const loading = document.getElementById('focussLoading');
             function finishLoading() {
@@ -1870,27 +1981,39 @@
                 if (focussList) focussList.classList.remove('hidden');
                 return;
             }
-            apiRequest('GET', '/focuss/today', {
-                type: 'time'
+            const today = new Date();
+            const todayText = today.getFullYear() + '-' +
+                String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                String(today.getDate()).padStart(2, '0');
+
+            apiRequest('GET', '/journals', {
+                start_date: todayText,
+                end_date: todayText,
+                page_size: 100
             }).then(function(response) {
                     if (response && response.code == 9999) {
-                        indexDebug('showfocuss success', { size: (response.result && response.result.length) ? response.result.length : 'obj' });
-                        const list = toList(response.result);
+                        const payload = response.result || {};
+                        const list = toList(payload.journals || []).sort(function(a, b) {
+                            const left = new Date(String(a.start_time || a.created_at || '').replace(' ', 'T')).getTime() || 0;
+                            const right = new Date(String(b.start_time || b.created_at || '').replace(' ', 'T')).getTime() || 0;
+                            return right - left;
+                        });
+                        indexDebug('show journals success', { size: list.length });
                         if (focussList) focussList.innerHTML = '';
                         if (focussList && list.length > 0) {
                             list.forEach(function(data) {
-                                focussList.insertAdjacentHTML('beforeend', createPomoListItem(data));
+                                focussList.insertAdjacentHTML('beforeend', createJournalListItem(data));
                             });
                         }
                         if (focussList) focussList.classList.remove('hidden');
                         document.getElementById('focusCount').textContent = list.length;
                     } else {
-                        indexDebug('showfocuss non-9999', { code: response && response.code, msg: response && response.msg });
+                        indexDebug('show journals non-9999', { code: response && response.code, msg: response && response.msg });
                         if (focussList) focussList.classList.remove('hidden');
                         document.getElementById('focusCount').textContent = '0';
                     }
                 }).catch(function() {
-                    indexDebug('showfocuss failed');
+                    indexDebug('show journals failed');
                     if (focussList) focussList.classList.remove('hidden');
                     document.getElementById('focusCount').textContent = '0';
                 }).finally(function() {
