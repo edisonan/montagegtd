@@ -173,18 +173,42 @@
             return null;
         }
 
+        function webRequest(method, url, data) {
+            return $.ajax({
+                url: url,
+                type: method || 'GET',
+                dataType: 'json',
+                data: data || {},
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+        }
+
         function withApiReady(fn) {
             var bootstrap = window.__taskTokenBootstrapPromise;
             if (bootstrap && typeof bootstrap.then === 'function') {
-                return bootstrap.finally(fn);
+                return bootstrap.then(function () {
+                    return fn();
+                }, function () {
+                    return fn();
+                });
             }
             fn();
             return Promise.resolve();
         }
 
         function getQueryParam(name) {
-            var params = new URLSearchParams(window.location.search || '');
-            return params.get(name);
+            var query = (window.location.search || '').replace(/^\?/, '');
+            var pairs = query ? query.split('&') : [];
+            for (var i = 0; i < pairs.length; i++) {
+                var pair = pairs[i].split('=');
+                if (decodeURIComponent(pair[0] || '') === name) {
+                    return decodeURIComponent((pair[1] || '').replace(/\+/g, ' '));
+                }
+            }
+            return null;
         }
 
         function escapeHtml(text) {
@@ -201,11 +225,16 @@
             if (isNaN(date.getTime())) {
                 return {md: '-', hm: '-'};
             }
-            var mm = String(date.getMonth() + 1).padStart(2, '0');
-            var dd = String(date.getDate()).padStart(2, '0');
-            var hh = String(date.getHours()).padStart(2, '0');
-            var mi = String(date.getMinutes()).padStart(2, '0');
+            var mm = pad2(date.getMonth() + 1);
+            var dd = pad2(date.getDate());
+            var hh = pad2(date.getHours());
+            var mi = pad2(date.getMinutes());
             return {md: mm + '-' + dd, hm: hh + ':' + mi};
+        }
+
+        function pad2(value) {
+            value = String(value);
+            return value.length < 2 ? ('0' + value) : value;
         }
 
         function computeJournalDuration(journal) {
@@ -246,14 +275,18 @@
         }
 
         function buildQueryString(params) {
-            var searchParams = new URLSearchParams();
-            Object.keys(params || {}).forEach(function(key) {
+            var pairs = [];
+            params = params || {};
+            for (var key in params) {
+                if (!Object.prototype.hasOwnProperty.call(params, key)) {
+                    continue;
+                }
                 var value = params[key];
                 if (value !== null && value !== undefined && String(value) !== '') {
-                    searchParams.set(key, value);
+                    pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(value)));
                 }
-            });
-            return searchParams.toString();
+            }
+            return pairs.join('&');
         }
 
         function getFilterValues() {
@@ -302,10 +335,21 @@
         };
 
         function syncUrlState() {
-            var params = Object.assign({page: journalPageState.currentPage}, journalPageState.filters);
+            var params = mergeObject({page: journalPageState.currentPage}, journalPageState.filters);
             var query = buildQueryString(params);
             var nextUrl = window.location.pathname + (query ? ('?' + query) : '');
             window.history.replaceState({}, '', nextUrl);
+        }
+
+        function mergeObject(base, extra) {
+            base = base || {};
+            extra = extra || {};
+            for (var key in extra) {
+                if (Object.prototype.hasOwnProperty.call(extra, key)) {
+                    base[key] = extra[key];
+                }
+            }
+            return base;
         }
 
         function renderSummary() {
@@ -391,19 +435,13 @@
         }
 
         function loadJournals(page) {
-            var apiRequest = getApiRequest();
-            if (!apiRequest) {
-                alert('API客户端未初始化');
-                return;
-            }
-
             var targetPage = page || journalPageState.currentPage || 1;
-            var url = '/journals?' + buildQueryString(Object.assign({
+            var params = mergeObject({
                 page: targetPage,
                 page_size: journalPageState.perPage
-            }, journalPageState.filters));
+            }, journalPageState.filters);
 
-            apiRequest('GET', url, {}).then(function(resp) {
+            webRequest('GET', '/journals/data', params).done(function(resp) {
                 if (!resp || resp.code !== 9999) {
                     alert((resp && resp.msg) ? resp.msg : '加载失败');
                     return;
@@ -417,7 +455,7 @@
                 journalPageState.lastPage = Math.max(1, Number(pagination.last_page || 1));
                 journalPageState.total = Number(pagination.total || (result.summary && result.summary.total) || journalPageState.journals.length || 0);
                 renderJournalsList();
-            }).catch(function() {
+            }).fail(function() {
                 alert('加载失败，请重试');
             });
         }
@@ -436,19 +474,13 @@
                     return false;
                 }
 
-                var apiRequest = getApiRequest();
-                if (!apiRequest) {
-                    alert('API客户端未初始化');
-                    return false;
-                }
-
-                apiRequest('DELETE', '/journals/' + journalId, {}).then(function(resp) {
+                webRequest('DELETE', '/journal/' + journalId, {}).done(function(resp) {
                     if (!resp || resp.code !== 9999) {
                         alert((resp && resp.msg) || '删除失败');
                         return;
                     }
                     loadJournals(journalPageState.currentPage);
-                }).catch(function() {
+                }).fail(function() {
                     alert('删除失败，请重试');
                 });
             });
@@ -491,9 +523,7 @@
                 }
             });
 
-            withApiReady(function() {
-                loadJournals(journalPageState.currentPage);
-            });
+            loadJournals(journalPageState.currentPage);
         });
     </script>
 @endsection

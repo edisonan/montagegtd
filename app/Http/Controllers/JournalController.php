@@ -43,6 +43,49 @@ class JournalController extends Controller {
 	public function index(Request $request) {
 		return view('journals.index');
 	}
+
+	/**
+	 * 获取当前用户的手账列表数据。
+	 *
+	 * @param Request $request
+	 * @return mixed
+	 */
+	public function data(Request $request) {
+		$this->validate($request, array(
+			'page_size' => 'nullable|integer|min:1|max:100',
+			'keyword' => 'nullable|string|max:100',
+			'start_date' => 'nullable|date_format:Y-m-d',
+			'end_date' => 'nullable|date_format:Y-m-d',
+			'type' => 'nullable|integer|min:1|max:5',
+		));
+
+		$pageSize = (int)$request->input('page_size', 10);
+		$filters = array_filter(array(
+			'keyword' => trim((string)$request->input('keyword', '')),
+			'start_date' => $request->input('start_date'),
+			'end_date' => $request->input('end_date'),
+			'type' => $request->input('type'),
+		), function ($value) {
+			return $value !== null && $value !== '';
+		});
+
+		$journals = $this->journalService->getList($pageSize, $filters);
+		$summary = $this->journalService->getListSummary($filters);
+
+		return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+			'journals' => $journals->items(),
+			'pagination' => array(
+				'current_page' => $journals->currentPage(),
+				'per_page' => $journals->perPage(),
+				'total' => $journals->total(),
+				'last_page' => $journals->lastPage(),
+				'next_page_url' => $journals->nextPageUrl(),
+				'prev_page_url' => $journals->previousPageUrl(),
+				'has_more_pages' => $journals->hasMorePages(),
+			),
+			'summary' => $summary,
+		)));
+	}
 	
 	/**
 	 * 新建记事

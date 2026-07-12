@@ -193,6 +193,7 @@ Route::group([
     Route::get('/kindle/test', 'KindleController@test');
 
     Route::get('/journals', 'JournalController@index');
+    Route::get('/journals/data', 'JournalController@data');
     Route::post('/journal', 'JournalController@store');
     Route::delete('/journal/{journal}', 'JournalController@destroy');
     Route::post('/journal/{journal}', 'JournalController@update');

@@ -39,6 +39,8 @@ class JournalRepository {
 		$durationJournal = (clone $journal)
 			->whereNotNull('end_time')
 			->whereRaw('end_time > start_time');
+		// 聚合查询不能继承列表查询的 ORDER BY，否则 MySQL 严格模式会报错。
+		$durationJournal->getQuery()->orders = array();
 
 		return array(
 			'total' => (int)(clone $journal)->count(),
