@@ -121,8 +121,21 @@ class LlmUsageLogController extends Controller
         $show->request_time('请求耗时(秒)');
         $show->status('状态');
         $show->error_message('错误信息');
-        $show->request_data('请求数据');
-        $show->response_data('响应数据');
+        $formatJson = function ($value) {
+            if (is_null($value)) {
+                return '';
+            }
+
+            if (!is_array($value) && !is_object($value)) {
+                return e((string) $value);
+            }
+
+            return '<pre style="white-space: pre-wrap; word-break: break-word;">'
+                . e(json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT))
+                . '</pre>';
+        };
+        $show->request_data('请求数据')->as($formatJson);
+        $show->response_data('响应数据')->as($formatJson);
         $show->created_at('创建时间');
 
         return $show;
