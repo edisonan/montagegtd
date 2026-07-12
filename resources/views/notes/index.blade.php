@@ -10,6 +10,7 @@
     <link href="https://unpkg.com/easymde/dist/easymde.min.css" rel="stylesheet">
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
     <script src="/js/marked.min.js"></script>
+    <script src="/plugins/purify/purify.min.js"></script>
 
     <style>
         /* Markdown编辑器样式 */
@@ -1590,6 +1591,28 @@
             return value;
         }
 
+        function decodeNoteContent(value) {
+            const html = String(value || '').replace(/<br\s*\/?>/ig, '\n');
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = html;
+            return textarea.value;
+        }
+
+        function sanitizeMarkdownHtml(html) {
+            if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+                return window.DOMPurify.sanitize(html);
+            }
+            return html;
+        }
+
+        function renderMarkdownContent(value) {
+            const markdown = decodeNoteContent(value);
+            const html = (window.marked && typeof window.marked.parse === 'function')
+                ? window.marked.parse(markdown)
+                : escapeHtml(markdown).replace(/\n/g, '<br>');
+            return sanitizeMarkdownHtml(html);
+        }
+
         function getNoteQueryParams() {
             const query = new URLSearchParams(window.location.search || '');
             return {
@@ -1683,9 +1706,7 @@
             const canReadMedia = isOwn || isPublic;
             const rawContent = note.content || note.name || '';
             const noteTitle = note.content ? (note.name || '') : '';
-            const contentHtml = (window.marked && typeof window.marked.parse === 'function')
-                ? window.marked.parse(rawContent)
-                : rawContent;
+            const contentHtml = renderMarkdownContent(rawContent);
             const tagMaps = Array.isArray(note.note_tag_maps) ? note.note_tag_maps : [];
             const tagsHtml = tagMaps.map(function(map) {
                 const tag = map && map.tag ? map.tag : null;

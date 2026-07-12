@@ -260,11 +260,9 @@ class NoteService {
 	}
 
 	private function formatContentForSave($name) {
-		$name = htmlspecialchars ( $name );
-		$name = str_replace ( '&lt;code&gt;', '<code>', $name );
-		$name = str_replace ( '&lt;/code&gt;', '</code>', $name );
-		$name = nl2br ( $name );
-		return $name;
+		$content = (string)$name;
+		$content = str_replace(array("\r\n", "\r"), "\n", $content);
+		return trim($content);
 	}
 	
 	/**
