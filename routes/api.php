@@ -108,7 +108,6 @@ Route::prefix('v2')->group(function () {
         Route::get('/thirds', 'Api\\V2\\ThirdController@index');
         Route::get('/help/about', 'Api\\V2\\HelpController@about');
         Route::any('/codes/{codeInfo}', 'Api\\V2\\CodeController@view');
-        Route::get('/applications/{appSlug}/{codePath}', 'Api\\V2\\ApplicationController@show')->where('codePath', '.*');
         Route::get('/calendar', 'Api\\V2\\CalendarController@index');
         Route::get('/calendar/ics/{theme}', 'Api\\V2\\CalendarController@ics');
 
@@ -163,6 +162,11 @@ Route::prefix('v2')->group(function () {
         Route::get('/digest/pages', 'Api\\V2\\DigestController@pages');
         Route::get('/digest/pages/{id}', 'Api\\V2\\DigestController@showPage');
     });
+
+    // Code 的访问策略由应用/文件自身决定，默认公开；PAT 模式由 code.access 校验。
+    Route::get('/applications/{appSlug}/{codePath}', 'Api\\V2\\ApplicationController@show')
+        ->where('codePath', '.*')
+        ->middleware('code.access');
 
     Route::post('/auth/logout', 'Api\\V2\\AuthController@logout')->middleware('hybrid.token');
 

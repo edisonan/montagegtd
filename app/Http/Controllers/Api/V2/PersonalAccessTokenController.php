@@ -31,7 +31,7 @@ class PersonalAccessTokenController extends Controller
         $this->validate($request, array(
             'name' => 'required|string|max:255',
             'scopes' => 'array',
-            'scopes.*' => 'string|in:read,write,delete,admin',
+            'scopes.*' => 'string|in:read,write,delete,admin,code:execute',
             'expires_at' => 'nullable|date|after:now',
         ));
 
@@ -70,4 +70,3 @@ class PersonalAccessTokenController extends Controller
         )));
     }
 }
-

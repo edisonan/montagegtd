@@ -139,6 +139,12 @@
                                             'desc' => '完全控制权限，包括账户设置和所有数据',
                                             'icon' => 'fas fa-cog',
                                             'color' => 'border-purple-300 peer-checked:border-purple-500 peer-checked:bg-purple-50'
+                                        ],
+                                        'code:execute' => [
+                                            'label' => 'Code 执行',
+                                            'desc' => '允许调用配置为 PAT 鉴权的 Code 应用',
+                                            'icon' => 'fas fa-terminal',
+                                            'color' => 'border-orange-300 peer-checked:border-orange-500 peer-checked:bg-orange-50'
                                         ]
                                     ];
 

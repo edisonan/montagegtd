@@ -13,7 +13,8 @@ class Code extends Model
         'content',
         'status',
         'path',
-        'app_id'
+        'app_id',
+        'auth_mode'
     ];
     
     /**

@@ -187,6 +187,22 @@
                                     </div>
                                 </div>
                             </label>
+                            <label class="cursor-pointer">
+                                <input type="checkbox" name="scopes[]" value="code:execute" class="peer sr-only">
+                                <div class="p-4 rounded-lg border-2 border-gray-200 border-orange-300 peer-checked:bg-orange-50 transition-all duration-200">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-6 h-6 border-2 border-gray-300 rounded peer-checked:border-orange-500 peer-checked:bg-orange-500 peer-checked:border-none flex items-center justify-center">
+                                                <i class="fas fa-check text-white text-xs hidden peer-checked:block"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-700">Code 执行</div>
+                                            <div class="text-xs text-gray-500 mt-1">访问配置为 PAT 鉴权的 Code</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
                         <p class="text-xs text-gray-500">遵循最小权限原则，只授予必要的权限</p>
                     </div>

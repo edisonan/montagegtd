@@ -14,7 +14,8 @@ class Application extends Model
         'name',
         'slug',
         'description',
-        'status'
+        'status',
+        'auth_mode'
     ];
     
     protected $casts = [
@@ -29,5 +30,10 @@ class Application extends Model
     public function codes()
     {
         return $this->hasMany(Code::class, 'app_id');
+    }
+
+    public function allowedUsers()
+    {
+        return $this->belongsToMany(User::class, 'application_allowed_users', 'application_id', 'user_id');
     }
 }

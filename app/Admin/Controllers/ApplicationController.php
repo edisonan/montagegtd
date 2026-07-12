@@ -5,8 +5,10 @@ namespace App\Admin\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\AppVirtualTable;
+use App\Models\ApplicationAllowedUser;
 use App\Models\Code;
 use App\Models\CodeHistory;
+use App\Models\User;
 use App\Services\AppVirtualTableService;
 use Encore\Admin\Facades\Admin;
 use Encore\Admin\Layout\Content;
@@ -36,6 +38,7 @@ class ApplicationController extends Controller
                     'slug' => $application->slug,
                     'description' => $application->description,
                     'status' => (int) $application->status,
+                    'auth_mode' => $application->auth_mode ?: 'public',
                     'codes_count' => (int) $application->codes_count,
                     'updated_at' => optional($application->updated_at)->toDateTimeString(),
                     'preview_url' => $entry ? $this->buildPreviewUrl($application->slug, $entry->path) : null,
@@ -59,6 +62,7 @@ class ApplicationController extends Controller
                 'applications' => $applications,
                 'stats' => $stats,
                 'statusOptions' => $this->statusOptions(),
+                'authModeOptions' => $this->authModeOptions(),
             )));
         });
     }
@@ -67,6 +71,9 @@ class ApplicationController extends Controller
     {
         $application = Application::query()
             ->with(array('codes' => function ($query) {
+                $query->select(array(
+                    'id', 'app_id', 'name', 'path', 'type', 'status', 'updated_at'
+                ));
                 $query->orderByRaw("CASE WHEN path IN ('index.html', '/index.html', 'index.php', '/index.php') THEN 0 ELSE 1 END")
                     ->orderBy('path')
                     ->orderBy('id');
@@ -84,14 +91,32 @@ class ApplicationController extends Controller
             $content->body(view('admin.applications.workspace', array(
                 'application' => $this->serializeApplication($application),
                 'files' => $application->codes->map(function (Code $code) use ($application) {
-                    return $this->serializeCode($code, $application);
+                    return $this->serializeCode($code, $application, false);
                 })->values(),
                 'selectedCodeId' => $selectedCode ? $selectedCode->id : null,
                 'statusOptions' => $this->statusOptions(),
                 'codeTypeOptions' => $this->codeTypeOptions(),
                 'virtualTableFieldTypeOptions' => $this->virtualTableFieldTypeOptions(),
+                'authModeOptions' => $this->authModeOptions(),
+                'allowedUsernames' => $this->allowedUsernames($application),
             )));
         });
+    }
+
+    public function showCode($id, $codeId)
+    {
+        $application = Application::findOrFail($id);
+        $code = Code::query()
+            ->where('app_id', $application->id)
+            ->findOrFail($codeId);
+
+        return response()->json(array(
+            'code' => 9999,
+            'message' => 'success',
+            'data' => array(
+                'file' => $this->serializeCode($code, $application),
+            ),
+        ));
     }
 
     public function store(Request $request)
@@ -101,8 +126,10 @@ class ApplicationController extends Controller
             'slug' => 'required|string|max:100|unique:applications,slug',
             'description' => 'nullable|string',
             'status' => 'required|integer|in:1,2,3,4',
+            'auth_mode' => 'nullable|string|in:public,login,whitelist,pat',
         ));
 
+        $data['auth_mode'] = $data['auth_mode'] ?? 'public';
         $application = Application::create($data);
 
         return response()->json(array(
@@ -146,10 +173,16 @@ class ApplicationController extends Controller
             'slug' => 'required|string|max:100|unique:applications,slug,' . $application->id,
             'description' => 'nullable|string',
             'status' => 'required|integer|in:1,2,3,4',
+            'auth_mode' => 'nullable|string|in:public,login,whitelist,pat',
+            'allowed_usernames' => 'nullable|string|max:5000',
         ));
 
+        $allowedUsernames = $data['allowed_usernames'] ?? '';
+        unset($data['allowed_usernames']);
+        $data['auth_mode'] = $data['auth_mode'] ?? 'public';
         $application->fill($data);
         $application->save();
+        $this->syncAllowedUsers($application, $allowedUsernames);
 
         return response()->json(array(
             'code' => 9999,
@@ -169,6 +202,7 @@ class ApplicationController extends Controller
             'path' => 'required|string|max:500',
             'type' => 'required|integer|in:1,2,3,4,5',
             'status' => 'required|integer|in:1,2',
+            'auth_mode' => 'nullable|string|in:public,login,whitelist,pat',
             'content' => 'nullable|string',
         ));
 
@@ -195,6 +229,7 @@ class ApplicationController extends Controller
             'path' => $normalizedPath,
             'type' => $data['type'],
             'status' => $data['status'],
+            'auth_mode' => $data['auth_mode'] ?? null,
             'content' => array_key_exists('content', $data) ? $data['content'] : '',
         ));
 
@@ -219,6 +254,7 @@ class ApplicationController extends Controller
             'path' => 'required|string|max:500',
             'type' => 'required|integer|in:1,2,3,4,5',
             'status' => 'required|integer|in:1,2',
+            'auth_mode' => 'nullable|string|in:public,login,whitelist,pat',
             'content' => 'nullable|string',
         ));
 
@@ -246,6 +282,7 @@ class ApplicationController extends Controller
         $code->path = $normalizedPath;
         $code->type = $data['type'];
         $code->status = $data['status'];
+        $code->auth_mode = $data['auth_mode'] ?? null;
         $code->content = array_key_exists('content', $data) ? $data['content'] : '';
         $code->save();
 
@@ -567,12 +604,14 @@ class ApplicationController extends Controller
             'slug' => $application->slug,
             'description' => $application->description,
             'status' => (int) $application->status,
+            'auth_mode' => $application->auth_mode ?: 'public',
+            'allowed_usernames' => $this->allowedUsernames($application),
             'status_text' => $this->statusOptions()[(int) $application->status] ?? '未知',
             'updated_at' => optional($application->updated_at)->toDateTimeString(),
         );
     }
 
-    private function serializeCode(Code $code, Application $application)
+    private function serializeCode(Code $code, Application $application, $includeContent = true)
     {
         $normalizedPath = ltrim((string) $code->path, '/');
         $segments = $normalizedPath === '' ? array() : explode('/', $normalizedPath);
@@ -590,8 +629,10 @@ class ApplicationController extends Controller
             'type_text' => $this->codeTypeOptions()[(int) $code->type] ?? 'text',
             'status' => (int) $code->status,
             'status_text' => (int) $code->status === 1 ? '启用' : '禁用',
+            'auth_mode' => $code->auth_mode,
             'is_entry' => $isEntry,
-            'content' => (string) $code->content,
+            'content' => $includeContent ? (string) $code->content : null,
+            'content_loaded' => (bool) $includeContent,
             'updated_at' => optional($code->updated_at)->toDateTimeString(),
             'preview_url' => $this->buildPreviewUrl($application->slug, $code->path),
             'is_previewable' => in_array((int) $code->type, array(2, 3, 4, 5), true),
@@ -632,6 +673,50 @@ class ApplicationController extends Controller
             4 => 'css',
             5 => 'json',
         );
+    }
+
+    private function authModeOptions()
+    {
+        return array(
+            'public' => '公开访问',
+            'login' => '登录用户',
+            'whitelist' => '用户白名单',
+            'pat' => 'PAT（code:execute）',
+        );
+    }
+
+    private function allowedUsernames(Application $application)
+    {
+        return $application->allowedUsers()
+            ->orderBy('users.name')
+            ->get()
+            ->map(function (User $user) {
+                return $user->email ?: $user->name;
+            })
+            ->implode("\n");
+    }
+
+    private function syncAllowedUsers(Application $application, $rawUsers)
+    {
+        $identifiers = preg_split('/[\s,;]+/u', trim((string)$rawUsers), -1, PREG_SPLIT_NO_EMPTY);
+        $userIds = User::query()
+            ->where(function ($query) use ($identifiers) {
+                if (empty($identifiers)) {
+                    $query->whereRaw('1 = 0');
+                    return;
+                }
+                $query->whereIn('email', $identifiers)->orWhereIn('name', $identifiers);
+            })
+            ->pluck('id')
+            ->all();
+
+        ApplicationAllowedUser::where('application_id', $application->id)->delete();
+        foreach (array_unique($userIds) as $userId) {
+            ApplicationAllowedUser::create(array(
+                'application_id' => $application->id,
+                'user_id' => $userId,
+            ));
+        }
     }
 
     private function virtualTableFieldTypeOptions()

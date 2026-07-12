@@ -44,6 +44,18 @@
                     @endforeach
                 </select>
             </label>
+            <label>
+                <span>访问权限</span>
+                <select id="metaAuthMode" class="workspace-input">
+                    @foreach($authModeOptions as $value => $label)
+                        <option value="{{ $value }}" @if(($application['auth_mode'] ?? 'public') === $value) selected @endif>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="workspace-form-full">
+                <span>白名单用户（邮箱或用户名，每行一个）</span>
+                <textarea id="metaAllowedUsernames" class="workspace-textarea" rows="2" placeholder="仅 whitelist 模式使用">{{ $allowedUsernames }}</textarea>
+            </label>
         </div>
     </div>
 
@@ -181,6 +193,15 @@
                         <select id="fileStatus" class="workspace-input">
                             <option value="1">启用</option>
                             <option value="2">禁用</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>文件权限（留空继承应用）</span>
+                        <select id="fileAuthMode" class="workspace-input">
+                            <option value="">继承应用</option>
+                            @foreach($authModeOptions as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
                         </select>
                     </label>
                     <div class="workspace-preview-actions">
@@ -1090,6 +1111,7 @@
         var selectedRecords = [];
         var activeFileFilter = 'all';
         var openTabs = [];
+        var fileLoadRequest = 0;
 
         editor.setTheme('ace/theme/chrome');
         editor.session.setUseWrapMode(true);
@@ -1262,22 +1284,54 @@
             }
 
             currentFile = $.extend({}, next);
+            var requestId = ++fileLoadRequest;
             ensureTab(currentFile);
             $('#fileName').val(currentFile.name || '');
             $('#filePath').val(currentFile.path || '');
             $('#fileType').val(String(currentFile.type || 2));
             $('#fileStatus').val(String(currentFile.status || 1));
+            $('#fileAuthMode').val(currentFile.auth_mode || '');
             editor.session.setMode(modeByType(Number(currentFile.type)));
-            editor.setValue(currentFile.content || '', -1);
+            editor.setValue('', -1);
             $('#openPreviewBtn').attr('href', currentFile.preview_url || '#');
             $('#currentFileHint').text((currentFile.name || '未命名文件') + ' · ' + (currentFile.directory || 'root'));
             $('#currentTypeBadge').text((currentFile.type_text || '-').toUpperCase());
             $('#currentPathBadge').text(currentFile.path || '-');
-            refreshPreview(false);
+            $('#previewHint').text('正在加载代码…');
             renderFiles();
             setDirty(false);
             renderTabs();
             updateStatusbar();
+
+            if (currentFile.content_loaded) {
+                editor.setValue(currentFile.content || '', -1);
+                refreshPreview(false);
+                setDirty(false);
+                updateStatusbar();
+                return;
+            }
+
+            $.get('/admin/applications/' + appId + '/codes/' + currentFile.id, function (response) {
+                if (requestId !== fileLoadRequest || !currentFile || Number(currentFile.id) !== Number(fileId)) {
+                    return;
+                }
+                if (Number(response.code) !== 9999 || !response.data || !response.data.file) {
+                    $('#previewHint').text('代码加载失败');
+                    return;
+                }
+                currentFile = $.extend({}, currentFile, response.data.file);
+                syncFileInList(currentFile);
+                ensureTab(currentFile);
+                editor.setValue(currentFile.content || '', -1);
+                refreshPreview(false);
+                setDirty(false);
+                renderTabs();
+                updateStatusbar();
+            }).fail(function () {
+                if (requestId === fileLoadRequest) {
+                    $('#previewHint').text('代码加载失败，请重试');
+                }
+            });
         }
 
         function refreshPreview(force) {
@@ -1327,6 +1381,7 @@
                 path: $('#filePath').val(),
                 type: Number($('#fileType').val()),
                 status: Number($('#fileStatus').val()),
+                auth_mode: $('#fileAuthMode').val(),
                 content: editor.getValue()
             };
         }
@@ -1883,7 +1938,9 @@
                     name: $('#metaName').val(),
                     slug: $('#metaSlug').val(),
                     description: $('#metaDescription').val(),
-                    status: $('#metaStatus').val()
+                    status: $('#metaStatus').val(),
+                    auth_mode: $('#metaAuthMode').val(),
+                    allowed_usernames: $('#metaAllowedUsernames').val()
                 }
             }).done(function (response) {
                 if (Number(response.code) !== 9999) {

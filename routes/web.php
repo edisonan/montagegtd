@@ -46,6 +46,7 @@ Route::group([
     Route::post('/mind', 'MindController@store');
     Route::delete('/mind/{mind}', 'MindController@destroy');
     Route::get('/mind/{mind}', 'MindController@view');
+    Route::get('/mind/{mind}/explore', 'MindController@exploreView');
     Route::get('/mindajaxget/{mind}', 'MindController@ajaxget');
     Route::get('/mindoutlineview/{mind}', 'MindController@outlineView');
     Route::get('/mindoutlineviewv2/{mind}', 'MindController@outlineViewv2');
@@ -216,7 +217,7 @@ Route::group([
     Route::any('/code/{codeInfo}', 'CodeController@view');
     
     // 应用代码访问路由
-    Route::get('/app/{appSlug}/{codePath}', 'ApplicationController@show')->where('codePath', '.*');
+    Route::get('/app/{appSlug}/{codePath}', 'ApplicationController@show')->where('codePath', '.*')->middleware('code.access');
     
     // 智能体管理页面 - 必须在API路由之后定义，以避免冲突
     Route::get('/llm/agentmanagement', function () {

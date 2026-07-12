@@ -12,6 +12,7 @@ use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Middleware\HybridTokenMiddleware;
 use App\Http\Middleware\ResolveAuthContext;
+use App\Http\Middleware\CodeAccessMiddleware;
 use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -82,5 +83,6 @@ class Kernel extends HttpKernel
         'can' => Authorize::class,
         'guest' => RedirectIfAuthenticated::class,
         'throttle' => ThrottleRequests::class
+        ,'code.access' => CodeAccessMiddleware::class
     ];
 }
