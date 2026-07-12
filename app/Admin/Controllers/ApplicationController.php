@@ -89,6 +89,7 @@ class ApplicationController extends Controller
                 'selectedCodeId' => $selectedCode ? $selectedCode->id : null,
                 'statusOptions' => $this->statusOptions(),
                 'codeTypeOptions' => $this->codeTypeOptions(),
+                'virtualTableFieldTypeOptions' => $this->virtualTableFieldTypeOptions(),
             )));
         });
     }
@@ -630,6 +631,20 @@ class ApplicationController extends Controller
             3 => 'js',
             4 => 'css',
             5 => 'json',
+        );
+    }
+
+    private function virtualTableFieldTypeOptions()
+    {
+        return array(
+            'string' => '短文本',
+            'text' => '长文本',
+            'integer' => '整数',
+            'decimal' => '小数',
+            'boolean' => '布尔值',
+            'date' => '日期',
+            'datetime' => '日期时间',
+            'json' => 'JSON',
         );
     }
 
