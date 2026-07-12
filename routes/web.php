@@ -110,6 +110,10 @@ Route::group([
 
     Route::get('/articles', 'ArticleController@index');
     Route::get('/articles/explorer', 'ArticleController@explorer');
+    Route::get('/articles/workbench', 'ArticleController@workbench');
+    Route::get('/articles/workbench/data', 'ArticleController@workbenchData');
+    Route::get('/articles/workbench/articles/{articleSub}', 'ArticleController@workbenchArticle');
+    Route::post('/articles/workbench/articles/{articleSub}/ai-render', 'ArticleController@workbenchAiRender');
     Route::get('/articles/explorer/data/feeds', 'ArticleController@explorerFeeds');
     Route::get('/articles/explorer/data/feeds/{feedId}/articles', 'ArticleController@explorerArticleList');
     Route::get('/articles/explorer/data/articles/{articleSub}', 'ArticleController@explorerArticle');

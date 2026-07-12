@@ -27,12 +27,13 @@ class ArticleAiRenderService
     public function ensureRender(Article $article, array $options = array())
     {
         $existing = $this->getRenderByArticleId($article->id);
-        if ($existing && !empty($existing->html_content) && $existing->status === 'success' && empty($options['force'])) {
+        $customPrompt = trim((string)($options['custom_prompt'] ?? ''));
+        if ($existing && !empty($existing->html_content) && $existing->status === 'success' && empty($options['force']) && $customPrompt === '') {
             return $existing;
         }
 
         $templateStyle = !empty($options['template_style']) ? (string)$options['template_style'] : 'magazine';
-        $promptVersion = 'article_reader_render:v7';
+        $promptVersion = $customPrompt !== '' ? 'article_reader_render:custom-v1' : 'article_reader_render:v8';
         $articleText = $this->buildArticleText($article);
 
         if ($articleText === '') {
@@ -70,7 +71,10 @@ class ArticleAiRenderService
             ),
             array(
                 'role' => 'user',
-                'content' => "请将下面文章转换为适合学习理解的可视化 HTML 页面，并返回 JSON：\n" . $articleText,
+                'content' => "请将下面文章转换为适合学习理解的可视化 HTML 页面，并返回 JSON：\n"
+                    . "默认要求：先按文章所属分类和 Feed 判断主题，再将内容拆成 3-5 个有信息量的小节，每个小节用 3-5 句话概括；页面要优先帮助用户快速理解文章，不要重复原文。\n"
+                    . ($customPrompt !== '' ? "用户自定义补充要求：\n" . $customPrompt . "\n" : '')
+                    . $articleText,
             ),
         );
 
@@ -132,16 +136,24 @@ class ArticleAiRenderService
         $content = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$article->content)));
         $content = mb_substr($content, 0, 5000);
         $feedName = '';
+        $categoryName = '';
 
         if ($article->relationLoaded('feed') && $article->feed) {
             $feedName = (string)$article->feed->feed_name;
+            if ($article->feed->relationLoaded('category') && $article->feed->category) {
+                $categoryName = (string)$article->feed->category->name;
+            }
         } elseif ($article->feed) {
             $feedName = (string)$article->feed->feed_name;
+            if ($article->feed->category) {
+                $categoryName = (string)$article->feed->category->name;
+            }
         }
 
         $parts = array_filter(array(
             $subject !== '' ? '标题：' . $subject : '',
             $feedName !== '' ? '来源：' . $feedName : '',
+            $categoryName !== '' ? '分类：' . $categoryName : '',
             !empty($article->published) ? '发布时间：' . $article->published : '',
             $content !== '' ? '正文：' . $content : '',
         ));

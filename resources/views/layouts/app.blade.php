@@ -81,6 +81,7 @@
                                 'submenu' => [
                                     ['url'=>'/articles', 'label'=>'最新文章', 'icon'=>'fas fa-newspaper'],
                                     ['url'=>'/articles/explorer', 'label'=>'探索阅读', 'icon'=>'fas fa-columns'],
+                                    ['url'=>'/articles/workbench', 'label'=>'文章工作台', 'icon'=>'fas fa-sliders-h'],
                                     ['url'=>'/articles?status=read_later', 'label'=>'稍后阅读', 'icon'=>'fas fa-bookmark'],
                                     ['url'=>'/articles?status=star', 'label'=>'收藏文章', 'icon'=>'fas fa-star'],
                                     ['url'=>'/feeds', 'label'=>'订阅管理', 'icon'=>'fas fa-rss'],

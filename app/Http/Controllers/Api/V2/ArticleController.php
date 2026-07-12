@@ -457,6 +457,8 @@ class ArticleController extends Controller
         }
 
         $plainText = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$article->content)));
+        $wordCount = (int)$article->word_count;
+        $estimatedReadMinutes = (int)$article->estimated_read_minutes;
 
         return array(
             'id' => $article->id,
@@ -468,7 +470,8 @@ class ArticleController extends Controller
             'formatted_content' => CommonUtil::formatContentHtml($article->content),
             'plain_text' => $plainText,
             'published' => $article->published,
-            'estimated_read_minutes' => max(1, (int)ceil(mb_strlen($plainText) / 320)),
+            'word_count' => $wordCount,
+            'estimated_read_minutes' => max(1, $estimatedReadMinutes),
             'feed' => $article->feed ? array(
                 'id' => $article->feed->id,
                 'feed_name' => $article->feed->feed_name,

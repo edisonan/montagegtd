@@ -12,13 +12,41 @@ class Article extends Model {
 			'url',
 			'image_url',
 			'content',
+			'word_count',
+			'estimated_read_minutes',
 			'published' 
 	];
 	protected $table = 'articles';
 	protected $appends = array ();
 	protected $casts = [ 
-			'user_id' => 'int' 
+			'user_id' => 'int',
+			'word_count' => 'int',
+			'estimated_read_minutes' => 'int'
 	];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($article) {
+            $metrics = self::calculateReadingMetrics($article->content);
+            $article->word_count = $metrics['word_count'];
+            $article->estimated_read_minutes = $metrics['estimated_read_minutes'];
+        });
+    }
+
+    public static function calculateReadingMetrics($content)
+    {
+        $plainText = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$content)));
+        $wordCount = function_exists('mb_strlen')
+            ? mb_strlen($plainText, 'UTF-8')
+            : strlen($plainText);
+
+        return array(
+            'word_count' => (int)$wordCount,
+            'estimated_read_minutes' => max(1, (int)ceil($wordCount / 320)),
+        );
+    }
 
     /**
      * @return Feed

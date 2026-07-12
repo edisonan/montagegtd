@@ -13,6 +13,7 @@
         padding: 0 16px;
     }
     .explorer-shell {
+        position: relative;
         display: grid;
         grid-template-columns: minmax(220px, 280px) minmax(280px, 360px) minmax(0, 1fr);
         height: 100%;
@@ -22,6 +23,31 @@
         border-radius: 14px;
         box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
     }
+    .explorer-shell.directory-collapsed {
+        grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    }
+    .explorer-shell.directory-collapsed .directory-panel {
+        display: none;
+    }
+    .directory-reopen {
+        display: none;
+        position: absolute;
+        z-index: 5;
+        top: 12px;
+        left: 12px;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: rgba(255,255,255,.96);
+        color: #64748b;
+        cursor: pointer;
+        font-size: 12px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, .08);
+    }
+    .directory-reopen:hover { border-color: #6366f1; color: #4338ca; }
+    .explorer-shell.directory-collapsed .directory-reopen { display: inline-flex; }
     .explorer-panel {
         min-width: 0;
         overflow: hidden;
@@ -42,10 +68,57 @@
         font-size: 15px;
         font-weight: 700;
     }
+    .explorer-panel-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .directory-toggle {
+        flex: 0 0 auto;
+        padding: 4px 7px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: #fff;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .directory-toggle:hover {
+        border-color: #6366f1;
+        color: #4338ca;
+    }
     .explorer-panel-hint {
         margin-top: 4px;
         color: #94a3b8;
         font-size: 12px;
+    }
+    .explorer-status-filter {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+    }
+    .explorer-status-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 30px;
+        padding: 0;
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        background: #fff;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .explorer-status-btn .filter-label { display: none; }
+    .explorer-status-btn:hover,
+    .explorer-status-btn.active {
+        border-color: #6366f1;
+        background: #eef2ff;
+        color: #4338ca;
     }
     .explorer-scroll {
         min-height: 0;
@@ -99,6 +172,12 @@
         padding: 14px 16px;
         border-bottom: 1px solid #f1f5f9;
     }
+    .article-item.read {
+        color: #94a3b8;
+    }
+    .article-item.read .article-item-title {
+        font-weight: 500;
+    }
     .article-item-title {
         display: -webkit-box;
         overflow: hidden;
@@ -133,7 +212,7 @@
         position: sticky;
         z-index: 2;
         top: 0;
-        padding: 24px 0 18px;
+        padding: 16px 0 12px;
         background: rgba(255,255,255,.96);
         border-bottom: 1px solid #f1f5f9;
         backdrop-filter: blur(8px);
@@ -141,9 +220,9 @@
     .reader-title {
         margin: 0;
         color: #0f172a;
-        font-size: clamp(23px, 3vw, 34px);
+        font-size: clamp(19px, 2vw, 24px);
         font-weight: 750;
-        line-height: 1.25;
+        line-height: 1.35;
     }
     .reader-meta {
         display: flex;
@@ -154,6 +233,26 @@
         font-size: 13px;
     }
     .reader-meta a { color: #4f46e5; text-decoration: none; }
+    .reader-actions {
+        display: inline-flex;
+        gap: 6px;
+        margin-left: auto;
+    }
+    .reader-action-btn {
+        padding: 5px 9px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        background: #fff;
+        color: #64748b;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .reader-action-btn:hover,
+    .reader-action-btn.active {
+        border-color: #6366f1;
+        background: #eef2ff;
+        color: #4338ca;
+    }
     .reader-content {
         padding-top: 28px;
         color: #334155;
@@ -184,6 +283,7 @@
     @media (max-width: 900px) {
         .article-explorer { height: auto; min-height: 0; margin: 8px auto; }
         .explorer-shell { grid-template-columns: 1fr; overflow: visible; }
+        .explorer-shell.directory-collapsed { grid-template-columns: 1fr; }
         .explorer-panel { height: 360px; border-right: 0; border-bottom: 1px solid #e5e7eb; }
         .explorer-panel:last-child { height: auto; min-height: 520px; }
         .reader-wrap { overflow: visible; }
@@ -192,10 +292,24 @@
 
 <main class="article-explorer">
     <div class="explorer-shell">
-        <section class="explorer-panel" aria-label="分类和订阅源">
+        <button type="button" class="directory-reopen" id="directoryReopen" title="展开订阅目录">
+            <i class="fas fa-chevron-right"></i><span>展开 Feed</span>
+        </button>
+        <section class="explorer-panel directory-panel" aria-label="分类和订阅源">
             <header class="explorer-panel-header">
-                <h1 class="explorer-panel-title"><i class="fas fa-layer-group mr-2"></i>订阅目录</h1>
+                <div class="explorer-panel-header-row">
+                    <h1 class="explorer-panel-title"><i class="fas fa-layer-group mr-2"></i>订阅目录</h1>
+                    <button type="button" class="directory-toggle" id="directoryToggle" aria-expanded="true" title="折叠订阅目录">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
                 <div class="explorer-panel-hint">选择一个 Feed</div>
+                <div class="explorer-status-filter" role="group" aria-label="文章状态过滤">
+                    <button type="button" class="explorer-status-btn" data-status="unread" title="未读" aria-label="未读"><i class="far fa-envelope"></i><span class="filter-label">未读</span></button>
+                    <button type="button" class="explorer-status-btn" data-status="read" title="已读" aria-label="已读"><i class="far fa-envelope-open"></i><span class="filter-label">已读</span></button>
+                    <button type="button" class="explorer-status-btn" data-status="star" title="收藏" aria-label="收藏"><i class="far fa-star"></i><span class="filter-label">收藏</span></button>
+                    <button type="button" class="explorer-status-btn" data-status="read_later" title="稍后读" aria-label="稍后读"><i class="far fa-clock"></i><span class="filter-label">稍后读</span></button>
+                </div>
             </header>
             <div id="feedTree" class="explorer-scroll">
                 <div class="explorer-state">正在加载订阅目录…</div>
@@ -237,8 +351,20 @@
             hasMore: false,
             loadingArticles: false,
             articleRequestId: 0,
-            loadedArticleCount: 0
+            loadedArticleCount: 0,
+            status: new URLSearchParams(window.location.search).get('status') || 'unread',
+            directoryCollapsed: localStorage.getItem('articleExplorerDirectoryCollapsed') === '1'
         };
+
+        var statusLabels = {
+            unread: '未读',
+            read: '已读',
+            star: '收藏',
+            read_later: '稍后读'
+        };
+        if (!statusLabels[state.status]) {
+            state.status = 'unread';
+        }
 
         function escapeHtml(value) {
             return $('<div>').text(value == null ? '' : String(value)).html();
@@ -279,8 +405,18 @@
             $target.html('<div class="explorer-state">' + escapeHtml(message || '加载失败，请稍后重试') + '</div>');
         }
 
+        function syncDirectoryState() {
+            $('.explorer-shell').toggleClass('directory-collapsed', state.directoryCollapsed);
+            $('#directoryToggle')
+                .attr('aria-expanded', state.directoryCollapsed ? 'false' : 'true')
+                .attr('title', state.directoryCollapsed ? '展开订阅目录' : '折叠订阅目录')
+                .html(state.directoryCollapsed
+                    ? '<i class="fas fa-chevron-right"></i>'
+                    : '<i class="fas fa-chevron-left"></i>');
+        }
+
         function loadFeeds() {
-            request('/articles/explorer/data/feeds').done(function (result) {
+            request('/articles/explorer/data/feeds?status=' + encodeURIComponent(state.status)).done(function (result) {
                 var groups = toArray(result.nav_infos || result);
                 if (!groups.length) {
                     showError($('#feedTree'), '还没有订阅 Feed');
@@ -328,7 +464,7 @@
                 $('#reader').html('<div class="explorer-state" style="padding-top:150px">选择文章标题后加载正文</div>');
             }
 
-            request('/articles/explorer/data/feeds/' + encodeURIComponent(feedId) + '/articles?page=' + page + '&page_count=40')
+            request('/articles/explorer/data/feeds/' + encodeURIComponent(feedId) + '/articles?page=' + page + '&page_count=40&status=' + encodeURIComponent(state.status))
                 .done(function (result) {
                     if (requestId !== state.articleRequestId || String(state.feedId) !== String(feedId)) {
                         return;
@@ -337,10 +473,10 @@
                     var html = '';
                     articles.forEach(function (item) {
                         var published = item.published ? String(item.published).slice(0, 10) : '';
-                        html += '<button type="button" class="article-item" data-article-sub-id="' + Number(item.id) + '">';
+                        html += '<button type="button" class="article-item ' + (item.status === 'read' ? 'read' : '') + '" data-article-sub-id="' + Number(item.id) + '">';
                         html += '<span class="article-item-title">' + escapeHtml(item.subject || '无标题文章') + '</span>';
                         html += '<span class="article-item-meta"><span class="status-dot ' + (item.status === 'read' ? 'read' : '') + '"></span>';
-                        html += '<span>' + escapeHtml(published) + '</span><span>' + escapeHtml(item.status === 'read' ? '已读' : '未读') + '</span></span>';
+                        html += '<span>' + escapeHtml(published) + '</span><span>' + escapeHtml(statusLabels[item.status] || item.status) + '</span></span>';
                         html += '</button>';
                     });
 
@@ -388,15 +524,57 @@
                     if (article.published) {
                         html += '<span><i class="far fa-clock mr-1"></i>' + escapeHtml(String(article.published)) + '</span>';
                     }
+                    html += '<span><i class="fas fa-align-left mr-1"></i>' + escapeHtml(result.word_count || 0) + ' 字 · 约 ' + escapeHtml(result.estimated_read_minutes || 1) + ' 分钟</span>';
                     if (article.url) {
                         html += '<a href="' + escapeHtml(article.url) + '" target="_blank" rel="noopener noreferrer">查看原文 <i class="fas fa-external-link-alt ml-1"></i></a>';
                     }
+                    html += '<span class="reader-actions">';
+                    html += '<button type="button" class="reader-action-btn" data-article-status="read"><i class="fas fa-check mr-1"></i>已读</button>';
+                    html += '<button type="button" class="reader-action-btn" data-article-status="star"><i class="far fa-star mr-1"></i>收藏</button>';
+                    html += '<button type="button" class="reader-action-btn" data-article-status="read_later"><i class="far fa-clock mr-1"></i>稍后阅读</button>';
+                    html += '</span>';
                     html += '</div></header>';
                     html += '<article class="reader-content">' + (article.content || '<p>暂无正文内容</p>') + '</article>';
                     $('#reader').html(html).scrollTop(0);
+                    syncArticleActions(result.status);
+                    if (result.status === 'unread') {
+                        updateArticleStatus('read', true);
+                    }
                 })
                 .fail(function () {
                     showError($('#reader'), '正文加载失败');
+                });
+        }
+
+        function syncArticleActions(status) {
+            $('#reader [data-article-status]').each(function () {
+                var actionStatus = $(this).data('article-status');
+                $(this).toggleClass('active', actionStatus === status);
+            });
+        }
+
+        function updateArticleStatus(status, silent) {
+            if (!state.articleSubId) {
+                return;
+            }
+            request('/articles/status/' + encodeURIComponent(state.articleSubId) + '?status=' + encodeURIComponent(status))
+                .done(function () {
+                    syncArticleActions(status);
+                    var $item = $('#articleList .article-item[data-article-sub-id="' + Number(state.articleSubId) + '"]');
+                    $item.find('.article-item-meta span:last-child').text(statusLabels[status] || status);
+                    $item.toggleClass('read', status === 'read');
+                    $item.find('.status-dot').toggleClass('read', status === 'read');
+                    if (!silent && status !== state.status) {
+                        $item.remove();
+                    }
+                    if (!silent) {
+                        $('#articleListHint').text('文章状态已更新');
+                    }
+                })
+                .fail(function () {
+                    if (!silent) {
+                        $('#articleListHint').text('状态更新失败，请稍后重试');
+                    }
                 });
         }
 
@@ -418,6 +596,44 @@
                 loadArticles(state.feedId, state.feedName, state.page + 1, true);
             }
         });
+
+        $('#reader').on('click', '[data-article-status]', function () {
+            updateArticleStatus($(this).data('article-status'), false);
+        });
+
+        $('#directoryToggle').on('click', function () {
+            state.directoryCollapsed = !state.directoryCollapsed;
+            localStorage.setItem('articleExplorerDirectoryCollapsed', state.directoryCollapsed ? '1' : '0');
+            syncDirectoryState();
+        });
+
+        $('#directoryReopen').on('click', function () {
+            state.directoryCollapsed = false;
+            localStorage.setItem('articleExplorerDirectoryCollapsed', '0');
+            syncDirectoryState();
+        });
+
+        $('.explorer-status-filter').on('click', '.explorer-status-btn', function () {
+            var status = $(this).data('status');
+            if (status === state.status) {
+                return;
+            }
+            state.status = status;
+            state.feedId = null;
+            state.articleSubId = null;
+            $('.explorer-status-btn').removeClass('active');
+            $(this).addClass('active');
+            history.replaceState(null, '', window.location.pathname + '?status=' + encodeURIComponent(status));
+            $('#feedTree').html('<div class="explorer-state">正在加载订阅目录…</div>');
+            $('#articleListTitle').text('文章标题');
+            $('#articleListHint').text('点击左侧 Feed 后加载');
+            $('#articleList').html('<div class="explorer-state">从订阅目录中选择一个 Feed</div>');
+            $('#reader').html('<div class="explorer-state" style="padding-top:150px">选择一篇文章后，正文将在这里按需加载</div>');
+            loadFeeds();
+        });
+
+        $('.explorer-status-btn[data-status="' + state.status + '"]').addClass('active');
+        syncDirectoryState();
 
         loadFeeds();
     })(jQuery);

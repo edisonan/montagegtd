@@ -10,8 +10,10 @@ use App\Models\ArticleSub;
 use App\Models\FeedSub;
 use App\Services\ArticleAiRenderService;
 use App\Services\ArticleService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * 文章管理控制器
@@ -81,13 +83,183 @@ class ArticleController extends Controller
         return view('articles.explorer');
     }
 
+    public function workbench(Request $request)
+    {
+        return view('articles.workbench');
+    }
+
+    public function workbenchData(Request $request)
+    {
+        $status = (string)$request->input('status', 'unread');
+        if (!in_array($status, array('all', 'unread', 'read', 'read_later', 'star'), true)) {
+            $status = 'unread';
+        }
+
+        $query = ArticleSub::join('articles', 'article_subs.article_id', '=', 'articles.id')
+            ->join('feeds', 'article_subs.feed_id', '=', 'feeds.id')
+            ->leftJoin('categories', 'feeds.category_id', '=', 'categories.id')
+            ->where('article_subs.user_id', Auth::id())
+            ->select(array(
+                'article_subs.id',
+                'article_subs.status',
+                'article_subs.feed_id',
+                'article_subs.article_id',
+                'articles.subject',
+                'articles.url',
+                'articles.published',
+                'articles.word_count',
+                'articles.estimated_read_minutes',
+                'feeds.feed_name',
+                'categories.name as category_name',
+            ));
+
+        if ($status !== 'all') {
+            $query->where('article_subs.status', $status);
+        }
+
+        $feedId = (int)$request->input('feed_id', 0);
+        if ($feedId > 0) {
+            $query->where('article_subs.feed_id', $feedId);
+        }
+
+        $keyword = trim((string)$request->input('keyword', ''));
+        if ($keyword !== '') {
+            $query->where(function ($subQuery) use ($keyword) {
+                $like = '%' . $keyword . '%';
+                $subQuery->where('articles.subject', 'like', $like)
+                    ->orWhere('feeds.feed_name', 'like', $like)
+                    ->orWhere('categories.name', 'like', $like);
+            });
+        }
+
+        $minMinutes = max(0, (int)$request->input('min_read_minutes', 0));
+        $maxMinutes = max(0, (int)$request->input('max_read_minutes', 0));
+        if ($minMinutes > 0) {
+            $query->where('articles.estimated_read_minutes', '>=', $minMinutes);
+        }
+        if ($maxMinutes > 0) {
+            $query->where('articles.estimated_read_minutes', '<=', $maxMinutes);
+        }
+
+        $timeRange = (string)$request->input('time_range', 'all');
+        $now = Carbon::now();
+        $timeStart = null;
+        if ($timeRange === '3h') {
+            $timeStart = $now->copy()->subHours(3);
+        } elseif ($timeRange === '6h') {
+            $timeStart = $now->copy()->subHours(6);
+        } elseif ($timeRange === '1d') {
+            $timeStart = $now->copy()->subDay();
+        } elseif ($timeRange === '7d') {
+            $timeStart = $now->copy()->subDays(7);
+        } elseif ($timeRange === 'custom') {
+            $customStart = trim((string)$request->input('start_date', ''));
+            $customEnd = trim((string)$request->input('end_date', ''));
+            if ($customStart !== '') {
+                $query->where('articles.published', '>=', $customStart . ' 00:00:00');
+            }
+            if ($customEnd !== '') {
+                $query->where('articles.published', '<=', $customEnd . ' 23:59:59');
+            }
+        }
+        if ($timeStart) {
+            $query->where('articles.published', '>=', $timeStart->toDateTimeString());
+        }
+
+        $articles = $query->orderBy('articles.published', 'desc')
+            ->orderBy('article_subs.id', 'desc')
+            ->paginate(30);
+
+        $feeds = DB::table('feed_subs')
+            ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
+            ->leftJoin('categories', 'feeds.category_id', '=', 'categories.id')
+            ->where('feed_subs.user_id', Auth::id())
+            ->select('feeds.id', 'feeds.feed_name', 'categories.name as category_name')
+            ->orderBy('categories.name')
+            ->orderBy('feeds.feed_name')
+            ->get();
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'articles' => $articles->items(),
+            'feeds' => $feeds,
+            'pagination' => array(
+                'current_page' => $articles->currentPage(),
+                'last_page' => $articles->lastPage(),
+                'total' => $articles->total(),
+                'has_more_pages' => $articles->hasMorePages(),
+            ),
+        )));
+    }
+
+    public function workbenchArticle(Request $request, ArticleSub $articleSub)
+    {
+        $this->authorize('destroy', $articleSub);
+        $articleSub->load('article.feed.category');
+        if (!$articleSub->article) {
+            abort(404);
+        }
+        if ($articleSub->status === 'unread') {
+            $this->articleService->setArticleSubStatus($articleSub, 'read');
+        }
+        $article = $articleSub->fresh('article.feed.category')->article;
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'article_sub_id' => $articleSub->id,
+            'status' => $articleSub->fresh()->status,
+            'article' => array(
+                'id' => $article->id,
+                'subject' => $article->subject,
+                'url' => $article->url,
+                'published' => $article->published,
+                'content' => CommonUtil::formatContentHtml($article->content),
+                'feed_name' => $article->feed ? $article->feed->feed_name : '',
+                'category_name' => $article->feed && $article->feed->category ? $article->feed->category->name : '',
+                'word_count' => (int)$article->word_count,
+                'estimated_read_minutes' => max(1, (int)$article->estimated_read_minutes),
+            ),
+        )));
+    }
+
+    public function workbenchAiRender(Request $request, ArticleSub $articleSub)
+    {
+        $this->authorize('destroy', $articleSub);
+        $articleSub->load('article.feed.category');
+        if (!$articleSub->article) {
+            abort(404);
+        }
+
+        $customPrompt = trim((string)$request->input('custom_prompt', ''));
+        if (strlen($customPrompt) > 3000) {
+            $customPrompt = substr($customPrompt, 0, 3000);
+        }
+        $article = $articleSub->article;
+        $render = $this->articleAiRenderService->ensureRender($article, array(
+            'force' => $customPrompt !== '',
+            'custom_prompt' => $customPrompt,
+            'template_style' => 'magazine',
+        ));
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'article_id' => $article->id,
+            'ai_render' => array(
+                'status' => $render->status,
+                'summary' => $render->summary,
+                'outline' => (array)$render->outline_json,
+                'html_content' => $render->html_content,
+                'error_message' => $render->error_message,
+            ),
+        )));
+    }
+
     /**
      * 探索版分类及订阅源目录。
      */
     public function explorerFeeds(Request $request)
     {
+        $status = $this->resolveExplorerStatus($request);
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'nav_infos' => array_values($this->articleService->getNavInfo('unread')),
+            'status' => $status,
+            'nav_infos' => array_values($this->articleService->getNavInfo($status)),
         )));
     }
 
@@ -96,6 +268,7 @@ class ArticleController extends Controller
      */
     public function explorerArticleList(Request $request, $feedId)
     {
+        $status = $this->resolveExplorerStatus($request);
         $feedSub = FeedSub::where('user_id', Auth::id())
             ->where('feed_id', $feedId)
             ->first();
@@ -107,6 +280,7 @@ class ArticleController extends Controller
         $articleSubs = ArticleSub::join('articles', 'article_subs.article_id', '=', 'articles.id')
             ->where('article_subs.user_id', Auth::id())
             ->where('article_subs.feed_id', $feedId)
+            ->where('article_subs.status', $status)
             ->select(array(
                 'article_subs.id',
                 'article_subs.article_id',
@@ -122,6 +296,7 @@ class ArticleController extends Controller
                 'id' => (int)$feedId,
                 'name' => $feedSub->feed_name,
             ),
+            'status' => $status,
             'articles' => $articleSubs->items(),
             'pagination' => array(
                 'current_page' => $articleSubs->currentPage(),
@@ -129,6 +304,15 @@ class ArticleController extends Controller
                 'has_more_pages' => $articleSubs->hasMorePages(),
             ),
         )));
+    }
+
+    protected function resolveExplorerStatus(Request $request)
+    {
+        $status = (string)$request->input('status', 'unread');
+        if (!in_array($status, array('unread', 'read', 'star', 'read_later'), true)) {
+            $status = 'unread';
+        }
+        return $status;
     }
 
     /**
@@ -143,10 +327,14 @@ class ArticleController extends Controller
         }
 
         $article = $articleSub->article;
+        $wordCount = (int)$article->word_count;
+        $estimatedReadMinutes = (int)$article->estimated_read_minutes;
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'article_sub_id' => $articleSub->id,
             'status' => $articleSub->status,
+            'word_count' => $wordCount,
+            'estimated_read_minutes' => max(1, $estimatedReadMinutes),
             'article' => array(
                 'id' => $article->id,
                 'subject' => $article->subject,
