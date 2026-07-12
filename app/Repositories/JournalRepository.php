@@ -45,7 +45,7 @@ class JournalRepository {
 		return array(
 			'total' => (int)(clone $journal)->count(),
 			'today' => (int)(clone $journal)->where('start_time', '>=', $todayStart)->count(),
-			'duration_minutes' => (int)$durationJournal->select(DB::raw('COALESCE(SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)), 0) as aggregate'))->value('aggregate'),
+			'duration_minutes' => (int)$durationJournal->select(DB::raw('COALESCE(SUM(LEAST(TIMESTAMPDIFF(MINUTE, start_time, end_time), 1440)), 0) as aggregate'))->value('aggregate'),
 		);
 	}
 
