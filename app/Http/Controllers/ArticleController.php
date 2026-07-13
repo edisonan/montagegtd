@@ -121,6 +121,10 @@ class ArticleController extends Controller
         if ($feedId > 0) {
             $query->where('article_subs.feed_id', $feedId);
         }
+        $categoryId = (int)$request->input('category_id', 0);
+        if ($categoryId > 0) {
+            $query->where('feeds.category_id', $categoryId);
+        }
 
         $keyword = trim((string)$request->input('keyword', ''));
         if ($keyword !== '') {
@@ -166,9 +170,10 @@ class ArticleController extends Controller
             $query->where('articles.published', '>=', $timeStart->toDateTimeString());
         }
 
+        $pageCount = max(10, min(100, (int)$request->input('page_count', 100)));
         $articles = $query->orderBy('articles.published', 'desc')
             ->orderBy('article_subs.id', 'desc')
-            ->paginate(30);
+            ->paginate($pageCount);
 
         $feeds = DB::table('feed_subs')
             ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
@@ -178,16 +183,54 @@ class ArticleController extends Controller
             ->orderBy('categories.name')
             ->orderBy('feeds.feed_name')
             ->get();
+        $categories = DB::table('feed_subs')
+            ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
+            ->join('categories', 'feeds.category_id', '=', 'categories.id')
+            ->where('feed_subs.user_id', Auth::id())
+            ->select('categories.id', 'categories.name')
+            ->distinct()
+            ->orderBy('categories.name')
+            ->get();
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'articles' => $articles->items(),
             'feeds' => $feeds,
+            'categories' => $categories,
             'pagination' => array(
                 'current_page' => $articles->currentPage(),
                 'last_page' => $articles->lastPage(),
                 'total' => $articles->total(),
                 'has_more_pages' => $articles->hasMorePages(),
             ),
+        )));
+    }
+
+    public function workbenchAiDigest(Request $request)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array)$request->input('article_sub_ids', array()))));
+        if (empty($ids)) {
+            throw new CustomException('当前页没有可整理的文章');
+        }
+        $ids = array_slice($ids, 0, 100);
+        $articles = ArticleSub::with('article.feed.category')
+            ->where('user_id', Auth::id())
+            ->whereIn('id', $ids)
+            ->get()
+            ->pluck('article')
+            ->filter()
+            ->values()
+            ->all();
+        if (empty($articles)) {
+            throw new CustomException('未找到当前页文章');
+        }
+
+        $result = $this->articleAiRenderService->generateWorkbenchDigest(
+            $articles,
+            substr(trim((string)$request->input('custom_prompt', '')), 0, 3000)
+        );
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'count' => count($articles),
+            'ai_render' => $result,
         )));
     }
 
@@ -217,6 +260,43 @@ class ArticleController extends Controller
                 'word_count' => (int)$article->word_count,
                 'estimated_read_minutes' => max(1, (int)$article->estimated_read_minutes),
             ),
+        )));
+    }
+
+    public function workbenchStatus(Request $request, ArticleSub $articleSub)
+    {
+        $this->authorize('destroy', $articleSub);
+        $status = (string)$request->input('status', '');
+        if (!in_array($status, array('read', 'unread', 'read_later', 'star'), true)) {
+            throw new CustomException('status状态上送错误');
+        }
+        $this->articleService->setArticleSubStatus($articleSub, $status);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'article_sub_id' => $articleSub->id,
+            'status' => $status,
+        )));
+    }
+
+    public function workbenchPageRead(Request $request)
+    {
+        $ids = array_values(array_filter(array_map('intval', (array)$request->input('ids', array()))));
+        if (empty($ids)) {
+            throw new CustomException('当前页没有可标记为已读的文章');
+        }
+
+        $articleSubs = ArticleSub::where('user_id', Auth::id())
+            ->whereIn('id', $ids)
+            ->where('status', 'unread')
+            ->get();
+        if ($articleSubs->isEmpty()) {
+            throw new CustomException('当前页没有未读文章');
+        }
+
+        $processCount = $this->articleService->setArticleSubStatusByIds($articleSubs->pluck('id')->all(), 'read');
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'count' => $processCount,
+            'article_sub_ids' => $articleSubs->pluck('id')->all(),
+            'status' => 'read',
         )));
     }
 

@@ -42,10 +42,11 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         $status = $request->input('status', 'unread');
-        $pageCount = (int)$request->input('page_count', 20);
+        $pageCount = max(1, min(100, (int)$request->input('page_count', 20)));
         $categoryId = $request->input('category_id', '');
         $feedId = $request->input('feed_id', '');
         $filters = $this->resolveArticleAiFilters($request);
+        $filters = array_merge($filters, $this->resolveArticleCommonFilters($request));
 
         if (!in_array($status, array('unread', 'read', 'read_later', 'star'), true)) {
             throw new CustomException('status状态上送错误');
@@ -70,6 +71,8 @@ class ArticleController extends Controller
                 'status' => $status,
                 'category_id' => $categoryId,
                 'feed_id' => $feedId,
+                'time_range' => $filters['time_range'],
+                'read_duration' => $filters['read_duration'],
                 'view_mode' => $filters['view_mode'],
                 'primary_category' => $filters['primary_category'],
                 'min_quality_score' => $filters['min_quality_score'],
@@ -80,8 +83,8 @@ class ArticleController extends Controller
     public function list(Request $request)
     {
         $feedId = $request->input('feed_id');
-        $pageCount = (int)$request->input('page_count', 20);
-        $filters = $this->resolveArticleAiFilters($request);
+        $pageCount = max(1, min(100, (int)$request->input('page_count', 20)));
+        $filters = array_merge($this->resolveArticleAiFilters($request), $this->resolveArticleCommonFilters($request));
 
         if (empty($feedId)) {
             throw new CustomException('feed_id参数缺失');
@@ -107,6 +110,8 @@ class ArticleController extends Controller
             'page_params' => array(
                 'page_count' => $pageCount,
                 'feed_id' => $feedId,
+                'time_range' => $filters['time_range'],
+                'read_duration' => $filters['read_duration'],
                 'view_mode' => $filters['view_mode'],
                 'primary_category' => $filters['primary_category'],
                 'min_quality_score' => $filters['min_quality_score'],
@@ -549,6 +554,37 @@ class ArticleController extends Controller
             'primary_category' => trim((string)$request->input('primary_category', '')),
             'min_quality_score' => max(0, (int)$request->input('min_quality_score', 0)),
         );
+    }
+
+    private function resolveArticleCommonFilters(Request $request)
+    {
+        $timeRange = (string)$request->input('time_range', 'all');
+        $allowedTimeRanges = array('all', '3h', '6h', '1d', '3d', '7d');
+        if (!in_array($timeRange, $allowedTimeRanges, true)) {
+            $timeRange = 'all';
+        }
+
+        $readDuration = (string)$request->input('read_duration', 'all');
+        $allowedReadDurations = array('all', 'short', 'medium', 'long');
+        if (!in_array($readDuration, $allowedReadDurations, true)) {
+            $readDuration = 'all';
+        }
+
+        $filters = array(
+            'time_range' => $timeRange,
+            'read_duration' => $readDuration,
+        );
+
+        if ($readDuration === 'short') {
+            $filters['max_read_minutes'] = 5;
+        } elseif ($readDuration === 'medium') {
+            $filters['min_read_minutes'] = 6;
+            $filters['max_read_minutes'] = 15;
+        } elseif ($readDuration === 'long') {
+            $filters['min_read_minutes'] = 16;
+        }
+
+        return $filters;
     }
 
     private function resolveArticleSubForUser(Request $request, Article $article, $articleSubId = null)

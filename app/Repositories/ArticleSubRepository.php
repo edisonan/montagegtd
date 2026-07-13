@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\ArticleSub;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -27,10 +28,14 @@ class ArticleSubRepository {
 	 * @return array
 	 */
 	public function getArticleSubList($userId, $status, $feedIds = array(), $pageCount = 20, array $filters = array()) {
-		$articleSubs = ArticleSub::with ( 'article.feed', 'article.aiProfile' )->where ( 'article_subs.user_id', $userId )->where ( 'article_subs.status', $status );
+		$articleSubs = ArticleSub::with ( 'article.feed', 'article.aiProfile' )
+            ->join('articles', 'article_subs.article_id', '=', 'articles.id')
+            ->select('article_subs.*')
+            ->where ( 'article_subs.user_id', $userId )->where ( 'article_subs.status', $status );
 		if (! empty ( $feedIds )) {
 			$articleSubs = $articleSubs->whereIn ( 'article_subs.feed_id', $feedIds );
 		}
+        $this->applyCommonFilters($articleSubs, $filters);
         $this->applyAiFilters($articleSubs, $filters);
 		$articleSubs = $articleSubs->orderBy ( 'article_subs.updated_at', 'desc' )->simplePaginate ( $pageCount );
 		return $articleSubs;
@@ -65,11 +70,44 @@ class ArticleSubRepository {
 	 */
 	public function getArticleListByFeedId($userId, $feedId, $pageCount = 20, array $filters = array()) {
         $articleSubs = ArticleSub::with ( 'article.feed', 'article.aiProfile' )
+            ->join('articles', 'article_subs.article_id', '=', 'articles.id')
+            ->select('article_subs.*')
             ->where ( 'article_subs.user_id', $userId )
             ->where ( 'article_subs.feed_id', $feedId );
+        $this->applyCommonFilters($articleSubs, $filters);
         $this->applyAiFilters($articleSubs, $filters);
 		return $articleSubs->orderBy ( 'article_subs.updated_at', 'desc' )->simplePaginate ( $pageCount );
-	}
+    }
+
+    protected function applyCommonFilters($query, array $filters)
+    {
+        $timeRange = isset($filters['time_range']) ? (string)$filters['time_range'] : 'all';
+        $now = Carbon::now();
+        $timeStart = null;
+        if ($timeRange === '3h') {
+            $timeStart = $now->copy()->subHours(3);
+        } elseif ($timeRange === '6h') {
+            $timeStart = $now->copy()->subHours(6);
+        } elseif ($timeRange === '1d') {
+            $timeStart = $now->copy()->subDay();
+        } elseif ($timeRange === '3d') {
+            $timeStart = $now->copy()->subDays(3);
+        } elseif ($timeRange === '7d') {
+            $timeStart = $now->copy()->subDays(7);
+        }
+        if ($timeStart) {
+            $query->where('articles.published', '>=', $timeStart->toDateTimeString());
+        }
+
+        $minReadMinutes = max(0, (int)($filters['min_read_minutes'] ?? 0));
+        $maxReadMinutes = max(0, (int)($filters['max_read_minutes'] ?? 0));
+        if ($minReadMinutes > 0) {
+            $query->where('articles.estimated_read_minutes', '>=', $minReadMinutes);
+        }
+        if ($maxReadMinutes > 0) {
+            $query->where('articles.estimated_read_minutes', '<=', $maxReadMinutes);
+        }
+    }
 
     protected function applyAiFilters($query, array $filters)
     {

@@ -114,6 +114,9 @@ Route::group([
     Route::get('/articles/workbench/data', 'ArticleController@workbenchData');
     Route::get('/articles/workbench/articles/{articleSub}', 'ArticleController@workbenchArticle');
     Route::post('/articles/workbench/articles/{articleSub}/ai-render', 'ArticleController@workbenchAiRender');
+    Route::post('/articles/workbench/ai-digest', 'ArticleController@workbenchAiDigest');
+    Route::post('/articles/workbench/page-read', 'ArticleController@workbenchPageRead');
+    Route::post('/articles/workbench/articles/{articleSub}/status', 'ArticleController@workbenchStatus');
     Route::get('/articles/explorer/data/feeds', 'ArticleController@explorerFeeds');
     Route::get('/articles/explorer/data/feeds/{feedId}/articles', 'ArticleController@explorerArticleList');
     Route::get('/articles/explorer/data/articles/{articleSub}', 'ArticleController@explorerArticle');

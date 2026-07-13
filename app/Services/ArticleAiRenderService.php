@@ -130,6 +130,74 @@ class ArticleAiRenderService
         ));
     }
 
+    public function generateWorkbenchDigest(array $articles, $customPrompt = '')
+    {
+        $sections = array();
+        foreach ($articles as $article) {
+            $category = '未分类';
+            $feedName = '';
+            if ($article->relationLoaded('feed') && $article->feed) {
+                $feedName = (string)$article->feed->feed_name;
+                if ($article->feed->relationLoaded('category') && $article->feed->category) {
+                    $category = (string)$article->feed->category->name;
+                }
+            }
+            $sections[$category][] = array(
+                'title' => (string)$article->subject,
+                'feed' => $feedName,
+            );
+        }
+
+        $source = '';
+        foreach ($sections as $category => $items) {
+            $source .= "\n【分类：" . $category . "】\n";
+            foreach ($items as $item) {
+                $source .= "标题：" . $item['title'] . "\n来源：" . $item['feed'] . "\n\n";
+            }
+        }
+        $customPrompt = trim((string)$customPrompt);
+
+        $messages = array(
+            array(
+                'role' => 'system',
+                'content' => '你是文章阅读整理助手。必须只输出 JSON，不要 markdown，不要解释。'
+                    . '输出字段固定为 title, subtitle, summary, outline, html。'
+                    . '请只根据文章标题、分类和 Feed 元信息，把输入中的多篇文章按分类合并成一个统一的辅助阅读页面。每个分类必须单独成为一个模块，并用3-5句话概括标题体现出的共同主题、关注方向和差异；绝对不要要求或假设存在正文，也不要编造标题之外的事实。'
+                    . 'html 必须是可嵌入页面的 HTML 片段，只允许使用 main, article, section, header, footer, aside, div, h2, h3, h4, p, ul, ol, li, blockquote, strong, b, em, code, hr, table, thead, tbody, tr, th, td, dl, dt, dd, figure, figcaption, mark, span。'
+                    . '必须忠实输入，不得编造事实；不要输出 script/style/iframe/img/audio/video/button/form/input，不要使用 emoji。'
+            ),
+            array(
+                'role' => 'user',
+                'content' => '请整理下面当前页的全部文章：' . "\n"
+                    . ($customPrompt !== '' ? '用户补充要求：' . $customPrompt . "\n" : '')
+                    . $source,
+            ),
+        );
+
+        $result = $this->llmStructuredTaskService->runTask('article_workbench_digest', $messages, array('timeout' => 180));
+        $parsed = !empty($result['success']) && !empty($result['content'])
+            ? $this->parseStructuredJson($result['content'])
+            : null;
+
+        if (is_array($parsed) && !empty($parsed['html'])) {
+            return array(
+                'status' => 'success',
+                'summary' => $this->limitText($parsed['summary'] ?? '', 500),
+                'outline' => $this->normalizeOutline($parsed['outline'] ?? array()),
+                'html_content' => $this->sanitizeReaderHtml($parsed['html']),
+                'error_message' => null,
+            );
+        }
+
+        return array(
+            'status' => 'failed',
+            'summary' => '',
+            'outline' => array(),
+            'html_content' => null,
+            'error_message' => !empty($result['error']) ? $result['error'] : 'AI 返回内容无法解析',
+        );
+    }
+
     protected function buildArticleText(Article $article)
     {
         $subject = trim((string)$article->subject);
