@@ -669,6 +669,47 @@
             border-color: #4a90e2;
         }
 
+        .article-filter-bar {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+            gap: 12px;
+            padding: 0 0 18px;
+            align-items: end;
+        }
+
+        .article-filter-group {
+            min-width: 0;
+        }
+
+        .article-filter-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .article-filter-control {
+            width: 100%;
+            min-height: 38px;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #334155;
+            font-size: 13px;
+        }
+
+        .article-filter-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .article-footer.scan-collapsed {
+            display: none;
+        }
+
         .article-footer {
             padding: 16px 20px;
             border-top: 1px solid #f1f5f9;
@@ -935,6 +976,10 @@
                 margin-top: 12px;
             }
 
+            .article-filter-bar {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
             .mobile-only {
                 display: inline-flex;
             }
@@ -972,6 +1017,10 @@
 
             .share-menu {
                 right: -50px;
+            }
+
+            .article-filter-bar {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -1249,6 +1298,43 @@
 
                     <!-- 文章列表 -->
                     <div class="p-6">
+                        <form id="articleFilters" class="article-filter-bar">
+                            <div class="article-filter-group">
+                                <label class="article-filter-label" for="articleTimeRange">时间</label>
+                                <select class="article-filter-control" id="articleTimeRange" name="time_range">
+                                    <option value="all">全部时间</option>
+                                    <option value="3h">最近 3 小时</option>
+                                    <option value="6h">最近 6 小时</option>
+                                    <option value="1d">最近 1 天</option>
+                                    <option value="3d">最近 3 天</option>
+                                    <option value="7d">最近 7 天</option>
+                                </select>
+                            </div>
+                            <div class="article-filter-group">
+                                <label class="article-filter-label" for="articleCategoryFilter">分类</label>
+                                <select class="article-filter-control" id="articleCategoryFilter" name="category_id">
+                                    <option value="">全部分类</option>
+                                </select>
+                            </div>
+                            <div class="article-filter-group">
+                                <label class="article-filter-label" for="articleReadDuration">时长</label>
+                                <select class="article-filter-control" id="articleReadDuration" name="read_duration">
+                                    <option value="all">不限</option>
+                                    <option value="short">5 分钟以内</option>
+                                    <option value="medium">6-15 分钟</option>
+                                    <option value="long">16 分钟以上</option>
+                                </select>
+                            </div>
+                            <div class="article-filter-group">
+                                <label class="article-filter-label" for="articlePageCount">数量</label>
+                                <input class="article-filter-control" id="articlePageCount" name="page_count" type="number" min="1" max="100" step="1">
+                            </div>
+                            <div class="article-filter-actions">
+                                <button type="submit" class="btn btn-primary px-4 py-2 rounded-lg">
+                                    <i class="fas fa-filter mr-1"></i>筛选
+                                </button>
+                            </div>
+                        </form>
                         <div id="articleLoading" class="text-center py-12 text-gray-500">
                             <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
                         </div>
@@ -1463,7 +1549,10 @@
             var qs = new URLSearchParams(window.location.search);
             var status = qs.get('status') || 'unread';
             var currentFeedId = qs.get('feed_id') || '';
-            var pageCount = Number(qs.get('page_count') || 20);
+            var timeRange = qs.get('time_range') || '6h';
+            var categoryId = qs.get('category_id') || '';
+            var readDuration = qs.get('read_duration') || 'all';
+            var pageCount = normalizePageCount(qs.get('page_count') || 20);
             var currentPage = Number(qs.get('page') || 1);
             var viewMode = qs.get('view_mode') || 'all';
             var allowedViewModes = ['all', 'personalized', 'tech', 'product', 'read_later_suggest', 'low_priority'];
@@ -1491,6 +1580,33 @@
                 isSaving: false,
                 savedMindId: null
             };
+
+            function normalizePageCount(value) {
+                var count = parseInt(value, 10);
+                if (!count || count < 1) {
+                    return 20;
+                }
+                if (count > 100) {
+                    return 100;
+                }
+                return count;
+            }
+
+            function collectArticleFilters() {
+                return {
+                    time_range: $('#articleTimeRange').val() || timeRange || '6h',
+                    category_id: $('#articleCategoryFilter').val() || categoryId || '',
+                    read_duration: $('#articleReadDuration').val() || readDuration || 'all',
+                    page_count: normalizePageCount($('#articlePageCount').val() || pageCount || 20)
+                };
+            }
+
+            function syncArticleFilterForm() {
+                $('#articleTimeRange').val(timeRange || '6h');
+                $('#articleCategoryFilter').val(categoryId || '');
+                $('#articleReadDuration').val(readDuration || 'all');
+                $('#articlePageCount').val(String(pageCount || 20));
+            }
 
             function setMindmapStatus(message) {
                 $('#articleMindmapStatus').text(message || '');
@@ -1878,6 +1994,7 @@
             }
 
             function renderStatusTabs() {
+                var filters = collectArticleFilters();
                 $('.status-tab').each(function() {
                     var tabStatus = $(this).data('status');
                     var url = '/articles?status=' + encodeURIComponent(tabStatus);
@@ -1887,8 +2004,17 @@
                     if (viewMode && viewMode !== 'all') {
                         url += '&view_mode=' + encodeURIComponent(viewMode);
                     }
-                    if (pageCount && pageCount !== 20) {
-                        url += '&page_count=' + encodeURIComponent(String(pageCount));
+                    if (filters.time_range && filters.time_range !== 'all') {
+                        url += '&time_range=' + encodeURIComponent(filters.time_range);
+                    }
+                    if (filters.category_id) {
+                        url += '&category_id=' + encodeURIComponent(filters.category_id);
+                    }
+                    if (filters.read_duration && filters.read_duration !== 'all') {
+                        url += '&read_duration=' + encodeURIComponent(filters.read_duration);
+                    }
+                    if (filters.page_count && filters.page_count !== 20) {
+                        url += '&page_count=' + encodeURIComponent(String(filters.page_count));
                     }
                     $(this).attr('href', url);
                     $(this).toggleClass('active', tabStatus === status);
@@ -1903,8 +2029,17 @@
                     if (tabMode && tabMode !== 'all') {
                         url += '&view_mode=' + encodeURIComponent(tabMode);
                     }
-                    if (pageCount && pageCount !== 20) {
-                        url += '&page_count=' + encodeURIComponent(String(pageCount));
+                    if (filters.time_range && filters.time_range !== 'all') {
+                        url += '&time_range=' + encodeURIComponent(filters.time_range);
+                    }
+                    if (filters.category_id) {
+                        url += '&category_id=' + encodeURIComponent(filters.category_id);
+                    }
+                    if (filters.read_duration && filters.read_duration !== 'all') {
+                        url += '&read_duration=' + encodeURIComponent(filters.read_duration);
+                    }
+                    if (filters.page_count && filters.page_count !== 20) {
+                        url += '&page_count=' + encodeURIComponent(String(filters.page_count));
                     }
                     $(this).attr('href', url);
                     $(this).toggleClass('active', tabMode === viewMode);
@@ -1917,8 +2052,17 @@
                 if (viewMode && viewMode !== 'all') {
                     streamUrl += '&view_mode=' + encodeURIComponent(viewMode);
                 }
-                if (pageCount && pageCount !== 20) {
-                    streamUrl += '&page_count=' + encodeURIComponent(String(pageCount));
+                if (filters.time_range && filters.time_range !== 'all') {
+                    streamUrl += '&time_range=' + encodeURIComponent(filters.time_range);
+                }
+                if (filters.category_id) {
+                    streamUrl += '&category_id=' + encodeURIComponent(filters.category_id);
+                }
+                if (filters.read_duration && filters.read_duration !== 'all') {
+                    streamUrl += '&read_duration=' + encodeURIComponent(filters.read_duration);
+                }
+                if (filters.page_count && filters.page_count !== 20) {
+                    streamUrl += '&page_count=' + encodeURIComponent(String(filters.page_count));
                 }
                 if (currentPage && currentPage !== 1) {
                     streamUrl += '&page=' + encodeURIComponent(String(currentPage));
@@ -1934,7 +2078,23 @@
                 } else {
                     params.delete('feed_id');
                 }
-                params.set('page_count', String(pageCount));
+                var filters = collectArticleFilters();
+                if (filters.time_range && filters.time_range !== 'all') {
+                    params.set('time_range', filters.time_range);
+                } else {
+                    params.delete('time_range');
+                }
+                if (filters.category_id) {
+                    params.set('category_id', filters.category_id);
+                } else {
+                    params.delete('category_id');
+                }
+                if (filters.read_duration && filters.read_duration !== 'all') {
+                    params.set('read_duration', filters.read_duration);
+                } else {
+                    params.delete('read_duration');
+                }
+                params.set('page_count', String(filters.page_count));
                 if (viewMode && viewMode !== 'all') {
                     params.set('view_mode', viewMode);
                 } else {
@@ -1974,9 +2134,18 @@
                 $('#articleList').empty();
                 $('#articlePagination').hide().empty();
 
+                var filters = collectArticleFilters();
+                timeRange = filters.time_range;
+                categoryId = filters.category_id;
+                readDuration = filters.read_duration;
+                pageCount = filters.page_count;
+
                 var params = {
                     status: status,
                     feed_id: currentFeedId,
+                    time_range: timeRange,
+                    category_id: categoryId,
+                    read_duration: readDuration,
                     page_count: pageCount,
                     page: currentPage,
                     view_mode: viewMode
@@ -2033,10 +2202,39 @@
 
                     var textLen = $('<div>').html(contentHtml).text().trim().length;
                     var needsCollapse = unableDesc && textLen > 500;
+                    var footerClass = unableDesc && needsCollapse ? ' scan-collapsed' : '';
                     var sourceHref = '/articles?status=unread&feed_id=' + encodeURIComponent(article.feed.id);
+                    if (timeRange && timeRange !== 'all') {
+                        sourceHref += '&time_range=' + encodeURIComponent(timeRange);
+                    }
+                    if (categoryId) {
+                        sourceHref += '&category_id=' + encodeURIComponent(categoryId);
+                    }
+                    if (readDuration && readDuration !== 'all') {
+                        sourceHref += '&read_duration=' + encodeURIComponent(readDuration);
+                    }
+                    if (pageCount && pageCount !== 20) {
+                        sourceHref += '&page_count=' + encodeURIComponent(String(pageCount));
+                    }
+                    if (viewMode && viewMode !== 'all') {
+                        sourceHref += '&view_mode=' + encodeURIComponent(viewMode);
+                    }
                     var originUrl = String(article.url || '#');
                     var aiProfile = article.ai_profile || null;
                     var aiBadges = renderAiProfileBadges(aiProfile, articleSub.personalized_score);
+                    var streamHref = '/articles/stream?status=' + encodeURIComponent(status) + (currentFeedId ? '&feed_id=' + encodeURIComponent(currentFeedId) : '') + '&page_count=' + encodeURIComponent(String(pageCount)) + '&page=' + encodeURIComponent(String(currentPage)) + '&article_sub_id=' + subId;
+                    if (timeRange && timeRange !== 'all') {
+                        streamHref += '&time_range=' + encodeURIComponent(timeRange);
+                    }
+                    if (categoryId) {
+                        streamHref += '&category_id=' + encodeURIComponent(categoryId);
+                    }
+                    if (readDuration && readDuration !== 'all') {
+                        streamHref += '&read_duration=' + encodeURIComponent(readDuration);
+                    }
+                    if (viewMode && viewMode !== 'all') {
+                        streamHref += '&view_mode=' + encodeURIComponent(viewMode);
+                    }
 
                     html += ''
                         + '<div class="article-card" id="article-' + subId + '">'
@@ -2056,8 +2254,8 @@
                         + '</div>'
                         + (needsCollapse ? '<div class="read-more" style="display:block;"><button type="button" class="read-more-btn" data-article-id="' + subId + '"><i class="fas fa-chevron-down"></i>阅读更多</button></div>' : '')
                         + '</div>'
-                        + '<div class="article-footer"><div class="action-buttons" style="margin-left:auto;">'
-                        + '<a class="action-btn" href="/articles/stream?status=' + encodeURIComponent(status) + (currentFeedId ? '&feed_id=' + encodeURIComponent(currentFeedId) : '') + '&page_count=' + encodeURIComponent(String(pageCount)) + '&page=' + encodeURIComponent(String(currentPage)) + '&article_sub_id=' + subId + '" title="沉浸刷文"><i class="fas fa-mobile-screen-button"></i><span class="action-label">沉浸</span></a>'
+                        + '<div class="article-footer' + footerClass + '"><div class="action-buttons" style="margin-left:auto;">'
+                        + '<a class="action-btn" href="' + streamHref + '" title="沉浸刷文"><i class="fas fa-mobile-screen-button"></i><span class="action-label">沉浸</span></a>'
                         + '<a class="action-btn" href="/article/' + articleId + '/ai-render" title="AI可视化"><i class="fas fa-wand-magic-sparkles"></i><span class="action-label">AI可视化</span></a>'
                         + '<button type="button" class="action-btn ai-assist-btn" data-content-id="desc' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI助手"><i class="fas fa-robot"></i><span class="action-label">AI助手</span></button>'
                         + '<button type="button" class="action-btn article-mindmap-btn" data-content-id="desc' + subId + '" data-article-sub-id="' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI生成导图"><i class="fas fa-brain"></i><span class="action-label">导图</span></button>'
@@ -2074,6 +2272,24 @@
                 initShareButtons();
                 if (unableDesc) {
                     applyScanReadingMode();
+                }
+            }
+
+            function syncArticleFooter($card) {
+                if (!$card || !$card.length) {
+                    return;
+                }
+                var $content = $card.find('.article-content');
+                var $preview = $card.find('.content-preview');
+                var $footer = $card.find('.article-footer');
+                if ($content.length && !$content.is(':visible')) {
+                    $footer.addClass('scan-collapsed').hide();
+                    return;
+                }
+                if ($('#unable_desc').is(':checked') && $preview.length && !$preview.hasClass('expanded')) {
+                    $footer.addClass('scan-collapsed').hide();
+                } else {
+                    $footer.removeClass('scan-collapsed').show();
                 }
             }
 
@@ -2098,6 +2314,19 @@
                 });
                 html += '</div>';
                 return html;
+            }
+
+            function renderCategoryFilter(navInfos) {
+                var html = '<option value="">全部分类</option>';
+                var seen = {};
+                $.each(navInfos || {}, function (navId, navInfo) {
+                    if (!navInfo || !navInfo.category_info) return;
+                    var categoryIdValue = String(navInfo.category_info.category_id || navId);
+                    if (!categoryIdValue || seen[categoryIdValue]) return;
+                    seen[categoryIdValue] = true;
+                    html += '<option value="' + escapeHtml(categoryIdValue) + '">' + escapeHtml(navInfo.category_info.category_name || '') + '</option>';
+                });
+                $('#articleCategoryFilter').html(html).val(categoryId || '');
             }
 
             function renderPagination(pagination) {
@@ -2278,6 +2507,7 @@
             function renderNav(data, status) {
                 processNavFlag = true;
                 $('#nav').html('');
+                renderCategoryFilter(data && data.nav_infos ? data.nav_infos : {});
 
                 // 添加最后更新时间提示
                 const updateTime = new Date().toLocaleTimeString();
@@ -2311,10 +2541,26 @@
                         $.each(navInfo.list, function (index, item) {
                             var countInfo = item.feed_count > 99 ? '99+' : item.feed_count;
                             var isActive = String(currentFeedId) === String(item.feed_id) ? 'active' : '';
+                            var feedUrl = '/articles?feed_id=' + encodeURIComponent(String(item.feed_id)) + '&status=' + encodeURIComponent(status);
+                            if (timeRange && timeRange !== 'all') {
+                                feedUrl += '&time_range=' + encodeURIComponent(timeRange);
+                            }
+                            if (categoryId) {
+                                feedUrl += '&category_id=' + encodeURIComponent(categoryId);
+                            }
+                            if (readDuration && readDuration !== 'all') {
+                                feedUrl += '&read_duration=' + encodeURIComponent(readDuration);
+                            }
+                            if (pageCount && pageCount !== 20) {
+                                feedUrl += '&page_count=' + encodeURIComponent(String(pageCount));
+                            }
+                            if (viewMode && viewMode !== 'all') {
+                                feedUrl += '&view_mode=' + encodeURIComponent(viewMode);
+                            }
 
                             li += `
                             <li class="feed-item ${isActive}">
-                                <a href="/articles?feed_id=${item.feed_id}&status=${status}" class="feed-link">
+                                <a href="${feedUrl}" class="feed-link">
                                     <i class="fas fa-rss"></i>
                                     <span class="flex-1 text-truncate-1">${item.feed_name}</span>
                                     <span class="feed-count">${countInfo}</span>
@@ -2480,14 +2726,17 @@
                     var $button = $(this);
                     var articleId = $button.data('article-id');
                     var $content = $("#content" + articleId);
+                    var $card = $button.closest('.article-card');
 
                     // 切换显示/隐藏
                     $content.toggle();
+                    syncArticleFooter($card);
                 });
                 $(".read-more-btn").off('click').on('click', function(e) {
                     e.stopPropagation();
                     var $button = $(this);
                     var articleId = $button.data('article-id');
+                    var $card = $button.closest('.article-card');
 
                     if (!articleId) {
                         var $card = $button.closest('.article-card');
@@ -2510,6 +2759,7 @@
 
                             // 隐藏渐变遮罩
                             $content.find('.content-fade').css('opacity', '0');
+                            syncArticleFooter($card);
 
                             // 触发图片懒加载
                             setTimeout(function() {
@@ -2526,6 +2776,7 @@
 
                             // 显示渐变遮罩
                             $content.find('.content-fade').css('opacity', '1');
+                            syncArticleFooter($card);
                         }
                     }
                 });
@@ -2573,8 +2824,11 @@
             function applyScanReadingMode() {
                 $('.article-card').each(function() {
                     var $card = $(this);
+                    var $articleContent = $card.find('.article-content');
                     var $content = $card.find('.content-preview');
                     var $readMoreBtn = $card.find('.read-more-btn');
+
+                    $articleContent.hide();
 
                     // 获取文章内容文本
                     var contentText = $content.text().trim();
@@ -2602,11 +2856,13 @@
                                 $card.find('.read-more').show();
                             }
                         }
+                        syncArticleFooter($card);
                     } else {
                         // 短内容保持展开
                         $content.addClass('expanded');
                         $content.css('max-height', 'none');
                         $card.find('.read-more').hide();
+                        syncArticleFooter($card);
                     }
                 });
 
@@ -2618,9 +2874,12 @@
             function removeScanReadingMode() {
                 $('.content-preview').each(function() {
                     var $content = $(this);
+                    var $card = $content.closest('.article-card');
+                    $card.find('.article-content').show();
                     $content.addClass('expanded');
                     $content.css('max-height', 'none');
                     $content.siblings('.read-more').hide();
+                    syncArticleFooter($card);
                 });
             }
 
@@ -2929,9 +3188,52 @@
             $('#unable_desc').prop('checked', unableDesc);
             $('#unable_img').prop('checked', unableImg);
             syncToolButtons();
+            syncArticleFilterForm();
             if (currentFeedId) {
                 $('#discoverBtn').show();
             }
+            $('#articleFilters').on('submit', function (event) {
+                event.preventDefault();
+                currentPage = 1;
+                var filters = collectArticleFilters();
+                timeRange = filters.time_range;
+                categoryId = filters.category_id;
+                readDuration = filters.read_duration;
+                pageCount = filters.page_count;
+
+                var params = new URLSearchParams(window.location.search);
+                params.set('status', status);
+                if (currentFeedId) {
+                    params.set('feed_id', currentFeedId);
+                } else {
+                    params.delete('feed_id');
+                }
+                if (timeRange && timeRange !== 'all') {
+                    params.set('time_range', timeRange);
+                } else {
+                    params.delete('time_range');
+                }
+                if (categoryId) {
+                    params.set('category_id', categoryId);
+                } else {
+                    params.delete('category_id');
+                }
+                if (readDuration && readDuration !== 'all') {
+                    params.set('read_duration', readDuration);
+                } else {
+                    params.delete('read_duration');
+                }
+                params.set('page_count', String(pageCount));
+                if (viewMode && viewMode !== 'all') {
+                    params.set('view_mode', viewMode);
+                } else {
+                    params.delete('view_mode');
+                }
+                params.set('page', String(currentPage));
+                window.history.replaceState(null, '', '/articles?' + params.toString());
+                renderStatusTabs();
+                loadArticleListByApi();
+            });
             renderStatusTabs();
             loadArticleListByApi();
             checkMobile();
