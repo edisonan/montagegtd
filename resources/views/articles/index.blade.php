@@ -676,9 +676,18 @@
             padding: 0 0 18px;
             align-items: end;
         }
+        .article-filter-shell {
+            display: none;
+        }
+        .article-filter-shell.active {
+            display: block;
+        }
 
         .article-filter-group {
             min-width: 0;
+        }
+        .article-filter-group-wide {
+            grid-column: span 2;
         }
 
         .article-filter-label {
@@ -1270,6 +1279,11 @@
                                 </button>
                             </div>
 
+                            <button type="button" class="tool-btn" id="toggleArticleFiltersBtn">
+                                <i class="fas fa-filter"></i>
+                                筛选项
+                            </button>
+
                             <div class="tool-actions">
                                 <a href="{{ url('articles/stream') }}" class="tool-btn" id="streamModeBtn">
                                     <i class="fas fa-mobile-screen-button"></i>
@@ -1298,43 +1312,49 @@
 
                     <!-- 文章列表 -->
                     <div class="p-6">
-                        <form id="articleFilters" class="article-filter-bar">
-                            <div class="article-filter-group">
-                                <label class="article-filter-label" for="articleTimeRange">时间</label>
-                                <select class="article-filter-control" id="articleTimeRange" name="time_range">
-                                    <option value="all">全部时间</option>
-                                    <option value="3h">最近 3 小时</option>
-                                    <option value="6h">最近 6 小时</option>
-                                    <option value="1d">最近 1 天</option>
-                                    <option value="3d">最近 3 天</option>
-                                    <option value="7d">最近 7 天</option>
-                                </select>
-                            </div>
-                            <div class="article-filter-group">
-                                <label class="article-filter-label" for="articleCategoryFilter">分类</label>
-                                <select class="article-filter-control" id="articleCategoryFilter" name="category_id">
-                                    <option value="">全部分类</option>
-                                </select>
-                            </div>
-                            <div class="article-filter-group">
-                                <label class="article-filter-label" for="articleReadDuration">时长</label>
-                                <select class="article-filter-control" id="articleReadDuration" name="read_duration">
-                                    <option value="all">不限</option>
-                                    <option value="short">5 分钟以内</option>
-                                    <option value="medium">6-15 分钟</option>
-                                    <option value="long">16 分钟以上</option>
-                                </select>
-                            </div>
-                            <div class="article-filter-group">
-                                <label class="article-filter-label" for="articlePageCount">数量</label>
-                                <input class="article-filter-control" id="articlePageCount" name="page_count" type="number" min="1" max="100" step="1">
-                            </div>
-                            <div class="article-filter-actions">
-                                <button type="submit" class="btn btn-primary px-4 py-2 rounded-lg">
-                                    <i class="fas fa-filter mr-1"></i>筛选
-                                </button>
-                            </div>
-                        </form>
+                        <div id="articleFilterShell" class="article-filter-shell">
+                            <form id="articleFilters" class="article-filter-bar">
+                                <div class="article-filter-group">
+                                    <label class="article-filter-label" for="articleTimeRange">时间</label>
+                                    <select class="article-filter-control" id="articleTimeRange" name="time_range">
+                                        <option value="all">全部时间</option>
+                                        <option value="3h">最近 3 小时</option>
+                                        <option value="6h">最近 6 小时</option>
+                                        <option value="1d">最近 1 天</option>
+                                        <option value="3d">最近 3 天</option>
+                                        <option value="7d">最近 7 天</option>
+                                    </select>
+                                </div>
+                                <div class="article-filter-group">
+                                    <label class="article-filter-label" for="articleCategoryFilter">分类</label>
+                                    <select class="article-filter-control" id="articleCategoryFilter" name="category_id">
+                                        <option value="">全部分类</option>
+                                    </select>
+                                </div>
+                                <div class="article-filter-group">
+                                    <label class="article-filter-label" for="articleReadDuration">时长</label>
+                                    <select class="article-filter-control" id="articleReadDuration" name="read_duration">
+                                        <option value="all">不限</option>
+                                        <option value="short">5 分钟以内</option>
+                                        <option value="medium">6-15 分钟</option>
+                                        <option value="long">16 分钟以上</option>
+                                    </select>
+                                </div>
+                                <div class="article-filter-group">
+                                    <label class="article-filter-label" for="articlePageCount">数量</label>
+                                    <input class="article-filter-control" id="articlePageCount" name="page_count" type="number" min="1" max="100" step="1">
+                                </div>
+                                <div class="article-filter-group article-filter-group-wide">
+                                    <label class="article-filter-label" for="articleKeyword">关键词</label>
+                                    <input class="article-filter-control" id="articleKeyword" name="keyword" type="text" placeholder="标题关键词">
+                                </div>
+                                <div class="article-filter-actions">
+                                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-lg">
+                                        <i class="fas fa-filter mr-1"></i>筛选
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                         <div id="articleLoading" class="text-center py-12 text-gray-500">
                             <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
                         </div>
@@ -1552,7 +1572,8 @@
             var timeRange = qs.get('time_range') || '6h';
             var categoryId = qs.get('category_id') || '';
             var readDuration = qs.get('read_duration') || 'all';
-            var pageCount = normalizePageCount(qs.get('page_count') || 20);
+            var keyword = qs.get('keyword') || '';
+            var pageCount = normalizePageCount(qs.get('page_count') || 30);
             var currentPage = Number(qs.get('page') || 1);
             var viewMode = qs.get('view_mode') || 'all';
             var allowedViewModes = ['all', 'personalized', 'tech', 'product', 'read_later_suggest', 'low_priority'];
@@ -1584,7 +1605,7 @@
             function normalizePageCount(value) {
                 var count = parseInt(value, 10);
                 if (!count || count < 1) {
-                    return 20;
+                    return 30;
                 }
                 if (count > 100) {
                     return 100;
@@ -1597,7 +1618,8 @@
                     time_range: $('#articleTimeRange').val() || timeRange || '6h',
                     category_id: $('#articleCategoryFilter').val() || categoryId || '',
                     read_duration: $('#articleReadDuration').val() || readDuration || 'all',
-                    page_count: normalizePageCount($('#articlePageCount').val() || pageCount || 20)
+                    keyword: $('#articleKeyword').val() || keyword || '',
+                    page_count: normalizePageCount($('#articlePageCount').val() || pageCount || 30)
                 };
             }
 
@@ -1605,7 +1627,8 @@
                 $('#articleTimeRange').val(timeRange || '6h');
                 $('#articleCategoryFilter').val(categoryId || '');
                 $('#articleReadDuration').val(readDuration || 'all');
-                $('#articlePageCount').val(String(pageCount || 20));
+                $('#articleKeyword').val(keyword || '');
+                $('#articlePageCount').val(String(pageCount || 30));
             }
 
             function setMindmapStatus(message) {
@@ -2013,7 +2036,10 @@
                     if (filters.read_duration && filters.read_duration !== 'all') {
                         url += '&read_duration=' + encodeURIComponent(filters.read_duration);
                     }
-                    if (filters.page_count && filters.page_count !== 20) {
+                    if (filters.keyword) {
+                        url += '&keyword=' + encodeURIComponent(filters.keyword);
+                    }
+                    if (filters.page_count && filters.page_count !== 30) {
                         url += '&page_count=' + encodeURIComponent(String(filters.page_count));
                     }
                     $(this).attr('href', url);
@@ -2038,7 +2064,10 @@
                     if (filters.read_duration && filters.read_duration !== 'all') {
                         url += '&read_duration=' + encodeURIComponent(filters.read_duration);
                     }
-                    if (filters.page_count && filters.page_count !== 20) {
+                    if (filters.keyword) {
+                        url += '&keyword=' + encodeURIComponent(filters.keyword);
+                    }
+                    if (filters.page_count && filters.page_count !== 30) {
                         url += '&page_count=' + encodeURIComponent(String(filters.page_count));
                     }
                     $(this).attr('href', url);
@@ -2061,7 +2090,10 @@
                 if (filters.read_duration && filters.read_duration !== 'all') {
                     streamUrl += '&read_duration=' + encodeURIComponent(filters.read_duration);
                 }
-                if (filters.page_count && filters.page_count !== 20) {
+                if (filters.keyword) {
+                    streamUrl += '&keyword=' + encodeURIComponent(filters.keyword);
+                }
+                if (filters.page_count && filters.page_count !== 30) {
                     streamUrl += '&page_count=' + encodeURIComponent(String(filters.page_count));
                 }
                 if (currentPage && currentPage !== 1) {
@@ -2093,6 +2125,11 @@
                     params.set('read_duration', filters.read_duration);
                 } else {
                     params.delete('read_duration');
+                }
+                if (filters.keyword) {
+                    params.set('keyword', filters.keyword);
+                } else {
+                    params.delete('keyword');
                 }
                 params.set('page_count', String(filters.page_count));
                 if (viewMode && viewMode !== 'all') {
@@ -2156,6 +2193,7 @@
                         throw new Error((result_arr && result_arr.msg) ? result_arr.msg : '加载失败');
                     }
 
+                    renderCategoryFilter(result_arr.result.categories || []);
                     var articleSubs = result_arr.result.articles || [];
                     renderArticleList(articleSubs);
                     renderPagination(result_arr.result.pagination || null);
@@ -2213,7 +2251,7 @@
                     if (readDuration && readDuration !== 'all') {
                         sourceHref += '&read_duration=' + encodeURIComponent(readDuration);
                     }
-                    if (pageCount && pageCount !== 20) {
+                    if (pageCount && pageCount !== 30) {
                         sourceHref += '&page_count=' + encodeURIComponent(String(pageCount));
                     }
                     if (viewMode && viewMode !== 'all') {
@@ -2246,12 +2284,12 @@
                         + '<div class="meta-item"><i class="fas fa-external-link-alt"></i><a href="' + escapeHtml(originUrl) + '" class="source-link" target="_blank">原文</a></div>'
                         + (unableDesc ? '<div class="quick-actions"><button type="button" class="quick-btn set_read_later_another ' + (articleSub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '">稍后阅读</button><button type="button" class="quick-btn expand-btn" data-article-id="' + subId + '">展开/收起</button></div>' : '')
                         + '</div></div>'
-                        + aiBadges
                         + '<div class="article-content" id="content' + subId + '"' + (unableDesc ? ' style="display:none"' : '') + '>'
                         + '<div id="desc' + subId + '" class="content-preview ' + (needsCollapse ? '' : 'expanded') + '" data-article-id="' + subId + '">'
                         + contentHtml
                         + (needsCollapse ? '<div class="content-fade" style="opacity:1;"></div>' : '')
                         + '</div>'
+                        + aiBadges
                         + (needsCollapse ? '<div class="read-more" style="display:block;"><button type="button" class="read-more-btn" data-article-id="' + subId + '"><i class="fas fa-chevron-down"></i>阅读更多</button></div>' : '')
                         + '</div>'
                         + '<div class="article-footer' + footerClass + '"><div class="action-buttons" style="margin-left:auto;">'
@@ -2316,16 +2354,26 @@
                 return html;
             }
 
-            function renderCategoryFilter(navInfos) {
+            function renderCategoryFilter(source) {
                 var html = '<option value="">全部分类</option>';
                 var seen = {};
-                $.each(navInfos || {}, function (navId, navInfo) {
-                    if (!navInfo || !navInfo.category_info) return;
-                    var categoryIdValue = String(navInfo.category_info.category_id || navId);
-                    if (!categoryIdValue || seen[categoryIdValue]) return;
-                    seen[categoryIdValue] = true;
-                    html += '<option value="' + escapeHtml(categoryIdValue) + '">' + escapeHtml(navInfo.category_info.category_name || '') + '</option>';
-                });
+                if (Array.isArray(source)) {
+                    source.forEach(function (item) {
+                        if (!item) return;
+                        var categoryIdValue = String(item.id || '');
+                        if (!categoryIdValue || seen[categoryIdValue]) return;
+                        seen[categoryIdValue] = true;
+                        html += '<option value="' + escapeHtml(categoryIdValue) + '">' + escapeHtml(item.name || '') + '</option>';
+                    });
+                } else {
+                    $.each(source || {}, function (navId, navInfo) {
+                        if (!navInfo || !navInfo.category_info) return;
+                        var categoryIdValue = String(navInfo.category_info.category_id || navId);
+                        if (!categoryIdValue || seen[categoryIdValue]) return;
+                        seen[categoryIdValue] = true;
+                        html += '<option value="' + escapeHtml(categoryIdValue) + '">' + escapeHtml(navInfo.category_info.category_name || '') + '</option>';
+                    });
+                }
                 $('#articleCategoryFilter').html(html).val(categoryId || '');
             }
 
@@ -2551,7 +2599,7 @@
                             if (readDuration && readDuration !== 'all') {
                                 feedUrl += '&read_duration=' + encodeURIComponent(readDuration);
                             }
-                            if (pageCount && pageCount !== 20) {
+                            if (pageCount && pageCount !== 30) {
                                 feedUrl += '&page_count=' + encodeURIComponent(String(pageCount));
                             }
                             if (viewMode && viewMode !== 'all') {
@@ -2785,6 +2833,10 @@
             function syncToolButtons() {
                 $('#unable_desc_btn').toggleClass('active', $('#unable_desc').is(':checked'));
                 $('#unable_img_btn').toggleClass('active', $('#unable_img').is(':checked'));
+            }
+
+            function setArticleFilterVisible(isVisible) {
+                $('#articleFilterShell').toggleClass('active', !!isVisible);
             }
 
             // 图片屏蔽功能
@@ -3189,9 +3241,13 @@
             $('#unable_img').prop('checked', unableImg);
             syncToolButtons();
             syncArticleFilterForm();
+            setArticleFilterVisible(false);
             if (currentFeedId) {
                 $('#discoverBtn').show();
             }
+            $('#toggleArticleFiltersBtn').on('click', function () {
+                $('#articleFilterShell').toggleClass('active');
+            });
             $('#articleFilters').on('submit', function (event) {
                 event.preventDefault();
                 currentPage = 1;
@@ -3199,6 +3255,7 @@
                 timeRange = filters.time_range;
                 categoryId = filters.category_id;
                 readDuration = filters.read_duration;
+                keyword = filters.keyword;
                 pageCount = filters.page_count;
 
                 var params = new URLSearchParams(window.location.search);
@@ -3222,6 +3279,11 @@
                     params.set('read_duration', readDuration);
                 } else {
                     params.delete('read_duration');
+                }
+                if (keyword) {
+                    params.set('keyword', keyword);
+                } else {
+                    params.delete('keyword');
                 }
                 params.set('page_count', String(pageCount));
                 if (viewMode && viewMode !== 'all') {
