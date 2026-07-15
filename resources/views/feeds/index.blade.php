@@ -345,7 +345,7 @@
                         + '<div class="w-24 h-24 mx-auto bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center mb-6"><i class="fas fa-rss text-blue-400 text-3xl"></i></div>'
                         + '<h3 class="text-xl font-medium text-gray-900 mb-3">开始您的第一个订阅</h3>'
                         + '<p class="text-gray-600 mb-8 max-w-md mx-auto">订阅您喜欢的博客、新闻和资讯源，轻松获取最新内容，不错过任何重要更新</p>'
-                        + '<button onclick="document.getElementById(\\'url\\').focus()" class="btn btn-primary text-lg px-8 py-3"><i class="fas fa-plus mr-3"></i>添加第一个订阅</button>'
+                        + '<button type="button" id="focusAddFeedBtn" class="btn btn-primary text-lg px-8 py-3"><i class="fas fa-plus mr-3"></i>添加第一个订阅</button>'
                         + '</div>'
                     );
                     return;
@@ -653,6 +653,11 @@
                 }
                 renderInitialFeedIndex();
                 loadFeedIndexData(1, { keepOnError: true });
+
+                $(document).off('click', '#focusAddFeedBtn').on('click', '#focusAddFeedBtn', function() {
+                    var urlInput = document.getElementById('url');
+                    if (urlInput) urlInput.focus();
+                });
 
                 var refreshAllFeedsBtn = document.getElementById('refreshAllFeedsBtn');
                 if (refreshAllFeedsBtn && apiRequest) {
