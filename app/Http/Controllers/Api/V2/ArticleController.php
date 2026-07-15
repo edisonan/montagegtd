@@ -15,6 +15,7 @@ use App\Services\ArticleService;
 use App\Services\PointGrantService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ArticleController extends Controller
 {
@@ -42,23 +43,32 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         $status = $request->input('status', 'unread');
-        $pageCount = max(1, min(100, (int)$request->input('page_count', 20)));
+        $pageCount = max(1, min(100, (int)$request->input('page_count', 30)));
         $categoryId = $request->input('category_id', '');
         $feedId = $request->input('feed_id', '');
         $filters = $this->resolveArticleAiFilters($request);
         $filters = array_merge($filters, $this->resolveArticleCommonFilters($request));
 
-        if (!in_array($status, array('unread', 'read', 'read_later', 'star'), true)) {
+        if (!in_array($status, array('all', 'unread', 'read', 'read_later', 'star'), true)) {
             throw new CustomException('status状态上送错误');
         }
         if ($pageCount <= 0) {
-            $pageCount = 20;
+            $pageCount = 30;
         }
 
         $articleSubs = $this->articleService->getArticleSubList($status, $pageCount, $feedId, $categoryId, $filters);
+        $categories = DB::table('feed_subs')
+            ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
+            ->join('categories', 'feeds.category_id', '=', 'categories.id')
+            ->where('feed_subs.user_id', $this->getAuthUserId($request))
+            ->select('categories.id', 'categories.name')
+            ->distinct()
+            ->orderBy('categories.name')
+            ->get();
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'articles' => $this->serializeArticleSubs($articleSubs->items()),
+            'articles' => $this->serializeArticleSubs($articleSubs->items(), $filters['mode']),
+            'categories' => $categories,
             'pagination' => array(
                 'current_page' => $articleSubs->currentPage(),
                 'per_page' => $articleSubs->perPage(),
@@ -76,6 +86,10 @@ class ArticleController extends Controller
                 'view_mode' => $filters['view_mode'],
                 'primary_category' => $filters['primary_category'],
                 'min_quality_score' => $filters['min_quality_score'],
+                'keyword' => $filters['keyword'],
+                'start_date' => $filters['start_date'],
+                'end_date' => $filters['end_date'],
+                'mode' => $filters['mode'],
             ),
         )));
     }
@@ -83,23 +97,32 @@ class ArticleController extends Controller
     public function list(Request $request)
     {
         $feedId = $request->input('feed_id');
-        $pageCount = max(1, min(100, (int)$request->input('page_count', 20)));
+        $pageCount = max(1, min(100, (int)$request->input('page_count', 30)));
         $filters = array_merge($this->resolveArticleAiFilters($request), $this->resolveArticleCommonFilters($request));
 
         if (empty($feedId)) {
             throw new CustomException('feed_id参数缺失');
         }
         if ($pageCount <= 0) {
-            $pageCount = 20;
+            $pageCount = 30;
         }
 
         $articleInfos = $this->articleService->getArticleListByFeedId($feedId, $pageCount, $filters);
         $articles = isset($articleInfos['articles']) ? $articleInfos['articles'] : null;
         $feed = isset($articleInfos['feed']) ? $articleInfos['feed'] : null;
+        $categories = DB::table('feed_subs')
+            ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
+            ->join('categories', 'feeds.category_id', '=', 'categories.id')
+            ->where('feed_subs.user_id', $this->getAuthUserId($request))
+            ->select('categories.id', 'categories.name')
+            ->distinct()
+            ->orderBy('categories.name')
+            ->get();
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'feed' => $feed,
-            'articles' => $articles ? $this->serializeArticleSubs($articles->items()) : array(),
+            'articles' => $articles ? $this->serializeArticleSubs($articles->items(), $filters['mode']) : array(),
+            'categories' => $categories,
             'pagination' => $articles ? array(
                 'current_page' => $articles->currentPage(),
                 'per_page' => $articles->perPage(),
@@ -115,6 +138,10 @@ class ArticleController extends Controller
                 'view_mode' => $filters['view_mode'],
                 'primary_category' => $filters['primary_category'],
                 'min_quality_score' => $filters['min_quality_score'],
+                'keyword' => $filters['keyword'],
+                'start_date' => $filters['start_date'],
+                'end_date' => $filters['end_date'],
+                'mode' => $filters['mode'],
             ),
         )));
     }
@@ -407,7 +434,7 @@ class ArticleController extends Controller
         ));
     }
 
-    private function serializeArticleSubs(array $articleSubs)
+    private function serializeArticleSubs(array $articleSubs, $mode = 'full')
     {
         $result = array();
         foreach ($articleSubs as $articleSub) {
@@ -422,13 +449,13 @@ class ArticleController extends Controller
                 $article->load('feed');
             }
 
-            $result[] = $this->serializeSingleArticleSub($articleSub, $article);
+            $result[] = $this->serializeSingleArticleSub($articleSub, $article, $mode);
         }
 
         return $result;
     }
 
-    private function serializeSingleArticleSub($articleSub, $article = null)
+    private function serializeSingleArticleSub($articleSub, $article = null, $mode = 'full')
     {
         if (!$article && $articleSub && $articleSub->relationLoaded('article')) {
             $article = $articleSub->article;
@@ -443,11 +470,11 @@ class ArticleController extends Controller
             'updated_at' => $articleSub->updated_at,
             'created_at' => $articleSub->created_at,
             'personalized_score' => isset($articleSub->personalized_score) ? (float)$articleSub->personalized_score : null,
-            'article' => $article ? $this->serializeArticle($article) : null,
+            'article' => $article ? $this->serializeArticle($article, null, $mode) : null,
         );
     }
 
-    private function serializeArticle($article, $aiRender = null)
+    private function serializeArticle($article, $aiRender = null, $mode = 'full')
     {
         if ($article && !$article->relationLoaded('feed')) {
             $article->load('feed');
@@ -461,19 +488,15 @@ class ArticleController extends Controller
             $aiRender = $article->aiRender;
         }
 
-        $plainText = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$article->content)));
         $wordCount = (int)$article->word_count;
         $estimatedReadMinutes = (int)$article->estimated_read_minutes;
 
-        return array(
+        $result = array(
             'id' => $article->id,
             'feed_id' => $article->feed_id,
             'subject' => $article->subject,
             'url' => $article->url,
             'image_url' => $article->image_url,
-            'content' => $article->content,
-            'formatted_content' => CommonUtil::formatContentHtml($article->content),
-            'plain_text' => $plainText,
             'published' => $article->published,
             'word_count' => $wordCount,
             'estimated_read_minutes' => max(1, $estimatedReadMinutes),
@@ -486,6 +509,15 @@ class ArticleController extends Controller
             'ai_profile' => $this->serializeAiProfile($article->aiProfile),
             'ai_render_state' => $this->serializeAiRender($aiRender),
         );
+
+        if ($mode === 'full') {
+            $plainText = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$article->content)));
+            $result['content'] = $article->content;
+            $result['formatted_content'] = CommonUtil::formatContentHtml($article->content);
+            $result['plain_text'] = $plainText;
+        }
+
+        return $result;
     }
 
     private function serializeAiProfile($profile)
@@ -553,13 +585,14 @@ class ArticleController extends Controller
             'view_mode' => $viewMode,
             'primary_category' => trim((string)$request->input('primary_category', '')),
             'min_quality_score' => max(0, (int)$request->input('min_quality_score', 0)),
+            'keyword' => trim((string)$request->input('keyword', '')),
         );
     }
 
     private function resolveArticleCommonFilters(Request $request)
     {
         $timeRange = (string)$request->input('time_range', 'all');
-        $allowedTimeRanges = array('all', '3h', '6h', '1d', '3d', '7d');
+        $allowedTimeRanges = array('all', '3h', '6h', '1d', '3d', '7d', 'custom');
         if (!in_array($timeRange, $allowedTimeRanges, true)) {
             $timeRange = 'all';
         }
@@ -573,6 +606,9 @@ class ArticleController extends Controller
         $filters = array(
             'time_range' => $timeRange,
             'read_duration' => $readDuration,
+            'start_date' => trim((string)$request->input('start_date', '')),
+            'end_date' => trim((string)$request->input('end_date', '')),
+            'mode' => $request->input('mode', 'simple') === 'full' ? 'full' : 'simple',
         );
 
         if ($readDuration === 'short') {

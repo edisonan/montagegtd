@@ -188,6 +188,13 @@ class ArticleService {
         }
 
         $payload = array(
+            'time_range' => isset($filters['time_range']) ? (string)$filters['time_range'] : 'all',
+            'read_duration' => isset($filters['read_duration']) ? (string)$filters['read_duration'] : 'all',
+            'min_read_minutes' => isset($filters['min_read_minutes']) ? (int)$filters['min_read_minutes'] : 0,
+            'max_read_minutes' => isset($filters['max_read_minutes']) ? (int)$filters['max_read_minutes'] : 0,
+            'keyword' => isset($filters['keyword']) ? trim((string)$filters['keyword']) : '',
+            'start_date' => isset($filters['start_date']) ? trim((string)$filters['start_date']) : '',
+            'end_date' => isset($filters['end_date']) ? trim((string)$filters['end_date']) : '',
             'view_mode' => $viewMode,
             'primary_category' => isset($filters['primary_category']) ? trim((string)$filters['primary_category']) : '',
             'min_quality_score' => isset($filters['min_quality_score']) ? (int)$filters['min_quality_score'] : 0,

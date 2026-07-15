@@ -31,7 +31,11 @@ class ArticleSubRepository {
 		$articleSubs = ArticleSub::with ( 'article.feed', 'article.aiProfile' )
             ->join('articles', 'article_subs.article_id', '=', 'articles.id')
             ->select('article_subs.*')
-            ->where ( 'article_subs.user_id', $userId )->where ( 'article_subs.status', $status );
+            ->where ( 'article_subs.user_id', $userId );
+
+        if ($status !== 'all') {
+            $articleSubs->where('article_subs.status', $status);
+        }
 		if (! empty ( $feedIds )) {
 			$articleSubs = $articleSubs->whereIn ( 'article_subs.feed_id', $feedIds );
 		}
@@ -98,6 +102,16 @@ class ArticleSubRepository {
         if ($timeStart) {
             $query->where('articles.published', '>=', $timeStart->toDateTimeString());
         }
+        if ($timeRange === 'custom') {
+            $startDate = trim((string)($filters['start_date'] ?? ''));
+            $endDate = trim((string)($filters['end_date'] ?? ''));
+            if ($startDate !== '') {
+                $query->where('articles.published', '>=', $startDate . ' 00:00:00');
+            }
+            if ($endDate !== '') {
+                $query->where('articles.published', '<=', $endDate . ' 23:59:59');
+            }
+        }
 
         $minReadMinutes = max(0, (int)($filters['min_read_minutes'] ?? 0));
         $maxReadMinutes = max(0, (int)($filters['max_read_minutes'] ?? 0));
@@ -106,6 +120,19 @@ class ArticleSubRepository {
         }
         if ($maxReadMinutes > 0) {
             $query->where('articles.estimated_read_minutes', '<=', $maxReadMinutes);
+        }
+
+        $keyword = trim((string)($filters['keyword'] ?? ''));
+        if ($keyword !== '') {
+            $like = '%' . $keyword . '%';
+            $query->leftJoin('feeds as filter_feeds', 'articles.feed_id', '=', 'filter_feeds.id')
+                ->leftJoin('categories as filter_categories', 'filter_feeds.category_id', '=', 'filter_categories.id');
+            $query->where(function ($subQuery) use ($like) {
+                $subQuery->where('articles.subject', 'like', $like)
+                    ->orWhere('articles.content', 'like', $like)
+                    ->orWhere('filter_feeds.feed_name', 'like', $like)
+                    ->orWhere('filter_categories.name', 'like', $like);
+            });
         }
     }
 
