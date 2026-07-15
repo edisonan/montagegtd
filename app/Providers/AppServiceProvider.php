@@ -16,9 +16,11 @@ class AppServiceProvider extends ServiceProvider {
 	public function boot() {
 		// $monolog = Log::getMonolog();
 		// $monolog->pushProcessor(new UidProcessor());
-		\DB::listen ( function ($query) {
-			Log::info ( $query->sql );
-		} );
+		if (config('app.debug')) {
+			\DB::listen ( function ($query) {
+				Log::info ( $query->sql );
+			} );
+		}
 
         Paginator::defaultView('vendor.pagination.tailwind');
         Paginator::defaultSimpleView('vendor.pagination.simple-tailwind');
