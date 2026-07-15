@@ -6,14 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model {
 	protected $fillable = [ 
-			'name',
-			'user_id',
-			'category_order' 
+		'name',
+		'user_id',
+		'category_order',
+		'status'
 	];
 	protected $table = 'categories';
 	protected $appends = array ();
 	protected $casts = [ 
-			'user_id' => 'int' 
+		'user_id' => 'int',
+		'status' => 'int'
 	];
 	public function feedSubs() {
 		return $this->hasMany ( FeedSub::class )->orderBy ( 'created_at' );
