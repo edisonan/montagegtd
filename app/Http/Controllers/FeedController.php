@@ -528,7 +528,7 @@ class FeedController extends Controller
      * @param Request $request
      * @param FeedSub $feedSub
      */
-    public function sort(Request $request, FeedSub $feedSub)
+    public function sort(Request $request)
     {
         $this->validate($request, [
             'feed_sub_ids' => 'required'
@@ -541,6 +541,12 @@ class FeedController extends Controller
         $this->feedService->sort($feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId);
 
         return $this->jsonAndRedirectAutoResponse($request, ResponseDataUtil::genSimpleSucc(), '/feeds');
+    }
+
+    public function refreshAll(Request $request)
+    {
+        $result = $this->feedService->refreshUserFeeds((int)\Auth::id());
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
     }
 
     /**

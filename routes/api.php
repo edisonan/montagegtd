@@ -242,6 +242,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/thirds/fanfou/test', 'Api\\V2\\ThirdController@testFave');
 
         Route::post('/feeds/quickstore', 'Api\\V2\\FeedController@quickstore');
+        Route::post('/feeds/refresh', 'Api\\V2\\FeedController@refreshAll');
         Route::post('/feeds', 'Api\\V2\\FeedController@store');
         Route::post('/feeds/import-opml', 'Api\\V2\\FeedController@importOpml');
         Route::post('/feeds/{feedSub}', 'Api\\V2\\FeedController@update');

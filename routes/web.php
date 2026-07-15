@@ -86,6 +86,7 @@ Route::group([
     Route::post('/feed/{feedSub}', 'FeedController@update');
     Route::get('/feed/{feedSub}', 'FeedController@update');
     Route::post('/feeds/sort', 'FeedController@sort');
+    Route::post('/feeds/refresh', 'FeedController@refreshAll');
     Route::get('/feeds/explorer', 'FeedController@explorer');
     Route::get('/feeds/webpage-rss', 'FeedController@webpageRss');
     Route::get('/feeds/webpage-rss/create', 'FeedController@createWebpageRss');

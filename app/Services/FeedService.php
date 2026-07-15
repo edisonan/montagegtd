@@ -16,6 +16,7 @@ use Celd\Opml\Importer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Exception;
 use App\Exceptions\CustomException;
 use App\Http\Utils\CommonUtil;
@@ -297,39 +298,86 @@ class FeedService {
 	 * @return boolean
 	 */
 	public function sort($feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId) {
-		// todo 事务处理
-		
-		// 针对排序过程中，更换了分类的情况处理
-		if (! empty ( $changeFeedSubId ) && ! empty ( $changeFeedSubCategoryId )) {
-			$category = $this->categoryService->getByCategoryId ( $changeFeedSubCategoryId );
-			if (empty ( $category )) {
-				throw new CustomException ( "分类信息上送错误" );
-			}
-			
-			$feedSub = $this->feedSubRepository->getUserFeedById ( Auth::id (), $changeFeedSubId );
-			if (empty ( $feedSub )) {
-				throw new CustomException ( "订阅信息上送错误" );
-			}
-			
-			// 更新该订阅源新分类
-			$feedSub->update ( array (
-					'category_id' => $changeFeedSubCategoryId 
-			) );
+		$userId = (int)Auth::id();
+		$feedSubIds = array_values(array_unique(array_filter(array_map('intval', (array)$feedSubIdsArr))));
+		$changeFeedSubId = (int)$changeFeedSubId;
+		$changeFeedSubCategoryId = (int)$changeFeedSubCategoryId;
+		if ($userId <= 0 || empty($feedSubIds)) {
+			throw new CustomException('订阅排序数据为空');
 		}
-		
-		// 处理排序
-		$sort = 0;
-		foreach ( $feedSubIdsArr as $feedSubId ) {
-			$feedSub = $this->feedSubRepository->getUserFeedById ( Auth::id (), $feedSubId );
-			if (empty ( $feedSub )) {
-				throw new CustomException ( "订阅信息上送错误" );
+
+		return DB::transaction(function () use ($userId, $feedSubIds, $changeFeedSubId, $changeFeedSubCategoryId) {
+			if ($changeFeedSubId > 0 && $changeFeedSubCategoryId > 0) {
+				$category = $this->categoryService->getByCategoryId($changeFeedSubCategoryId);
+				if (empty($category)) {
+					throw new CustomException('分类信息上送错误');
+				}
+
+				$feedSub = $this->feedSubRepository->getUserFeedById($userId, $changeFeedSubId);
+				if (empty($feedSub)) {
+					throw new CustomException('订阅信息上送错误');
+				}
+
+				$feedSub->category_id = $changeFeedSubCategoryId;
+				$feedSub->save();
 			}
-			$feedSub->update ( array (
-					'feed_order' => $sort ++ 
-			) );
+
+			$sort = 0;
+			foreach ($feedSubIds as $feedSubId) {
+				$feedSub = $this->feedSubRepository->getUserFeedById($userId, $feedSubId);
+				if (empty($feedSub)) {
+					throw new CustomException('订阅信息上送错误');
+				}
+				$feedSub->feed_order = $sort++;
+				$feedSub->save();
+			}
+
+			return true;
+		});
+	}
+
+	/**
+	 * 手动刷新当前用户的全部启用订阅源，每个用户一分钟最多执行一次。
+	 */
+	public function refreshUserFeeds($userId)
+	{
+		$userId = (int)$userId;
+		if ($userId <= 0) {
+			throw new CustomException('用户未认证');
 		}
-		
-		return true;
+
+		$lockKey = 'manual_feed_refresh_user_' . $userId;
+		if (!Cache::add($lockKey, 1, 60)) {
+			throw new CustomException('订阅刷新过于频繁，请 1 分钟后再试');
+		}
+
+		$feedSubs = FeedSub::where('user_id', $userId)
+			->where('status', 1)
+			->with('feed')
+			->get();
+		$feedIds = array();
+		$successCount = 0;
+		$failedCount = 0;
+		foreach ($feedSubs as $feedSub) {
+			$feed = $feedSub->feed;
+			if (!$feed || in_array((int)$feed->id, $feedIds, true)) {
+				continue;
+			}
+			$feedIds[] = (int)$feed->id;
+			try {
+				$this->checkFeed($feed);
+				$successCount++;
+			} catch (\Throwable $e) {
+				$failedCount++;
+				Log::warning('manual feed refresh failed', array('feed_id' => $feed->id, 'user_id' => $userId));
+			}
+		}
+
+		return array(
+			'feed_count' => count($feedIds),
+			'success_count' => $successCount,
+			'failed_count' => $failedCount,
+		);
 	}
 	
 	/**

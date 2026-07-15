@@ -196,7 +196,7 @@
                             payload.change_feed_sub_category = newCategoryId;
                         }
 
-                        apiRequest('POST', '/feeds/sort', payload).then(function(resp) {
+                        apiRequest('POST', '/feeds/sort', payload, {url: '/feeds/sort', method: 'POST'}).then(function(resp) {
                             if (!resp || resp.code !== 9999) {
                                 showNotification('warning', '订阅排序保存失败');
                             } else if (originalCategoryId !== newCategoryId) {

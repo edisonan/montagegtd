@@ -253,6 +253,13 @@ class FeedController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
     }
 
+    public function refreshAll(Request $request)
+    {
+        $this->bootstrapAuthContext($request);
+        $result = $this->feedService->refreshUserFeeds($this->getAuthUserId($request));
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
     public function update(Request $request, FeedSub $feedSub)
     {
         $this->authorize('destroy', $feedSub);

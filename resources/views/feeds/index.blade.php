@@ -26,6 +26,10 @@
                         <i class="fas fa-compass mr-2"></i>
                         探索发现
                     </a>
+                    <button type="button" id="refreshAllFeedsBtn" class="btn btn-outline">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        立即更新订阅
+                    </button>
                 </div>
             </div>
         </div>
@@ -649,6 +653,28 @@
                 }
                 renderInitialFeedIndex();
                 loadFeedIndexData(1, { keepOnError: true });
+
+                var refreshAllFeedsBtn = document.getElementById('refreshAllFeedsBtn');
+                if (refreshAllFeedsBtn && apiRequest) {
+                    refreshAllFeedsBtn.addEventListener('click', function() {
+                        var button = this;
+                        button.disabled = true;
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>更新中...';
+                        apiRequest('POST', '/feeds/refresh', {}).then(function(resp) {
+                            if (resp && resp.code === 9999) {
+                                showToast('success', '已更新 ' + Number((resp.result || {}).success_count || 0) + ' 个订阅源');
+                                loadFeedIndexData(1, { keepOnError: true });
+                            } else {
+                                showToast('warning', (resp && resp.msg) ? resp.msg : '更新失败');
+                            }
+                        }).catch(function(err) {
+                            showToast('warning', (err && err.message) ? err.message : '更新失败，请稍后重试');
+                        }).finally(function() {
+                            button.disabled = false;
+                            button.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>立即更新订阅';
+                        });
+                    });
+                }
 
                 // 搜索功能
                 if (searchInput) {
