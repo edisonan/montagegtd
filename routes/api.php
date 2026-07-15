@@ -245,10 +245,10 @@ Route::prefix('v2')->group(function () {
         Route::post('/feeds/refresh', 'Api\\V2\\FeedController@refreshAll');
         Route::post('/feeds', 'Api\\V2\\FeedController@store');
         Route::post('/feeds/import-opml', 'Api\\V2\\FeedController@importOpml');
+        Route::post('/feeds/sort', 'Api\\V2\\FeedController@sort');
         Route::post('/feeds/{feedSub}', 'Api\\V2\\FeedController@update');
         Route::put('/feeds/{feedSub}', 'Api\\V2\\FeedController@update');
         Route::delete('/feeds/{feedSub}', 'Api\\V2\\FeedController@destroy');
-        Route::post('/feeds/sort', 'Api\\V2\\FeedController@sort');
         Route::post('/feeds/{feedSub}/refresh', 'Api\\V2\\FeedController@refresh');
         Route::post('/feeds/{feedSub}/toggle-status', 'Api\\V2\\FeedController@toggleStatus');
         Route::post('/feeds/{feedSub}/clear-articles', 'Api\\V2\\FeedController@clearArticles');
