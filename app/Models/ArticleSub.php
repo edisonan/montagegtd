@@ -11,9 +11,10 @@ class ArticleSub extends Model {
 	 * @var array
 	 */
 	protected $fillable = [ 
-			'feed_id',
-			'article_id',
-			'status' 
+		'feed_id',
+		'article_id',
+		'status',
+		'mark'
 	];
 	
 	/**
@@ -25,7 +26,8 @@ class ArticleSub extends Model {
 			'user_id' => 'int',
 			'feed_id' => 'int',
 			'article_id' => 'int',
-			'star_ind' => 'int' 
+		'star_ind' => 'int',
+		'mark' => 'int'
 	];
 	
 	/**
