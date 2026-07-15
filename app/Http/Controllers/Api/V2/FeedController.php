@@ -296,9 +296,9 @@ class FeedController extends Controller
             throw new CustomException('订阅源不存在');
         }
 
-        $this->feedService->checkFeed($feedSub->feed);
+        $result = $this->feedService->refreshFeedForUser($this->getAuthUserId($request), (int)$feedSub->id);
 
-        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
     }
 
     public function toggleStatus(Request $request, FeedSub $feedSub)

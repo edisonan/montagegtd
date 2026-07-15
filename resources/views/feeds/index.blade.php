@@ -373,7 +373,7 @@
                         + '<div class="flex-1"><div class="flex items-start justify-between mb-2"><div><a href="' + feedUrl + '" target="_blank" class="text-lg font-semibold text-gray-900 hover:text-primary-color transition-colors duration-200 feed-name">' + feedName + '</a>' + categoryTag + '</div><div class="text-sm text-gray-500">文章：' + articlesCount + '</div></div>'
                         + '<p class="text-sm text-gray-600 mb-2 line-clamp-2 feed-desc" title="' + feedDesc + '">' + feedDesc + '</p>'
                         + '<div class="flex items-center text-sm text-gray-500 space-x-4"><span class="truncate max-w-xs feed-url" title="' + feedUrl + '"><i class="fas fa-link mr-1 text-xs"></i>' + shortText(feedUrl, 50) + '</span><span><i class="far fa-clock mr-1 text-xs"></i>更新于 ' + updatedAt + '</span></div></div></div>'
-                        + '<div class="flex items-center space-x-2 ml-4"><a href="/articles?feed_id=' + Number(feedSub.feed.id || 0) + '" class="btn btn-sm btn-outline flex items-center" title="查看文章"><i class="fas fa-eye mr-1"></i><span class="hidden sm:inline">文章</span></a>'
+                        + '<div class="flex items-center space-x-2 ml-4"><button type="button" onclick="refreshSingleFeed(' + subId + ', this)" class="btn btn-sm btn-outline flex items-center" title="立即更新"><i class="fas fa-sync-alt mr-1"></i><span class="hidden sm:inline">更新</span></button><a href="/articles?feed_id=' + Number(feedSub.feed.id || 0) + '" class="btn btn-sm btn-outline flex items-center" title="查看文章"><i class="fas fa-eye mr-1"></i><span class="hidden sm:inline">文章</span></a>'
                         + '<a href="/feed/' + subId + '" class="btn btn-sm btn-outline flex items-center" title="编辑订阅"><i class="fas fa-edit mr-1"></i><span class="hidden sm:inline">编辑</span></a>'
                         + '<button onclick="confirmDeleteFeed(' + subId + ', \'' + feedName.replace(/'/g, "\\'") + '\')" class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center" title="删除订阅"><i class="fas fa-trash-alt mr-1"></i><span class="hidden sm:inline">删除</span></button></div></div>';
                 });
@@ -627,6 +627,30 @@
                         }
                 }).catch(function() {
                     showToast('error', '网络错误，请稍后重试');
+                });
+            }
+
+            function refreshSingleFeed(feedSubId, button) {
+                if (!apiRequest) return;
+                var originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>更新中';
+                apiRequest('POST', '/feeds/' + Number(feedSubId) + '/refresh', {}, {
+                    url: '/feeds/' + Number(feedSubId) + '/refresh',
+                    method: 'POST'
+                }).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        var count = Number((resp.result || {}).new_article_count || 0);
+                        showToast('success', count > 0 ? '已获取 ' + count + ' 篇新文章' : '暂无新文章');
+                        loadFeedIndexData(feedIndexState.currentPage || 1, { keepOnError: true });
+                    } else {
+                        showToast('warning', (resp && resp.msg) ? resp.msg : '更新失败');
+                    }
+                }).catch(function(err) {
+                    showToast('warning', (err && err.message) ? err.message : '更新失败，请稍后重试');
+                }).finally(function() {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
                 });
             }
 

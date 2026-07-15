@@ -549,6 +549,13 @@ class FeedController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
     }
 
+    public function refresh(Request $request, FeedSub $feedSub)
+    {
+        $this->authorize('destroy', $feedSub);
+        $result = $this->feedService->refreshFeedForUser((int)\Auth::id(), (int)$feedSub->id);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
     /**
      * 检测订阅源基础信息
      *

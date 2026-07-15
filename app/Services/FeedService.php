@@ -379,6 +379,38 @@ class FeedService {
 			'failed_count' => $failedCount,
 		);
 	}
+
+	/**
+	 * 手动刷新单个订阅源，每个用户针对同一个订阅源一分钟最多执行一次。
+	 */
+	public function refreshFeedForUser($userId, $feedSubId)
+	{
+		$userId = (int)$userId;
+		$feedSubId = (int)$feedSubId;
+		if ($userId <= 0) {
+			throw new CustomException('用户未认证');
+		}
+
+		$feedSub = $this->feedSubRepository->getUserFeedById($userId, $feedSubId);
+		if (!$feedSub || (int)$feedSub->status !== 1 || !$feedSub->feed) {
+			throw new CustomException('订阅源不存在或已停用');
+		}
+
+		$lockKey = 'manual_feed_refresh_user_' . $userId . '_feed_' . $feedSubId;
+		if (!Cache::add($lockKey, 1, 60)) {
+			throw new CustomException('该订阅刷新过于频繁，请 1 分钟后再试');
+		}
+
+		$beforeCount = (int)ArticleSub::where('user_id', $userId)->where('feed_id', $feedSub->feed_id)->count();
+		$this->checkFeed($feedSub->feed);
+		$afterCount = (int)ArticleSub::where('user_id', $userId)->where('feed_id', $feedSub->feed_id)->count();
+
+		return array(
+			'feed_sub_id' => $feedSubId,
+			'feed_id' => (int)$feedSub->feed_id,
+			'new_article_count' => max(0, $afterCount - $beforeCount),
+		);
+	}
 	
 	/**
 	 * 核验订阅地址是否正常
