@@ -465,6 +465,12 @@ def cmd_article_list(args):
         "page_count",
         "category_id",
         "feed_id",
+        "keyword",
+        "time_range",
+        "start_date",
+        "end_date",
+        "read_duration",
+        "mode",
         "view_mode",
         "primary_category",
         "min_quality_score",
@@ -475,7 +481,18 @@ def cmd_article_list(args):
 
 def cmd_article_feed_list(args):
     query = ["feed_id=%s" % args.feed_id]
-    for key in ("page_count", "view_mode", "primary_category", "min_quality_score"):
+    for key in (
+        "page_count",
+        "keyword",
+        "time_range",
+        "start_date",
+        "end_date",
+        "read_duration",
+        "mode",
+        "view_mode",
+        "primary_category",
+        "min_quality_score",
+    ):
         add_if_present_query(query, key, getattr(args, key))
     call(args, "GET", "/articles/list", query=query, renderer=render_article_list)
 
@@ -664,10 +681,16 @@ def add_note_write_arguments(parser, update=False):
 
 
 def add_article_list_arguments(parser):
-    parser.add_argument("--status", default="unread", choices=("unread", "read", "read_later", "star"))
+    parser.add_argument("--status", default="unread", choices=("all", "unread", "read", "read_later", "star"))
     parser.add_argument("--page-count", type=int)
     parser.add_argument("--category-id", type=int)
     parser.add_argument("--feed-id", type=int)
+    parser.add_argument("--keyword")
+    parser.add_argument("--time-range", choices=("all", "3h", "6h", "1d", "3d", "7d", "custom"))
+    parser.add_argument("--start-date")
+    parser.add_argument("--end-date")
+    parser.add_argument("--read-duration", choices=("all", "short", "medium", "long"))
+    parser.add_argument("--mode", choices=("simple", "full"), default="simple")
     parser.add_argument(
         "--view-mode",
         choices=("all", "personalized", "tech", "product", "read_later_suggest", "low_priority"),
@@ -678,6 +701,12 @@ def add_article_list_arguments(parser):
 
 def add_article_filter_arguments(parser):
     parser.add_argument("--page-count", type=int)
+    parser.add_argument("--keyword")
+    parser.add_argument("--time-range", choices=("all", "3h", "6h", "1d", "3d", "7d", "custom"))
+    parser.add_argument("--start-date")
+    parser.add_argument("--end-date")
+    parser.add_argument("--read-duration", choices=("all", "short", "medium", "long"))
+    parser.add_argument("--mode", choices=("simple", "full"), default="simple")
     parser.add_argument(
         "--view-mode",
         choices=("all", "personalized", "tech", "product", "read_later_suggest", "low_priority"),

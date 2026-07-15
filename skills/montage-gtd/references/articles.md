@@ -14,8 +14,12 @@
 列出未读：
 
 ```bash
-montage article list --status unread --page-count 20
+montage article list --status unread --page-count 20 --mode simple
 ```
+
+列表默认使用轻量 `simple` 模式，只返回标题和阅读队列元数据，不返回正文；需要正文时使用 `--mode full`，此时文章对象才包含 `content`、`formatted_content` 和 `plain_text`。
+
+文章列表支持与 `/article/index` 对齐的筛选参数：`--status`（包含 `all`）、`--category-id`、`--feed-id`、`--keyword`、`--time-range`、`--start-date`、`--end-date`、`--read-duration`、`--page-count`，以及 AI 筛选 `--view-mode`、`--primary-category`、`--min-quality-score`。
 
 状态可选：
 
