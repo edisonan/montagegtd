@@ -13,6 +13,7 @@
                 </div>
 
                 <div class="flex gap-3">
+                    <button type="button" id="addCategoryBtn" class="btn btn-secondary"><i class="fas fa-folder-plus mr-2"></i>新增分类</button>
                     <a href="{{ url('/feeds') }}" class="btn btn-primary">
                         <i class="fas fa-plus mr-2"></i>
                         添加订阅
@@ -70,6 +71,23 @@
                 <button type="button" class="modal-close btn btn-secondary flex-1">取消</button>
                 <button type="button" id="confirmDelete" class="btn btn-danger flex-1"><i class="fas fa-trash-alt mr-2"></i>确认删除</button>
             </div>
+        </div>
+    </div>
+
+    <div id="categoryModal" class="modal">
+        <div class="modal-content max-w-md">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="categoryModalTitle" class="text-lg font-semibold text-gray-900">新增分类</h3>
+                <button type="button" class="category-modal-close p-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="categoryForm">
+                <label for="categoryName" class="block text-sm font-medium text-gray-700 mb-2">分类名称</label>
+                <input id="categoryName" type="text" maxlength="100" class="form-input w-full" placeholder="请输入分类名称" required>
+                <div class="flex gap-3 mt-6">
+                    <button type="button" class="category-modal-close btn btn-secondary flex-1">取消</button>
+                    <button type="submit" id="saveCategoryBtn" class="btn btn-primary flex-1">保存</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -137,7 +155,7 @@
                 html += ''
                     + '<div id="' + categoryId + '" class="category-card card hover:border-gray-300 transition-colors">'
                     + '<div class="tile__handle px-5 py-3 border-b border-gray-200 bg-gray-50 cursor-move flex items-center justify-between">'
-                    + '<div class="flex items-center gap-3"><div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center"><i class="fas fa-folder text-white"></i></div><div><h3 class="font-semibold text-gray-800 text-lg">' + categoryName + '</h3><p class="text-xs text-gray-500 mt-1 category-count">' + list.length + ' 个订阅源</p></div></div><div class="text-gray-400"><i class="fas fa-arrows-alt"></i></div>'
+                    + '<div class="flex items-center gap-3"><div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center"><i class="fas fa-folder text-white"></i></div><div><h3 class="font-semibold text-gray-800 text-lg">' + categoryName + '</h3><p class="text-xs text-gray-500 mt-1 category-count">' + list.length + ' 个订阅源</p></div></div><div class="flex items-center gap-1"><button type="button" class="edit-category p-2 text-gray-400 hover:text-blue-500" data-category-id="' + categoryId + '" data-category-name="' + categoryName + '" title="编辑分类"><i class="fas fa-edit"></i></button><button type="button" class="delete-category p-2 text-gray-400 hover:text-red-500" data-category-id="' + categoryId + '" data-category-name="' + categoryName + '" title="删除分类"><i class="fas fa-trash-alt"></i></button><i class="fas fa-arrows-alt text-gray-400 ml-2"></i></div>'
                     + '</div>'
                     + '<div class="tile__list p-4 bg-gray-50"><div class="space-y-2">' + feedItems + '</div></div>'
                     + '</div>';
@@ -190,7 +208,11 @@
                         item.setAttribute('data-category-id', newCategoryId);
 
                         var feedIds = Array.from(item.parentNode.querySelectorAll('.feed-item')).map(function(el) { return el.id; }).join(',');
-                        var payload = { feed_sub_ids: feedIds };
+                        var categoryFeedSubIds = {};
+                        document.querySelectorAll('.category-card').forEach(function(card) {
+                            categoryFeedSubIds[card.id] = Array.from(card.querySelectorAll('.feed-item')).map(function(el) { return Number(el.id); });
+                        });
+                        var payload = { feed_sub_ids: feedIds, category_feed_sub_ids: categoryFeedSubIds };
                         if (originalCategoryId !== newCategoryId) {
                             payload.change_feed_sub_id = item.id;
                             payload.change_feed_sub_category = newCategoryId;
@@ -252,13 +274,31 @@
                 });
             });
 
+            document.querySelectorAll('.category-modal-close').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('categoryModal').classList.remove('show');
+                });
+            });
+
             document.addEventListener('click', function(e) {
                 var deleteBtn = e.target.closest('.delete-feed');
                 if (deleteBtn) {
                     currentFeedId = deleteBtn.getAttribute('data-feed-id');
                     deleteModal.classList.add('show');
                 }
+
+                var editCategoryBtn = e.target.closest('.edit-category');
+                if (editCategoryBtn) {
+                    openCategoryModal(editCategoryBtn.getAttribute('data-category-id'), editCategoryBtn.getAttribute('data-category-name'));
+                }
+                var deleteCategoryBtn = e.target.closest('.delete-category');
+                if (deleteCategoryBtn) {
+                    deleteCategory(deleteCategoryBtn.getAttribute('data-category-id'), deleteCategoryBtn.getAttribute('data-category-name'));
+                }
             });
+
+            document.getElementById('addCategoryBtn').addEventListener('click', function() { openCategoryModal('', ''); });
+            document.getElementById('categoryForm').addEventListener('submit', saveCategory);
 
             document.getElementById('confirmDelete').addEventListener('click', function() {
                 if (!currentFeedId || !apiRequest) return;
@@ -290,5 +330,41 @@
 
             loadSetting();
         });
+
+        function openCategoryModal(categoryId, categoryName) {
+            document.getElementById('categoryModalTitle').textContent = categoryId ? '编辑分类' : '新增分类';
+            document.getElementById('categoryName').value = categoryName || '';
+            document.getElementById('categoryModal').setAttribute('data-category-id', categoryId || '');
+            document.getElementById('categoryModal').classList.add('show');
+            document.getElementById('categoryName').focus();
+        }
+
+        function saveCategory(e) {
+            e.preventDefault();
+            if (!apiRequest) return;
+            var modal = document.getElementById('categoryModal');
+            var categoryId = modal.getAttribute('data-category-id');
+            var name = document.getElementById('categoryName').value.trim();
+            if (!name) { showNotification('warning', '请输入分类名称'); return; }
+            var button = document.getElementById('saveCategoryBtn');
+            button.disabled = true;
+            var method = categoryId ? 'PUT' : 'POST';
+            var path = categoryId ? '/categories/' + Number(categoryId) : '/categories';
+            apiRequest(method, path, {name: name}, {url: path, method: method}).then(function(resp) {
+                if (!resp || resp.code !== 9999) { showNotification('error', (resp && resp.msg) || '保存失败'); return; }
+                modal.classList.remove('show');
+                showNotification('success', categoryId ? '分类已修改' : '分类已新增');
+                loadSetting();
+            }).catch(function(err) { showNotification('error', (err && err.message) || '保存失败，请稍后重试'); }).finally(function() { button.disabled = false; });
+        }
+
+        function deleteCategory(categoryId, categoryName) {
+            if (!apiRequest || !categoryId || !window.confirm('确定删除分类“' + categoryName + '”吗？分类下必须没有订阅源。')) return;
+            apiRequest('DELETE', '/categories/' + Number(categoryId), {}, {url: '/categories/' + Number(categoryId), method: 'DELETE'}).then(function(resp) {
+                if (!resp || resp.code !== 9999) { showNotification('error', (resp && resp.msg) || '删除失败'); return; }
+                showNotification('success', '分类已删除');
+                loadSetting();
+            }).catch(function(err) { showNotification('error', (err && err.message) || '删除失败，请稍后重试'); });
+        }
     </script>
 @endsection

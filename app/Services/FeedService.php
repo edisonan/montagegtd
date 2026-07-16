@@ -297,7 +297,7 @@ class FeedService {
 	 * @param int $changeFeedSubCategoryId        	
 	 * @return boolean
 	 */
-	public function sort($feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId) {
+	public function sort($feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId, $categoryFeedSubIds = array()) {
 		$userId = (int)Auth::id();
 		$feedSubIds = array_values(array_unique(array_filter(array_map('intval', (array)$feedSubIdsArr))));
 		$changeFeedSubId = (int)$changeFeedSubId;
@@ -306,7 +306,29 @@ class FeedService {
 			throw new CustomException('订阅排序数据为空');
 		}
 
-		return DB::transaction(function () use ($userId, $feedSubIds, $changeFeedSubId, $changeFeedSubCategoryId) {
+		$categoryFeedSubIds = is_array($categoryFeedSubIds) ? $categoryFeedSubIds : array();
+
+		return DB::transaction(function () use ($userId, $feedSubIds, $changeFeedSubId, $changeFeedSubCategoryId, $categoryFeedSubIds) {
+			if (!empty($categoryFeedSubIds)) {
+				foreach ($categoryFeedSubIds as $categoryId => $ids) {
+					$categoryId = (int)$categoryId;
+					$category = $this->categoryService->getByCategoryId($categoryId);
+					if (empty($category)) {
+						throw new CustomException('分类信息上送错误');
+					}
+					foreach (array_values(array_unique(array_filter(array_map('intval', (array)$ids)))) as $sort => $feedSubId) {
+						$feedSub = $this->feedSubRepository->getUserFeedById($userId, $feedSubId);
+						if (empty($feedSub)) {
+							throw new CustomException('订阅信息上送错误');
+						}
+						$feedSub->category_id = $categoryId;
+						$feedSub->feed_order = $sort;
+						$feedSub->save();
+					}
+				}
+				return true;
+			}
+
 			if ($changeFeedSubId > 0 && $changeFeedSubCategoryId > 0) {
 				$category = $this->categoryService->getByCategoryId($changeFeedSubCategoryId);
 				if (empty($category)) {

@@ -247,8 +247,9 @@ class FeedController extends Controller
         $feedSubIdsArr = explode(',', (string)$request->input('feed_sub_ids'));
         $changeFeedSubId = $request->input('change_feed_sub_id', '');
         $changeFeedSubCategoryId = $request->input('change_feed_sub_category', '');
+		$categoryFeedSubIds = $request->input('category_feed_sub_ids', array());
 
-        $this->feedService->sort($feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId);
+		$this->feedService->sort($feedSubIdsArr, $changeFeedSubId, $changeFeedSubCategoryId, $categoryFeedSubIds);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
     }
