@@ -91,6 +91,23 @@
         </div>
     </div>
 
+    <div id="categoryDeleteModal" class="modal">
+        <div class="modal-content max-w-md">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">删除分类</h3>
+                <button type="button" class="category-delete-modal-close p-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="mb-6">
+                <div class="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4"><i class="fas fa-exclamation-triangle text-red-500 text-lg"></i></div>
+                <p id="categoryDeleteMessage" class="text-gray-700 text-center"></p>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" class="category-delete-modal-close btn btn-secondary flex-1">取消</button>
+                <button type="button" id="confirmCategoryDelete" class="btn btn-danger flex-1"><i class="fas fa-trash-alt mr-2"></i>确认删除</button>
+            </div>
+        </div>
+    </div>
+
     <style>
         .sortable-chosen { background-color: rgba(59, 130, 246, 0.05); border-color: var(--primary-color) !important; }
         .sortable-ghost { opacity: 0.4; background-color: var(--gray-100); }
@@ -111,6 +128,7 @@
             ? window.TaskApiBridge.requestWithFallback
             : null;
         var currentFeedId = null;
+        var currentCategoryId = null;
 
         function escapeHtml(text) {
             return String(text || '').replace(/[&<>"']/g, function(c) {
@@ -279,6 +297,9 @@
                     document.getElementById('categoryModal').classList.remove('show');
                 });
             });
+            document.querySelectorAll('.category-delete-modal-close').forEach(function(btn) {
+                btn.addEventListener('click', function() { document.getElementById('categoryDeleteModal').classList.remove('show'); currentCategoryId = null; });
+            });
 
             document.addEventListener('click', function(e) {
                 var deleteBtn = e.target.closest('.delete-feed');
@@ -299,6 +320,7 @@
 
             document.getElementById('addCategoryBtn').addEventListener('click', function() { openCategoryModal('', ''); });
             document.getElementById('categoryForm').addEventListener('submit', saveCategory);
+            document.getElementById('confirmCategoryDelete').addEventListener('click', confirmCategoryDelete);
 
             document.getElementById('confirmDelete').addEventListener('click', function() {
                 if (!currentFeedId || !apiRequest) return;
@@ -359,12 +381,26 @@
         }
 
         function deleteCategory(categoryId, categoryName) {
-            if (!apiRequest || !categoryId || !window.confirm('确定删除分类“' + categoryName + '”吗？分类下必须没有订阅源。')) return;
+            if (!apiRequest || !categoryId) return;
+            currentCategoryId = categoryId;
+            document.getElementById('categoryDeleteMessage').textContent = '确定要删除分类“' + categoryName + '”吗？分类下必须没有订阅源。';
+            document.getElementById('categoryDeleteModal').classList.add('show');
+        }
+
+        function confirmCategoryDelete() {
+            if (!apiRequest || !currentCategoryId) return;
+            var categoryId = currentCategoryId;
+            var button = document.getElementById('confirmCategoryDelete');
+            button.disabled = true;
             apiRequest('DELETE', '/categories/' + Number(categoryId), {}, {url: '/categories/' + Number(categoryId), method: 'DELETE'}).then(function(resp) {
                 if (!resp || resp.code !== 9999) { showNotification('error', (resp && resp.msg) || '删除失败'); return; }
+                document.getElementById('categoryDeleteModal').classList.remove('show');
                 showNotification('success', '分类已删除');
                 loadSetting();
-            }).catch(function(err) { showNotification('error', (err && err.message) || '删除失败，请稍后重试'); });
+            }).catch(function(err) { showNotification('error', (err && err.message) || '删除失败，请稍后重试'); }).finally(function() {
+                button.disabled = false;
+                currentCategoryId = null;
+            });
         }
     </script>
 @endsection
