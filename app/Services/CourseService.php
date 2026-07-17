@@ -58,6 +58,17 @@ class CourseService
             $data['public_status'] = 2;
         }
 
+        if (!isset($data['content_status'])) {
+            $data['content_status'] = 'published';
+        }
+
+        if (!empty($data['source_key'])) {
+            $existing = $this->courseRepository->getByCreatorAndSourceKey($data['created_by'], $data['source_key']);
+            if ($existing) {
+                return $existing;
+            }
+        }
+
         return $this->courseRepository->createCourse($data);
     }
 
@@ -150,12 +161,20 @@ class CourseService
     public function getCourseStructure($courseId)
     {
         $rootItems = $this->courseItemRepository->getCourseItems($courseId, null);
-        
+
         foreach ($rootItems as $item) {
-            $item->children = $this->courseItemRepository->getCourseItems($courseId, $item->id);
+            $this->loadChildren($item, $courseId);
         }
-        
+
         return $rootItems;
+    }
+
+    protected function loadChildren($item, $courseId)
+    {
+        $item->children = $this->courseItemRepository->getCourseItems($courseId, $item->id);
+        foreach ($item->children as $child) {
+            $this->loadChildren($child, $courseId);
+        }
     }
 
     /**
@@ -166,6 +185,17 @@ class CourseService
         // 验证必需字段
         if (empty($data['course_id']) || empty($data['title'])) {
             throw new \Exception('课程ID和标题为必填项');
+        }
+
+        if (!isset($data['content_status'])) {
+            $data['content_status'] = 'published';
+        }
+
+        if (!empty($data['source_key'])) {
+            $existing = $this->courseItemRepository->getByCourseAndSourceKey($data['course_id'], $data['source_key']);
+            if ($existing) {
+                return $existing;
+            }
         }
 
         return $this->courseItemRepository->createCourseItem($data);

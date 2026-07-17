@@ -14,7 +14,13 @@ class CourseItem extends Model
         'duration',
         'external_url',
         'description',
+        'content',
         'order_index',
+        'source_type',
+        'source_key',
+        'content_hash',
+        'generated_at',
+        'content_status',
         'avg_rating',
         'avg_study_time',
         'completion_count'
@@ -25,6 +31,7 @@ class CourseItem extends Model
         'parent_id' => 'integer',
         'duration' => 'integer',
         'order_index' => 'float',
+        'generated_at' => 'datetime',
         'avg_rating' => 'decimal:2',
         'avg_study_time' => 'integer',
         'completion_count' => 'integer'

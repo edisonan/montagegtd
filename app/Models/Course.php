@@ -18,7 +18,12 @@ class Course extends Model
         'created_by',
         'difficulty',
         'estimated_hours',
-        'tags'
+        'tags',
+        'source_type',
+        'source_key',
+        'content_hash',
+        'generated_at',
+        'content_status'
     ];
 
     protected $casts = [
@@ -26,7 +31,8 @@ class Course extends Model
         'estimated_hours' => 'integer',
         'created_by' => 'integer',
         'user_id' => 'integer',
-        'public_status' => 'integer'
+        'public_status' => 'integer',
+        'generated_at' => 'datetime'
     ];
     
     /**

@@ -58,6 +58,11 @@ class CourseRepository
         return Course::create($data);
     }
 
+    public function getByCreatorAndSourceKey($userId, $sourceKey)
+    {
+        return Course::where('created_by', $userId)->where('source_key', $sourceKey)->first();
+    }
+
     /**
      * 更新课程
      */

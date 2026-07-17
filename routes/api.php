@@ -139,6 +139,9 @@ Route::prefix('v2')->group(function () {
         Route::get('/course-items/structure/{courseId}', 'Api\\V2\\CourseItemController@getStructure');
         Route::get('/course-items/{id}', 'Api\\V2\\CourseItemController@show');
         Route::get('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@index');
+        Route::get('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@show');
+        Route::get('/course-items/{id}/quiz/attempts', 'Api\\V2\\CourseQuizController@attempts');
+        Route::get('/reviews/course-items', 'Api\\V2\\CourseReviewController@index');
         Route::get('/courses/{courseId}/discussions/{id}', 'Api\\V2\\DiscussionController@show');
 
         // 只读业务接口
@@ -270,6 +273,9 @@ Route::prefix('v2')->group(function () {
         Route::delete('/courses/{id}', 'Api\\V2\\CourseController@destroy');
         Route::post('/courses/{id}/join', 'Api\\V2\\CourseController@join');
         Route::post('/courses/{courseId}/items', 'Api\\V2\\CourseItemController@store');
+        Route::post('/courses/{id}/publish', 'Api\\V2\\CourseController@publish');
+        Route::post('/courses/{courseId}/generate', 'Api\\V2\\CourseContentController@generate');
+        Route::post('/courses/{courseId}/fetch', 'Api\\V2\\CourseContentController@fetch');
         Route::post('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@update');
         Route::put('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@update');
         Route::delete('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@destroy');
@@ -281,6 +287,10 @@ Route::prefix('v2')->group(function () {
         Route::post('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@store');
         Route::post('/courses/{courseId}/discussions/{id}/reply', 'Api\\V2\\DiscussionController@reply');
 
+        Route::post('/course-items/{id}/publish', 'Api\\V2\\CourseItemController@publish');
+        Route::post('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
+        Route::put('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
+        Route::post('/course-items/{id}/quiz/attempts', 'Api\\V2\\CourseQuizController@submit');
         Route::post('/llm/chat', 'Api\\V2\\LlmController@chat');
         Route::post('/llm/ask-ai', 'Api\\V2\\LlmController@askAi');
 

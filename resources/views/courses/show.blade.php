@@ -530,6 +530,13 @@
             transform: none !important;
         }
 
+        .quiz-modal { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, .55); padding: 20px; }
+        .quiz-modal.show { display: flex; }
+        .quiz-modal-card { width: min(720px, 100%); max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 16px; padding: 24px; }
+        .quiz-question { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+        .quiz-option { display: block; padding: 8px 10px; border-radius: 8px; margin-top: 6px; background: #f8fafc; }
+        .quiz-result { border-radius: 10px; padding: 14px; margin-top: 16px; background: #eff6ff; }
+
         /* 动画效果 */
         @keyframes fadeIn {
             from {
@@ -720,6 +727,18 @@
         </div>
     </div>
 
+    <div id="quizModal" class="quiz-modal">
+        <div class="quiz-modal-card">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="quizModalTitle" class="text-xl font-semibold text-gray-900">章节小测试</h3>
+                <button type="button" id="closeQuizBtn" class="text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+            </div>
+            <div id="quizLoading" class="text-gray-500 py-6 text-center">加载测试中...</div>
+            <form id="quizForm" class="hidden"></form>
+            <div id="quizResult" class="hidden"></div>
+        </div>
+    </div>
+
     <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
@@ -822,7 +841,7 @@
                         else if (child.item_type === 'quiz') icon = 'fa-question-circle';
                         else if (child.item_type === 'assignment') icon = 'fa-file-alt';
                         else if (child.item_type === 'reading') icon = 'fa-book';
-                        html += '<li class="lesson-item" data-course-item-id="' + Number(child.id) + '"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><div class="lesson-actions"><span class="lesson-type">' + escapeHtml((child.item_type || '').toUpperCase()) + '</span>' + (isJoined ? '<button type="button" class="lesson-complete-btn complete-course-item-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-check mr-1"></i>标记完成</button>' : '') + '</div></li>';
+                        html += '<li class="lesson-item" data-course-item-id="' + Number(child.id) + '"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><div class="lesson-actions"><span class="lesson-type">' + escapeHtml((child.item_type || '').toUpperCase()) + '</span>' + (isJoined ? '<button type="button" class="lesson-complete-btn quiz-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-question-circle mr-1"></i>小测试</button><button type="button" class="lesson-complete-btn complete-course-item-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-check mr-1"></i>标记完成</button>' : '') + '</div></li>';
                     });
                     html += '</ul>';
                 }
@@ -958,7 +977,65 @@
                     $btn.prop('disabled', false).html(original);
                 });
             });
+
+            $('#closeQuizBtn').on('click', closeQuiz);
+            $('#quizModal').on('click', function(e) { if (e.target === this) closeQuiz(); });
+            $(document).on('click', '.quiz-btn', function(e) {
+                e.preventDefault();
+                openQuiz(Number($(this).data('course-item-id') || 0), $(this).closest('.lesson-item').find('.lesson-name').text());
+            });
+            $('#quizForm').on('submit', function(e) { e.preventDefault(); submitQuiz(); });
         });
+
+        function closeQuiz() {
+            $('#quizModal').removeClass('show');
+            $('#quizResult').addClass('hidden').empty();
+        }
+
+        function openQuiz(itemId, title) {
+            if (!apiRequest || !itemId) return;
+            $('#quizModalTitle').text(title || '章节小测试');
+            $('#quizModal').addClass('show');
+            $('#quizLoading').removeClass('hidden').text('加载测试中...');
+            $('#quizForm').addClass('hidden').empty();
+            $('#quizResult').addClass('hidden').empty();
+            $('#quizForm').data('item-id', itemId);
+            apiRequest('GET', '/course-items/' + itemId + '/quiz', {}).then(function(resp) {
+                if (!resp || resp.code !== 9999 || !resp.result || !resp.result.quiz) throw new Error((resp && resp.msg) || '该章节暂无测试');
+                var quiz = resp.result.quiz;
+                var html = '<p class="text-sm text-gray-500 mb-4">通过分数：' + Number(quiz.passing_score || 70) + '%</p>';
+                (quiz.questions || []).forEach(function(question, index) {
+                    var multiple = question.question_type === 'multiple';
+                    html += '<div class="quiz-question"><div class="font-medium text-gray-900">' + (index + 1) + '. ' + escapeHtml(question.question || '') + '</div>';
+                    (question.options || []).forEach(function(option) {
+                        html += '<label class="quiz-option"><input type="' + (multiple ? 'checkbox' : 'radio') + '" name="quiz-answer-' + Number(question.id) + '" value="' + escapeHtml(option.option_key || '') + '" class="mr-2">' + escapeHtml(option.option_key || '') + '. ' + escapeHtml(option.content || '') + '</label>';
+                    });
+                    html += '</div>';
+                });
+                html += '<button type="submit" class="btn-course btn-course-primary">提交测试</button>';
+                $('#quizForm').html(html).removeClass('hidden');
+                $('#quizLoading').addClass('hidden');
+            }).catch(function(err) { $('#quizLoading').text(err && err.message ? err.message : '测试加载失败'); });
+        }
+
+        function submitQuiz() {
+            var itemId = Number($('#quizForm').data('item-id') || 0);
+            var answers = {};
+            $('#quizForm input:checked').each(function() {
+                var questionId = $(this).attr('name').replace('quiz-answer-', '');
+                if (!answers[questionId]) answers[questionId] = [];
+                answers[questionId].push($(this).val());
+            });
+            apiRequest('POST', '/course-items/' + itemId + '/quiz/attempts', {answers: answers}).then(function(resp) {
+                if (!resp || resp.code !== 9999) throw new Error((resp && resp.msg) || '提交失败');
+                var result = resp.result || {};
+                var html = '<div class="quiz-result"><div class="font-semibold ' + (result.passed ? 'text-green-700' : 'text-red-700') + '">' + (result.passed ? '测试通过' : '需要复习') + '：' + Number(result.score || 0) + '%</div>';
+                (result.results || []).forEach(function(row, index) { html += '<div class="text-sm mt-2">第 ' + (index + 1) + ' 题：' + (row.correct ? '<span class="text-green-600">正确</span>' : '<span class="text-red-600">错误，正确答案：' + escapeHtml((row.correct_options || []).join(', ')) + '</span>') + (row.explanation ? '<div class="text-gray-500">解析：' + escapeHtml(row.explanation) + '</div>' : '') + '</div>'; });
+                html += '</div><button type="button" class="btn-course btn-course-secondary mt-4" onclick="closeQuiz()">关闭</button>';
+                $('#quizForm').addClass('hidden');
+                $('#quizResult').html(html).removeClass('hidden');
+            }).catch(function(err) { $('#quizResult').html('<div class="quiz-result text-red-600">' + escapeHtml(err && err.message ? err.message : '提交失败') + '</div>').removeClass('hidden'); });
+        }
 
         // 章节展开/收起功能
         function toggleChapter(chapterId) {

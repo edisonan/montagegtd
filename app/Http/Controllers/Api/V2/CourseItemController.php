@@ -115,6 +115,11 @@ class CourseItemController extends Controller
             'duration' => 'nullable|integer|min:0',
             'external_url' => 'nullable|url',
             'parent_id' => 'nullable|integer',
+            'content' => 'nullable',
+            'content_status' => 'nullable|in:draft,published,archived',
+            'source_type' => 'nullable|string|max:40',
+            'source_key' => 'nullable|string|max:191',
+            'content_hash' => 'nullable|string|max:64',
         ));
 
         $data = array(
@@ -125,7 +130,13 @@ class CourseItemController extends Controller
             'duration' => $request->input('duration'),
             'external_url' => $request->input('external_url'),
             'description' => $request->input('description'),
+            'content' => $request->input('content'),
             'order_index' => $request->input('order_index', 0),
+            'source_type' => $request->input('source_type', 'manual'),
+            'source_key' => $request->input('source_key'),
+            'content_hash' => $request->input('content_hash'),
+            'generated_at' => $request->input('generated_at'),
+            'content_status' => $request->input('content_status', 'published'),
         );
 
         $courseItem = $this->courseService->createCourseItem($data);
@@ -166,6 +177,11 @@ class CourseItemController extends Controller
             'duration' => 'nullable|integer|min:0',
             'external_url' => 'nullable|url',
             'parent_id' => 'nullable|integer',
+            'content' => 'nullable',
+            'content_status' => 'nullable|in:draft,published,archived',
+            'source_type' => 'nullable|string|max:40',
+            'source_key' => 'nullable|string|max:191',
+            'content_hash' => 'nullable|string|max:64',
         ));
 
         $data = array(
@@ -175,7 +191,13 @@ class CourseItemController extends Controller
             'duration' => $request->input('duration'),
             'external_url' => $request->input('external_url'),
             'description' => $request->input('description'),
+            'content' => $request->input('content'),
             'order_index' => $request->input('order_index', 0),
+            'source_type' => $request->input('source_type', $courseItem->source_type ?: 'manual'),
+            'source_key' => $request->input('source_key', $courseItem->source_key),
+            'content_hash' => $request->input('content_hash', $courseItem->content_hash),
+            'generated_at' => $request->input('generated_at', $courseItem->generated_at),
+            'content_status' => $request->input('content_status', $courseItem->content_status ?: 'published'),
         );
 
         $updatedCourseItem = $this->courseService->updateCourseItem($id, $data);
@@ -210,6 +232,21 @@ class CourseItemController extends Controller
         )));
     }
 
+    public function publish(Request $request, $id)
+    {
+        $courseItem = $this->courseService->getCourseItemById($id);
+        if (!$courseItem) {
+            throw new CustomException('课程项目不存在');
+        }
+        $course = $this->courseService->getCourseById($courseItem->course_id);
+        if (!$course || (int)$course->created_by !== (int)$this->getAuthUserId($request)) {
+            throw new CustomException('您没有权限发布此章节');
+        }
+        $courseItem->content_status = 'published';
+        $courseItem->save();
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('course_item' => $courseItem->fresh())));
+    }
+
     public function complete(Request $request, $id)
     {
         $courseItem = $this->courseService->getCourseItemById($id);
@@ -240,6 +277,8 @@ class CourseItemController extends Controller
             array(
                 'user_course_id' => (int)$userCourse->id,
                 'status' => 'completed',
+                'mastery_status' => 'completed',
+                'mastery_score' => 100,
                 'completed_at' => now(),
                 'last_accessed_at' => now(),
             )

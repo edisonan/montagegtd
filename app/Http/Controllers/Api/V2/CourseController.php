@@ -90,6 +90,10 @@ class CourseController extends Controller
             'difficulty' => 'nullable|in:beginner,intermediate,advanced',
             'estimated_hours' => 'nullable|integer|min:0',
             'public_status' => 'nullable|integer|in:1,2',
+            'content_status' => 'nullable|in:draft,published,archived',
+            'source_type' => 'nullable|string|max:40',
+            'source_key' => 'nullable|string|max:191',
+            'content_hash' => 'nullable|string|max:64',
         ));
 
         $data = array(
@@ -104,6 +108,11 @@ class CourseController extends Controller
             'difficulty' => $request->input('difficulty', 'beginner'),
             'estimated_hours' => $request->input('estimated_hours'),
             'tags' => $request->input('tags', array()),
+            'source_type' => $request->input('source_type', 'manual'),
+            'source_key' => $request->input('source_key'),
+            'content_hash' => $request->input('content_hash'),
+            'generated_at' => $request->input('generated_at'),
+            'content_status' => $request->input('content_status', 'published'),
         );
 
         $course = $this->courseService->createCourse($data);
@@ -139,6 +148,10 @@ class CourseController extends Controller
             'difficulty' => 'nullable|in:beginner,intermediate,advanced',
             'estimated_hours' => 'nullable|integer|min:0',
             'public_status' => 'nullable|integer|in:1,2,3',
+            'content_status' => 'nullable|in:draft,published,archived',
+            'source_type' => 'nullable|string|max:40',
+            'source_key' => 'nullable|string|max:191',
+            'content_hash' => 'nullable|string|max:64',
         ));
 
         $course = $this->courseService->getCourseById($id);
@@ -162,6 +175,11 @@ class CourseController extends Controller
             'difficulty' => $request->input('difficulty', 'beginner'),
             'estimated_hours' => $request->input('estimated_hours'),
             'tags' => $request->input('tags', array()),
+            'source_type' => $request->input('source_type', $course->source_type ?: 'manual'),
+            'source_key' => $request->input('source_key', $course->source_key),
+            'content_hash' => $request->input('content_hash', $course->content_hash),
+            'generated_at' => $request->input('generated_at', $course->generated_at),
+            'content_status' => $request->input('content_status', $course->content_status ?: 'published'),
         );
 
         $updatedCourse = $this->courseService->updateCourse($id, $data);
@@ -186,6 +204,20 @@ class CourseController extends Controller
         $this->courseService->deleteCourse($id);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc());
+    }
+
+    public function publish(Request $request, $id)
+    {
+        $course = $this->courseService->getCourseById($id);
+        if (!$course) {
+            throw new CustomException('课程不存在');
+        }
+        if ((int)$course->created_by !== (int)$this->getAuthUserId($request)) {
+            throw new CustomException('您没有权限发布此课程');
+        }
+        $course->content_status = 'published';
+        $course->save();
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('course' => $course->fresh())));
     }
 
     public function join(Request $request, $id)

@@ -40,6 +40,11 @@ class CourseItemRepository
         return CourseItem::create($data);
     }
 
+    public function getByCourseAndSourceKey($courseId, $sourceKey)
+    {
+        return CourseItem::where('course_id', $courseId)->where('source_key', $sourceKey)->first();
+    }
+
     /**
      * 更新课程项目
      */
