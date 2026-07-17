@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\CustomException;
 use App\Models\Course;
+use App\Models\CourseGenerationRun;
 use Illuminate\Support\Str;
 
 class CourseContentService
@@ -65,6 +66,34 @@ class CourseContentService
             'source_url' => $url,
             'source_key' => $url,
         )), 'platform_fetch');
+    }
+
+    public function runScheduled($course)
+    {
+        $config = is_array($course->automation_config) ? $course->automation_config : array();
+        $run = CourseGenerationRun::create(array(
+            'course_id' => $course->id,
+            'mode' => $config['mode'] ?? 'ai',
+            'status' => 'running',
+            'source_url' => $config['source_url'] ?? null,
+            'started_at' => now(),
+        ));
+        try {
+            $items = ($config['mode'] ?? 'ai') === 'fetch'
+                ? $this->fetch($course->id, $course->created_by, $config)
+                : $this->generate($course->id, $course->created_by, $config);
+            $run->status = 'success';
+            $run->items_count = count($items);
+            $run->finished_at = now();
+            $run->save();
+            return $items;
+        } catch (\Throwable $e) {
+            $run->status = 'failed';
+            $run->error = Str::limit($e->getMessage(), 1000, '');
+            $run->finished_at = now();
+            $run->save();
+            throw $e;
+        }
     }
 
     protected function storeItems(Course $course, array $items, $sourceType)

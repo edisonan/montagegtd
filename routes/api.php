@@ -274,6 +274,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/courses/{id}/join', 'Api\\V2\\CourseController@join');
         Route::post('/courses/{courseId}/items', 'Api\\V2\\CourseItemController@store');
         Route::post('/courses/{id}/publish', 'Api\\V2\\CourseController@publish');
+        Route::post('/courses/{id}/automation', 'Api\\V2\\CourseController@automation');
         Route::post('/courses/{courseId}/generate', 'Api\\V2\\CourseContentController@generate');
         Route::post('/courses/{courseId}/fetch', 'Api\\V2\\CourseContentController@fetch');
         Route::post('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@update');

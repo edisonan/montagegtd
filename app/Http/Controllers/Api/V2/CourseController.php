@@ -220,6 +220,32 @@ class CourseController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('course' => $course->fresh())));
     }
 
+    public function automation(Request $request, $id)
+    {
+        $course = $this->courseService->getCourseById($id);
+        if (!$course || (int)$course->created_by !== (int)$this->getAuthUserId($request)) {
+            throw new CustomException('课程不存在或无权限');
+        }
+        $this->validate($request, array(
+            'enabled' => 'required|boolean',
+            'mode' => 'required|in:ai,fetch',
+            'frequency_minutes' => 'nullable|integer|min:60|max:10080',
+            'topic' => 'nullable|string|max:255',
+            'source_url' => 'nullable|url',
+        ));
+        $config = array(
+            'enabled' => (bool)$request->input('enabled'),
+            'mode' => $request->input('mode'),
+            'frequency_minutes' => (int)$request->input('frequency_minutes', 1440),
+            'topic' => $request->input('topic'),
+            'source_url' => $request->input('source_url'),
+            'next_run_at' => now()->toDateTimeString(),
+        );
+        $course->automation_config = $config;
+        $course->save();
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('automation' => $config)));
+    }
+
     public function join(Request $request, $id)
     {
         $userId = $this->getAuthUserId($request);

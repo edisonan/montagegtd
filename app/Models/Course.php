@@ -24,6 +24,7 @@ class Course extends Model
         'content_hash',
         'generated_at',
         'content_status'
+        ,'automation_config'
     ];
 
     protected $casts = [
