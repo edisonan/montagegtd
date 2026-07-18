@@ -15,7 +15,6 @@ security:
 tags:
   - name: accounts
   - name: achievements
-  - name: applications
   - name: articles
   - name: auth
   - name: calendar
@@ -42,6 +41,7 @@ tags:
   - name: plans
   - name: point-mall
   - name: points
+  - name: reviews
   - name: settings
   - name: statistics
   - name: study
@@ -144,53 +144,6 @@ paths:
               sample:
                 value:
                   key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/applications/{appSlug}/{codePath}":
-    get:
-      tags:
-        - applications
-      summary: "GET /applications/{appSlug}/{codePath}"
-      operationId: unknown_handle_get_applications_by_appslug_by_codepath
-      description: |
-        Action: Api\\V2\\ApplicationController@show
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      parameters:
-        - name: appSlug
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: codePath
-          in: path
-          required: true
-          schema:
-            type: string
       security:
         - BearerAuth: []
       responses:
@@ -2202,6 +2155,295 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/course-items/{id}/publish":
+    post:
+      tags:
+        - course-items
+      summary: "POST /course-items/{id}/publish"
+      operationId: unknown_handle_post_course_items_by_id_publish
+      description: |
+        Action: Api\\V2\\CourseItemController@publish
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/course-items/{id}/quiz":
+    get:
+      tags:
+        - course-items
+      summary: "GET /course-items/{id}/quiz"
+      operationId: unknown_handle_get_course_items_by_id_quiz
+      description: |
+        Action: Api\\V2\\CourseQuizController@show
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    post:
+      tags:
+        - course-items
+      summary: "POST /course-items/{id}/quiz"
+      operationId: unknown_handle_post_course_items_by_id_quiz
+      description: |
+        Action: Api\\V2\\CourseQuizController@store
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    put:
+      tags:
+        - course-items
+      summary: "PUT /course-items/{id}/quiz"
+      operationId: unknown_handle_put_course_items_by_id_quiz
+      description: |
+        Action: Api\\V2\\CourseQuizController@store
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/course-items/{id}/quiz/attempts":
+    get:
+      tags:
+        - course-items
+      summary: "GET /course-items/{id}/quiz/attempts"
+      operationId: unknown_handle_get_course_items_by_id_quiz_attempts
+      description: |
+        Action: Api\\V2\\CourseQuizController@attempts
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+    post:
+      tags:
+        - course-items
+      summary: "POST /course-items/{id}/quiz/attempts"
+      operationId: unknown_handle_post_course_items_by_id_quiz_attempts
+      description: |
+        Action: Api\\V2\\CourseQuizController@submit
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/courses":
     get:
       tags:
@@ -2479,6 +2721,110 @@ paths:
           schema:
             type: string
         - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/courses/{courseId}/fetch":
+    post:
+      tags:
+        - courses
+      summary: "POST /courses/{courseId}/fetch"
+      operationId: unknown_handle_post_courses_by_courseid_fetch
+      description: |
+        Action: Api\\V2\\CourseContentController@fetch
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/courses/{courseId}/generate":
+    post:
+      tags:
+        - courses
+      summary: "POST /courses/{courseId}/generate"
+      operationId: unknown_handle_post_courses_by_courseid_generate
+      description: |
+        Action: Api\\V2\\CourseContentController@generate
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: courseId
           in: path
           required: true
           schema:
@@ -3019,6 +3365,58 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/courses/{id}/automation":
+    post:
+      tags:
+        - courses
+      summary: "POST /courses/{id}/automation"
+      operationId: unknown_handle_post_courses_by_id_automation
+      description: |
+        Action: Api\\V2\\CourseController@automation
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/courses/{id}/join":
     post:
       tags:
@@ -3027,6 +3425,58 @@ paths:
       operationId: unknown_handle_post_courses_by_id_join
       description: |
         Action: Api\\V2\\CourseController@join
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/courses/{id}/publish":
+    post:
+      tags:
+        - courses
+      summary: "POST /courses/{id}/publish"
+      operationId: unknown_handle_post_courses_by_id_publish
+      description: |
+        Action: Api\\V2\\CourseController@publish
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
@@ -3816,6 +4266,52 @@ paths:
       operationId: unknown_handle_post_feeds_quickstore
       description: |
         Action: Api\\V2\\FeedController@quickstore
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/feeds/refresh":
+    post:
+      tags:
+        - feeds
+      summary: "POST /feeds/refresh"
+      operationId: unknown_handle_post_feeds_refresh
+      description: |
+        Action: Api\\V2\\FeedController@refreshAll
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
@@ -5755,6 +6251,104 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/llm/attachments":
+    post:
+      tags:
+        - llm
+      summary: "POST /llm/attachments"
+      operationId: unknown_handle_post_llm_attachments
+      description: |
+        Action: Api\\V2\\LlmAttachmentController@store
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/llm/attachments/{id}":
+    delete:
+      tags:
+        - llm
+      summary: "DELETE /llm/attachments/{id}"
+      operationId: unknown_handle_delete_llm_attachments_by_id
+      description: |
+        Action: Api\\V2\\LlmAttachmentController@destroy
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/llm/chat":
     post:
       tags:
@@ -5801,250 +6395,19 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/llm/credentials":
-    get:
-      tags:
-        - llm
-      summary: "GET /llm/credentials"
-      operationId: unknown_handle_get_llm_credentials
-      description: |
-        Action: Api\\V2\\LlmController@getCredentials
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
+  "/llm/chat/stop":
     post:
       tags:
         - llm
-      summary: "POST /llm/credentials"
-      operationId: unknown_handle_post_llm_credentials
+      summary: "POST /llm/chat/stop"
+      operationId: unknown_handle_post_llm_chat_stop
       description: |
-        Action: Api\\V2\\LlmController@saveCredential
-        Capability: admin
-      x-token-capability: "admin"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/llm/credentials/{id}":
-    get:
-      tags:
-        - llm
-      summary: "GET /llm/credentials/{id}"
-      operationId: unknown_handle_get_llm_credentials_by_id
-      description: |
-        Action: Api\\V2\\LlmController@getCredential
-        Capability: read
-      x-token-capability: "read"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-    put:
-      tags:
-        - llm
-      summary: "PUT /llm/credentials/{id}"
-      operationId: unknown_handle_put_llm_credentials_by_id
-      description: |
-        Action: Api\\V2\\LlmController@saveCredential
-        Capability: admin
-      x-token-capability: "admin"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-    delete:
-      tags:
-        - llm
-      summary: "DELETE /llm/credentials/{id}"
-      operationId: unknown_handle_delete_llm_credentials_by_id
-      description: |
-        Action: Api\\V2\\LlmController@deleteCredential
-        Capability: admin
-      x-token-capability: "admin"
-      x-ai-hints:
-        controller: "Unknown"
-        handler: "handle"
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/FlexibleObject"
-            examples:
-              sample:
-                value:
-                  key: value
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              examples:
-                ok:
-                  value:
-                    code: 9999
-                    msg: ok
-                    result: {}
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        default:
-          $ref: "#/components/responses/GenericError"
-  "/llm/credentials/{id}/test":
-    post:
-      tags:
-        - llm
-      summary: "POST /llm/credentials/{id}/test"
-      operationId: unknown_handle_post_llm_credentials_by_id_test
-      description: |
-        Action: Api\\V2\\LlmController@testCredential
+        Action: Api\\V2\\LlmController@stopChat
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         required: false
         content:
@@ -6769,6 +7132,120 @@ paths:
         handler: "handle"
       parameters:
         - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/llm/sessions/{id}/messages/{conversationId}/branch":
+    post:
+      tags:
+        - llm
+      summary: "POST /llm/sessions/{id}/messages/{conversationId}/branch"
+      operationId: unknown_handle_post_llm_sessions_by_id_messages_by_conversationid_branch
+      description: |
+        Action: Api\\V2\\LlmSessionController@branchFromMessage
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/llm/sessions/{id}/messages/{conversationId}/feedback":
+    put:
+      tags:
+        - llm
+      summary: "PUT /llm/sessions/{id}/messages/{conversationId}/feedback"
+      operationId: unknown_handle_put_llm_sessions_by_id_messages_by_conversationid_feedback
+      description: |
+        Action: Api\\V2\\LlmSessionController@feedbackMessage
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: conversationId
           in: path
           required: true
           schema:
@@ -9296,6 +9773,42 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/reviews/course-items":
+    get:
+      tags:
+        - reviews
+      summary: "GET /reviews/course-items"
+      operationId: unknown_handle_get_reviews_course_items
+      description: |
+        Action: Api\\V2\\CourseReviewController@index
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/settings":
     get:
       tags:
@@ -9323,20 +9836,7 @@ paths:
                   value:
                     code: 9999
                     msg: ok
-                    result:
-                      setting: {}
-                      notification_channels:
-                        ifttt:
-                          type: ifttt
-                          status: 1
-                          config:
-                            key: ""
-                        bark:
-                          type: bark
-                          status: 0
-                          config:
-                            server_url: "https://api.day.app"
-                            key: ""
+                    result: {}
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -9427,14 +9927,14 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/settings/test-ifttt":
+  "/settings/test-bark":
     post:
       tags:
         - settings
-      summary: "POST /settings/test-ifttt"
-      operationId: unknown_handle_post_settings_test_ifttt
+      summary: "POST /settings/test-bark"
+      operationId: unknown_handle_post_settings_test_bark
       description: |
-        Action: Api\\V2\\SettingController@testIfttt
+        Action: Api\\V2\\SettingController@testBark
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
@@ -9473,14 +9973,14 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
-  "/settings/test-bark":
+  "/settings/test-ifttt":
     post:
       tags:
         - settings
-      summary: "POST /settings/test-bark"
-      operationId: unknown_handle_post_settings_test_bark
+      summary: "POST /settings/test-ifttt"
+      operationId: unknown_handle_post_settings_test_ifttt
       description: |
-        Action: Api\\V2\\SettingController@testBark
+        Action: Api\\V2\\SettingController@testIfttt
         Capability: write
       x-token-capability: "write"
       x-ai-hints:
@@ -9495,8 +9995,7 @@ paths:
             examples:
               sample:
                 value:
-                  key: bark_device_key
-                  server_url: "https://api.day.app"
+                  key: value
       security:
         - BearerAuth: []
       responses:
@@ -9511,8 +10010,7 @@ paths:
                   value:
                     code: 9999
                     msg: ok
-                    result:
-                      msg: "测试通知已发送"
+                    result: {}
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
