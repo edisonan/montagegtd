@@ -93,7 +93,7 @@
             padding: 20px;
         }
 
-        /* 分类导航 */
+        /* 订阅导航 */
         .category-list {
             list-style: none;
             padding: 0;
@@ -686,6 +686,11 @@
         .article-filter-group {
             min-width: 0;
         }
+        .article-filter-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
         .article-filter-group-wide {
             grid-column: span 2;
         }
@@ -1207,7 +1212,7 @@
                     <div class="sidebar-header">
                         <h3 class="sidebar-title">
                             <i class="fas fa-list-alt"></i>
-                            订阅分类
+                            订阅目录
                         </h3>
                         <div class="sidebar-actions">
                             <a href="{{ url('kindles') }}" class="sidebar-action-btn" title="发送到Kindle">
@@ -1221,7 +1226,7 @@
 
                     <div class="sidebar-body" id="navBody">
                         <ul class="category-list" id="nav">
-                            <!-- 动态加载分类 -->
+                            <!-- 动态加载订阅 -->
                             <li class="text-center py-4 text-gray-500">
                                 <i class="fas fa-spinner fa-spin mr-2"></i>
                                 加载中...
@@ -1304,7 +1309,7 @@
                                 </button>
                                 <button type="button" class="tool-btn mobile-only" id="toggleCategoryBtn">
                                     <i class="fas fa-folder-tree"></i>
-                                    订阅分类
+                                    订阅目录
                                 </button>
                             </div>
                         </div>
@@ -1326,10 +1331,13 @@
                                     </select>
                                 </div>
                                 <div class="article-filter-group">
-                                    <label class="article-filter-label" for="articleCategoryFilter">分类</label>
-                                    <select class="article-filter-control" id="articleCategoryFilter" name="category_id">
-                                        <option value="">全部分类</option>
-                                    </select>
+                                    <label class="article-filter-label" for="articleFeedFilter">订阅</label>
+                                    <div class="article-filter-stack">
+                                        <input class="article-filter-control" id="articleFeedSearch" type="text" placeholder="输入订阅名筛选">
+                                        <select class="article-filter-control" id="articleFeedFilter" name="feed_id">
+                                            <option value="">全部订阅</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="article-filter-group">
                                     <label class="article-filter-label" for="articleReadDuration">时长</label>
@@ -1570,12 +1578,12 @@
             var status = qs.get('status') || 'unread';
             var currentFeedId = qs.get('feed_id') || '';
             var timeRange = qs.get('time_range') || '6h';
-            var categoryId = qs.get('category_id') || '';
             var readDuration = qs.get('read_duration') || 'all';
             var keyword = qs.get('keyword') || '';
             var pageCount = normalizePageCount(qs.get('page_count') || 30);
             var currentPage = Number(qs.get('page') || 1);
             var viewMode = qs.get('view_mode') || 'all';
+            var articleMode = qs.get('mode') || 'full';
             var allowedViewModes = ['all', 'personalized', 'tech', 'product', 'read_later_suggest', 'low_priority'];
             if (allowedViewModes.indexOf(viewMode) === -1) {
                 viewMode = 'all';
@@ -1601,6 +1609,7 @@
                 isSaving: false,
                 savedMindId: null
             };
+            var articleFeedOptions = [];
 
             function normalizePageCount(value) {
                 var count = parseInt(value, 10);
@@ -1616,7 +1625,7 @@
             function collectArticleFilters() {
                 return {
                     time_range: $('#articleTimeRange').val() || timeRange || '6h',
-                    category_id: $('#articleCategoryFilter').val() || categoryId || '',
+                    feed_id: $('#articleFeedFilter').val() || '',
                     read_duration: $('#articleReadDuration').val() || readDuration || 'all',
                     keyword: $('#articleKeyword').val() || keyword || '',
                     page_count: normalizePageCount($('#articlePageCount').val() || pageCount || 30)
@@ -1625,7 +1634,8 @@
 
             function syncArticleFilterForm() {
                 $('#articleTimeRange').val(timeRange || '6h');
-                $('#articleCategoryFilter').val(categoryId || '');
+                $('#articleFeedFilter').val(currentFeedId || '');
+                $('#articleFeedSearch').val('');
                 $('#articleReadDuration').val(readDuration || 'all');
                 $('#articleKeyword').val(keyword || '');
                 $('#articlePageCount').val(String(pageCount || 30));
@@ -2030,14 +2040,14 @@
                     if (filters.time_range && filters.time_range !== 'all') {
                         url += '&time_range=' + encodeURIComponent(filters.time_range);
                     }
-                    if (filters.category_id) {
-                        url += '&category_id=' + encodeURIComponent(filters.category_id);
-                    }
                     if (filters.read_duration && filters.read_duration !== 'all') {
                         url += '&read_duration=' + encodeURIComponent(filters.read_duration);
                     }
                     if (filters.keyword) {
                         url += '&keyword=' + encodeURIComponent(filters.keyword);
+                    }
+                    if (articleMode && articleMode !== 'simple') {
+                        url += '&mode=' + encodeURIComponent(articleMode);
                     }
                     if (filters.page_count && filters.page_count !== 30) {
                         url += '&page_count=' + encodeURIComponent(String(filters.page_count));
@@ -2058,14 +2068,14 @@
                     if (filters.time_range && filters.time_range !== 'all') {
                         url += '&time_range=' + encodeURIComponent(filters.time_range);
                     }
-                    if (filters.category_id) {
-                        url += '&category_id=' + encodeURIComponent(filters.category_id);
-                    }
                     if (filters.read_duration && filters.read_duration !== 'all') {
                         url += '&read_duration=' + encodeURIComponent(filters.read_duration);
                     }
                     if (filters.keyword) {
                         url += '&keyword=' + encodeURIComponent(filters.keyword);
+                    }
+                    if (articleMode && articleMode !== 'simple') {
+                        url += '&mode=' + encodeURIComponent(articleMode);
                     }
                     if (filters.page_count && filters.page_count !== 30) {
                         url += '&page_count=' + encodeURIComponent(String(filters.page_count));
@@ -2084,14 +2094,14 @@
                 if (filters.time_range && filters.time_range !== 'all') {
                     streamUrl += '&time_range=' + encodeURIComponent(filters.time_range);
                 }
-                if (filters.category_id) {
-                    streamUrl += '&category_id=' + encodeURIComponent(filters.category_id);
-                }
                 if (filters.read_duration && filters.read_duration !== 'all') {
                     streamUrl += '&read_duration=' + encodeURIComponent(filters.read_duration);
                 }
                 if (filters.keyword) {
                     streamUrl += '&keyword=' + encodeURIComponent(filters.keyword);
+                }
+                if (articleMode && articleMode !== 'simple') {
+                    streamUrl += '&mode=' + encodeURIComponent(articleMode);
                 }
                 if (filters.page_count && filters.page_count !== 30) {
                     streamUrl += '&page_count=' + encodeURIComponent(String(filters.page_count));
@@ -2116,10 +2126,10 @@
                 } else {
                     params.delete('time_range');
                 }
-                if (filters.category_id) {
-                    params.set('category_id', filters.category_id);
+                if (filters.feed_id) {
+                    params.set('feed_id', filters.feed_id);
                 } else {
-                    params.delete('category_id');
+                    params.delete('feed_id');
                 }
                 if (filters.read_duration && filters.read_duration !== 'all') {
                     params.set('read_duration', filters.read_duration);
@@ -2130,6 +2140,11 @@
                     params.set('keyword', filters.keyword);
                 } else {
                     params.delete('keyword');
+                }
+                if (articleMode && articleMode !== 'simple') {
+                    params.set('mode', articleMode);
+                } else {
+                    params.delete('mode');
                 }
                 params.set('page_count', String(filters.page_count));
                 if (viewMode && viewMode !== 'all') {
@@ -2173,7 +2188,7 @@
 
                 var filters = collectArticleFilters();
                 timeRange = filters.time_range;
-                categoryId = filters.category_id;
+                currentFeedId = filters.feed_id;
                 readDuration = filters.read_duration;
                 pageCount = filters.page_count;
 
@@ -2181,11 +2196,11 @@
                     status: status,
                     feed_id: currentFeedId,
                     time_range: timeRange,
-                    category_id: categoryId,
                     read_duration: readDuration,
                     page_count: pageCount,
                     page: currentPage,
-                    view_mode: viewMode
+                    view_mode: viewMode,
+                    mode: articleMode
                 };
 
                 apiRequest('GET', '/articles', params).then(function(result_arr) {
@@ -2193,7 +2208,7 @@
                         throw new Error((result_arr && result_arr.msg) ? result_arr.msg : '加载失败');
                     }
 
-                    renderCategoryFilter(result_arr.result.categories || []);
+                    renderFeedFilter(result_arr.result.feeds || result_arr.result.nav_infos || []);
                     var articleSubs = result_arr.result.articles || [];
                     renderArticleList(articleSubs);
                     renderPagination(result_arr.result.pagination || null);
@@ -2245,9 +2260,6 @@
                     if (timeRange && timeRange !== 'all') {
                         sourceHref += '&time_range=' + encodeURIComponent(timeRange);
                     }
-                    if (categoryId) {
-                        sourceHref += '&category_id=' + encodeURIComponent(categoryId);
-                    }
                     if (readDuration && readDuration !== 'all') {
                         sourceHref += '&read_duration=' + encodeURIComponent(readDuration);
                     }
@@ -2264,9 +2276,6 @@
                     if (timeRange && timeRange !== 'all') {
                         streamHref += '&time_range=' + encodeURIComponent(timeRange);
                     }
-                    if (categoryId) {
-                        streamHref += '&category_id=' + encodeURIComponent(categoryId);
-                    }
                     if (readDuration && readDuration !== 'all') {
                         streamHref += '&read_duration=' + encodeURIComponent(readDuration);
                     }
@@ -2281,7 +2290,8 @@
                         + '<div class="article-meta">'
                         + '<div class="meta-item"><i class="fas fa-rss"></i>来源：<a href="' + sourceHref + '" class="source-link" target="_blank">' + escapeHtml(article.feed.feed_name || '') + '</a></div>'
                         + '<div class="meta-item"><i class="far fa-clock"></i>' + escapeHtml(article.published || '') + '</div>'
-                        + '<div class="meta-item"><i class="fas fa-external-link-alt"></i><a href="' + escapeHtml(originUrl) + '" class="source-link" target="_blank">原文</a></div>'
+                        + '<div class="meta-item"><i class="fas fa-external-link-alt"></i><a href="' + escapeHtml(originUrl) + '" class="source-link" target="_blank">原文</a><span class="ml-2 text-gray-400">' + Number(article.word_count || 0) + ' 字</span></div>'
+                        + aiBadges
                         + (unableDesc ? '<div class="quick-actions"><button type="button" class="quick-btn set_read_later_another ' + (articleSub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '">稍后阅读</button><button type="button" class="quick-btn expand-btn" data-article-id="' + subId + '">展开/收起</button></div>' : '')
                         + '</div></div>'
                         + '<div class="article-content" id="content' + subId + '"' + (unableDesc ? ' style="display:none"' : '') + '>'
@@ -2289,7 +2299,6 @@
                         + contentHtml
                         + (needsCollapse ? '<div class="content-fade" style="opacity:1;"></div>' : '')
                         + '</div>'
-                        + aiBadges
                         + (needsCollapse ? '<div class="read-more" style="display:block;"><button type="button" class="read-more-btn" data-article-id="' + subId + '"><i class="fas fa-chevron-down"></i>阅读更多</button></div>' : '')
                         + '</div>'
                         + '<div class="article-footer' + footerClass + '"><div class="action-buttons" style="margin-left:auto;">'
@@ -2354,27 +2363,78 @@
                 return html;
             }
 
-            function renderCategoryFilter(source) {
-                var html = '<option value="">全部分类</option>';
+            function getArticleFeedLabel(feedIdValue) {
+                var normalized = String(feedIdValue || '');
+                for (var i = 0; i < articleFeedOptions.length; i++) {
+                    if (String(articleFeedOptions[i].id || '') === normalized) {
+                        return articleFeedOptions[i].name || '';
+                    }
+                }
+                return '';
+            }
+
+            function filterArticleFeedOptions() {
+                var keyword = $.trim($('#articleFeedSearch').val() || '').toLowerCase();
+                var selectedId = String($('#articleFeedFilter').val() || '');
+                var html = '<option value="">全部订阅</option>';
                 var seen = {};
+                var selectedOption = null;
+                articleFeedOptions.forEach(function (item) {
+                    if (!item || !item.id) {
+                        return;
+                    }
+                    var optionId = String(item.id);
+                    if (optionId === selectedId) {
+                        selectedOption = item;
+                    }
+                    if (keyword && String(item.name || '').toLowerCase().indexOf(keyword) === -1) {
+                        return;
+                    }
+                    if (seen[optionId]) {
+                        return;
+                    }
+                    seen[optionId] = true;
+                    html += '<option value="' + escapeHtml(optionId) + '">' + escapeHtml(item.name || '') + '</option>';
+                });
+                if (selectedOption && !seen[String(selectedOption.id)]) {
+                    html += '<option value="' + escapeHtml(String(selectedOption.id)) + '">' + escapeHtml(selectedOption.name || '') + '</option>';
+                }
+                $('#articleFeedFilter').html(html).val(selectedId && (seen[selectedId] || (selectedOption && String(selectedOption.id) === selectedId)) ? selectedId : '');
+            }
+
+            function renderFeedFilter(source) {
+                articleFeedOptions = [];
                 if (Array.isArray(source)) {
                     source.forEach(function (item) {
                         if (!item) return;
-                        var categoryIdValue = String(item.id || '');
-                        if (!categoryIdValue || seen[categoryIdValue]) return;
-                        seen[categoryIdValue] = true;
-                        html += '<option value="' + escapeHtml(categoryIdValue) + '">' + escapeHtml(item.name || '') + '</option>';
+                        var feedIdValue = String(item.id || '');
+                        if (!feedIdValue) return;
+                        if (articleFeedOptions.some(function (exists) { return String(exists.id || '') === feedIdValue; })) return;
+                        var feedLabel = item.feed_name || item.name || '';
+                        if (item.category_name) {
+                            feedLabel += ' · ' + item.category_name;
+                        }
+                        articleFeedOptions.push({ id: feedIdValue, name: feedLabel });
                     });
                 } else {
                     $.each(source || {}, function (navId, navInfo) {
-                        if (!navInfo || !navInfo.category_info) return;
-                        var categoryIdValue = String(navInfo.category_info.category_id || navId);
-                        if (!categoryIdValue || seen[categoryIdValue]) return;
-                        seen[categoryIdValue] = true;
-                        html += '<option value="' + escapeHtml(categoryIdValue) + '">' + escapeHtml(navInfo.category_info.category_name || '') + '</option>';
+                        if (!navInfo || !navInfo.category_info || !Array.isArray(navInfo.list)) return;
+                        navInfo.list.forEach(function (feedItem) {
+                            if (!feedItem || !feedItem.feed_id) return;
+                            var feedIdValue = String(feedItem.feed_id);
+                            if (articleFeedOptions.some(function (exists) { return String(exists.id || '') === feedIdValue; })) return;
+                            var feedLabel = feedItem.feed_name || '';
+                            if (navInfo.category_info.category_name) {
+                                feedLabel += ' · ' + navInfo.category_info.category_name;
+                            }
+                            articleFeedOptions.push({ id: feedIdValue, name: feedLabel });
+                        });
                     });
                 }
-                $('#articleCategoryFilter').html(html).val(categoryId || '');
+                filterArticleFeedOptions();
+                if (currentFeedId) {
+                    $('#articleFeedSearch').val(getArticleFeedLabel(currentFeedId) || '');
+                }
             }
 
             function renderPagination(pagination) {
@@ -2555,7 +2615,7 @@
             function renderNav(data, status) {
                 processNavFlag = true;
                 $('#nav').html('');
-                renderCategoryFilter(data && data.nav_infos ? data.nav_infos : {});
+                renderFeedFilter(data && data.nav_infos ? data.nav_infos : {});
 
                 // 添加最后更新时间提示
                 const updateTime = new Date().toLocaleTimeString();
@@ -2593,9 +2653,6 @@
                             if (timeRange && timeRange !== 'all') {
                                 feedUrl += '&time_range=' + encodeURIComponent(timeRange);
                             }
-                            if (categoryId) {
-                                feedUrl += '&category_id=' + encodeURIComponent(categoryId);
-                            }
                             if (readDuration && readDuration !== 'all') {
                                 feedUrl += '&read_duration=' + encodeURIComponent(readDuration);
                             }
@@ -2632,7 +2689,7 @@
                 `);
                 }
 
-                // 初始化分类切换
+                // 初始化订阅切换
                 initCategoryToggle();
             }
 
@@ -2690,7 +2747,7 @@
                 }
             }
 
-            // 分类切换功能
+            // 订阅切换功能
             function initCategoryToggle() {
                 $('.category-header').click(function() {
                     var $categoryItem = $(this);
@@ -2775,9 +2832,25 @@
                     var articleId = $button.data('article-id');
                     var $content = $("#content" + articleId);
                     var $card = $button.closest('.article-card');
+                    var $preview = $card.find('.content-preview');
+                    var $readMore = $card.find('.read-more');
 
                     // 切换显示/隐藏
-                    $content.toggle();
+                    if ($content.is(':visible')) {
+                        $content.hide();
+                        syncArticleFooter($card);
+                        return;
+                    }
+
+                    $content.show();
+                    if ($preview.length) {
+                        $preview.addClass('expanded');
+                        $preview.css('max-height', 'none');
+                        $preview.find('.content-fade').css('opacity', '0');
+                    }
+                    if ($readMore.length) {
+                        $readMore.hide();
+                    }
                     syncArticleFooter($card);
                 });
                 $(".read-more-btn").off('click').on('click', function(e) {
@@ -3248,32 +3321,33 @@
             $('#toggleArticleFiltersBtn').on('click', function () {
                 $('#articleFilterShell').toggleClass('active');
             });
+            $('#articleFeedSearch').on('input', function () {
+                filterArticleFeedOptions();
+            });
+            $('#articleFeedFilter').on('change', function () {
+                currentFeedId = $(this).val() || '';
+            });
             $('#articleFilters').on('submit', function (event) {
                 event.preventDefault();
                 currentPage = 1;
                 var filters = collectArticleFilters();
                 timeRange = filters.time_range;
-                categoryId = filters.category_id;
+                currentFeedId = filters.feed_id;
                 readDuration = filters.read_duration;
                 keyword = filters.keyword;
                 pageCount = filters.page_count;
 
                 var params = new URLSearchParams(window.location.search);
                 params.set('status', status);
-                if (currentFeedId) {
-                    params.set('feed_id', currentFeedId);
-                } else {
-                    params.delete('feed_id');
-                }
                 if (timeRange && timeRange !== 'all') {
                     params.set('time_range', timeRange);
                 } else {
                     params.delete('time_range');
                 }
-                if (categoryId) {
-                    params.set('category_id', categoryId);
+                if (currentFeedId) {
+                    params.set('feed_id', currentFeedId);
                 } else {
-                    params.delete('category_id');
+                    params.delete('feed_id');
                 }
                 if (readDuration && readDuration !== 'all') {
                     params.set('read_duration', readDuration);

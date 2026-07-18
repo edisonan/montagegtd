@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', '文章总览 - 蒙太奇')
-@section('description', '按时间、订阅源、状态、阅读时长和关键词管理文章')
+@section('description', '按时间、订阅、状态、阅读时长和关键词管理文章')
 
 @section('content')
 <style>
@@ -12,6 +12,7 @@
     .workbench-subtitle { margin-top: 5px; color: #64748b; font-size: 13px; }
     .workbench-filters { display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 12px; padding: 16px 22px; background: #f8fafc; border-bottom: 1px solid #e5e7eb; }
     .filter-field { min-width: 0; }
+    .filter-stack { display: flex; flex-direction: column; gap: 6px; }
     .filter-field-wide { grid-column: span 2; }
     .filter-label { display: block; margin-bottom: 5px; color: #64748b; font-size: 12px; font-weight: 650; }
     .filter-control { width: 100%; min-height: 36px; padding: 7px 9px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #334155; font-size: 13px; }
@@ -93,12 +94,11 @@
                 </select>
             </div>
             <div class="filter-field">
-                <label class="filter-label">Feed</label>
-                <select class="filter-control" name="feed_id" id="feedFilter"><option value="0">全部 Feed</option></select>
-            </div>
-            <div class="filter-field">
-                <label class="filter-label">分类</label>
-                <select class="filter-control" name="category_id" id="categoryFilter"><option value="0">全部分类</option></select>
+                <label class="filter-label">订阅列表</label>
+                <div class="filter-stack">
+                    <input class="filter-control" type="text" id="feedSearch" placeholder="输入订阅名筛选">
+                    <select class="filter-control" name="feed_id" id="feedFilter"><option value="0">全部订阅</option></select>
+                </div>
             </div>
             <div class="filter-field">
                 <label class="filter-label">文章状态</label>
@@ -114,7 +114,7 @@
             </div>
             <div class="filter-field filter-field-wide">
                 <label class="filter-label">关键词</label>
-                <input class="filter-control" name="keyword" placeholder="标题、Feed 或分类关键词">
+                <input class="filter-control" name="keyword" placeholder="标题、订阅关键词">
             </div>
             <div class="custom-dates" id="customDates">
                 <input class="filter-control" type="date" name="start_date" aria-label="开始日期">
@@ -130,7 +130,7 @@
                 <div class="workbench-summary"><span id="workbenchSummary">正在加载…</span><button type="button" class="workbench-btn primary" id="aiPageBtn"><i class="fas fa-wand-magic-sparkles mr-1"></i>AI 整理本页</button></div>
                 <div class="workbench-table-wrap">
                     <table class="workbench-table">
-                        <thead><tr><th>文章标题 · Feed · 分类 · 阅读时间</th></tr></thead>
+                        <thead><tr><th>文章标题 · 订阅 · 分类 · 阅读时间</th></tr></thead>
                         <tbody id="workbenchRows"><tr><td class="loading-state">正在加载文章…</td></tr></tbody>
                     </table>
                 </div>
@@ -149,7 +149,7 @@
 
 <div class="workbench-modal" id="aiModal">
     <div class="workbench-modal-panel">
-        <header class="modal-head"><div><h2 class="modal-title" id="aiModalTitle">AI 辅助阅读</h2><div class="modal-meta">默认按标题、分类和 Feed 梳理文章，每个主题分成 3-5 个小节</div></div><button type="button" class="modal-close" data-close-modal="aiModal"><i class="fas fa-times"></i></button></header>
+        <header class="modal-head"><div><h2 class="modal-title" id="aiModalTitle">AI 辅助阅读</h2><div class="modal-meta">默认按标题、订阅和分类梳理文章，每个主题分成 3-5 个小节</div></div><button type="button" class="modal-close" data-close-modal="aiModal"><i class="fas fa-times"></i></button></header>
         <div class="modal-body">
             <textarea class="ai-prompt" id="aiPrompt" placeholder="可选：补充你的阅读要求，例如“重点关注可执行建议，避免展开背景介绍”。"></textarea>
             <div class="ai-toolbar"><span class="ai-hint">留空即使用默认辅助阅读结构；修改提示词后可再次生成</span><button type="button" class="workbench-btn primary" id="generateAiBtn"><i class="fas fa-wand-magic-sparkles mr-1"></i>重新生成</button></div>
@@ -164,6 +164,7 @@
 (function ($) {
     'use strict';
     var state = { page: 1, articleSubId: null, articleSubIds: [], currentArticles: [], pagination: null };
+    var feedOptions = [];
     var statusLabels = { unread: '未读', read: '已读', read_later: '稍后读', star: '收藏' };
 
     function escapeHtml(value) { return $('<div>').text(value == null ? '' : String(value)).html(); }
@@ -188,21 +189,46 @@
         params.page_count = 100;
         return params;
     }
-    function renderFeeds(feeds) {
-        var html = '<option value="0">全部 Feed</option>';
-        (feeds || []).forEach(function (feed) {
-            html += '<option value="' + Number(feed.id) + '">' + escapeHtml(feed.feed_name || '') + (feed.category_name ? ' · ' + escapeHtml(feed.category_name) : '') + '</option>';
+    function filterFeeds() {
+        var keyword = $.trim($('#feedSearch').val() || '').toLowerCase();
+        var selected = String($('#feedFilter').val() || '0');
+        var html = '<option value="0">全部订阅</option>';
+        var seen = {};
+        var selectedOption = null;
+        feedOptions.forEach(function (feed) {
+            if (!feed || !feed.id) {
+                return;
+            }
+            var optionId = String(feed.id);
+            if (optionId === selected) {
+                selectedOption = feed;
+            }
+            if (keyword && String(feed.name || '').toLowerCase().indexOf(keyword) === -1) {
+                return;
+            }
+            if (seen[optionId]) {
+                return;
+            }
+            seen[optionId] = true;
+            html += '<option value="' + Number(feed.id) + '">' + escapeHtml(feed.name || '') + '</option>';
         });
-        var selected = $('#feedFilter').val();
-        $('#feedFilter').html(html).val(selected || '0');
+        if (selectedOption && !seen[String(selectedOption.id)]) {
+            html += '<option value="' + Number(selectedOption.id) + '">' + escapeHtml(selectedOption.name || '') + '</option>';
+        }
+        $('#feedFilter').html(html).val(selected && (seen[selected] || (selectedOption && String(selectedOption.id) === selected)) ? selected : '0');
     }
-    function renderCategories(categories) {
-        var html = '<option value="0">全部分类</option>';
-        (categories || []).forEach(function (category) {
-            html += '<option value="' + Number(category.id) + '">' + escapeHtml(category.name || '') + '</option>';
+    function renderFeeds(feeds) {
+        feedOptions = [];
+        (feeds || []).forEach(function (feed) {
+            if (!feed || !feed.id) return;
+            var feedId = String(feed.id);
+            if (feedOptions.some(function (exists) { return String(exists.id || '') === feedId; })) return;
+            feedOptions.push({
+                id: feedId,
+                name: (feed.feed_name || feed.name || '') + (feed.category_name ? ' · ' + feed.category_name : '')
+            });
         });
-        var selected = $('#categoryFilter').val();
-        $('#categoryFilter').html(html).val(selected || '0');
+        filterFeeds();
     }
     function rowHtml(item) {
         var status = item.status || 'unread';
@@ -215,7 +241,6 @@
         $('#workbenchRows').html('<tr><td class="loading-state">正在加载文章…</td></tr>');
         request('/articles/workbench/data?' + $.param(params)).done(function (result) {
             renderFeeds(result.feeds);
-            renderCategories(result.categories);
             var articles = result.articles || [], html = '';
             state.currentArticles = articles;
             state.articleSubIds = articles.map(function (item) { return Number(item.id); });
@@ -314,7 +339,8 @@
     }
     $('#workbenchFilters').on('submit', function (event) { event.preventDefault(); state.page = 1; loadData(); });
     $('#workbenchFilters select[name="time_range"]').on('change', function () { $('#customDates').toggleClass('active', $(this).val() === 'custom'); });
-    $('#resetFilters').on('click', function () { $('#workbenchFilters')[0].reset(); $('#customDates').removeClass('active'); state.page = 1; loadData(); });
+    $('#feedSearch').on('input', function () { filterFeeds(); });
+    $('#resetFilters').on('click', function () { $('#workbenchFilters')[0].reset(); $('#feedSearch').val(''); $('#customDates').removeClass('active'); state.page = 1; loadData(); });
     $('#workbenchRows').on('click', '.view-article', function () { openArticle($(this).closest('tr').data('sub-id')); });
     $('#workbenchRows').on('click', '.article-title-link', function () { openArticle($(this).closest('tr').data('sub-id')); });
     $('#workbenchRows').on('click', 'tr', function (event) {

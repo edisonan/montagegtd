@@ -146,10 +146,42 @@
             setTimeout(function(){ if (node.parentNode) node.parentNode.removeChild(node); }, 3000);
         }
 
-        function renderSetting(navInfos) {
+        function renderSetting(categories, navInfos) {
             var multi = document.getElementById('multi');
             var html = '';
-            navInfos.forEach(function(navInfo) {
+            var navMap = {};
+            (Array.isArray(navInfos) ? navInfos : []).forEach(function(navInfo) {
+                var category = navInfo.category_info || {};
+                var categoryId = String(category.category_id || 0);
+                if (!categoryId || navMap[categoryId]) {
+                    return;
+                }
+                navMap[categoryId] = {
+                    category_info: category,
+                    list: Array.isArray(navInfo.list) ? navInfo.list : []
+                };
+            });
+
+            var renderList = [];
+            (Array.isArray(categories) ? categories : []).forEach(function(category) {
+                if (!category) return;
+                var categoryId = String(category.id || 0);
+                if (!categoryId) return;
+                renderList.push({
+                    category_info: {
+                        category_id: categoryId,
+                        category_name: category.name || '未命名分类'
+                    },
+                    list: navMap[categoryId] ? navMap[categoryId].list : []
+                });
+                delete navMap[categoryId];
+            });
+
+            Object.keys(navMap).forEach(function(categoryId) {
+                renderList.push(navMap[categoryId]);
+            });
+
+            renderList.forEach(function(navInfo) {
                 var category = navInfo.category_info || {};
                 var list = Array.isArray(navInfo.list) ? navInfo.list : [];
                 var categoryId = Number(category.category_id || 0);
@@ -259,20 +291,26 @@
                 loading.textContent = 'API客户端未初始化';
                 return;
             }
-            apiRequest('GET', '/feeds/navinfo', {}).then(function(resp) {
+            Promise.all([
+                apiRequest('GET', '/categories', {}),
+                apiRequest('GET', '/feeds/navinfo', {})
+            ]).then(function(responses) {
                 loading.classList.add('hidden');
-                if (!resp || resp.code !== 9999) {
+                var categoriesResp = responses[0];
+                var navResp = responses[1];
+                if (!categoriesResp || categoriesResp.code !== 9999 || !navResp || navResp.code !== 9999) {
                     loading.classList.remove('hidden');
-                    loading.textContent = (resp && resp.msg) ? resp.msg : '加载失败';
+                    loading.textContent = ((categoriesResp && categoriesResp.msg) || (navResp && navResp.msg)) ? ((categoriesResp && categoriesResp.msg) || (navResp && navResp.msg)) : '加载失败';
                     return;
                 }
-                var navInfos = Array.isArray(resp.result && resp.result.nav_infos) ? resp.result.nav_infos : [];
-                if (!navInfos.length) {
+                var categories = Array.isArray(categoriesResp.result) ? categoriesResp.result : [];
+                var navInfos = Array.isArray(navResp.result && navResp.result.nav_infos) ? navResp.result.nav_infos : [];
+                if (!categories.length && !navInfos.length) {
                     empty.classList.remove('hidden');
                     multi.classList.add('hidden');
                     return;
                 }
-                renderSetting(navInfos);
+                renderSetting(categories, navInfos);
                 multi.classList.remove('hidden');
                 empty.classList.add('hidden');
                 initSortables();

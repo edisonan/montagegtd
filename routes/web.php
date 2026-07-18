@@ -122,7 +122,9 @@ Route::group([
     Route::get('/articles/explorer/data/feeds', 'ArticleController@explorerFeeds');
     Route::get('/articles/explorer/data/feeds/{feedId}/articles', 'ArticleController@explorerArticleList');
     Route::get('/articles/explorer/data/articles/{articleSub}', 'ArticleController@explorerArticle');
-    Route::get('/articles/stream', 'ArticleController@stream');
+    Route::get('/articles/stream', 'ArticleController@streamV2');
+    Route::get('/articles/stream-v2', 'ArticleController@streamV2');
+    Route::get('/articles/stream-legacy', 'ArticleController@stream');
     Route::post('/article', 'ArticleController@store');
     Route::get('/article/list', 'ArticleController@list');
     Route::post('/article/mark', 'ArticleController@mark');

@@ -224,7 +224,6 @@ class WebpageRssService
                 'model_id' => $llmResult['meta']['model_id'] ?? $modelId,
                 'model_name' => $llmResult['meta']['model_name'] ?? null,
                 'provider_id' => $llmResult['meta']['provider_id'] ?? null,
-                'credential_id' => $llmResult['meta']['credential_id'] ?? null,
                 'request_time' => $llmResult['meta']['request_time'] ?? null,
                 'error' => $llmResult['error'] ?? null,
                 'mode' => $profile['name'],

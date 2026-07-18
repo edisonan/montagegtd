@@ -57,6 +57,14 @@ class ArticleController extends Controller
         }
 
         $articleSubs = $this->articleService->getArticleSubList($status, $pageCount, $feedId, $categoryId, $filters);
+        $feeds = DB::table('feed_subs')
+            ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
+            ->join('categories', 'feeds.category_id', '=', 'categories.id')
+            ->where('feed_subs.user_id', $this->getAuthUserId($request))
+            ->select('feeds.id', 'feeds.feed_name', 'categories.name as category_name')
+            ->distinct()
+            ->orderBy('feeds.feed_name')
+            ->get();
         $categories = DB::table('feed_subs')
             ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
             ->join('categories', 'feeds.category_id', '=', 'categories.id')
@@ -68,6 +76,7 @@ class ArticleController extends Controller
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'articles' => $this->serializeArticleSubs($articleSubs->items(), $filters['mode']),
+            'feeds' => $feeds,
             'categories' => $categories,
             'pagination' => array(
                 'current_page' => $articleSubs->currentPage(),
@@ -110,6 +119,14 @@ class ArticleController extends Controller
         $articleInfos = $this->articleService->getArticleListByFeedId($feedId, $pageCount, $filters);
         $articles = isset($articleInfos['articles']) ? $articleInfos['articles'] : null;
         $feed = isset($articleInfos['feed']) ? $articleInfos['feed'] : null;
+        $feeds = DB::table('feed_subs')
+            ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
+            ->join('categories', 'feeds.category_id', '=', 'categories.id')
+            ->where('feed_subs.user_id', $this->getAuthUserId($request))
+            ->select('feeds.id', 'feeds.feed_name', 'categories.name as category_name')
+            ->distinct()
+            ->orderBy('feeds.feed_name')
+            ->get();
         $categories = DB::table('feed_subs')
             ->join('feeds', 'feed_subs.feed_id', '=', 'feeds.id')
             ->join('categories', 'feeds.category_id', '=', 'categories.id')
@@ -122,6 +139,7 @@ class ArticleController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'feed' => $feed,
             'articles' => $articles ? $this->serializeArticleSubs($articles->items(), $filters['mode']) : array(),
+            'feeds' => $feeds,
             'categories' => $categories,
             'pagination' => $articles ? array(
                 'current_page' => $articles->currentPage(),

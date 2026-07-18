@@ -535,6 +535,14 @@ class ArticleController extends Controller
     }
 
     /**
+     * 抖音式沉浸刷文实验版。旧版 /articles/stream 保持不变，便于并行体验。
+     */
+    public function streamV2(Request $request)
+    {
+        return view('articles.stream_v2');
+    }
+
+    /**
      * 设置文章状态
      * @param Request $request
      * @param ArticleSub $articleSub
