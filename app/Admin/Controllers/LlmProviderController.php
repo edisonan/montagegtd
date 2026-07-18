@@ -123,6 +123,7 @@ class LlmProviderController extends Controller
             $form->text('slug', '标识符')->rules('required|max:50|unique:llm_providers,slug');
             $form->textarea('description', '描述');
             $form->text('base_url', 'API基础URL');
+            $form->password('api_key', 'API Key')->help('供应商下所有模型共用；编辑时留空表示保持原值。');
             
             $apiTypes = [
                 'openai' => 'OpenAI',

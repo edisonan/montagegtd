@@ -12,7 +12,6 @@ class LlmUsageLog extends Model
         'user_id',
         'provider_id',
         'model_id',
-        'credential_id',
         'input_tokens',
         'output_tokens',
         'total_tokens',
@@ -45,10 +44,6 @@ class LlmUsageLog extends Model
         return $this->belongsTo(LlmModel::class, 'model_id');
     }
 
-    public function credential()
-    {
-        return $this->belongsTo(LlmProviderCredential::class, 'credential_id');
-    }
 
     public function user()
     {

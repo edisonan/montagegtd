@@ -6,9 +6,9 @@ use App\Http\Utils\ResponseDataUtil;
 use App\Models\LlmAgent;
 use App\Models\LlmAgentVersion;
 use App\Models\LlmModel;
-use App\Models\LlmProviderCredential;
 use App\Models\LlmProvider;
 use App\Models\LlmConversation;
+use App\Models\LlmChatAttachment;
 use App\Services\LlmPolishService;
 use App\Services\LlmConversationService;
 use App\Services\PointGrantService;
@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Cache;
 
 class LlmController extends Controller
 {
@@ -119,6 +120,7 @@ class LlmController extends Controller
                 'priority' => 'integer|min:0',
                 'rate_limit_per_minute' => 'nullable|integer|min:0',
                 'concurrent_limit' => 'nullable|integer|min:0',
+                'api_key' => 'nullable|string',
                 'config_schema' => 'nullable|array'
             ];
 
@@ -150,6 +152,11 @@ class LlmController extends Controller
                 'rate_limit_per_minute',
                 'concurrent_limit'
             ));
+
+            // 留空表示更新时保留现有 Provider Key。
+            if ($request->filled('api_key')) {
+                $providerData['api_key'] = trim($request->input('api_key'));
+            }
             
             if ($id) {
                 $provider = LlmProvider::when(!$user->is_admin, function ($query) use ($user) {
@@ -346,172 +353,9 @@ class LlmController extends Controller
         }
     }
 
-    public function getCredentials(Request $request)
+    private function resolveProviderApiKey(LlmProvider $provider)
     {
-        try {
-            $user = Auth::user();
-            
-            $credentials = LlmProviderCredential::with('provider')
-                ->when(!$user->is_admin, function ($query) use ($user) {
-                    return $query->where(function ($q) use ($user) {
-                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
-                    });
-                })
-                ->orderBy('provider_id')
-                ->orderBy('is_default', 'desc')
-                ->orderBy('name')
-                ->get();
-
-            return $this->jsonResponse ( $request, ResponseDataUtil::genSimpleSucc ( $credentials ) );
-//            return response()->json([
-//                'result' => [
-//                    'credentials' => $credentials
-//                ]
-//            ]);
-        } catch (\Exception $e) {
-            Log::error('获取凭据失败: ' . $e->getMessage());
-            return response()->json(['message' => '获取凭据失败'], 500);
-        }
-    }
-
-    public function getCredential($id)
-    {
-        try {
-            $user = Auth::user();
-            
-            $credential = LlmProviderCredential::with('provider')
-                ->when(!$user->is_admin, function ($query) use ($user) {
-                    return $query->where(function ($q) use ($user) {
-                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
-                    });
-                })
-                ->find($id);
-            
-            if (!$credential) {
-                return response()->json(['message' => '凭据不存在'], 404);
-            }
-            
-            return response()->json(ResponseDataUtil::genSimpleSucc($credential));
-        } catch (\Exception $e) {
-            Log::error('获取凭据详情失败: ' . $e->getMessage());
-            return response()->json(['message' => '获取凭据详情失败'], 500);
-        }
-    }
-
-    public function saveCredential(Request $request, $id = null)
-    {
-        try {
-            $user = Auth::user();
-            
-            $rules = [
-                'provider_id' => 'required|exists:llm_providers,id',
-                'name' => 'required|string|max:100',
-                'api_key' => 'nullable|string', // 不在创建时强制要求，因为更新时不总是提供
-                'config' => 'nullable|array',
-                'is_default' => 'boolean',
-                'is_active' => 'boolean',
-                'quota_limit' => 'nullable|integer|min:0'
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                $errors = $validator->errors()->toArray();
-                Log::warning('保存凭据参数校验失败', array('errors' => $errors));
-                return response()->json(
-                    ResponseDataUtil::genFail(ResponseDataUtil::COMMON_ERROR, '参数校验失败', $errors),
-                    422
-                );
-            }
-
-            $credentialData = $request->only(array(
-                'provider_id',
-                'name',
-                'api_key',
-                'config',
-                'is_default',
-                'is_active',
-                'quota_limit'
-            ));
-            
-            if ($id) {
-                $credential = LlmProviderCredential::when(!$user->is_admin, function ($query) use ($user) {
-                    return $query->where(function ($q) use ($user) {
-                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
-                    });
-                })
-                ->find($id);
-                
-                if (!$credential) {
-                    return response()->json(['message' => '凭据不存在'], 404);
-                }
-                
-                $requestData = $credentialData;
-                
-                // 处理API密钥更新（如果提供了新密钥）
-                if (isset($requestData['api_key']) && !empty($requestData['api_key'])) {
-                    $credential->api_key = Crypt::encryptString($requestData['api_key']);
-                }
-                unset($requestData['api_key']);
-                
-                $credential->update($requestData);
-            } else {
-                // 创建新的凭据
-                $requestData = $credentialData;
-                $requestData['user_id'] = $user->id;
-                if (isset($requestData['api_key'])) {
-                    $requestData['api_key'] = Crypt::encryptString($requestData['api_key']);
-                }
-                $credential = LlmProviderCredential::create($requestData);
-            }
-            
-            // 如果设置了为默认凭据，需要更新其他凭据的状态
-            if ($credential->is_default) {
-                LlmProviderCredential::where('user_id', $user->id)
-                    ->where('provider_id', $credential->provider_id)
-                    ->where('id', '!=', $credential->id)
-                    ->update(['is_default' => false]);
-            }
-            
-            return response()->json(ResponseDataUtil::genSimpleSucc($credential));
-        } catch (\Exception $e) {
-            Log::error('保存凭据失败: ' . $e->getMessage());
-            return response()->json(['message' => '保存凭据失败'], 500);
-        }
-    }
-
-    public function deleteCredential($id)
-    {
-        try {
-            $user = Auth::user();
-            
-            $credential = LlmProviderCredential::when(!$user->is_admin, function ($query) use ($user) {
-                return $query->where(function ($q) use ($user) {
-                    $q->whereNull('user_id')->orWhere('user_id', $user->id);
-                });
-            })
-            ->find($id);
-            
-            if (!$credential) {
-                return response()->json(['message' => '凭据不存在'], 404);
-            }
-            
-            $credential->delete();
-            
-            return response()->json(ResponseDataUtil::genSimpleSucc());
-        } catch (\Exception $e) {
-            Log::error('删除凭据失败: ' . $e->getMessage());
-            return response()->json(['message' => '删除凭据失败'], 500);
-        }
-    }
-
-    private function getCredentialApiKey(LlmProviderCredential $credential)
-    {
-        $apiKey = $credential->getPlainApiKey();
-        if (!$apiKey) {
-            throw new \RuntimeException('API Key 无法解密，请编辑凭据并重新保存 API Key 后再测试');
-        }
-
-        return $apiKey;
+        return $provider->getPlainApiKey();
     }
 
     private function curlJsonRequest($url, $method, array $headers, $payload = null, $timeout = 20)
@@ -658,93 +502,6 @@ class LlmController extends Controller
         return '供应商请求失败';
     }
 
-    public function testCredential($id)
-    {
-        try {
-            $user = Auth::user();
-
-            $credential = LlmProviderCredential::with('provider')
-                ->when(!$user->is_admin, function ($query) use ($user) {
-                    return $query->where(function ($q) use ($user) {
-                        $q->whereNull('user_id')->orWhere('user_id', $user->id);
-                    });
-                })
-                ->find($id);
-
-            if (!$credential) {
-                return response()->json([
-                    'code' => 1001,
-                    'msg' => '凭据不存在',
-                    'result' => array(),
-                ], 404);
-            }
-
-            if ((int)$credential->is_active !== 1) {
-                return response()->json([
-                    'code' => 1002,
-                    'msg' => '凭据未启用',
-                    'result' => array(),
-                ]);
-            }
-
-            $provider = $credential->provider;
-            if (!$provider || (int)$provider->is_active !== 1) {
-                return response()->json([
-                    'code' => 1003,
-                    'msg' => '凭据供应商不可用',
-                    'result' => array(),
-                ]);
-            }
-
-            $apiKey = $this->getCredentialApiKey($credential);
-            $model = LlmModel::where('provider_id', $provider->id)
-                ->where('is_active', 1)
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->first();
-
-            $testResult = $this->testProviderRequest($provider, $apiKey, $model);
-            if (empty($testResult['ok'])) {
-                Log::warning('测试凭据供应商请求失败', array(
-                    'credential_id' => $credential->id,
-                    'provider_id' => $provider->id,
-                    'model_id' => $model ? $model->id : null,
-                    'status_code' => $testResult['status_code'],
-                    'error' => $this->getProviderTestError($testResult),
-                ));
-
-                return response()->json([
-                    'code' => 1004,
-                    'msg' => '供应商请求失败: ' . $this->getProviderTestError($testResult),
-                    'result' => array(
-                        'status_code' => $testResult['status_code'],
-                        'provider_id' => $provider->id,
-                        'provider_name' => $provider->name,
-                        'model_id' => $model ? $model->id : null,
-                        'model_name' => $model ? $model->name : null,
-                    ),
-                ]);
-            }
-
-            return response()->json(ResponseDataUtil::genSimpleSucc(array(
-                'credential_id' => $credential->id,
-                'provider_id' => $credential->provider_id,
-                'provider_name' => $provider->name,
-                'model_id' => $model ? $model->id : null,
-                'model_name' => $model ? $model->name : null,
-                'status_code' => $testResult['status_code'],
-                'msg' => '供应商连接测试成功',
-            )));
-        } catch (\Exception $e) {
-            Log::error('测试凭据失败: ' . $e->getMessage());
-            return response()->json([
-                'code' => 1003,
-                'msg' => '连接测试失败: ' . $e->getMessage(),
-                'result' => array(),
-            ], 500);
-        }
-    }
-
     public function testModel($id)
     {
         try {
@@ -783,17 +540,12 @@ class LlmController extends Controller
                 ]);
             }
 
-            $credential = LlmProviderCredential::where('user_id', $user->id)
-                ->where('provider_id', $provider->id)
-                ->where('is_active', 1)
-                ->orderBy('is_default', 'desc')
-                ->orderBy('id', 'asc')
-                ->first();
+            $apiKey = $this->resolveProviderApiKey($provider);
 
-            if (!$credential) {
+            if (!$apiKey) {
                 return response()->json([
                     'code' => 1004,
-                    'msg' => '未找到可用凭据，请先添加并启用该供应商凭据',
+                    'msg' => '未配置该供应商的 API Key，请先在供应商中填写',
                     'result' => array(
                         'provider_id' => $provider->id,
                         'provider_name' => $provider->name,
@@ -801,13 +553,11 @@ class LlmController extends Controller
                 ]);
             }
 
-            $apiKey = $this->getCredentialApiKey($credential);
             $testResult = $this->testProviderRequest($provider, $apiKey, $model);
             if (empty($testResult['ok'])) {
                 Log::warning('测试模型供应商请求失败', array(
                     'model_id' => $model->id,
                     'provider_id' => $provider->id,
-                    'credential_id' => $credential->id,
                     'status_code' => $testResult['status_code'],
                     'error' => $this->getProviderTestError($testResult),
                 ));
@@ -821,7 +571,6 @@ class LlmController extends Controller
                         'model_name' => $model->name,
                         'provider_id' => $provider->id,
                         'provider_name' => $provider->name,
-                        'credential_id' => $credential->id,
                     ),
                 ]);
             }
@@ -831,8 +580,6 @@ class LlmController extends Controller
                 'model_name' => $model->name,
                 'provider_id' => $provider->id,
                 'provider_name' => $provider->name,
-                'credential_id' => $credential->id,
-                'credential_name' => $credential->name,
                 'status_code' => $testResult['status_code'],
                 'msg' => '模型真实请求测试通过',
             )));
@@ -849,10 +596,12 @@ class LlmController extends Controller
     public function chat(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'agent_id' => 'nullable|string',
+            'agent_id' => 'nullable',
             'session_id' => 'nullable|integer',
             'refer_text' => 'nullable|string',
-            'query' => 'required|string|max:1000',
+            'query' => 'required|string|max:8000',
+            'generation_id' => 'nullable|string|max:80',
+            'attachment_ids' => 'nullable|array|max:5',
         ]);
 
         if ($validator->fails()) {
@@ -862,6 +611,9 @@ class LlmController extends Controller
         $query = $request->input('query');
         $referText = $request->input('refer_text', '');
         $sessionId = $request->input('session_id', '');
+        $generationId = $request->input('generation_id') ?: bin2hex(random_bytes(16));
+        $generationCacheKey = null;
+        $wasStopped = false;
 
         // 获取会话和智能体信息
         $session = $this->sessionRepository->findById($sessionId);
@@ -903,34 +655,50 @@ class LlmController extends Controller
             $agentVersion = LlmAgentVersion::where('agent_id', $agent->id)->first();
         }
 
+        if (!$agentVersion) {
+            return response()->json([
+                'success' => false,
+                'message' => '智能体尚未配置可用版本'
+            ], 400);
+        }
+
         try {
             $user = Auth::user();
-            if($agent->user_id != $user->id) {
-                $credential = LlmProviderCredential::where('user_id', $user->id)
-                    ->where('is_active', 1)
-                    ->first();
-
-                if (!$credential) {
-                    return response()->json(['error' => '未找到有效的API凭据'], 400);
+            $generationCacheKey = $this->generationCacheKey($user->id, $generationId);
+            Cache::forget($generationCacheKey);
+            ignore_user_abort(true);
+            $attachmentIds = array_values(array_unique(array_map('intval', $request->input('attachment_ids', []))));
+            $attachments = collect();
+            if (!empty($attachmentIds)) {
+                $attachments = LlmChatAttachment::where('user_id', $user->id)
+                    ->whereIn('id', $attachmentIds)
+                    ->whereNull('conversation_id')
+                    ->where(function ($query) use ($session) {
+                        $query->whereNull('session_id')->orWhere('session_id', $session->id);
+                    })
+                    ->where('status', 'ready')
+                    ->get();
+                if ($attachments->count() !== count($attachmentIds)) {
+                    return response()->json(['success' => false, 'message' => '附件不存在、已发送或无权访问'], 422);
                 }
-
-                $provider = LLMProvider::where('id', $credential->provider_id)->first();
-
-                $model = LlmModel::where('provider_id', $credential->provider_id)
+            }
+            if($agent->user_id != $user->id) {
+                $model = LlmModel::with('provider')
+                    ->where('is_active', 1)
+                    ->orderBy('sort_order')
+                    ->orderBy('id')
                     ->first();
 
                 if (!$model) {
                     return response()->json(['error' => '未找到有效的模型'], 400);
                 }
+
+                $provider = $model->provider;
             } else {
-                $model = LlmModel::where('id', $agentVersion->model_id)
+                $model = LlmModel::with('provider')->where('id', $agentVersion->model_id)
                     ->first();
 
-                $provider = LLMProvider::where('id', $model->provider_id)->first();
-
-                $credential = LlmProviderCredential::where('user_id', $user->id)->where('provider_id', $provider->id)
-                    ->where('is_active', 1)
-                    ->first();
+                $provider = $model ? $model->provider : null;
             }
 
             // 验证提供商URL格式
@@ -951,28 +719,69 @@ class LlmController extends Controller
                 return response()->json(['error' => '提供商URL格式错误'], 500);
             }
 
-            $apiKey = $this->getCredentialApiKey($credential);
+            $apiKey = $this->resolveProviderApiKey($provider);
+            if (!$apiKey) {
+                return response()->json(['error' => '未配置该供应商的 API Key'], 400);
+            }
+            $sessionHasPdf = $this->hasPdfAttachments($attachments)
+                || LlmChatAttachment::where('session_id', $session->id)->where('extension', 'pdf')->exists();
+            $isOpenRouter = stripos((string)$provider->name, 'openrouter') !== false
+                || stripos((string)$provider->base_url, 'openrouter.ai') !== false;
+            if ($sessionHasPdf && !$isOpenRouter) {
+                return response()->json(['success' => false, 'message' => '当前仅 OpenRouter 供应商支持 PDF 对话'], 422);
+            }
 
-            $systemContent = $agentVersion->system_content;
+            $systemContent = $agentVersion->system_prompt;
             if(!empty($referText)) {
                 $systemContent = $systemContent."\n引用文本：\n" .$referText;
             }
 
-            // 记录请求数据
+            // 组装系统提示词和最近会话历史，让页面具备真正的多轮上下文能力。
+            $messages = [];
+            if (!empty($systemContent)) {
+                $messages[] = [
+                    'role' => 'system',
+                    'content' => $systemContent,
+                ];
+            }
+
+            if ($sessionId && $this->conversationSupportsSession()) {
+                foreach ($this->buildConversationHistory((int)$sessionId) as $historyMessage) {
+                    $messages[] = $historyMessage;
+                }
+            }
+
+            $currentUserContent = $this->buildMessageContent($query, $attachments);
+            if ((int)$session->message_count === 0 && in_array($session->title, ['新对话', '未命名对话', '未命名会话'], true)) {
+                $session->title = $this->makeSessionTitle($query, $attachments);
+                $session->save();
+            }
+            $messages[] = [
+                'role' => 'user',
+                'content' => $currentUserContent,
+            ];
+
             $requestData = [
                 'model' => $model->name,
-                'messages' => [
-                    [
-                        'role' => 'system',
-                        'content' => $referText,
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => $query,
-                    ]
-                ],
+                'messages' => $messages,
                 'stream' => true
             ];
+            if ($this->messagesContainPdf($messages)) {
+                $requestData['plugins'] = [[
+                    'id' => 'file-parser',
+                    'pdf' => ['engine' => 'cloudflare-ai'],
+                ]];
+            }
+
+            if ($agentVersion->temperature !== null) {
+                $requestData['temperature'] = (float)$agentVersion->temperature;
+            }
+            if ($agentVersion->top_p !== null) {
+                $requestData['top_p'] = (float)$agentVersion->top_p;
+            }
+            if (!empty($agentVersion->max_tokens)) {
+                $requestData['max_tokens'] = (int)$agentVersion->max_tokens;
+            }
 
             // 设置流式响应头
             header('Content-Type: text/event-stream');
@@ -984,15 +793,22 @@ class LlmController extends Controller
             $conversationPayload = [
                 'user_id' => $user->id,
                 'model_id' => $model->id,
-                'credential_id' => $credential->id,
                 'question' => $query,
-                'request_data' => $requestData,
+                'request_data' => array_merge($this->sanitizeRequestData($requestData), ['attachment_ids' => $attachmentIds]),
                 'answer' => '' // 初始化为空，后续填充
             ];
             if ($sessionId && $this->conversationSupportsSession()) {
                 $conversationPayload['session_id'] = (int)$sessionId;
             }
             $conversation = $this->conversationService->createConversation($conversationPayload);
+            if (!$attachments->isEmpty()) {
+                LlmChatAttachment::whereIn('id', $attachments->pluck('id')->all())
+                    ->update([
+                        'session_id' => (int)$session->id,
+                        'conversation_id' => (int)$conversation->id,
+                        'updated_at' => now(),
+                    ]);
+            }
 
             // 记录详细的请求信息
             Log::info("askAi cURL Request Details:", [
@@ -1005,11 +821,24 @@ class LlmController extends Controller
                     'Cache-Control: no-cache',
                     'Connection: keep-alive'
                 ],
-                'request_body' => $requestData,
+                'request_body' => $this->sanitizeRequestData($requestData),
                 'timeout' => 300
             ]);
 
             $curl = curl_init();
+            $completeAnswer = '';
+            $streamBuffer = '';
+            $usage = [];
+            $lastStopCheckAt = 0.0;
+            $stopRequested = function () use (&$lastStopCheckAt, &$wasStopped, $generationCacheKey) {
+                $now = microtime(true);
+                if (($now - $lastStopCheckAt) < 0.25) {
+                    return $wasStopped;
+                }
+                $lastStopCheckAt = $now;
+                $wasStopped = (bool)Cache::get($generationCacheKey, false);
+                return $wasStopped;
+            };
             
             // 启用详细调试信息
             curl_setopt($curl, CURLOPT_VERBOSE, true);
@@ -1030,7 +859,10 @@ class LlmController extends Controller
                     'Cache-Control: no-cache',
                     'Connection: keep-alive'
                 ],
-                CURLOPT_WRITEFUNCTION => function($ch, $data) use (&$completeAnswer) {
+                CURLOPT_WRITEFUNCTION => function($ch, $data) use (&$completeAnswer, &$streamBuffer, &$usage, $stopRequested) {
+                    if ($stopRequested()) {
+                        return 0;
+                    }
                     // 记录接收到的数据
                     Log::debug("cURL WRITEFUNCTION data received:", [
                         'data_length' => strlen($data),
@@ -1038,7 +870,19 @@ class LlmController extends Controller
                         'complete_answer_length' => strlen($completeAnswer ?? '')
                     ]);
                     
-                    // 直接输出原始数据，让前端处理
+                    // 同步解析并累计答案，保证刷新页面后仍能恢复完整回复。
+                    $streamBuffer .= str_replace("\r\n", "\n", $data);
+                    while (($separatorPosition = strpos($streamBuffer, "\n\n")) !== false) {
+                        $event = substr($streamBuffer, 0, $separatorPosition);
+                        $streamBuffer = substr($streamBuffer, $separatorPosition + 2);
+                        $completeAnswer .= $this->extractSseEventContent($event);
+                        $eventUsage = $this->extractSseEventUsage($event);
+                        if (!empty($eventUsage)) {
+                            $usage = $eventUsage;
+                        }
+                    }
+
+                    // 直接输出供应商的 SSE 数据，让前端实时渲染。
                     echo $data;
                     // 某些运行环境未开启输出缓冲，直接 ob_flush 会抛 warning
                     if (ob_get_level() > 0) {
@@ -1063,6 +907,10 @@ class LlmController extends Controller
                 },
                 CURLOPT_TIMEOUT => 300,
                 CURLOPT_CONNECTTIMEOUT => 30, // 连接超时
+                CURLOPT_NOPROGRESS => false,
+                CURLOPT_PROGRESSFUNCTION => function ($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($stopRequested) {
+                    return $stopRequested() ? 1 : 0;
+                },
                 CURLOPT_FOLLOWLOCATION => true, // 跟随重定向
                 CURLOPT_MAXREDIRS => 5, // 最大重定向次数
                 // 兼容 NSS 环境：不再强制置空 CAINFO/CAPATH，避免触发 certpath=none 初始化失败
@@ -1091,7 +939,36 @@ class LlmController extends Controller
                 'verbose_log' => $verboseLog
             ]);
 
-            if ($error || $errno !== 0) {
+            if ($streamBuffer !== '') {
+                $completeAnswer .= $this->extractSseEventContent($streamBuffer);
+                $eventUsage = $this->extractSseEventUsage($streamBuffer);
+                if (!empty($eventUsage)) {
+                    $usage = $eventUsage;
+                }
+                $streamBuffer = '';
+            }
+
+            if ($wasStopped) {
+                $this->conversationService->updateConversation($conversation->id, [
+                    'answer' => $completeAnswer,
+                    'response_data' => [
+                        'status' => 'stopped',
+                        'model' => $model->name,
+                        'generation_id' => $generationId,
+                    ],
+                    'prompt_tokens' => (int)($usage['prompt_tokens'] ?? 0),
+                    'completion_tokens' => (int)($usage['completion_tokens'] ?? 0),
+                    'total_tokens' => (int)($usage['total_tokens'] ?? 0),
+                    'answered_at' => now(),
+                ]);
+                $session->message_count = LlmConversation::where('session_id', $session->id)->count();
+                $session->last_message_at = now();
+                $session->save();
+                echo "data: " . json_encode([
+                    'type' => 'stopped',
+                    'conversation_id' => $conversation->id,
+                ], JSON_UNESCAPED_UNICODE) . "\n\n";
+            } elseif ($error || $errno !== 0) {
                 Log::error("askAi cURL Error Details:", [
                     'error' => $error,
                     'errno' => $errno,
@@ -1144,7 +1021,37 @@ class LlmController extends Controller
                     'response_body' => substr($result ?? '', 0, 500),
                     'curl_info' => $info
                 ]);
+                $errorMessage = '模型请求失败（HTTP ' . $httpCode . '）';
+                $this->conversationService->updateConversation($conversation->id, [
+                    'answer' => $errorMessage,
+                    'response_data' => [
+                        'http_code' => $httpCode,
+                        'response_body' => substr($result ?? '', 0, 2000),
+                    ],
+                    'answered_at' => now(),
+                ]);
+                echo "data: " . json_encode([
+                    'type' => 'error',
+                    'message' => $errorMessage,
+                ], JSON_UNESCAPED_UNICODE) . "\n\n";
             } else {
+                $this->conversationService->updateConversation($conversation->id, [
+                    'answer' => $completeAnswer,
+                    'response_data' => [
+                        'http_code' => $httpCode,
+                        'model' => $model->name,
+                        'generation_id' => $generationId,
+                    ],
+                    'prompt_tokens' => (int)($usage['prompt_tokens'] ?? 0),
+                    'completion_tokens' => (int)($usage['completion_tokens'] ?? 0),
+                    'total_tokens' => (int)($usage['total_tokens'] ?? 0),
+                    'answered_at' => now(),
+                ]);
+
+                $session->message_count = LlmConversation::where('session_id', $session->id)->count();
+                $session->last_message_at = now();
+                $session->save();
+
                 try {
                     if (!empty($sessionId) && !empty($user->id)) {
                         $this->pointGrantService->grantByEvent(
@@ -1169,12 +1076,20 @@ class LlmController extends Controller
             curl_close($curl);
 
             // 发送结束信号
+            echo "data: " . json_encode([
+                'type' => 'done',
+                'conversation_id' => $conversation->id,
+                'stopped' => $wasStopped,
+                'usage' => $usage,
+                'session_title' => $session->title,
+            ], JSON_UNESCAPED_UNICODE) . "\n\n";
             echo "\ndata: [DONE]\n\n";
             if (ob_get_level() > 0) {
                 @ob_flush();
             }
             @flush();
 
+            Cache::forget($generationCacheKey);
             exit();
         } catch (\Exception $e) {
             Log::error("askAi Exception Occurred:", [
@@ -1209,14 +1124,241 @@ class LlmController extends Controller
             }
             @flush();
 
+            if ($generationCacheKey) {
+                Cache::forget($generationCacheKey);
+            }
             exit();
         }
+    }
+
+    public function stopChat(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'generation_id' => 'required|string|max:80',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => '缺少有效的生成标识'], 422);
+        }
+
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => '未登录'], 401);
+        }
+
+        Cache::put($this->generationCacheKey($user->id, $request->input('generation_id')), true, 5);
+
+        return response()->json(['success' => true]);
     }
 
     public function askAi(Request $request)
     {
         // Legacy alias for chat endpoint.
         return $this->chat($request);
+    }
+
+    /**
+     * 从一个 SSE event 中提取 OpenAI 兼容响应的文本增量。
+     */
+    protected function extractSseEventContent($event)
+    {
+        $content = '';
+        $lines = preg_split('/\r?\n/', (string)$event);
+
+        foreach ($lines as $line) {
+            if (strpos($line, 'data:') !== 0) {
+                continue;
+            }
+
+            $raw = trim(substr($line, 5));
+            if ($raw === '' || $raw === '[DONE]') {
+                continue;
+            }
+
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                if (isset($decoded['choices'][0]['delta']['content'])) {
+                    $content .= (string)$decoded['choices'][0]['delta']['content'];
+                } elseif (isset($decoded['choices'][0]['message']['content'])) {
+                    $content .= (string)$decoded['choices'][0]['message']['content'];
+                } elseif (isset($decoded['content']) && is_string($decoded['content'])) {
+                    $content .= $decoded['content'];
+                }
+                continue;
+            }
+
+            // 兼容少数供应商直接输出纯文本 data 行。
+            if (substr($raw, 0, 1) !== '{' && substr($raw, 0, 1) !== '[') {
+                $content .= $raw;
+            }
+        }
+
+        return $content;
+    }
+
+    protected function extractSseEventUsage($event)
+    {
+        foreach (preg_split('/\r?\n/', (string)$event) as $line) {
+            if (strpos($line, 'data:') !== 0) {
+                continue;
+            }
+            $decoded = json_decode(trim(substr($line, 5)), true);
+            if (is_array($decoded) && !empty($decoded['usage']) && is_array($decoded['usage'])) {
+                return $decoded['usage'];
+            }
+        }
+        return [];
+    }
+
+    protected function buildConversationHistory($sessionId, $maxCharacters = 48000, $maxTurns = 24)
+    {
+        $history = [];
+        $characters = 0;
+        $conversations = LlmConversation::where('session_id', $sessionId)
+            ->orderBy('id', 'desc')
+            ->limit($maxTurns)
+            ->get();
+        $attachmentsByConversation = collect();
+        if (!$conversations->isEmpty()) {
+            $attachmentsByConversation = LlmChatAttachment::whereIn('conversation_id', $conversations->pluck('id')->all())
+                ->where('status', 'ready')
+                ->get()
+                ->groupBy('conversation_id');
+        }
+
+        foreach ($conversations as $conversation) {
+            $turn = [];
+            if (!empty($conversation->question)) {
+                $conversationAttachments = $attachmentsByConversation->get($conversation->id, collect());
+                $question = mb_substr($conversation->question, 0, 12000);
+                $turn[] = ['role' => 'user', 'content' => $this->buildMessageContent($question, $conversationAttachments)];
+                $characters += mb_strlen($question . $this->formatAttachmentsForPrompt($conversationAttachments));
+            }
+            if (!empty($conversation->answer)) {
+                $answer = mb_substr($conversation->answer, 0, 24000);
+                $turn[] = ['role' => 'assistant', 'content' => $answer];
+                $characters += mb_strlen($answer);
+            }
+            if ($characters > $maxCharacters && !empty($history)) {
+                break;
+            }
+            $history = array_merge($turn, $history);
+        }
+
+        return $history;
+    }
+
+    protected function formatAttachmentsForPrompt($attachments, $maxCharacters = 30000)
+    {
+        if (!$attachments || $attachments->isEmpty()) {
+            return '';
+        }
+
+        $parts = [];
+        $used = 0;
+        foreach ($attachments as $attachment) {
+            if ($attachment->extension === 'pdf') {
+                continue;
+            }
+            $remaining = $maxCharacters - $used;
+            if ($remaining <= 0) {
+                break;
+            }
+            $content = mb_substr((string)$attachment->extracted_text, 0, $remaining);
+            $parts[] = "[附件：{$attachment->original_name}]\n" . $content;
+            $used += mb_strlen($content);
+        }
+
+        return empty($parts)
+            ? ''
+            : "\n\n以下是用户提供的附件内容，请结合问题回答：\n\n" . implode("\n\n", $parts);
+    }
+
+    protected function buildMessageContent($query, $attachments)
+    {
+        $textContent = $query . $this->formatAttachmentsForPrompt($attachments);
+        if (!$this->hasPdfAttachments($attachments)) {
+            return $textContent;
+        }
+
+        $content = [['type' => 'text', 'text' => $textContent]];
+        foreach ($attachments as $attachment) {
+            if ($attachment->extension !== 'pdf') {
+                continue;
+            }
+            $path = storage_path('app/' . $attachment->storage_path);
+            if (!is_file($path)) {
+                throw new \RuntimeException('PDF 附件文件不存在');
+            }
+            $content[] = [
+                'type' => 'file',
+                'file' => [
+                    'filename' => $attachment->original_name,
+                    'file_data' => 'data:application/pdf;base64,' . base64_encode(file_get_contents($path)),
+                ],
+            ];
+        }
+        return $content;
+    }
+
+    protected function hasPdfAttachments($attachments)
+    {
+        return $attachments && $attachments->contains(function ($attachment) {
+            return $attachment->extension === 'pdf';
+        });
+    }
+
+    protected function messagesContainPdf(array $messages)
+    {
+        foreach ($messages as $message) {
+            if (empty($message['content']) || !is_array($message['content'])) {
+                continue;
+            }
+            foreach ($message['content'] as $part) {
+                if (isset($part['type']) && $part['type'] === 'file') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    protected function sanitizeRequestData(array $requestData)
+    {
+        $sanitized = $requestData;
+        if (empty($sanitized['messages'])) {
+            return $sanitized;
+        }
+        foreach ($sanitized['messages'] as &$message) {
+            if (!isset($message['content']) || !is_array($message['content'])) {
+                continue;
+            }
+            foreach ($message['content'] as &$part) {
+                if (isset($part['file']['file_data'])) {
+                    $part['file']['file_data'] = '[PDF data omitted]';
+                }
+            }
+            unset($part);
+        }
+        unset($message);
+        return $sanitized;
+    }
+
+    protected function makeSessionTitle($query, $attachments)
+    {
+        $title = trim(preg_replace('/\s+/u', ' ', (string)$query));
+        if (($title === '' || $title === '请阅读并分析这些附件。') && $attachments && !$attachments->isEmpty()) {
+            $title = pathinfo($attachments->first()->original_name, PATHINFO_FILENAME);
+        }
+        $title = preg_replace('/^[\s，。！？!?：:；;]+|[\s，。！？!?：:；;]+$/u', '', $title);
+        if ($title === '') {
+            $title = '新对话';
+        }
+        return mb_strlen($title) > 32 ? mb_substr($title, 0, 32) . '…' : $title;
+    }
+
+    protected function generationCacheKey($userId, $generationId)
+    {
+        return 'llm_generation_stop:' . (int)$userId . ':' . sha1((string)$generationId);
     }
 
     protected function conversationSupportsSession()

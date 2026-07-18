@@ -101,8 +101,8 @@ class LlmProviderService
         }
 
         // 检查是否有相关模型或凭据，避免删除有关联数据的供应商
-        if ($provider->models()->count() > 0 || $provider->credentials()->count() > 0) {
-            throw new \Exception('无法删除有关联数据的供应商，请先删除相关的模型和凭据');
+        if ($provider->models()->count() > 0) {
+            throw new \Exception('无法删除有关联模型的供应商，请先删除相关模型');
         }
 
         return $this->repository->deleteProvider($id, $force);

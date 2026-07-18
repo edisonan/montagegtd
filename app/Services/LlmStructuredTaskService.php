@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\LlmModel;
-use App\Models\LlmProviderCredential;
 use App\Models\LlmUsageLog;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -26,11 +25,10 @@ class LlmStructuredTaskService
         }
 
         $model = $this->resolveModel($options);
-        $credential = $model ? $this->resolveCredential($model, $options) : null;
         $provider = $model ? $model->provider : null;
 
-        $apiKey = $credential ? $credential->getPlainApiKey() : null;
-        if (!$model || !$credential || !$provider || empty($provider->base_url) || empty($apiKey)) {
+        $apiKey = $provider ? $provider->getPlainApiKey() : null;
+        if (!$model || !$provider || empty($provider->base_url) || empty($apiKey)) {
             return array(
                 'success' => false,
                 'content' => null,
@@ -120,7 +118,6 @@ class LlmStructuredTaskService
                     'user_id' => null,
                     'provider_id' => $provider->id,
                     'model_id' => $model->id,
-                    'credential_id' => $credential->id,
                     'input_tokens' => $usage['input_tokens'],
                     'output_tokens' => $usage['output_tokens'],
                     'total_tokens' => $usage['total_tokens'],
@@ -149,7 +146,6 @@ class LlmStructuredTaskService
                 'task_type' => $taskType,
                 'provider_id' => $provider->id,
                 'model_id' => $model->id,
-                'credential_id' => $credential->id,
                 'model_name' => $payload['model'],
                 'configured_model_name' => $model->name,
                 'retry_notes' => $retryNotes,
@@ -228,21 +224,6 @@ class LlmStructuredTaskService
             || stripos($json, 'json_object') !== false;
     }
 
-    protected function resolveCredential(LlmModel $model, array $options = array())
-    {
-        if (!empty($options['credential_id'])) {
-            return LlmProviderCredential::where('id', $options['credential_id'])
-                ->where('is_active', true)
-                ->first();
-        }
-
-        return LlmProviderCredential::where('provider_id', $model->provider_id)
-            ->where('is_active', true)
-            ->orderBy('is_default', 'desc')
-            ->orderBy('id')
-            ->first();
-    }
-
     protected function extractContent($responseBody)
     {
         if (!is_array($responseBody)) {
@@ -281,7 +262,7 @@ class LlmStructuredTaskService
 
     protected function hasRequiredTables()
     {
-        foreach (array('llm_models', 'llm_provider_credentials', 'llm_providers') as $table) {
+        foreach (array('llm_models', 'llm_providers') as $table) {
             if (!Schema::hasTable($table)) {
                 return false;
             }

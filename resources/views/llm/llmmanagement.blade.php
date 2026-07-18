@@ -38,8 +38,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="provider-container">
-                    <!-- 供应商卡片将通过JavaScript动态加载 -->
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden" id="provider-container">
+                    <!-- 供应商列表将通过JavaScript动态加载 -->
                     <div class="text-center py-12 col-span-3" id="providers-loading">
                         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mb-4"></div>
                         <p class="text-gray-500">正在加载供应商数据...</p>
@@ -95,52 +95,6 @@
             </div>
         </div>
 
-        <!-- 凭据管理视图 -->
-        <div id="credentials-view" class="tab-content hidden">
-            <div class="mb-6">
-                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900" id="credentials-view-title">API凭据</h2>
-                        <p class="text-sm text-gray-500" id="credentials-view-subtitle">管理供应商的API密钥和配置</p>
-                    </div>
-                    <div class="mt-2 md:mt-0 flex items-center space-x-3">
-                        <select id="credential-filter-provider" class="input" onchange="filterCredentials()">
-                            <option value="">所有供应商</option>
-                            <!-- 供应商选项将通过JavaScript动态加载 -->
-                        </select>
-                        <button onclick="openCredentialModal()" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus mr-2"></i>新增凭据
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="overflow-x-auto">
-                        <table class="w-full table">
-                            <thead>
-                            <tr>
-                                <th class="text-left">ID</th>
-                                <th class="text-left">供应商</th>
-                                <th class="text-left">凭据名称</th>
-                                <th class="text-left">默认</th>
-                                <th class="text-left">状态</th>
-                                <th class="text-left">使用次数</th>
-                                <th class="text-left">操作</th>
-                            </tr>
-                            </thead>
-                            <tbody id="credential-tbody">
-                            <tr id="credentials-loading">
-                                <td colspan="7" class="text-center py-8">
-                                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-color mb-4"></div>
-                                    <p class="text-gray-500">正在加载凭据数据...</p>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- 供应商模态框 -->
@@ -185,6 +139,19 @@
                                placeholder="例如：openai、anthropic">
                         <p class="text-sm text-gray-500 mt-2">用于API调用的唯一标识，建议使用小写英文</p>
                     </div>
+                </div>
+
+                <div>
+                    <label for="provider_api_key" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-key text-gray-400 mr-2"></i>API Key
+                    </label>
+                    <input type="password"
+                           class="input w-full"
+                           id="provider_api_key"
+                           name="api_key"
+                           autocomplete="new-password"
+                           placeholder="填写该供应商的统一 Key；编辑时留空表示保持原值">
+                    <p class="text-sm text-gray-500 mt-2">同一供应商下的多个模型共用此 Key，系统会加密保存。</p>
                 </div>
 
                 <div>
@@ -274,7 +241,7 @@
                               name="config_schema"
                               rows="4"
                               placeholder='{"api_key": {"type": "string", "required": true}, "organization": {"type": "string", "required": false}}'></textarea>
-                    <p class="text-sm text-gray-500 mt-2">定义凭据所需的配置字段，使用JSON格式</p>
+                    <p class="text-sm text-gray-500 mt-2">定义供应商的额外配置字段，使用JSON格式；API Key 已统一放在上方。</p>
                 </div>
 
                 <div class="flex items-center justify-between pt-6 border-t border-gray-200">
@@ -300,6 +267,43 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 供应商模型列表模态框 -->
+    <div class="modal hidden" id="providerModelsModal" role="dialog" aria-labelledby="providerModelsModalTitle">
+        <div class="modal-content w-full max-w-4xl">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900" id="providerModelsModalTitle">模型列表</h3>
+                    <p class="text-sm text-gray-500 mt-1" id="providerModelsModalSubtitle">查看该供应商下的模型</p>
+                </div>
+                <button type="button" class="text-gray-400 hover:text-gray-600 transition" onclick="closeProviderModelsModal()" aria-label="关闭">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-sm text-gray-500" id="providerModelsCount">0 个模型</span>
+                <button type="button" class="btn btn-primary btn-sm" id="providerModelsAddBtn">
+                    <i class="fas fa-plus mr-2"></i>新增模型
+                </button>
+            </div>
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full table">
+                        <thead>
+                        <tr>
+                            <th class="text-left">模型</th>
+                            <th class="text-left">类型</th>
+                            <th class="text-left">价格</th>
+                            <th class="text-left">状态</th>
+                            <th class="text-left">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="provider-models-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -476,135 +480,12 @@
         </div>
     </div>
 
-    <!-- 凭据模态框 -->
-    <div class="modal hidden" id="credentialModal" role="dialog">
-        <div class="modal-content w-full max-w-3xl">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
-                <div>
-                    <h3 class="text-xl font-semibold text-gray-900" id="credentialModalTitle">添加凭据</h3>
-                    <p class="text-sm text-gray-500 mt-1">为供应商添加API密钥</p>
-                </div>
-                <button type="button" class="text-gray-400 hover:text-gray-600 transition" onclick="closeCredentialModal()" aria-label="关闭">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-
-            <form id="credentialForm" class="space-y-6">
-                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                <input type="hidden" id="credential_id" name="credential_id">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="credential_provider_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-server text-gray-400 mr-2"></i>供应商 <span class="text-red-500">*</span>
-                        </label>
-                        <select class="input w-full" id="credential_provider_id" name="provider_id" required>
-                            <option value="">请选择供应商</option>
-                            <!-- 供应商选项将通过JavaScript动态加载 -->
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="credential_name" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-key text-gray-400 mr-2"></i>凭据名称 <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text"
-                               class="input w-full"
-                               id="credential_name"
-                               name="name"
-                               required
-                               placeholder="例如：生产环境密钥、测试环境密钥">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="credential_api_key" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-lock text-gray-400 mr-2"></i>API Key <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <input type="password"
-                               class="input w-full pr-10"
-                               id="credential_api_key"
-                               name="api_key"
-                               placeholder="输入API Key"
-                               required>
-                        <button type="button"
-                                onclick="togglePasswordVisibility('credential_api_key')"
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-eye" id="credential_api_key_eye"></i>
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-500 mt-2">编辑时如需更新密钥，请在此处输入新密钥</p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="credential_quota_limit" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-tachometer-alt text-gray-400 mr-2"></i>配额限制
-                        </label>
-                        <input type="number"
-                               class="input w-full"
-                               id="credential_quota_limit"
-                               name="quota_limit"
-                               placeholder="1000">
-                        <p class="text-sm text-gray-500 mt-2">每月使用限额</p>
-                    </div>
-
-                    <div>
-                        <label for="credential_config" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-cog text-gray-400 mr-2"></i>额外配置
-                        </label>
-                        <textarea class="input w-full min-h-[80px] resize-none font-mono text-sm"
-                                  id="credential_config"
-                                  name="config"
-                                  rows="2"
-                                  placeholder='{"organization": "org-xxx", "project": "proj-xxx"}'></textarea>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                    <div class="space-y-4">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox"
-                                   id="credential_is_default"
-                                   name="is_default"
-                                   value="1"
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                            <span class="ml-2 text-sm text-gray-700">设为默认凭据</span>
-                        </label>
-
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox"
-                                   id="credential_is_active"
-                                   name="is_active"
-                                   value="1"
-                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                   checked>
-                            <span class="ml-2 text-sm text-gray-700">启用此凭据</span>
-                        </label>
-                    </div>
-
-                    <div class="flex items-center space-x-3">
-                        <button type="button" class="btn btn-secondary" onclick="closeCredentialModal()">
-                            <i class="fas fa-times mr-2"></i>取消
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="submitCredentialBtn">
-                            <i class="fas fa-save mr-2"></i>保存凭据
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
         // 全局变量
         let allProviders = [];
         let allModels = [];
-        let allCredentials = [];
         let activeProviderId = '';
         let modelsLoaded = false;
-        let credentialsLoaded = false;
 
         // 页面加载完成后初始化数据
         document.addEventListener('DOMContentLoaded', function() {
@@ -656,14 +537,14 @@
             }
         }
 
-        // 渲染供应商卡片
+        // 渲染供应商列表
         function renderProviders(providers) {
             const container = document.getElementById('provider-container');
             if (!container) return;
 
             if (providers.length === 0) {
                 container.innerHTML = `
-            <div class="text-center py-12 col-span-3">
+            <div class="text-center py-12">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-server text-gray-400 text-2xl"></i>
                 </div>
@@ -678,79 +559,35 @@
             }
 
             container.innerHTML = providers.map(provider => `
-        <div class="col-span-1">
-            <div class="card h-full hover:shadow-lg transition-shadow">
-                <div class="p-4 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 ${provider.is_active ? 'bg-blue-100' : 'bg-gray-100'} rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-server ${provider.is_active ? 'text-blue-600' : 'text-gray-400'}"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-900">${provider.name}</h4>
-                                <p class="text-sm text-gray-500">${provider.slug}</p>
-                            </div>
-                        </div>
-                        <span class="badge ${provider.is_active ? 'badge-success' : 'badge-secondary'}">
-                            ${provider.is_active ? '启用' : '禁用'}
-                        </span>
+        <div class="flex flex-col md:flex-row md:items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition">
+            <div class="flex items-center min-w-0 flex-1">
+                <div class="w-9 h-9 ${provider.is_active ? 'bg-blue-100' : 'bg-gray-100'} rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fas fa-server ${provider.is_active ? 'text-blue-600' : 'text-gray-400'}"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <h4 class="font-semibold text-gray-900 truncate">${provider.name}</h4>
+                        <span class="badge ${provider.is_active ? 'badge-success' : 'badge-secondary'}">${provider.is_active ? '启用' : '禁用'}</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-1">
+                        <span>${provider.slug}</span>
+                        <span>${getApiTypeLabel(provider.api_type)}</span>
+                        <span>优先级 ${provider.priority}</span>
+                        ${provider.base_url ? `<span class="font-mono truncate max-w-md" title="${provider.base_url}">${provider.base_url}</span>` : ''}
                     </div>
                 </div>
+            </div>
 
-                <div class="p-4">
-                    <div class="space-y-2 mb-4">
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-code text-gray-400 mr-2 w-5"></i>
-                            <span class="text-gray-600">API类型:</span>
-                            <span class="ml-2 font-medium">${getApiTypeLabel(provider.api_type)}</span>
-                        </div>
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-sort-amount-up text-gray-400 mr-2 w-5"></i>
-                            <span class="text-gray-600">优先级:</span>
-                            <span class="ml-2 font-medium">${provider.priority}</span>
-                        </div>
-                        ${provider.base_url ? `
-                        <div class="flex items-center text-sm">
-                            <i class="fas fa-link text-gray-400 mr-2 w-5"></i>
-                            <span class="text-gray-600">API URL:</span>
-                            <span class="ml-2 font-mono text-xs truncate" title="${provider.base_url}">${provider.base_url}</span>
-                        </div>` : ''}
-                    </div>
-
-                    ${provider.description ? `
-                    <div class="mb-4">
-                        <p class="text-sm text-gray-500 mb-1">描述:</p>
-                        <p class="text-sm text-gray-700 line-clamp-2">${provider.description}</p>
-                    </div>` : ''}
-
-                    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                        <div class="text-xs text-gray-500">
-                            ID: ${provider.id}
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <button onclick="manageModelsForProvider(${provider.id})"
-                                    class="btn btn-outline btn-sm"
-                                    title="模型管理">
-                                <i class="fas fa-brain"></i>
-                            </button>
-                            <button onclick="manageCredentialsForProvider(${provider.id})"
-                                    class="btn btn-outline btn-sm"
-                                    title="凭据管理">
-                                <i class="fas fa-key"></i>
-                            </button>
-                            <button onclick="editProvider(${provider.id})"
-                                    class="btn btn-outline btn-sm"
-                                    title="编辑">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="deleteProvider(${provider.id})"
-                                    class="btn btn-outline btn-sm text-red-600 hover:bg-red-50"
-                                    title="删除">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex items-center gap-2 md:flex-shrink-0">
+                <button onclick="manageModelsForProvider(${provider.id})" class="btn btn-outline btn-sm" title="查看模型">
+                    <i class="fas fa-brain mr-1"></i>查看模型
+                </button>
+                <button onclick="editProvider(${provider.id})" class="btn btn-outline btn-sm" title="编辑">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="deleteProvider(${provider.id})" class="btn btn-outline btn-sm text-red-600 hover:bg-red-50" title="删除">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         </div>
     `).join('');
@@ -794,49 +631,10 @@
             }
         }
 
-        // 加载凭据数据
-        async function loadCredentials() {
-            const loadingElement = document.getElementById('credentials-loading');
-
-            try {
-                const response = await window.taskApiFetch('/api/v2/llm/credentials');
-                const data = await response.json();
-
-                if (data.code === 9999) {
-                    allCredentials = data.result || [];
-                    credentialsLoaded = true;
-                    filterCredentials();
-
-                    if (loadingElement) {
-                        loadingElement.style.display = 'none';
-                    }
-                } else {
-                    throw new Error(data.msg || '加载失败');
-                }
-            } catch (error) {
-                console.error('加载凭据失败:', error);
-                const tbody = document.getElementById('credential-tbody');
-                if (tbody) {
-                    tbody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center py-8">
-                        <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mb-4"></i>
-                        <p class="text-gray-500">加载凭据数据失败</p>
-                        <button onclick="loadCredentials()" class="btn btn-secondary btn-sm mt-2">
-                            <i class="fas fa-redo mr-2"></i>重试
-                        </button>
-                    </td>
-                </tr>
-            `;
-                }
-            }
-        }
-
         // 填充供应商选项
         function populateProviderOptions() {
             const formSelects = [
-                document.getElementById('model_provider_id'),
-                document.getElementById('credential_provider_id')
+                document.getElementById('model_provider_id')
             ];
 
             formSelects.forEach(select => {
@@ -849,8 +647,7 @@
             });
 
             const filterSelects = [
-                document.getElementById('model-filter-provider'),
-                document.getElementById('credential-filter-provider')
+                document.getElementById('model-filter-provider')
             ];
 
             filterSelects.forEach(select => {
@@ -889,11 +686,6 @@
                 document.getElementById('models-view-subtitle').textContent = providerId ? '管理该供应商下的AI模型' : '管理各个供应商的AI模型';
             }
 
-            if (viewName === 'credentials') {
-                currentLabel.textContent = providerName + ' / 凭据';
-                document.getElementById('credentials-view-title').textContent = providerName + 'API凭据';
-                document.getElementById('credentials-view-subtitle').textContent = providerId ? '管理该供应商下的API密钥和配置' : '管理供应商的API密钥和配置';
-            }
         }
 
         // 视图切换
@@ -924,15 +716,6 @@
                 }
             }
 
-            if (viewName === 'credentials') {
-                updateManagedViewHeader('credentials', activeProviderId);
-                document.getElementById('credential-filter-provider').value = activeProviderId;
-                if (!credentialsLoaded) {
-                    loadCredentials();
-                } else {
-                    filterCredentials();
-                }
-            }
         }
 
         // 过滤模型
@@ -947,17 +730,6 @@
             renderModels(filteredModels);
         }
 
-        // 过滤凭据
-        function filterCredentials() {
-            const providerId = document.getElementById('credential-filter-provider').value;
-            activeProviderId = providerId;
-            updateManagedViewHeader('credentials', providerId);
-            const filteredCredentials = providerId ?
-                allCredentials.filter(cred => cred.provider_id == providerId) :
-                allCredentials;
-
-            renderCredentials(filteredCredentials);
-        }
 
         // 渲染模型表格
         function renderModels(models) {
@@ -1042,87 +814,6 @@
             }).join('');
         }
 
-        // 渲染凭据表格
-        function renderCredentials(credentials) {
-            const tbody = document.getElementById('credential-tbody');
-            if (!tbody) return;
-
-            if (credentials.length === 0) {
-                tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center py-8">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-key text-gray-400 text-2xl"></i>
-                    </div>
-                    <p class="text-gray-600 font-medium">暂无凭据</p>
-                    <p class="text-sm text-gray-500 mt-1">点击"添加凭据"按钮创建新的API密钥</p>
-                    <button onclick="openCredentialModal()" class="btn btn-primary mt-4">
-                        <i class="fas fa-plus mr-2"></i>添加凭据
-                    </button>
-                </td>
-            </tr>
-        `;
-                return;
-            }
-
-            tbody.innerHTML = credentials.map(cred => {
-                const provider = allProviders.find(p => p.id == cred.provider_id) || {};
-
-                return `
-            <tr class="hover:bg-gray-50">
-                <td class="py-3 px-4 text-sm text-gray-500">${cred.id}</td>
-                <td class="py-3 px-4">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center mr-2">
-                            <i class="fas fa-server text-gray-500 text-xs"></i>
-                        </div>
-                        <span class="text-sm text-gray-900">${provider.name || '未知'}</span>
-                    </div>
-                </td>
-                <td class="py-3 px-4 font-medium text-gray-900">${cred.name}</td>
-                <td class="py-3 px-4">
-                    ${cred.is_default ?
-                    '<span class="badge badge-primary">默认</span>' :
-                    '<span class="text-gray-500">-</span>'
-                }
-                </td>
-                <td class="py-3 px-4">
-                    <span class="badge ${cred.is_active ? 'badge-success' : 'badge-secondary'}">
-                        ${cred.is_active ? '启用' : '禁用'}
-                    </span>
-                </td>
-                <td class="py-3 px-4">
-                    <div class="text-center">
-                        <span class="font-medium text-gray-900">${cred.usage_count || 0}</span>
-                        ${cred.quota_limit ? `
-                        <div class="text-xs text-gray-500">
-                            限额: ${cred.quota_limit}
-                        </div>
-                        ` : ''}
-                    </div>
-                </td>
-                <td class="py-3 px-4">
-                    <div class="flex items-center space-x-2">
-                        <button onclick="testCredential(${cred.id})"
-                                class="btn btn-outline btn-sm"
-                                title="测试连接">
-                            <i class="fas fa-plug"></i>
-                        </button>
-                        <button onclick="editCredential(${cred.id})"
-                                class="btn btn-outline btn-sm">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="deleteCredential(${cred.id})"
-                                class="btn btn-outline btn-sm text-red-600 hover:bg-red-50">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-            }).join('');
-        }
-
         // 辅助函数：获取API类型标签
         function getApiTypeLabel(apiType) {
             const types = {
@@ -1163,11 +854,6 @@
             showLlmView('models', providerId);
         }
 
-        // 管理特定供应商的凭据
-        function manageCredentialsForProvider(providerId) {
-            showLlmView('credentials', providerId);
-        }
-
         // 打开供应商模态框
         function openProviderModal(resetForm = true) {
             const modal = document.getElementById('providerModal');
@@ -1206,6 +892,7 @@
                     document.getElementById('provider_slug').value = provider.slug || '';
                     document.getElementById('provider_description').value = provider.description || '';
                     document.getElementById('provider_base_url').value = provider.base_url || '';
+                    document.getElementById('provider_api_key').value = '';
                     document.getElementById('provider_api_type').value = provider.api_type || '';
                     document.getElementById('provider_priority').value = provider.priority || 0;
                     document.getElementById('provider_rate_limit').value = provider.rate_limit_per_minute || '';
@@ -1227,7 +914,7 @@
 
         // 删除供应商
         async function deleteProvider(id) {
-            if (!confirm('确定要删除这个供应商吗？此操作将同时删除关联的模型和凭据！')) {
+            if (!confirm('确定要删除这个供应商吗？此操作将同时删除关联的模型！')) {
                 return;
             }
 
@@ -1282,6 +969,11 @@
                 concurrent_limit: parseInt(document.getElementById('provider_concurrent_limit').value) || 10,
                 is_active: document.getElementById('provider_is_active').checked ? 1 : 0
             };
+
+            const providerApiKey = document.getElementById('provider_api_key').value.trim();
+            if (providerApiKey) {
+                formData.api_key = providerApiKey;
+            }
 
             // 解析JSON Schema
             const configSchema = document.getElementById('provider_config_schema').value.trim();
@@ -1486,81 +1178,6 @@
             }
         });
 
-        // 打开凭据模态框
-        function openCredentialModal(resetForm = true) {
-            const modal = document.getElementById('credentialModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-
-            if (resetForm) {
-                document.getElementById('credentialForm').reset();
-                document.getElementById('credential_id').value = '';
-                if (activeProviderId) {
-                    document.getElementById('credential_provider_id').value = activeProviderId;
-                }
-                document.getElementById('credential_api_key').required = true;
-                document.getElementById('credentialModalTitle').textContent = '添加凭据';
-                document.getElementById('submitCredentialBtn').innerHTML = '<i class="fas fa-save mr-2"></i>保存凭据';
-            }
-            document.getElementById('submitCredentialBtn').disabled = false;
-        }
-
-        // 关闭凭据模态框
-        function closeCredentialModal() {
-            const modal = document.getElementById('credentialModal');
-            modal.classList.remove('show');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-            document.body.style.overflow = '';
-        }
-
-        // 切换密码可见性
-        function togglePasswordVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            const eyeIcon = document.getElementById(inputId + '_eye');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                eyeIcon.classList.remove('fa-eye');
-                eyeIcon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
-            }
-        }
-
-        // 编辑凭据
-        async function editCredential(id) {
-            try {
-                const response = await window.taskApiFetch(`/api/v2/llm/credentials/${id}`);
-                const data = await response.json();
-
-                if (data.code === 9999) {
-                    const credential = data.result;
-
-                    document.getElementById('credential_id').value = credential.id;
-                    document.getElementById('credential_provider_id').value = credential.provider_id || '';
-                    document.getElementById('credential_name').value = credential.name || '';
-                    document.getElementById('credential_api_key').value = '';
-                    document.getElementById('credential_quota_limit').value = credential.quota_limit || '';
-                    document.getElementById('credential_config').value = credential.config ?
-                        JSON.stringify(credential.config, null, 2) : '';
-                    document.getElementById('credential_is_default').checked = !!credential.is_default;
-                    document.getElementById('credential_is_active').checked = !!credential.is_active;
-
-                    document.getElementById('credential_api_key').required = false;
-                    document.getElementById('credentialModalTitle').textContent = '编辑凭据';
-                    document.getElementById('submitCredentialBtn').innerHTML = '<i class="fas fa-save mr-2"></i>更新凭据';
-
-                    openCredentialModal(false);
-                }
-            } catch (error) {
-                console.error('编辑凭据失败:', error);
-                showToast('加载凭据信息失败', 'error');
-            }
-        }
-
         // 测试模型可用性
         async function testModel(id) {
             showToast('正在测试模型...', 'info');
@@ -1578,7 +1195,7 @@
 
                 if (data.code === 9999) {
                     const result = data.result || {};
-                    const msg = `模型可用：${result.model_name || id}（凭据：${result.credential_name || '-'}）`;
+                    const msg = `模型可用：${result.model_name || id}`;
                     showToast(msg, 'success');
                 } else {
                     throw new Error(data.msg || '测试失败');
@@ -1589,140 +1206,14 @@
             }
         }
 
-        // 测试凭据连接
-        async function testCredential(id) {
-            showToast('正在测试连接...', 'info');
-
-            try {
-                const response = await window.taskApiFetch(`/api/v2/llm/credentials/${id}/test`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.code === 9999) {
-                    showToast('连接测试成功', 'success');
-                } else {
-                    throw new Error(data.msg || '测试失败');
-                }
-            } catch (error) {
-                console.error('测试凭据失败:', error);
-                showToast('连接测试失败: ' + error.message, 'error');
-            }
-        }
-
-        // 删除凭据
-        async function deleteCredential(id) {
-            if (!confirm('确定要删除这个凭据吗？')) {
-                return;
-            }
-
-            try {
-                const response = await window.taskApiFetch(`/api/v2/llm/credentials/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.code === 9999) {
-                    showToast('凭据删除成功', 'success');
-                    await loadCredentials();
-                } else {
-                    throw new Error(data.msg || '删除失败');
-                }
-            } catch (error) {
-                console.error('删除凭据失败:', error);
-                showToast('删除失败: ' + (error.message || '未知错误'), 'error');
-            }
-        }
-
-        // 凭据表单提交
-        document.getElementById('credentialForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const submitBtn = document.getElementById('submitCredentialBtn');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>处理中...';
-            submitBtn.disabled = true;
-
-            const id = document.getElementById('credential_id').value;
-            const url = id ? `/api/v2/llm/credentials/${id}` : '/api/v2/llm/credentials';
-            const method = id ? 'PUT' : 'POST';
-
-            const formData = {
-                _token: document.querySelector('input[name="_token"]').value,
-                _method: method,
-                provider_id: parseInt(document.getElementById('credential_provider_id').value),
-                name: document.getElementById('credential_name').value.trim(),
-                quota_limit: document.getElementById('credential_quota_limit').value ?
-                    parseInt(document.getElementById('credential_quota_limit').value) : null,
-                is_default: document.getElementById('credential_is_default').checked ? 1 : 0,
-                is_active: document.getElementById('credential_is_active').checked ? 1 : 0
-            };
-
-            // 添加API Key（如果有值）
-            const apiKey = document.getElementById('credential_api_key').value.trim();
-            if (apiKey) {
-                formData.api_key = apiKey;
-            }
-
-            // 解析额外配置
-            const config = document.getElementById('credential_config').value.trim();
-            if (config) {
-                try {
-                    formData.config = JSON.parse(config);
-                } catch (error) {
-                    showToast('额外配置格式错误', 'error');
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-            }
-
-            try {
-                const response = await window.taskApiFetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': formData._token
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const data = await response.json();
-
-                if (data.code === 9999) {
-                    showToast(id ? '凭据更新成功' : '凭据创建成功', 'success');
-                    closeCredentialModal();
-                    await loadCredentials();
-                } else {
-                    throw new Error(buildApiErrorMessage(data, '保存失败'));
-                }
-            } catch (error) {
-                console.error('保存凭据失败:', error);
-                showToast('保存失败: ' + error.message, 'error');
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        });
-
         // 全局点击关闭模态框
         document.addEventListener('click', (e) => {
-            ['providerModal', 'modelModal', 'credentialModal'].forEach(modalId => {
+            ['providerModal', 'modelModal'].forEach(modalId => {
                 const modal = document.getElementById(modalId);
                 if (modal && modal.classList.contains('show') && e.target === modal) {
                     const closeFunc = {
                         'providerModal': closeProviderModal,
-                        'modelModal': closeModelModal,
-                        'credentialModal': closeCredentialModal
+                        'modelModal': closeModelModal
                     }[modalId];
                     closeFunc();
                 }
@@ -1734,7 +1225,6 @@
             if (e.key === 'Escape') {
                 closeProviderModal();
                 closeModelModal();
-                closeCredentialModal();
             }
         });
 

@@ -63,6 +63,12 @@ class LlmController extends \App\Http\Controllers\LlmController
         return parent::askAi($request);
     }
 
+    public function stopChat(Request $request)
+    {
+        $this->bootstrapAuthContext($request);
+        return parent::stopChat($request);
+    }
+
     public function getUsageStats(Request $request)
     {
         $this->bootstrapAuthContext($request);

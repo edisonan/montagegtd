@@ -5,7 +5,6 @@ namespace App\Admin\Controllers;
 use App\Models\LlmUsageLog;
 use App\Models\LlmProvider;
 use App\Models\LlmModel;
-use App\Models\LlmProviderCredential;
 use App\Models\User;
 use App\Services\LlmUsageLogService;
 use Encore\Admin\Form;
@@ -65,7 +64,7 @@ class LlmUsageLogController extends Controller
     protected function grid()
     {
         return Admin::grid(LlmUsageLog::class, function (Grid $grid) {
-            $query = $grid->model()->with(['provider', 'model', 'credential', 'user'])->orderBy('created_at', 'desc');
+            $query = $grid->model()->with(['provider', 'model', 'user'])->orderBy('created_at', 'desc');
             
             // 如果当前用户不是管理员，只显示该用户的数据
             if (!Admin::user()->isAdministrator()) {
@@ -75,7 +74,6 @@ class LlmUsageLogController extends Controller
             $grid->id('ID')->sortable();
             $grid->column('provider.name', '供应商');
             $grid->column('model.name', '模型');
-            $grid->column('credential.name', '凭据');
             $grid->column('user.name', '用户');
             $grid->input_tokens('输入tokens');
             $grid->output_tokens('输出tokens');
@@ -87,7 +85,6 @@ class LlmUsageLogController extends Controller
             $grid->filter(function ($filter) {
                 $filter->equal('provider_id', '供应商')->select(LlmProvider::pluck('name', 'id'));
                 $filter->equal('model_id', '模型')->select(LlmModel::pluck('name', 'id'));
-                $filter->equal('credential_id', '凭据')->select(LlmProviderCredential::pluck('name', 'id'));
                 $filter->equal('user_id', '用户')->select(User::pluck('name', 'id'));
                 $filter->equal('status', '状态')->select([
                     'success' => '成功',
@@ -107,12 +104,11 @@ class LlmUsageLogController extends Controller
      */
     protected function detail($id)
     {
-        $show = new \Encore\Admin\Show(LlmUsageLog::with(['provider', 'model', 'credential', 'user'])->findOrFail($id));
+        $show = new \Encore\Admin\Show(LlmUsageLog::with(['provider', 'model', 'user'])->findOrFail($id));
 
         $show->id('ID');
         $show->field('provider.name', '供应商');
         $show->field('model.name', '模型');
-        $show->field('credential.name', '凭据');
         $show->field('user.name', '用户');
         $show->input_tokens('输入tokens');
         $show->output_tokens('输出tokens');
@@ -152,7 +148,6 @@ class LlmUsageLogController extends Controller
             $form->display('id', 'ID');
             $form->select('provider_id', '供应商')->options(LlmProvider::pluck('name', 'id'))->rules('required');
             $form->select('model_id', '模型')->options(LlmModel::pluck('name', 'id'))->rules('required');
-            $form->select('credential_id', '凭据')->options(LlmProviderCredential::pluck('name', 'id'))->rules('required');
             $form->select('user_id', '用户')->options(User::pluck('name', 'id'));
             $form->number('input_tokens', '输入tokens');
             $form->number('output_tokens', '输出tokens');

@@ -24,7 +24,14 @@ class LlmConversationRepository
 
     public function update(int $id, array $data): bool
     {
-        return LlmConversation::where('id', $id)->update($data) > 0;
+        $conversation = LlmConversation::find($id);
+        if (!$conversation) {
+            return false;
+        }
+
+        $conversation->fill($data);
+
+        return $conversation->save();
     }
 
     public function delete(int $id): bool

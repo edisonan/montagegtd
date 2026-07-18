@@ -12,7 +12,7 @@ class LlmUsageLogRepository
      */
     public function getAllUsageLogs($withTrashed = false)
     {
-        $query = LlmUsageLog::with(['provider', 'model', 'credential', 'user']);
+        $query = LlmUsageLog::with(['provider', 'model', 'user']);
         
         if ($withTrashed) {
             $query->withTrashed();
@@ -26,7 +26,7 @@ class LlmUsageLogRepository
      */
     public function getUsageLogById($id, $withTrashed = false)
     {
-        $query = LlmUsageLog::with(['provider', 'model', 'credential', 'user'])->where('id', $id);
+        $query = LlmUsageLog::with(['provider', 'model', 'user'])->where('id', $id);
         
         if ($withTrashed) {
             $query->withTrashed();
@@ -40,7 +40,7 @@ class LlmUsageLogRepository
      */
     public function getUsageLogsByFilters($filters = [], $perPage = 20, $userId = null)
     {
-        $query = LlmUsageLog::with(['provider', 'model', 'credential', 'user'])
+        $query = LlmUsageLog::with(['provider', 'model', 'user'])
                           ->orderBy('created_at', 'desc');
 
         // 如果指定了用户ID，只查询该用户的数据
@@ -59,9 +59,6 @@ class LlmUsageLogRepository
         }
 
         // 根据凭据过滤
-        if (!empty($filters['credential_id'])) {
-            $query->where('credential_id', $filters['credential_id']);
-        }
 
         // 根据用户过滤
         if (!empty($filters['user_id'])) {

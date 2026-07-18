@@ -12,9 +12,9 @@ class LlmConversation extends Model
         'user_id',
         'session_id',
         'model_id', 
-        'credential_id',
         'question',
         'answer',
+        'feedback',
         'request_data',
         'response_data',
         'prompt_tokens',
@@ -28,6 +28,7 @@ class LlmConversation extends Model
         'request_data' => 'array',
         'response_data' => 'array',
         'answered_at' => 'datetime',
+        'feedback' => 'integer',
     ];
 
     public function user(): BelongsTo
@@ -40,8 +41,4 @@ class LlmConversation extends Model
         return $this->belongsTo(LlmModel::class, 'model_id');
     }
 
-    public function credential(): BelongsTo
-    {
-        return $this->belongsTo(LlmProviderCredential::class, 'credential_id');
-    }
 }

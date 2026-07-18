@@ -33,8 +33,8 @@ class LlmConversationService
     {
         $rules = [
             'user_id' => 'required|exists:users,id',
+            'session_id' => 'nullable|integer',
             'model_id' => 'nullable|exists:llm_models,id',
-            'credential_id' => 'nullable|exists:llm_provider_credentials,id',
             'question' => 'required|string',
             'answer' => 'nullable|string',
             'request_data' => 'nullable|array',
@@ -98,8 +98,8 @@ class LlmConversationService
     {
         $validator = Validator::make($data, [
             'user_id' => 'sometimes|required|exists:users,id',
+            'session_id' => 'sometimes|nullable|integer',
             'model_id' => 'sometimes|nullable|exists:llm_models,id',
-            'credential_id' => 'sometimes|nullable|exists:llm_provider_credentials,id',
             'question' => 'sometimes|required|string',
             'answer' => 'sometimes|nullable|string',
             'request_data' => 'sometimes|nullable|array',
@@ -115,11 +115,26 @@ class LlmConversationService
             throw new ValidationException($validator);
         }
 
-        // Laravel 5.5 兼容性处理：使用验证后的数据
+        // Laravel 5.5 的 Validator::hasRule 在组合规则下行为不稳定，
+        // 直接按白名单提取已经通过校验的字段，避免 update 变成空数组。
         $validatedData = [];
-        foreach ($validator->getData() as $key => $value) {
-            if ($validator->hasRule($key, ['sometimes', 'required', 'nullable', 'exists', 'string', 'array', 'integer', 'numeric', 'date'])) {
-                $validatedData[$key] = $value;
+        $allowedFields = [
+            'user_id',
+            'session_id',
+            'model_id',
+            'question',
+            'answer',
+            'request_data',
+            'response_data',
+            'prompt_tokens',
+            'completion_tokens',
+            'total_tokens',
+            'cost',
+            'answered_at',
+        ];
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $validatedData[$field] = $data[$field];
             }
         }
 

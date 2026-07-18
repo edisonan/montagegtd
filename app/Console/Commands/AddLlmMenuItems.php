@@ -32,7 +32,6 @@ class AddLlmMenuItems extends Command
         
         $this->createLlmProviderMenu($parentId);
         $this->createLlmModelMenu($parentId);
-        $this->createLlmCredentialMenu($parentId);
         $this->createLlmUsageLogMenu($parentId);
         $this->createLlmAgentMenu($parentId);
         
@@ -114,30 +113,6 @@ class AddLlmMenuItems extends Command
         ]);
 
         $this->info('LLM模型菜单创建成功');
-    }
-
-    private function createLlmCredentialMenu($parentId)
-    {
-        // 检查是否已存在LLM凭据菜单
-        $existing = DB::table('admin_menu')->where('title', 'LLM凭据')->first();
-        if ($existing) {
-            $this->info('LLM凭据菜单已存在，跳过创建');
-            return;
-        }
-
-        $maxOrder = DB::table('admin_menu')->max('order');
-        
-        DB::table('admin_menu')->insert([
-            'parent_id' => $parentId,
-            'order' => $maxOrder + 1,
-            'title' => 'LLM凭据',
-            'icon' => 'fa-key',
-            'uri' => 'llm-provider-credentials',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        $this->info('LLM凭据菜单创建成功');
     }
 
     private function createLlmUsageLogMenu($parentId)
