@@ -5,15 +5,19 @@
 
 @section('content')
     <style>
-        .quadrant-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 32px; }
+        .quadrant-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-bottom: 32px; align-items: stretch; }
         @media (max-width: 768px) { .quadrant-grid { grid-template-columns: 1fr; gap: 20px; } }
-        .task-item { background: white; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; cursor: grab; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--gray-200); box-shadow: 0 1px 2px rgba(0,0,0,0.03); transition: all 0.2s ease; }
-        .task-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: var(--gray-300); }
-        .task-item.dragging { opacity: 0.5; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
-        .task-item.completed { opacity: 0.6; background: var(--gray-50); text-decoration: line-through; color: var(--gray-500); }
-        .task-content { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 12px; }
-        .task-actions { display: flex; align-items: center; gap: 8px; opacity: 0; transition: opacity 0.2s ease; }
-        .task-item:hover .task-actions { opacity: 1; }
+        .quadrant-card { min-width: 0; height: 100%; }
+        .quadrant-card-body { min-height: 280px; display: flex; flex-direction: column; }
+        .task-list { flex: 1; min-height: 180px; }
+        .priority-task-item { background: white; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; cursor: grab; display: flex; justify-content: space-between; align-items: center; gap: 12px; border: 1px solid var(--gray-200); box-shadow: 0 1px 2px rgba(0,0,0,0.03); transition: all 0.2s ease; min-width: 0; }
+        .priority-task-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: var(--gray-300); }
+        .priority-task-item.dragging { opacity: 0.5; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
+        .priority-task-item.completed { opacity: 0.6; background: var(--gray-50); text-decoration: line-through; color: var(--gray-500); }
+        .priority-task-content { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .priority-task-actions { display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity 0.2s ease; flex-shrink: 0; }
+        .priority-task-item:hover .priority-task-actions { opacity: 1; }
+        @media (max-width: 768px) { .priority-task-actions { opacity: 1; } }
         .task-action-btn { padding: 4px; border-radius: 4px; background: transparent; border: none; cursor: pointer; color: var(--gray-400); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; }
         .task-action-btn:hover { background: var(--gray-100); }
         .task-action-btn.complete:hover { color: var(--success-color); background: rgba(16, 185, 129, 0.1); }
@@ -53,10 +57,10 @@
         </div>
 
         <div class="quadrant-grid">
-            <div class="card border-l-4 border-red-500"><div class="p-6"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold text-gray-900">重要紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-red-100 text-red-700" id="count-q4">0 项</div></div><div class="task-list" data-quadrant="4" id="list-q4"></div></div></div>
-            <div class="card border-l-4 border-orange-500"><div class="p-6"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold text-gray-900">重要不紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-orange-100 text-orange-700" id="count-q3">0 项</div></div><div class="task-list" data-quadrant="3" id="list-q3"></div></div></div>
-            <div class="card border-l-4 border-blue-500"><div class="p-6"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold text-gray-900">不重要紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700" id="count-q2">0 项</div></div><div class="task-list" data-quadrant="2" id="list-q2"></div></div></div>
-            <div class="card border-l-4 border-gray-400"><div class="p-6"><div class="flex items-center justify-between mb-4"><h3 class="text-lg font-semibold text-gray-900">不重要不紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700" id="count-q1">0 项</div></div><div class="task-list" data-quadrant="1" id="list-q1"></div></div></div>
+            <div class="card quadrant-card border-l-4 border-red-500"><div class="p-6 quadrant-card-body"><div class="flex items-center justify-between mb-4 gap-3"><h3 class="text-lg font-semibold text-gray-900">重要紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-red-100 text-red-700 flex-shrink-0" id="count-q4">0 项</div></div><div class="task-list" data-quadrant="4" id="list-q4"></div></div></div>
+            <div class="card quadrant-card border-l-4 border-orange-500"><div class="p-6 quadrant-card-body"><div class="flex items-center justify-between mb-4 gap-3"><h3 class="text-lg font-semibold text-gray-900">重要不紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-orange-100 text-orange-700 flex-shrink-0" id="count-q3">0 项</div></div><div class="task-list" data-quadrant="3" id="list-q3"></div></div></div>
+            <div class="card quadrant-card border-l-4 border-blue-500"><div class="p-6 quadrant-card-body"><div class="flex items-center justify-between mb-4 gap-3"><h3 class="text-lg font-semibold text-gray-900">不重要紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700 flex-shrink-0" id="count-q2">0 项</div></div><div class="task-list" data-quadrant="2" id="list-q2"></div></div></div>
+            <div class="card quadrant-card border-l-4 border-gray-400"><div class="p-6 quadrant-card-body"><div class="flex items-center justify-between mb-4 gap-3"><h3 class="text-lg font-semibold text-gray-900">不重要不紧急事项</h3><div class="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 flex-shrink-0" id="count-q1">0 项</div></div><div class="task-list" data-quadrant="1" id="list-q1"></div></div></div>
         </div>
 
         <div class="drag-hint"><i class="fas fa-hand-pointer"></i><span>拖拽任务可在不同象限间移动，自动更新任务优先级</span></div>
@@ -119,12 +123,12 @@
             var completed = Number(task.status) === 2;
             var taskName = escapeHtml(task.name || '');
             return '' +
-                '<div class="task-item ' + (completed ? 'completed' : '') + '" draggable="true" data-task-id="' + task.id + '">' +
-                '<div class="task-content">' +
+                '<div class="priority-task-item ' + (completed ? 'completed' : '') + '" draggable="true" data-task-id="' + task.id + '">' +
+                '<div class="priority-task-content">' +
                 (completed ? '<i class="fas fa-check-circle text-green-500 mr-2"></i>' : '') +
                 '<span class="' + (completed ? 'line-through text-gray-500' : 'text-gray-800') + '">' + taskName + '</span>' +
                 '</div>' +
-                '<div class="task-actions">' +
+                '<div class="priority-task-actions">' +
                 '<button class="task-action-btn complete" title="标记完成" onclick="toggleComplete(' + task.id + ', ' + (completed ? 1 : 2) + ')"><i class="fas ' + (completed ? 'fa-undo' : 'fa-check') + '"></i></button>' +
                 '<button class="task-action-btn edit" title="编辑任务" onclick="editTask(' + task.id + ')"><i class="fas fa-edit"></i></button>' +
                 (!completed ? '<button class="task-action-btn" title="折叠任务" onclick="foldTask(' + task.id + ')"><i class="fas fa-folder"></i></button>' : '') +
@@ -253,7 +257,7 @@
             var draggedItem = null;
             var originQuadrant = null;
 
-            document.querySelectorAll('.task-item').forEach(function(item) {
+            document.querySelectorAll('.priority-task-item').forEach(function(item) {
                 item.addEventListener('dragstart', function() {
                     draggedItem = this;
                     originQuadrant = this.closest('.task-list') ? this.closest('.task-list').dataset.quadrant : null;
@@ -268,7 +272,7 @@
             document.querySelectorAll('.task-list').forEach(function(list) {
                 list.addEventListener('dragover', function(e) {
                     e.preventDefault();
-                    var draggable = document.querySelector('.task-item.dragging');
+                    var draggable = document.querySelector('.priority-task-item.dragging');
                     if (!draggable) {
                         return;
                     }
@@ -312,7 +316,7 @@
         }
 
         function getDragAfterElement(container, y) {
-            var draggableElements = [].slice.call(container.querySelectorAll('.task-item:not(.dragging)'));
+            var draggableElements = [].slice.call(container.querySelectorAll('.priority-task-item:not(.dragging)'));
             return draggableElements.reduce(function(closest, child) {
                 var box = child.getBoundingClientRect();
                 var offset = y - box.top - box.height / 2;
