@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\LlmAgent;
 use App\Models\LlmConversation;
+use App\Models\LlmChatAttachment;
+use App\Models\LlmSession;
 use App\Repositories\LlmSessionRepository;
+use App\Services\LlmAttachmentService;
 use App\Services\LlmSessionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,14 +17,17 @@ class LlmSessionController extends Controller
 {
     protected $sessionService;
     protected $sessionRepository;
+    protected $attachmentService;
     protected $conversationHasSessionId = null;
     
     public function __construct(
         LlmSessionService $sessionService,
-        LlmSessionRepository $sessionRepository
+        LlmSessionRepository $sessionRepository,
+        LlmAttachmentService $attachmentService
     ) {
         $this->sessionService = $sessionService;
         $this->sessionRepository = $sessionRepository;
+        $this->attachmentService = $attachmentService;
     }
     
     /**
@@ -45,6 +51,8 @@ class LlmSessionController extends Controller
                     'title' => $session->title ?: '未命名会话',
                     'agent_id' => $session->agent_id,
                     'agent_name' => optional($session->agent)->name,
+                    'parent_session_id' => $session->parent_session_id,
+                    'branch_order' => (int)$session->branch_order,
                     'is_pinned' => $session->is_pinned,
                     'last_message_at' => $session->last_message_at ? $session->last_message_at->format('Y-m-d H:i:s') : null,
                     'updated_at' => $session->updated_at->format('Y-m-d H:i:s'),
@@ -188,7 +196,7 @@ class LlmSessionController extends Controller
     }
 
     /**
-     * 删除最后一轮对话并返回原问题，用于重新生成
+     * 从最后一轮创建无损分支并返回原问题，用于重新生成。
      */
     public function regenerateSession($id)
     {
@@ -220,27 +228,21 @@ class LlmSessionController extends Controller
         }
 
         $question = $lastConversation->question;
-        $lastConversation->delete();
-
-        $latestConversation = LlmConversation::where('session_id', $session->id)
-            ->orderBy('answered_at', 'desc')
-            ->orderBy('updated_at', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        $session->message_count = LlmConversation::where('session_id', $session->id)->count();
-        $session->last_message_at = $latestConversation
-            ? ($latestConversation->answered_at ?: $latestConversation->updated_at ?: $latestConversation->created_at)
-            : null;
-        $session->save();
+        $branchData = $this->sessionService->createBranch($session, $lastConversation);
+        $branchSession = $branchData['session'];
+        $regenerateAttachments = $branchData['attachments'];
 
         return response()->json([
             'success' => true,
             'data' => [
-                'session_id' => $session->id,
-                'agent_id' => $session->agent_id,
+                'session_id' => $branchSession->id,
+                'source_session_id' => $session->id,
+                'agent_id' => $branchSession->agent_id,
                 'agent_name' => optional($session->agent)->name,
                 'query' => $question,
+                'attachments' => $regenerateAttachments->map(function ($attachment) {
+                    return $this->attachmentService->serialize($attachment);
+                })->values()->all(),
             ]
         ]);
     }
@@ -259,6 +261,7 @@ class LlmSessionController extends Controller
         }
 
         if ($this->conversationSupportsSession()) {
+            $this->attachmentService->deleteForSession($session->id);
             LlmConversation::where('session_id', $session->id)->delete();
         }
         $session->message_count = 0;
@@ -290,12 +293,23 @@ class LlmSessionController extends Controller
             $conversations = LlmConversation::where('session_id', $session->id)
                 ->orderBy('created_at', 'asc')
                 ->get();
+            $attachmentsByConversation = collect();
+            if (!$conversations->isEmpty()) {
+                $attachmentsByConversation = LlmChatAttachment::whereIn('conversation_id', $conversations->pluck('id')->all())
+                    ->get()
+                    ->groupBy('conversation_id');
+            }
 
             foreach ($conversations as $conv) {
                 if (!empty($conv->question)) {
+                    $messageAttachments = $attachmentsByConversation->get($conv->id, collect())->map(function ($attachment) {
+                        return $this->attachmentService->serialize($attachment);
+                    })->values()->all();
                     $messages[] = [
                         'role' => 'user',
                         'content' => $conv->question,
+                        'conversation_id' => $conv->id,
+                        'attachments' => $messageAttachments,
                         'created_at' => optional($conv->created_at)->format('Y-m-d H:i:s'),
                     ];
                 }
@@ -303,11 +317,31 @@ class LlmSessionController extends Controller
                     $messages[] = [
                         'role' => 'assistant',
                         'content' => $conv->answer,
+                        'conversation_id' => $conv->id,
+                        'feedback' => $conv->feedback,
                         'created_at' => optional($conv->answered_at ?: $conv->updated_at)->format('Y-m-d H:i:s'),
                     ];
                 }
             }
         }
+
+        $navigationRootId = $session->parent_session_id ?: $session->id;
+        $branchSessions = LlmSession::where('user_id', Auth::id())
+            ->where(function ($query) use ($navigationRootId) {
+                $query->where('id', $navigationRootId)
+                    ->orWhere('parent_session_id', $navigationRootId);
+            })
+            ->orderBy('parent_session_id', 'asc')
+            ->orderBy('branch_order', 'asc')
+            ->get()
+            ->map(function ($branchSession) use ($navigationRootId) {
+                return [
+                    'id' => $branchSession->id,
+                    'title' => $branchSession->title ?: '未命名会话',
+                    'is_original' => (int)$branchSession->id === (int)$navigationRootId,
+                    'branch_order' => (int)$branchSession->branch_order,
+                ];
+            })->values()->all();
 
         return response()->json([
             'success' => true,
@@ -323,11 +357,85 @@ class LlmSessionController extends Controller
                     'prompt' => $session->agent->prompt,
                 ] : null,
                 'agent_name' => optional($session->agent)->name,
+                'parent_session_id' => $session->parent_session_id,
+                'branched_from_conversation_id' => $session->branched_from_conversation_id,
+                'branch_order' => (int)$session->branch_order,
+                'branch_navigation' => $branchSessions,
                 'is_pinned' => $session->is_pinned,
                 'last_message_at' => $session->last_message_at ? $session->last_message_at->format('Y-m-d H:i:s') : null,
                 'updated_at' => optional($session->updated_at)->format('Y-m-d H:i:s'),
                 'messages' => $messages,
             ]
+        ]);
+    }
+
+    /**
+     * 从指定用户消息创建新会话分支；原会话及后续内容完整保留。
+     */
+    public function branchFromMessage(Request $request, $id, $conversationId)
+    {
+        $this->validate($request, [
+            'query' => 'required|string|max:8000',
+        ]);
+
+        $session = $this->sessionRepository->findById($id);
+        if (!$session || !$this->conversationSupportsSession()) {
+            return response()->json([
+                'success' => false,
+                'message' => '会话不存在或无权限访问',
+            ], 404);
+        }
+
+        $conversation = LlmConversation::where('id', $conversationId)
+            ->where('session_id', $session->id)
+            ->where('user_id', Auth::id())
+            ->first();
+        if (!$conversation) {
+            return response()->json([
+                'success' => false,
+                'message' => '消息不存在或无权限编辑',
+            ], 404);
+        }
+
+        $branchData = $this->sessionService->createBranch($session, $conversation);
+        $branchSession = $branchData['session'];
+        $branchAttachments = $branchData['attachments'];
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'session_id' => $branchSession->id,
+                'source_session_id' => $session->id,
+                'query' => $request->input('query'),
+                'attachments' => $branchAttachments->map(function ($attachment) {
+                    return $this->attachmentService->serialize($attachment);
+                })->values()->all(),
+            ],
+        ]);
+    }
+
+    public function feedbackMessage(Request $request, $id, $conversationId)
+    {
+        $this->validate($request, [
+            'feedback' => 'required|integer|in:-1,0,1',
+        ]);
+        $session = $this->sessionRepository->findById($id);
+        if (!$session) {
+            return response()->json(['success' => false, 'message' => '会话不存在或无权限访问'], 404);
+        }
+        $conversation = LlmConversation::where('id', $conversationId)
+            ->where('session_id', $session->id)
+            ->where('user_id', Auth::id())
+            ->first();
+        if (!$conversation) {
+            return response()->json(['success' => false, 'message' => '消息不存在或无权限评价'], 404);
+        }
+        $conversation->feedback = (int)$request->input('feedback') ?: null;
+        $conversation->save();
+
+        return response()->json([
+            'success' => true,
+            'data' => ['conversation_id' => $conversation->id, 'feedback' => $conversation->feedback],
         ]);
     }
 

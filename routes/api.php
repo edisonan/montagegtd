@@ -138,10 +138,10 @@ Route::prefix('v2')->group(function () {
         Route::get('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@show');
         Route::get('/course-items/structure/{courseId}', 'Api\\V2\\CourseItemController@getStructure');
         Route::get('/course-items/{id}', 'Api\\V2\\CourseItemController@show');
-        Route::get('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@index');
         Route::get('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@show');
         Route::get('/course-items/{id}/quiz/attempts', 'Api\\V2\\CourseQuizController@attempts');
         Route::get('/reviews/course-items', 'Api\\V2\\CourseReviewController@index');
+        Route::get('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@index');
         Route::get('/courses/{courseId}/discussions/{id}', 'Api\\V2\\DiscussionController@show');
 
         // 只读业务接口
@@ -154,8 +154,6 @@ Route::prefix('v2')->group(function () {
         Route::get('/llm/providers/{id}', 'Api\\V2\\LlmController@getProvider');
         Route::get('/llm/models', 'Api\\V2\\LlmController@getModels');
         Route::get('/llm/models/{id}', 'Api\\V2\\LlmController@getModel');
-        Route::get('/llm/credentials', 'Api\\V2\\LlmController@getCredentials');
-        Route::get('/llm/credentials/{id}', 'Api\\V2\\LlmController@getCredential');
         Route::get('/llm/usage-stats', 'Api\\V2\\LlmController@getUsageStats');
         Route::get('/wechat/explorer', 'Api\\V2\\WechatController@explorer');
         Route::get('/wechat/articles', 'Api\\V2\\WechatController@articles');
@@ -272,11 +270,11 @@ Route::prefix('v2')->group(function () {
         Route::put('/courses/{id}', 'Api\\V2\\CourseController@update');
         Route::delete('/courses/{id}', 'Api\\V2\\CourseController@destroy');
         Route::post('/courses/{id}/join', 'Api\\V2\\CourseController@join');
-        Route::post('/courses/{courseId}/items', 'Api\\V2\\CourseItemController@store');
         Route::post('/courses/{id}/publish', 'Api\\V2\\CourseController@publish');
         Route::post('/courses/{id}/automation', 'Api\\V2\\CourseController@automation');
         Route::post('/courses/{courseId}/generate', 'Api\\V2\\CourseContentController@generate');
         Route::post('/courses/{courseId}/fetch', 'Api\\V2\\CourseContentController@fetch');
+        Route::post('/courses/{courseId}/items', 'Api\\V2\\CourseItemController@store');
         Route::post('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@update');
         Route::put('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@update');
         Route::delete('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@destroy');
@@ -284,21 +282,26 @@ Route::prefix('v2')->group(function () {
         Route::post('/course-items/{id}', 'Api\\V2\\CourseItemController@updateFromModal');
         Route::put('/course-items/{id}', 'Api\\V2\\CourseItemController@updateFromModal');
         Route::post('/course-items/{id}/complete', 'Api\\V2\\CourseItemController@complete');
-        Route::delete('/course-items/{id}', 'Api\\V2\\CourseItemController@destroy');
-        Route::post('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@store');
-        Route::post('/courses/{courseId}/discussions/{id}/reply', 'Api\\V2\\DiscussionController@reply');
-
         Route::post('/course-items/{id}/publish', 'Api\\V2\\CourseItemController@publish');
         Route::post('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
         Route::put('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
         Route::post('/course-items/{id}/quiz/attempts', 'Api\\V2\\CourseQuizController@submit');
+        Route::delete('/course-items/{id}', 'Api\\V2\\CourseItemController@destroy');
+        Route::post('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@store');
+        Route::post('/courses/{courseId}/discussions/{id}/reply', 'Api\\V2\\DiscussionController@reply');
+
         Route::post('/llm/chat', 'Api\\V2\\LlmController@chat');
         Route::post('/llm/ask-ai', 'Api\\V2\\LlmController@askAi');
+        Route::post('/llm/chat/stop', 'Api\\V2\\LlmController@stopChat');
+        Route::post('/llm/attachments', 'Api\\V2\\LlmAttachmentController@store');
+        Route::delete('/llm/attachments/{id}', 'Api\\V2\\LlmAttachmentController@destroy');
 
         Route::post('/llm/sessions', 'Api\\V2\\LlmSessionController@createSession');
         Route::put('/llm/sessions/{id}/title', 'Api\\V2\\LlmSessionController@updateSessionTitle');
         Route::post('/llm/sessions/{id}/clear', 'Api\\V2\\LlmSessionController@clearSession');
         Route::post('/llm/sessions/{id}/regenerate', 'Api\\V2\\LlmSessionController@regenerateSession');
+        Route::post('/llm/sessions/{id}/messages/{conversationId}/branch', 'Api\\V2\\LlmSessionController@branchFromMessage');
+        Route::put('/llm/sessions/{id}/messages/{conversationId}/feedback', 'Api\\V2\\LlmSessionController@feedbackMessage');
         Route::post('/llm/sessions/{id}/toggle-pin', 'Api\\V2\\LlmSessionController@togglePinSession');
         Route::delete('/llm/sessions/{id}', 'Api\\V2\\LlmSessionController@deleteSession');
 
@@ -310,7 +313,6 @@ Route::prefix('v2')->group(function () {
         Route::put('/llm/agents/{id}/draft', 'Api\\V2\\LlmAgentController@updateDraft');
         Route::post('/llm/agents/{id}/publish', 'Api\\V2\\LlmAgentController@publishDraft');
         Route::post('/llm/agents/{id}/test-chat', 'Api\\V2\\LlmAgentController@testChat');
-        Route::post('/llm/credentials/{id}/test', 'Api\\V2\\LlmController@testCredential');
         Route::post('/llm/models/{id}/test', 'Api\\V2\\LlmController@testModel');
     });
 
@@ -324,9 +326,6 @@ Route::prefix('v2')->group(function () {
         Route::put('/llm/models/{id}', 'Api\\V2\\LlmController@saveModel');
         Route::delete('/llm/models/{id}', 'Api\\V2\\LlmController@deleteModel');
 
-        Route::post('/llm/credentials', 'Api\\V2\\LlmController@saveCredential');
-        Route::put('/llm/credentials/{id}', 'Api\\V2\\LlmController@saveCredential');
-        Route::delete('/llm/credentials/{id}', 'Api\\V2\\LlmController@deleteCredential');
         Route::post('/wechat/notes', 'Api\\V2\\WechatController@addNote');
         Route::post('/wechat/addNote', 'Api\\V2\\WechatController@addNote');
         Route::post('/wechat/articles/status', 'Api\\V2\\WechatController@articleSubStatus');

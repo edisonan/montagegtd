@@ -62,4 +62,16 @@ class LlmSessionController extends \App\Http\Controllers\LlmSessionController
         $this->bootstrapAuthContext(request());
         return parent::regenerateSession($id);
     }
+
+    public function branchFromMessage(Request $request, $id, $conversationId)
+    {
+        $this->bootstrapAuthContext($request);
+        return parent::branchFromMessage($request, $id, $conversationId);
+    }
+
+    public function feedbackMessage(Request $request, $id, $conversationId)
+    {
+        $this->bootstrapAuthContext($request);
+        return parent::feedbackMessage($request, $id, $conversationId);
+    }
 }

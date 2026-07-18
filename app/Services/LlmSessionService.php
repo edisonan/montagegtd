@@ -2,12 +2,21 @@
 
 namespace App\Services;
 
+use App\Models\LlmConversation;
 use App\Models\LlmSession;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class LlmSessionService
 {
+    protected $attachmentService;
+
+    public function __construct(LlmAttachmentService $attachmentService)
+    {
+        $this->attachmentService = $attachmentService;
+    }
+
     /**
      * 创建新的会话
      *
@@ -24,6 +33,64 @@ class LlmSessionService
         $session->save();
 
         return $session;
+    }
+
+    public function createBranch(LlmSession $sourceSession, LlmConversation $targetConversation)
+    {
+        $branchOrder = LlmSession::where('parent_session_id', $sourceSession->id)->max('branch_order') + 1;
+        $baseTitle = preg_replace('/\s*·\s*分支\s*\d+$/u', '', $sourceSession->title ?: '未命名会话');
+        $branch = new LlmSession();
+        $branch->uuid = $this->generateUuid();
+        $branch->user_id = $sourceSession->user_id;
+        $branch->agent_id = $sourceSession->agent_id;
+        $branch->parent_session_id = $sourceSession->id;
+        $branch->branched_from_conversation_id = $targetConversation->id;
+        $branch->branch_order = $branchOrder;
+        $branch->title = mb_substr($baseTitle . ' · 分支 ' . $branchOrder, 0, 255);
+        $branch->save();
+
+        try {
+            $sourceConversations = LlmConversation::where('session_id', $sourceSession->id)
+                ->where('id', '<', $targetConversation->id)
+                ->orderBy('id', 'asc')
+                ->get();
+            foreach ($sourceConversations as $sourceConversation) {
+                $conversation = LlmConversation::create([
+                    'user_id' => $sourceConversation->user_id,
+                    'session_id' => $branch->id,
+                    'model_id' => $sourceConversation->model_id,
+                    'question' => $sourceConversation->question,
+                    'answer' => $sourceConversation->answer,
+                    'feedback' => $sourceConversation->feedback,
+                    'request_data' => $sourceConversation->request_data,
+                    'response_data' => $sourceConversation->response_data,
+                    'prompt_tokens' => (int)$sourceConversation->prompt_tokens,
+                    'completion_tokens' => (int)$sourceConversation->completion_tokens,
+                    'total_tokens' => (int)$sourceConversation->total_tokens,
+                    'cost' => $sourceConversation->cost,
+                    'answered_at' => $sourceConversation->answered_at,
+                ]);
+                $this->attachmentService->cloneForConversation($sourceConversation->id, $branch->id, $conversation->id);
+            }
+
+            $latestConversation = LlmConversation::where('session_id', $branch->id)->orderBy('id', 'desc')->first();
+            $branch->message_count = $sourceConversations->count();
+            $branch->token_count = (int)$sourceConversations->sum('total_tokens');
+            $branch->last_message_at = $latestConversation
+                ? ($latestConversation->answered_at ?: $latestConversation->updated_at ?: $latestConversation->created_at)
+                : null;
+            $branch->save();
+
+            return [
+                'session' => $branch,
+                'attachments' => $this->attachmentService->cloneAsPending($targetConversation->id, $branch->id),
+            ];
+        } catch (\Throwable $e) {
+            $this->attachmentService->deleteForSession($branch->id);
+            LlmConversation::where('session_id', $branch->id)->delete();
+            $branch->delete();
+            throw $e;
+        }
     }
 
     /**
@@ -104,6 +171,11 @@ class LlmSessionService
         
         if (!$session) {
             return false;
+        }
+
+        if (Schema::hasColumn('llm_conversations', 'session_id')) {
+            $this->attachmentService->deleteForSession($session->id);
+            LlmConversation::where('session_id', $session->id)->delete();
         }
 
         return $session->delete();
