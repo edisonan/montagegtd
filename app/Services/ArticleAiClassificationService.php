@@ -6,6 +6,8 @@ use App\Models\Article;
 
 class ArticleAiClassificationService
 {
+    const ESTIMATED_OUTPUT_TOKENS_PER_ARTICLE = 160;
+
     protected $llmStructuredTaskService;
 
     public function __construct(LlmStructuredTaskService $llmStructuredTaskService)
@@ -15,28 +17,55 @@ class ArticleAiClassificationService
 
     public function classify(Article $article)
     {
-        $cleanText = $this->buildArticleText($article);
-        if ($cleanText === '') {
-            return array(
-                'success' => false,
-                'error' => '文章标题为空',
-                'result' => null,
-                'meta' => array(
-                    'status' => 'skipped',
-                    'model_name' => null,
-                    'prompt_version' => 'article_classification:v1',
-                ),
+        $results = $this->classifyBatch(array($article));
+
+        return $results[$article->id] ?? $this->skippedResult('文章标题为空');
+    }
+
+    public function getRecommendedBatchSize()
+    {
+        return $this->llmStructuredTaskService->getRecommendedBatchSize(
+            self::ESTIMATED_OUTPUT_TOKENS_PER_ARTICLE,
+            LlmStructuredTaskService::DEFAULT_BATCH_SIZE
+        );
+    }
+
+    public function classifyBatch(array $articles)
+    {
+        $results = array();
+        $articleMap = array();
+        $inputArticles = array();
+
+        foreach ($articles as $article) {
+            if (!$article instanceof Article) {
+                continue;
+            }
+
+            $cleanText = $this->buildArticleText($article);
+            if ($cleanText === '') {
+                $results[$article->id] = $this->skippedResult('文章标题为空');
+                continue;
+            }
+
+            $articleMap[(string)$article->id] = $article;
+            $inputArticles[] = array(
+                'article_id' => (int)$article->id,
+                'title' => trim((string)$article->subject),
             );
+        }
+
+        if (empty($inputArticles)) {
+            return $results;
         }
 
         $messages = array(
             array(
                 'role' => 'system',
-                'content' => '你是一个文章分类助手。仅根据文章标题分类。请严格输出 JSON，不要输出 markdown 代码块。字段包含 primary_category, secondary_category, tags, keywords, content_type, quality_score。',
+                'content' => '你是一个文章分类助手。仅根据文章标题逐篇分类。请严格输出 JSON 对象，不要输出 markdown 代码块。顶层字段为 articles，值为数组；数组每项必须原样返回 article_id，并包含 primary_category, secondary_category, tags, keywords, content_type, quality_score。不得遗漏任何输入文章。',
             ),
             array(
                 'role' => 'user',
-                'content' => "请根据下面的文章标题返回 JSON：\n" . $cleanText,
+                'content' => "请对下面这些文章标题批量分类：\n" . json_encode($inputArticles, JSON_UNESCAPED_UNICODE),
             ),
         );
 
@@ -52,31 +81,58 @@ class ArticleAiClassificationService
 
         if (!empty($llmResult['success']) && !empty($llmResult['content'])) {
             $parsed = $this->parseStructuredJson($llmResult['content']);
-            if ($parsed !== null) {
-                return array(
+            $parsedArticles = is_array($parsed) ? ($parsed['articles'] ?? array()) : array();
+
+            foreach ($parsedArticles as $parsedArticle) {
+                $articleId = (string)($parsedArticle['article_id'] ?? '');
+                if ($articleId === '' || !isset($articleMap[$articleId])) {
+                    continue;
+                }
+
+                $results[$articleId] = array(
                     'success' => true,
                     'error' => null,
-                    'result' => $this->normalizeResult($parsed),
+                    'result' => $this->normalizeResult($parsedArticle),
                     'meta' => array(
                         'status' => 'success',
                         'model_name' => $llmResult['meta']['model_name'] ?? null,
-                        'prompt_version' => 'article_classification:v1',
+                        'prompt_version' => 'article_classification:v2',
                     ),
                 );
             }
         }
 
-        $fallback = $this->fallbackClassify($article, $cleanText);
+        foreach ($articleMap as $articleId => $article) {
+            if (isset($results[$articleId])) {
+                continue;
+            }
 
+            $results[$articleId] = array(
+                'success' => true,
+                'error' => $llmResult['error'] ?? '模型批量响应缺少该文章',
+                'result' => $this->fallbackClassify($article, $this->buildArticleText($article)),
+                'meta' => array(
+                    'status' => 'success',
+                    'model_name' => $llmResult['meta']['model_name'] ?? 'fallback-local',
+                    'prompt_version' => 'article_classification:v2',
+                    'fallback_used' => true,
+                ),
+            );
+        }
+
+        return $results;
+    }
+
+    protected function skippedResult($message)
+    {
         return array(
-            'success' => true,
-            'error' => $llmResult['error'] ?? null,
-            'result' => $fallback,
+            'success' => false,
+            'error' => $message,
+            'result' => null,
             'meta' => array(
-                'status' => 'success',
-                'model_name' => $llmResult['meta']['model_name'] ?? 'fallback-local',
-                'prompt_version' => 'article_classification:v1',
-                'fallback_used' => true,
+                'status' => 'skipped',
+                'model_name' => null,
+                'prompt_version' => 'article_classification:v2',
             ),
         );
     }

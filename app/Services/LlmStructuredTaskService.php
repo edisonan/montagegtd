@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Schema;
 
 class LlmStructuredTaskService
 {
+    const DEFAULT_BATCH_SIZE = 10;
+    const MAX_BATCH_SIZE = 50;
+    const OUTPUT_TOKEN_SAFETY_RATIO = 0.8;
+
     public function runTask(string $taskType, array $messages, array $options = array())
     {
         $startedAt = microtime(true);
@@ -62,6 +66,10 @@ class LlmStructuredTaskService
             'messages' => $messages,
             'stream' => false,
         );
+
+        if (!empty($model->max_tokens)) {
+            $payload['max_tokens'] = (int)$model->max_tokens;
+        }
 
         if (!empty($options['response_format'])) {
             $payload['response_format'] = $options['response_format'];
@@ -153,6 +161,36 @@ class LlmStructuredTaskService
                 'usage' => $usage,
             ),
         );
+    }
+
+    public function getRecommendedBatchSize($estimatedOutputTokensPerItem = 160, $defaultBatchSize = self::DEFAULT_BATCH_SIZE)
+    {
+        if (!$this->hasRequiredTables()) {
+            return max(1, (int)$defaultBatchSize);
+        }
+
+        $model = $this->resolveModel();
+
+        return $this->calculateBatchSize(
+            $model ? $model->max_tokens : null,
+            $estimatedOutputTokensPerItem,
+            $defaultBatchSize
+        );
+    }
+
+    public function calculateBatchSize($maxTokens, $estimatedOutputTokensPerItem = 160, $defaultBatchSize = self::DEFAULT_BATCH_SIZE)
+    {
+        $defaultBatchSize = max(1, min(self::MAX_BATCH_SIZE, (int)$defaultBatchSize));
+        $estimatedOutputTokensPerItem = max(1, (int)$estimatedOutputTokensPerItem);
+
+        if (empty($maxTokens)) {
+            return $defaultBatchSize;
+        }
+
+        $availableOutputTokens = (int)floor((int)$maxTokens * self::OUTPUT_TOKEN_SAFETY_RATIO);
+        $batchSize = (int)floor($availableOutputTokens / $estimatedOutputTokensPerItem);
+
+        return max(1, min(self::MAX_BATCH_SIZE, $batchSize));
     }
 
     protected function resolveModel(array $options = array())

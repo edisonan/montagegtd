@@ -247,6 +247,38 @@
             border: 1px solid #e2e8f0;
         }
 
+        .sidebar-toggle-tab {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            min-width: 38px;
+            padding: 8px;
+            border: 0;
+            border-right: 1px solid #e2e8f0;
+            border-radius: 6px 0 0 6px;
+            background: transparent;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-toggle-tab:hover,
+        .sidebar-toggle-tab.is-collapsed {
+            background: #eff6ff;
+            color: #4a90e2;
+        }
+
+        .articles-layout.sidebar-collapsed #sidebarColumn {
+            display: none !important;
+        }
+
+        @media (min-width: 1024px) {
+            .articles-layout.sidebar-collapsed #articleContentColumn {
+                grid-column: span 4 / span 4;
+            }
+        }
+
         .status-tab {
             padding: 8px 16px;
             border-radius: 6px;
@@ -1205,7 +1237,7 @@
     </style>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reading-page">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 articles-layout{{ request()->cookie('articles_sidebar_collapsed') === 'true' ? ' sidebar-collapsed' : '' }}" id="articlesLayout">
             <!-- 侧边栏导航 -->
             <div class="lg:col-span-1" id="sidebarColumn">
                 <div class="reading-sidebar">
@@ -1237,12 +1269,15 @@
             </div>
 
             <!-- 文章内容区域 -->
-            <div class="lg:col-span-3">
+            <div class="lg:col-span-3" id="articleContentColumn">
                 <div class="reading-content">
                     <!-- 内容头部 -->
                     <div class="content-header">
                         <div>
                             <div class="status-tabs">
+                                <button type="button" class="sidebar-toggle-tab" id="toggleSidebarBtn" title="折叠订阅目录" aria-label="折叠订阅目录" aria-controls="sidebarColumn" aria-expanded="true">
+                                    <i class="fas fa-folder-tree"></i>
+                                </button>
                                 <a href="#" class="status-tab" data-status="unread">
                                     未读
                                 </a>
@@ -1250,7 +1285,7 @@
                                     已读
                                 </a>
                                 <a href="#" class="status-tab" data-status="star">
-                                    加星
+                                    收藏
                                 </a>
                                 <a href="#" class="status-tab" data-status="read_later">
                                     稍后阅读
@@ -1303,10 +1338,6 @@
                                     <i class="fas fa-plus"></i>
                                     添加订阅
                                 </a>
-                                <button type="button" class="tool-btn" id="readingPreferenceBtn">
-                                    <i class="fas fa-sliders-h"></i>
-                                    阅读偏好
-                                </button>
                                 <button type="button" class="tool-btn mobile-only" id="toggleCategoryBtn">
                                     <i class="fas fa-folder-tree"></i>
                                     订阅目录
@@ -1577,7 +1608,7 @@
             var qs = new URLSearchParams(window.location.search);
             var status = qs.get('status') || 'unread';
             var currentFeedId = qs.get('feed_id') || '';
-            var timeRange = qs.get('time_range') || '6h';
+            var timeRange = qs.get('time_range') || 'all';
             var readDuration = qs.get('read_duration') || 'all';
             var keyword = qs.get('keyword') || '';
             var pageCount = normalizePageCount(qs.get('page_count') || 30);
@@ -1589,6 +1620,8 @@
                 viewMode = 'all';
             }
             var processNavFlag = false;
+            var navRequestInFlight = false;
+            var sidebarCollapsed = ($.cookie('articles_sidebar_collapsed') || 'false') === 'true';
             var unableDesc = ($.cookie('unable_desc') || 'false') === 'true';
             var unableImg = ($.cookie('unable_img') || 'false') === 'true';
             var readingPreferenceState = {
@@ -1623,9 +1656,13 @@
             }
 
             function collectArticleFilters() {
+                var selectedFeedId = $('#articleFeedFilter').val();
+                if (selectedFeedId === null) {
+                    selectedFeedId = currentFeedId;
+                }
                 return {
-                    time_range: $('#articleTimeRange').val() || timeRange || '6h',
-                    feed_id: $('#articleFeedFilter').val() || '',
+                    time_range: $('#articleTimeRange').val() || timeRange || 'all',
+                    feed_id: selectedFeedId || '',
                     read_duration: $('#articleReadDuration').val() || readDuration || 'all',
                     keyword: $('#articleKeyword').val() || keyword || '',
                     page_count: normalizePageCount($('#articlePageCount').val() || pageCount || 30)
@@ -1633,7 +1670,7 @@
             }
 
             function syncArticleFilterForm() {
-                $('#articleTimeRange').val(timeRange || '6h');
+                $('#articleTimeRange').val(timeRange || 'all');
                 $('#articleFeedFilter').val(currentFeedId || '');
                 $('#articleFeedSearch').val('');
                 $('#articleReadDuration').val(readDuration || 'all');
@@ -2163,6 +2200,10 @@
 
             // 主处理函数 - 优先从localStorage加载，没有则请求远程
             function processNav(status) {
+                if (processNavFlag || navRequestInFlight || $('#articlesLayout').hasClass('sidebar-collapsed')) {
+                    return;
+                }
+
                 $('#nav').html('<li class="text-center py-4 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</li>');
 
                 // 尝试从localStorage获取缓存数据
@@ -2195,13 +2236,15 @@
                 var params = {
                     status: status,
                     feed_id: currentFeedId,
-                    time_range: timeRange,
                     read_duration: readDuration,
                     page_count: pageCount,
                     page: currentPage,
                     view_mode: viewMode,
                     mode: articleMode
                 };
+                if (timeRange && timeRange !== 'all') {
+                    params.time_range = timeRange;
+                }
 
                 apiRequest('GET', '/articles', params).then(function(result_arr) {
                     if (!result_arr || result_arr.code !== 9999 || !result_arr.result) {
@@ -2375,7 +2418,8 @@
 
             function filterArticleFeedOptions() {
                 var keyword = $.trim($('#articleFeedSearch').val() || '').toLowerCase();
-                var selectedId = String($('#articleFeedFilter').val() || '');
+                var selectedFeedId = $('#articleFeedFilter').val();
+                var selectedId = String(selectedFeedId === null ? (currentFeedId || '') : (selectedFeedId || ''));
                 var html = '<option value="">全部订阅</option>';
                 var seen = {};
                 var selectedOption = null;
@@ -2572,6 +2616,11 @@
 
             // 从远程获取导航数据
             function fetchNavFromRemote(status, isSilentUpdate = false) {
+                if (navRequestInFlight || $('#articlesLayout').hasClass('sidebar-collapsed')) {
+                    return;
+                }
+                navRequestInFlight = true;
+
                 // 如果是静默更新，不显示加载动画
                 if (!isSilentUpdate) {
                     $('#nav').html('<li class="text-center py-4 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</li>');
@@ -2604,6 +2653,7 @@
                         console.warn('静默更新导航数据失败:', error);
                     }
                 }).then(function() {
+                    navRequestInFlight = false;
                     // 如果是静默更新，可以在这里做一些清理工作
                     if (isSilentUpdate) {
                         console.log('导航数据静默更新完成');
@@ -3018,17 +3068,39 @@
             });
 
             // 移动端检测
+            function syncSidebarToggle(isCollapsed) {
+                var label = isCollapsed ? '展开订阅目录' : '折叠订阅目录';
+                $('#toggleSidebarBtn')
+                    .toggleClass('is-collapsed', isCollapsed)
+                    .attr('title', label)
+                    .attr('aria-label', label)
+                    .attr('aria-expanded', isCollapsed ? 'false' : 'true')
+                    .find('i')
+                    .attr('class', isCollapsed ? 'fas fa-folder-open' : 'fas fa-folder-tree');
+            }
+
+            function setSidebarCollapsed(isCollapsed, persist) {
+                sidebarCollapsed = isCollapsed;
+                $('#articlesLayout').toggleClass('sidebar-collapsed', isCollapsed);
+                syncSidebarToggle(isCollapsed);
+
+                if (persist) {
+                    $.cookie('articles_sidebar_collapsed', isCollapsed ? 'true' : 'false', {
+                        expires: 365,
+                        path: '/'
+                    });
+                }
+
+                if (!isCollapsed && !processNavFlag) {
+                    processNav(status);
+                }
+            }
+
             function checkMobile() {
                 var ua = navigator.userAgent;
                 var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
 
-                if (isMobile) {
-                    $("#sidebarColumn").hide();
-                    $(".feed-list").hide();
-                } else {
-                    $("#sidebarColumn").show();
-                    processNav(status);
-                }
+                setSidebarCollapsed(isMobile || sidebarCollapsed, false);
 
                 return isMobile;
             }
@@ -3374,8 +3446,12 @@
             loadArticleListByApi();
             checkMobile();
 
+            $('#toggleSidebarBtn').on('click', function() {
+                setSidebarCollapsed(!$('#articlesLayout').hasClass('sidebar-collapsed'), true);
+            });
+
             $('#toggleCategoryBtn').on('click', function() {
-                $('#sidebarColumn').stop(true, true).slideToggle(160);
+                setSidebarCollapsed(!$('#articlesLayout').hasClass('sidebar-collapsed'), true);
             });
 
             // 检查是否启用了一目十行

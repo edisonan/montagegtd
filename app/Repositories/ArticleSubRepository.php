@@ -55,11 +55,12 @@ class ArticleSubRepository {
 	 * @return unknown
 	 */
 	public function getFeedCountInfos($userId, $status) {
-		$originalCountInfos = DB::select ( "select feed_id,count(*) as count from article_subs where user_id = :user_id and status = :status group by feed_id", [ 
-				':user_id' => $userId,
-				':status' => $status 
-		] );
-		return $originalCountInfos;
+		$query = ArticleSub::select('feed_id', DB::raw('count(*) as count'))
+			->where('user_id', $userId);
+		if ($status !== 'all') {
+			$query->where('status', $status);
+		}
+		return $query->groupBy('feed_id')->get();
 	}
 	
 	/**

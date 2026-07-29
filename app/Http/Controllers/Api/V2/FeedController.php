@@ -134,7 +134,7 @@ class FeedController extends Controller
         $starredCount = DB::table('article_subs')
             ->where('user_id', $userId)
             ->where('feed_id', $feedId)
-            ->where('mark', 1)
+            ->where('status', 'star')
             ->count();
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(

@@ -18,7 +18,9 @@ class FeedFetchFactory
             case 3 :
                 return new FanfouFeedFetch ($feed);
             case 4 :
-                return new RegexFeedFetch ($feed);
+                // Webpage RSS sources expose a regular RSS endpoint after applying
+                // their selector rules, so they should use the standard parser.
+                return new StandardFeedFetch ($feed);
             default :
                 throw new CustomException ("未找到此类型");
         }

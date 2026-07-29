@@ -327,22 +327,7 @@
         font-weight: 720;
     }
 
-    .v2-inline-actions { display: flex; align-items: center; gap: 7px; }
-    .v2-inline-actions button,
-    .v2-inline-actions a {
-        width: 36px;
-        height: 36px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 0;
-        border-radius: 50%;
-        color: #343842;
-        background: rgba(31, 35, 42, .07);
-        text-decoration: none;
-    }
-
-    .v2-inline-actions .active { color: #fff; background: var(--v2-accent); }
+    .v2-inline-mode-label { color: #9a9ca3; font-size: 12px; font-weight: 650; }
 
     .v2-inline-scroll {
         flex: 1 1 auto;
@@ -369,7 +354,6 @@
     .v2-inline-content blockquote { margin: 1.5em 0; padding: 10px 18px; border-left: 3px solid #c5795f; color: #5c6068; background: rgba(197, 121, 95, .08); }
     .v2-inline-loading { padding: 70px 20px; color: #85878d; text-align: center; }
 
-    .v2-stream.reading-mode .v2-rail,
     .v2-stream.reading-mode .v2-swipe-hint { opacity: 0; pointer-events: none; }
 
     .v2-rail {
@@ -385,6 +369,7 @@
     }
 
     .v2-action {
+        display: block;
         width: 54px;
         border: 0;
         color: #fff;
@@ -392,6 +377,7 @@
         text-align: center;
         font-size: 11px;
         font-weight: 650;
+        text-decoration: none;
     }
 
     .v2-action .v2-action-icon {
@@ -688,12 +674,7 @@
             <div class="v2-inline-reader" id="v2InlineReader">
                 <header class="v2-inline-head">
                     <button type="button" class="v2-inline-back" id="v2ReaderClose"><i class="fas fa-chevron-left"></i><span>返回沉浸流</span></button>
-                    <div class="v2-inline-actions">
-                        <a href="#" target="_blank" id="v2ReaderOrigin" title="查看原文"><i class="fas fa-external-link-alt"></i></a>
-                        <button type="button" id="v2ReaderStar" title="收藏"><i class="far fa-star"></i></button>
-                        <button type="button" id="v2ReaderLater" title="稍后阅读"><i class="far fa-clock"></i></button>
-                        <button type="button" id="v2ReaderNext" title="下一篇"><i class="fas fa-forward-step"></i></button>
-                    </div>
+                    <span class="v2-inline-mode-label">上下滑动阅读</span>
                 </header>
                 <div class="v2-inline-scroll" id="v2ReaderScroll">
                     <article class="v2-inline-article">
@@ -709,6 +690,7 @@
     </div>
 
     <aside class="v2-rail">
+        <a href="#" target="_blank" class="v2-action" id="v2OriginBtn"><span class="v2-action-icon"><i class="fas fa-external-link-alt"></i></span><span>原文</span></a>
         <button type="button" class="v2-action" id="v2StarBtn"><span class="v2-action-icon"><i class="far fa-star"></i></span><span>收藏</span></button>
         <button type="button" class="v2-action" id="v2LaterBtn"><span class="v2-action-icon"><i class="far fa-clock"></i></span><span>稍后读</span></button>
         <button type="button" class="v2-action" id="v2ReadStateBtn"><span class="v2-action-icon"><i class="fas fa-check"></i></span><span id="v2ReadStateText">未读</span></button>
@@ -750,7 +732,7 @@
         var timeLabels = { '3h': '最近3小时', '6h': '最近6小时', '1d': '最近1天', '3d': '最近3天', '7d': '最近7天', all: '全部时间' };
         var state = {
             status: query.get('status') || 'unread',
-            timeRange: query.get('time_range') || '6h',
+            timeRange: query.get('time_range') || 'all',
             feedId: query.get('feed_id') || '',
             keyword: query.get('keyword') || '',
             pageCount: Math.min(100, Math.max(10, Number(query.get('page_count') || 30))),
@@ -813,7 +795,7 @@
 
         function syncFilterLabels() {
             $('#v2StatusChip span:last').text(statusLabels[state.status] || '未读');
-            $('#v2TimeChip span').text(timeLabels[state.timeRange] || '最近6小时');
+            $('#v2TimeChip span').text(timeLabels[state.timeRange] || '全部时间');
             $('#v2StatusFilter').val(state.status);
             $('#v2TimeFilter').val(state.timeRange);
             $('#v2FeedFilter').val(String(state.feedId));
@@ -830,8 +812,8 @@
 
         function syncActionButtons(item) {
             var status = item ? item.status : '';
-            $('#v2StarBtn, #v2ReaderStar').toggleClass('active', status === 'star');
-            $('#v2LaterBtn, #v2ReaderLater').toggleClass('active', status === 'read_later');
+            $('#v2StarBtn').toggleClass('active', status === 'star');
+            $('#v2LaterBtn').toggleClass('active', status === 'read_later');
             $('#v2ReadStateBtn').toggleClass('active', status === 'read');
             $('#v2ReadStateText').text(status === 'read' ? '已读' : '未读');
         }
@@ -945,6 +927,7 @@
             $('#v2Tags').html(tagsHtml);
             $('#v2WordCount').text(Number(article.word_count || 0).toLocaleString() + ' 字');
             $('#v2ReadTime').text('预计 ' + Math.max(1, Number(article.estimated_read_minutes || 1)) + ' 分钟');
+            $('#v2OriginBtn').attr('href', article.url || '#');
             $('#v2Position').text((state.index + 1) + ' / ' + state.items.length);
             $('#v2Progress').css('width', (((state.index + 1) / Math.max(1, state.items.length)) * 100).toFixed(1) + '%');
             $('#v2Card').toggleClass('is-read', item.status === 'read').removeClass('enter-next enter-prev');
@@ -979,15 +962,16 @@
                 $('#v2Title').text('正在准备你的沉浸阅读流…');
                 $('#v2SummaryTrack').text('正在加载当前文章文本…');
             }
-            apiRequest('GET', '/articles', {
+            var params = {
                 status: state.status,
-                time_range: state.timeRange,
                 feed_id: state.feedId,
                 keyword: state.keyword,
                 page_count: state.pageCount,
                 page: state.page,
                 mode: 'simple'
-            }).then(function (resp) {
+            };
+            if (state.timeRange && state.timeRange !== 'all') params.time_range = state.timeRange;
+            apiRequest('GET', '/articles', params).then(function (resp) {
                 state.loading = false;
                 if (!(resp && resp.code === 9999 && resp.result)) throw new Error(resp && resp.msg ? resp.msg : '加载文章失败');
                 state.items = Array.isArray(resp.result.articles) ? resp.result.articles : [];
@@ -1012,15 +996,16 @@
             if (state.loadingMore || !state.pagination || !state.pagination.has_more_pages) return;
             state.loadingMore = true;
             var nextPage = Number(state.pagination.current_page || state.page) + 1;
-            apiRequest('GET', '/articles', {
+            var params = {
                 status: state.status,
-                time_range: state.timeRange,
                 feed_id: state.feedId,
                 keyword: state.keyword,
                 page_count: state.pageCount,
                 page: nextPage,
                 mode: 'simple'
-            }).then(function (resp) {
+            };
+            if (state.timeRange && state.timeRange !== 'all') params.time_range = state.timeRange;
+            apiRequest('GET', '/articles', params).then(function (resp) {
                 state.loadingMore = false;
                 if (!(resp && resp.code === 9999 && resp.result)) return;
                 var extra = Array.isArray(resp.result.articles) ? resp.result.articles : [];
@@ -1074,7 +1059,6 @@
             $('#v2ReaderFeed').text(article.feed && article.feed.feed_name ? article.feed.feed_name : '未知订阅');
             $('#v2ReaderTitle').text(article.subject || '无标题');
             $('#v2ReaderMeta').text(formatPublished(article.published) + ' · ' + Number(article.word_count || 0).toLocaleString() + ' 字 · 预计 ' + Math.max(1, Number(article.estimated_read_minutes || 1)) + ' 分钟');
-            $('#v2ReaderOrigin').attr('href', article.url || '#');
             $('#v2ReaderContent').html('<div class="v2-inline-loading"><i class="fas fa-spinner fa-spin mr-2"></i>加载全文中…</div>');
             $('#v2ReaderScroll').scrollTop(0);
             if (item.status === 'unread') updateStatus('read', { silent: true, item: item });
@@ -1106,13 +1090,13 @@
         $('#v2FilterClose, #v2FilterBackdrop').on('click', closeFilters);
         $('#v2ResetFilter').on('click', function () {
             $('#v2StatusFilter').val('unread');
-            $('#v2TimeFilter').val('6h');
+            $('#v2TimeFilter').val('all');
             $('#v2FeedFilter').val('');
             $('#v2KeywordFilter').val('');
         });
         $('#v2ApplyFilter').on('click', function () {
             state.status = $('#v2StatusFilter').val() || 'unread';
-            state.timeRange = $('#v2TimeFilter').val() || '6h';
+            state.timeRange = $('#v2TimeFilter').val() || 'all';
             state.feedId = $('#v2FeedFilter').val() || '';
             state.keyword = $.trim($('#v2KeywordFilter').val() || '');
             syncFilterLabels();
@@ -1130,16 +1114,19 @@
             openReader();
         });
         $('#v2ReadBtn').on('click', function (event) { event.stopPropagation(); openReader(); });
-        $('#v2StarBtn, #v2ReaderStar').on('click', function (event) { event.stopPropagation(); updateStatus('star'); });
-        $('#v2LaterBtn, #v2ReaderLater').on('click', function (event) { event.stopPropagation(); updateStatus('read_later'); });
+        $('#v2StarBtn').on('click', function (event) { event.stopPropagation(); updateStatus('star'); });
+        $('#v2LaterBtn').on('click', function (event) { event.stopPropagation(); updateStatus('read_later'); });
         $('#v2ReadStateBtn').on('click', function (event) {
             event.stopPropagation();
             var item = currentItem();
             updateStatus(item && item.status === 'read' ? 'unread' : 'read');
         });
-        $('#v2NextBtn').on('click', function (event) { event.stopPropagation(); move(1); });
+        $('#v2NextBtn').on('click', function (event) {
+            event.stopPropagation();
+            if (state.readerOpen) closeReader();
+            move(1);
+        });
         $('#v2ReaderClose').on('click', function (event) { event.stopPropagation(); closeReader(); });
-        $('#v2ReaderNext').on('click', function (event) { event.stopPropagation(); closeReader(); move(1); });
 
         $('#v2Stage').on('touchstart', function (event) {
             var touch = event.originalEvent.touches && event.originalEvent.touches[0];

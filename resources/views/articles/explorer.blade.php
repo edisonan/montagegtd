@@ -7,16 +7,75 @@
 <style>
     .article-explorer {
         height: calc(100vh - 96px);
-        min-height: 620px;
+        min-height: 720px;
         margin: 16px auto;
         max-width: 1600px;
         padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
+    .explorer-filter-card {
+        flex: 0 0 auto;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f8fafc;
+        box-shadow: 0 5px 18px rgba(15, 23, 42, .04);
+    }
+    .explorer-filters {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(120px, 1fr));
+        gap: 10px;
+        align-items: end;
+    }
+    .explorer-filter-field { min-width: 0; }
+    .explorer-filter-field-wide { grid-column: span 2; }
+    .explorer-filter-label {
+        display: block;
+        margin-bottom: 4px;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 650;
+    }
+    .explorer-filter-control {
+        width: 100%;
+        min-height: 34px;
+        padding: 6px 8px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        background: #fff;
+        color: #334155;
+        font-size: 12px;
+    }
+    .explorer-filter-stack { display: flex; flex-direction: column; gap: 5px; }
+    .explorer-custom-dates { display: none; grid-column: span 2; gap: 8px; }
+    .explorer-custom-dates.active { display: flex; }
+    .explorer-filter-actions { display: flex; gap: 7px; }
+    .explorer-btn {
+        display: inline-flex;
+        min-height: 34px;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 11px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        background: #fff;
+        color: #475569;
+        cursor: pointer;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    .explorer-btn.primary { border-color: #4f46e5; background: #4f46e5; color: #fff; }
+    .explorer-btn:disabled { cursor: not-allowed; opacity: .55; }
+    .explorer-btn:hover:not(:disabled) { filter: brightness(.97); }
+    .explorer-ai-btn { min-height: 30px; padding: 5px 9px; }
     .explorer-shell {
         position: relative;
         display: grid;
         grid-template-columns: minmax(220px, 280px) minmax(280px, 360px) minmax(0, 1fr);
-        height: 100%;
+        min-height: 0;
+        flex: 1 1 auto;
         overflow: hidden;
         background: #fff;
         border: 1px solid #e5e7eb;
@@ -36,8 +95,10 @@
         top: 12px;
         left: 12px;
         align-items: center;
-        gap: 6px;
-        padding: 7px 10px;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        padding: 0;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
         background: rgba(255,255,255,.96);
@@ -48,6 +109,9 @@
     }
     .directory-reopen:hover { border-color: #6366f1; color: #4338ca; }
     .explorer-shell.directory-collapsed .directory-reopen { display: inline-flex; }
+    .explorer-shell.directory-collapsed .directory-panel + .explorer-panel .explorer-panel-header {
+        padding-left: 60px;
+    }
     .explorer-panel {
         min-width: 0;
         overflow: hidden;
@@ -280,20 +344,105 @@
         color: #4f46e5;
         cursor: pointer;
     }
+    .explorer-modal {
+        position: fixed;
+        z-index: 100;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, .45);
+    }
+    .explorer-modal.active { display: flex; }
+    .explorer-modal-panel {
+        display: flex;
+        flex-direction: column;
+        width: min(1050px, 100%);
+        max-height: min(850px, 92vh);
+        overflow: hidden;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, .25);
+    }
+    .explorer-modal-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 22px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .explorer-modal-title { margin: 0; color: #0f172a; font-size: 19px; font-weight: 750; }
+    .explorer-modal-meta { margin-top: 6px; color: #64748b; font-size: 12px; }
+    .explorer-modal-close { border: 0; background: transparent; color: #64748b; cursor: pointer; font-size: 18px; }
+    .explorer-modal-body { overflow-y: auto; padding: 24px clamp(20px, 5vw, 70px) 42px; color: #334155; line-height: 1.85; }
+    .explorer-ai-prompt { width: 100%; min-height: 110px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical; color: #334155; font-size: 13px; line-height: 1.6; }
+    .explorer-ai-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0 14px; }
+    .explorer-ai-hint { color: #64748b; font-size: 12px; }
+    .explorer-ai-content h2, .explorer-ai-content h3, .explorer-ai-content h4 { color: #0f172a; }
+    .explorer-ai-content img { max-width: 100%; height: auto; }
     @media (max-width: 900px) {
         .article-explorer { height: auto; min-height: 0; margin: 8px auto; }
+        .explorer-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .explorer-filter-field-wide, .explorer-custom-dates { grid-column: span 2; }
         .explorer-shell { grid-template-columns: 1fr; overflow: visible; }
         .explorer-shell.directory-collapsed { grid-template-columns: 1fr; }
         .explorer-panel { height: 360px; border-right: 0; border-bottom: 1px solid #e5e7eb; }
         .explorer-panel:last-child { height: auto; min-height: 520px; }
         .reader-wrap { overflow: visible; }
     }
+    @media (max-width: 560px) {
+        .explorer-filters { grid-template-columns: 1fr; }
+        .explorer-filter-field-wide, .explorer-custom-dates { grid-column: span 1; }
+        .explorer-custom-dates { flex-direction: column; }
+    }
 </style>
 
 <main class="article-explorer">
+    <section class="explorer-filter-card" aria-label="文章筛选">
+        <form id="explorerFilters" class="explorer-filters">
+            <div class="explorer-filter-field">
+                <label class="explorer-filter-label" for="explorerTimeRange">时间范围</label>
+                <select class="explorer-filter-control" id="explorerTimeRange" name="time_range">
+                    <option value="all">全部时间</option><option value="3h">最近 3 小时</option><option value="6h">最近 6 小时</option><option value="1d">最近 1 天</option><option value="7d">最近 7 天</option><option value="custom">自定义日期</option>
+                </select>
+            </div>
+            <div class="explorer-filter-field">
+                <label class="explorer-filter-label" for="explorerFeedFilter">订阅列表</label>
+                <div class="explorer-filter-stack">
+                    <input class="explorer-filter-control" id="explorerFeedSearch" type="text" placeholder="输入订阅名筛选">
+                    <select class="explorer-filter-control" id="explorerFeedFilter" name="feed_id"><option value="all">全部订阅</option></select>
+                </div>
+            </div>
+            <div class="explorer-filter-field">
+                <label class="explorer-filter-label" for="explorerStatusFilter">文章状态</label>
+                <select class="explorer-filter-control" id="explorerStatusFilter" name="status">
+                    <option value="unread">未读</option><option value="read">已读</option><option value="read_later">稍后读</option><option value="star">收藏</option><option value="all">全部状态</option>
+                </select>
+            </div>
+            <div class="explorer-filter-field">
+                <label class="explorer-filter-label" for="explorerReadMinutes">阅读时长</label>
+                <select class="explorer-filter-control" id="explorerReadMinutes" name="read_minutes">
+                    <option value="all">不限</option><option value="short">5 分钟以内</option><option value="medium">6-15 分钟</option><option value="long">16 分钟以上</option>
+                </select>
+            </div>
+            <div class="explorer-filter-field explorer-filter-field-wide">
+                <label class="explorer-filter-label" for="explorerKeyword">关键词</label>
+                <input class="explorer-filter-control" id="explorerKeyword" name="keyword" placeholder="标题、订阅或分类关键词">
+            </div>
+            <div class="explorer-custom-dates" id="explorerCustomDates">
+                <input class="explorer-filter-control" type="date" name="start_date" aria-label="开始日期">
+                <input class="explorer-filter-control" type="date" name="end_date" aria-label="结束日期">
+            </div>
+            <div class="explorer-filter-actions">
+                <button class="explorer-btn primary" type="submit"><i class="fas fa-search mr-1"></i>筛选</button>
+                <button class="explorer-btn" type="button" id="explorerResetFilters">重置</button>
+            </div>
+        </form>
+    </section>
     <div class="explorer-shell">
-        <button type="button" class="directory-reopen" id="directoryReopen" title="展开订阅目录">
-            <i class="fas fa-chevron-right"></i><span>展开 Feed</span>
+        <button type="button" class="directory-reopen" id="directoryReopen" title="展开订阅目录" aria-label="展开订阅目录">
+            <i class="fas fa-folder-open"></i>
         </button>
         <section class="explorer-panel directory-panel" aria-label="分类和订阅源">
             <header class="explorer-panel-header">
@@ -303,8 +452,9 @@
                         <i class="fas fa-chevron-left"></i>
                     </button>
                 </div>
-                <div class="explorer-panel-hint">选择一个 Feed</div>
+                <div class="explorer-panel-hint">默认显示全部未读内容，也可选择单个 Feed</div>
                 <div class="explorer-status-filter" role="group" aria-label="文章状态过滤">
+                    <button type="button" class="explorer-status-btn" data-status="all" title="全部状态" aria-label="全部状态"><i class="fas fa-layer-group"></i><span class="filter-label">全部</span></button>
                     <button type="button" class="explorer-status-btn" data-status="unread" title="未读" aria-label="未读"><i class="far fa-envelope"></i><span class="filter-label">未读</span></button>
                     <button type="button" class="explorer-status-btn" data-status="read" title="已读" aria-label="已读"><i class="far fa-envelope-open"></i><span class="filter-label">已读</span></button>
                     <button type="button" class="explorer-status-btn" data-status="star" title="收藏" aria-label="收藏"><i class="far fa-star"></i><span class="filter-label">收藏</span></button>
@@ -318,11 +468,14 @@
 
         <section class="explorer-panel" aria-label="文章标题">
             <header class="explorer-panel-header">
-                <h2 id="articleListTitle" class="explorer-panel-title">文章标题</h2>
-                <div id="articleListHint" class="explorer-panel-hint">点击左侧 Feed 后加载</div>
+                <div class="explorer-panel-header-row">
+                    <h2 id="articleListTitle" class="explorer-panel-title">全部未读文章</h2>
+                    <button type="button" class="explorer-btn primary explorer-ai-btn" id="explorerAiPageBtn"><i class="fas fa-wand-magic-sparkles mr-1"></i>AI 整理本页</button>
+                </div>
+                <div id="articleListHint" class="explorer-panel-hint">正在加载全部未读文章…</div>
             </header>
             <div id="articleList" class="explorer-scroll">
-                <div class="explorer-state">从订阅目录中选择一个 Feed</div>
+                <div class="explorer-state">正在加载全部未读文章…</div>
             </div>
         </section>
 
@@ -336,6 +489,26 @@
         </section>
     </div>
 </main>
+
+<div class="explorer-modal" id="explorerAiModal" role="dialog" aria-modal="true" aria-labelledby="explorerAiModalTitle">
+    <div class="explorer-modal-panel">
+        <header class="explorer-modal-head">
+            <div>
+                <h2 class="explorer-modal-title" id="explorerAiModalTitle">AI 整理本页</h2>
+                <div class="explorer-modal-meta">按当前已加载文章的标题、订阅和分类生成辅助阅读页，最多整理 100 篇</div>
+            </div>
+            <button type="button" class="explorer-modal-close" data-close-explorer-modal aria-label="关闭"><i class="fas fa-times"></i></button>
+        </header>
+        <div class="explorer-modal-body">
+            <textarea class="explorer-ai-prompt" id="explorerAiPrompt" placeholder="可选：补充阅读要求，例如“重点关注可执行建议，避免展开背景介绍”。"></textarea>
+            <div class="explorer-ai-toolbar">
+                <span class="explorer-ai-hint">留空使用默认整理结构；修改提示词后可再次生成</span>
+                <button type="button" class="explorer-btn primary" id="explorerGenerateAiBtn"><i class="fas fa-wand-magic-sparkles mr-1"></i>重新生成</button>
+            </div>
+            <div class="explorer-ai-content" id="explorerAiContent"><div class="explorer-state">点击生成辅助阅读页面</div></div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -344,27 +517,37 @@
         'use strict';
 
         var state = {
-            feedId: null,
-            feedName: '',
+            feedId: 'all',
+            feedName: '全部未读文章',
             articleSubId: null,
             page: 1,
             hasMore: false,
             loadingArticles: false,
             articleRequestId: 0,
+            feedRequestId: 0,
             loadedArticleCount: 0,
             status: new URLSearchParams(window.location.search).get('status') || 'unread',
             directoryCollapsed: localStorage.getItem('articleExplorerDirectoryCollapsed') === '1'
         };
 
         var statusLabels = {
+            all: '全部状态',
             unread: '未读',
             read: '已读',
             star: '收藏',
             read_later: '稍后读'
         };
+        var explorerFeedOptions = [];
         if (!statusLabels[state.status]) {
             state.status = 'unread';
         }
+
+        function allArticlesTitle() {
+            return state.status === 'all'
+                ? '全部状态文章'
+                : '全部' + (statusLabels[state.status] || '未读') + '文章';
+        }
+        state.feedName = allArticlesTitle();
 
         function escapeHtml(value) {
             return $('<div>').text(value == null ? '' : String(value)).html();
@@ -392,13 +575,16 @@
             return [];
         }
 
-        function request(url) {
-            return $.ajax({
-                url: url,
-                method: 'GET',
-                dataType: 'json',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            }).then(unwrap);
+        function request(url, options) {
+            options = options || {};
+            options.url = url;
+            options.method = options.method || 'GET';
+            options.dataType = 'json';
+            options.headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            };
+            return $.ajax(options).then(unwrap);
         }
 
         function showError($target, message) {
@@ -415,15 +601,102 @@
                     : '<i class="fas fa-chevron-left"></i>');
         }
 
-        function loadFeeds() {
-            request('/articles/explorer/data/feeds?status=' + encodeURIComponent(state.status)).done(function (result) {
-                var groups = toArray(result.nav_infos || result);
-                if (!groups.length) {
-                    showError($('#feedTree'), '还没有订阅 Feed');
+        function filterExplorerFeedOptions(preferredSelected) {
+            var keyword = $.trim($('#explorerFeedSearch').val() || '').toLowerCase();
+            var selected = String(preferredSelected || $('#explorerFeedFilter').val() || state.feedId || 'all');
+            var html = '<option value="all">全部订阅</option>';
+            var selectedOption = null;
+            explorerFeedOptions.forEach(function (feed) {
+                if (String(feed.id) === selected) {
+                    selectedOption = feed;
+                }
+                if (keyword && String(feed.name || '').toLowerCase().indexOf(keyword) === -1) {
                     return;
                 }
+                html += '<option value="' + Number(feed.id) + '">' + escapeHtml(feed.name) + '</option>';
+            });
+            if (selectedOption && keyword && String(selectedOption.name || '').toLowerCase().indexOf(keyword) === -1) {
+                html += '<option value="' + Number(selectedOption.id) + '">' + escapeHtml(selectedOption.name) + '</option>';
+            }
+            $('#explorerFeedFilter').html(html).val(selected);
+            if ($('#explorerFeedFilter').val() === null) {
+                $('#explorerFeedFilter').val('all');
+            }
+        }
 
-                var html = '';
+        function renderExplorerFeedOptions(groups) {
+            explorerFeedOptions = [];
+            var seen = {};
+            groups.forEach(function (group) {
+                var category = group.category_info || {};
+                toArray(group.list || group.feeds).forEach(function (feed) {
+                    var feedId = String(feed.feed_id || feed.id || '');
+                    if (!feedId || seen[feedId]) {
+                        return;
+                    }
+                    seen[feedId] = true;
+                    var feedName = feed.feed_name || feed.name || '';
+                    explorerFeedOptions.push({
+                        id: feedId,
+                        name: feedName + (category.category_name ? ' · ' + category.category_name : ''),
+                        plainName: feedName
+                    });
+                });
+            });
+            filterExplorerFeedOptions(state.feedId);
+        }
+
+        function explorerFilterParams() {
+            var params = {};
+            $('#explorerFilters').serializeArray().forEach(function (item) {
+                params[item.name] = item.value;
+            });
+            var duration = params.read_minutes || 'all';
+            delete params.read_minutes;
+            delete params.feed_id;
+            params.status = state.status;
+            if (duration === 'short') {
+                params.max_read_minutes = 5;
+            } else if (duration === 'medium') {
+                params.min_read_minutes = 6;
+                params.max_read_minutes = 15;
+            } else if (duration === 'long') {
+                params.min_read_minutes = 16;
+            }
+            return params;
+        }
+
+        function selectedFeedName(feedId) {
+            if (String(feedId) === 'all') {
+                return allArticlesTitle();
+            }
+            for (var i = 0; i < explorerFeedOptions.length; i++) {
+                if (String(explorerFeedOptions[i].id) === String(feedId)) {
+                    return explorerFeedOptions[i].plainName || explorerFeedOptions[i].name;
+                }
+            }
+            return $('#explorerFeedFilter option:selected').text() || '订阅文章';
+        }
+
+        function syncStatusControls() {
+            $('#explorerStatusFilter').val(state.status);
+            $('.explorer-status-btn').removeClass('active');
+            $('.explorer-status-btn[data-status="' + state.status + '"]').addClass('active');
+        }
+
+        function loadFeeds() {
+            var requestedStatus = state.status;
+            var requestId = ++state.feedRequestId;
+            request('/articles/explorer/data/feeds?status=' + encodeURIComponent(requestedStatus)).done(function (result) {
+                if (requestId !== state.feedRequestId || requestedStatus !== state.status) {
+                    return;
+                }
+                var groups = toArray(result.nav_infos || result);
+                renderExplorerFeedOptions(groups);
+                var html = '<button type="button" class="feed-item' + (state.feedId === 'all' ? ' active' : '') + '" data-feed-id="all" data-feed-name="' + escapeHtml(allArticlesTitle()) + '">';
+                html += '<i class="fas fa-layer-group text-xs text-indigo-400"></i>';
+                html += '<span class="feed-item-name">全部订阅</span>';
+                html += '</button>';
                 groups.forEach(function (group) {
                     var category = group.category_info || {};
                     html += '<div class="category-group">';
@@ -431,24 +704,26 @@
                     toArray(group.list || group.feeds).forEach(function (feed) {
                         var feedId = feed.feed_id || feed.id;
                         var feedName = feed.feed_name || feed.name || '';
-                        html += '<button type="button" class="feed-item" data-feed-id="' + Number(feedId) + '" data-feed-name="' + escapeHtml(feedName) + '">';
+                        html += '<button type="button" class="feed-item' + (String(state.feedId) === String(feedId) ? ' active' : '') + '" data-feed-id="' + Number(feedId) + '" data-feed-name="' + escapeHtml(feedName) + '">';
                         html += '<i class="fas fa-rss text-xs text-orange-400"></i>';
                         html += '<span class="feed-item-name">' + escapeHtml(feedName) + '</span>';
-                        html += '<span class="feed-count" title="未读文章">' + Number(feed.feed_count || 0) + '</span>';
+                        html += '<span class="feed-count" title="' + escapeHtml(statusLabels[state.status] || '当前状态') + '文章">' + Number(feed.feed_count || 0) + '</span>';
                         html += '</button>';
                     });
                     html += '</div>';
                 });
+                if (!groups.length) {
+                    html += '<div class="explorer-state">还没有订阅 Feed</div>';
+                }
                 $('#feedTree').html(html);
             }).fail(function () {
-                showError($('#feedTree'), '订阅目录加载失败');
+                if (requestId === state.feedRequestId && requestedStatus === state.status) {
+                    showError($('#feedTree'), '订阅目录加载失败');
+                }
             });
         }
 
         function loadArticles(feedId, feedName, page, append) {
-            if (state.loadingArticles && String(state.feedId) === String(feedId)) {
-                return;
-            }
             var requestId = ++state.articleRequestId;
             state.loadingArticles = true;
             state.feedId = feedId;
@@ -464,7 +739,10 @@
                 $('#reader').html('<div class="explorer-state" style="padding-top:150px">选择文章标题后加载正文</div>');
             }
 
-            request('/articles/explorer/data/feeds/' + encodeURIComponent(feedId) + '/articles?page=' + page + '&page_count=40&status=' + encodeURIComponent(state.status))
+            var params = explorerFilterParams();
+            params.page = page;
+            params.page_count = 40;
+            request('/articles/explorer/data/feeds/' + encodeURIComponent(feedId) + '/articles?' + $.param(params))
                 .done(function (result) {
                     if (requestId !== state.articleRequestId || String(state.feedId) !== String(feedId)) {
                         return;
@@ -476,7 +754,8 @@
                         html += '<button type="button" class="article-item ' + (item.status === 'read' ? 'read' : '') + '" data-article-sub-id="' + Number(item.id) + '">';
                         html += '<span class="article-item-title">' + escapeHtml(item.subject || '无标题文章') + '</span>';
                         html += '<span class="article-item-meta"><span class="status-dot ' + (item.status === 'read' ? 'read' : '') + '"></span>';
-                        html += '<span>' + escapeHtml(published) + '</span><span>' + escapeHtml(statusLabels[item.status] || item.status) + '</span></span>';
+                        html += '<span>' + escapeHtml(published) + '</span><span class="article-item-status">' + escapeHtml(statusLabels[item.status] || item.status) + '</span>';
+                        html += '<span>约 ' + Number(item.estimated_read_minutes || 1) + ' 分钟</span></span>';
                         html += '</button>';
                     });
 
@@ -499,6 +778,8 @@
                     }
                     if (!append) {
                         showError($('#articleList'), '文章标题加载失败');
+                    } else {
+                        $('#articleList .load-more').prop('disabled', false).text('加载更多');
                     }
                     $('#articleListHint').text('加载失败');
                 })
@@ -561,14 +842,11 @@
                 .done(function () {
                     syncArticleActions(status);
                     var $item = $('#articleList .article-item[data-article-sub-id="' + Number(state.articleSubId) + '"]');
-                    $item.find('.article-item-meta span:last-child').text(statusLabels[status] || status);
+                    $item.find('.article-item-status').text(statusLabels[status] || status);
                     $item.toggleClass('read', status === 'read');
                     $item.find('.status-dot').toggleClass('read', status === 'read');
-                    if (!silent && status !== state.status) {
-                        $item.remove();
-                    }
                     if (!silent) {
-                        $('#articleListHint').text('文章状态已更新');
+                        $('#articleListHint').text('文章状态已更新，当前列表保持不变');
                     }
                 })
                 .fail(function () {
@@ -578,11 +856,115 @@
                 });
         }
 
+        function markLoadedUnreadAsRead() {
+            var ids = [];
+            if (state.status !== 'unread') {
+                return $.Deferred().resolve().promise();
+            }
+
+            $('#articleList .article-item:not(.read)').each(function () {
+                var id = Number($(this).data('article-sub-id'));
+                if (id) {
+                    ids.push(id);
+                }
+            });
+            if (!ids.length) {
+                return $.Deferred().resolve().promise();
+            }
+
+            return request('/articles/explorer/data/articles/read', {
+                method: 'POST',
+                data: { ids: ids }
+            }).done(function (result) {
+                var updatedIds = result.article_sub_ids || ids;
+                updatedIds.forEach(function (id) {
+                    var $item = $('#articleList .article-item[data-article-sub-id="' + Number(id) + '"]');
+                    $item.addClass('read');
+                    $item.find('.status-dot').addClass('read');
+                    $item.find('.article-item-status').text(statusLabels.read);
+                });
+                $('#articleListHint').text('前面的 ' + updatedIds.length + ' 篇文章已标记为已读');
+            });
+        }
+
+        function applyExplorerFilters(reloadFeeds) {
+            var nextStatus = $('#explorerStatusFilter').val() || 'unread';
+            var nextFeedId = $('#explorerFeedFilter').val() || 'all';
+            var statusChanged = nextStatus !== state.status;
+            state.status = nextStatus;
+            state.feedId = nextFeedId;
+            state.feedName = selectedFeedName(nextFeedId);
+            state.articleSubId = null;
+            state.page = 1;
+            syncStatusControls();
+
+            var urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('status', state.status);
+            history.replaceState(null, '', window.location.pathname + '?' + urlParams.toString());
+
+            if (reloadFeeds || statusChanged) {
+                $('#feedTree').html('<div class="explorer-state">正在加载订阅目录…</div>');
+                loadFeeds();
+            } else {
+                $('#feedTree .feed-item').removeClass('active');
+                $('#feedTree .feed-item[data-feed-id="' + String(nextFeedId) + '"]').addClass('active');
+            }
+            loadArticles(state.feedId, state.feedName, 1, false);
+        }
+
+        function currentArticleSubIds() {
+            var ids = [];
+            $('#articleList .article-item').each(function () {
+                var id = Number($(this).data('article-sub-id'));
+                if (id && ids.indexOf(id) === -1) {
+                    ids.push(id);
+                }
+            });
+            return ids.slice(0, 100);
+        }
+
+        function generateExplorerAi() {
+            var ids = currentArticleSubIds();
+            if (!ids.length) {
+                $('#explorerAiContent').html('<div class="explorer-state">当前页没有可整理的文章</div>');
+                return;
+            }
+            var $button = $('#explorerGenerateAiBtn');
+            $button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>生成中…');
+            $('#explorerAiContent').html('<div class="explorer-state">AI 正在整理当前已加载的 ' + ids.length + ' 篇文章，请稍候…</div>');
+            request('/articles/workbench/ai-digest', {
+                method: 'POST',
+                contentType: 'application/x-www-form-urlencoded',
+                data: {
+                    'article_sub_ids[]': ids,
+                    custom_prompt: $('#explorerAiPrompt').val() || ''
+                }
+            }).done(function (result) {
+                var render = result.ai_render || {};
+                $('#explorerAiContent').html(render.html_content || '<div class="explorer-state">' + escapeHtml(render.error_message || 'AI 暂无结果') + '</div>');
+            }).fail(function () {
+                $('#explorerAiContent').html('<div class="explorer-state">AI 生成失败，请稍后重试</div>');
+            }).always(function () {
+                $button.prop('disabled', false).html('<i class="fas fa-wand-magic-sparkles mr-1"></i>重新生成');
+            });
+        }
+
+        function openExplorerAi() {
+            $('#explorerAiModal').addClass('active');
+            $('#explorerAiPrompt').val('');
+            generateExplorerAi();
+        }
+
         $('#feedTree').on('click', '.feed-item', function () {
             $('.feed-item').removeClass('active');
             $(this).addClass('active');
             state.articleSubId = null;
-            loadArticles($(this).data('feed-id'), $(this).data('feed-name'), 1, false);
+            state.feedId = String($(this).data('feed-id'));
+            state.feedName = $(this).data('feed-name');
+            $('#explorerFeedSearch').val('');
+            filterExplorerFeedOptions(state.feedId);
+            $('#explorerFeedFilter').val(state.feedId);
+            loadArticles(state.feedId, state.feedName, 1, false);
         });
 
         $('#articleList').on('click', '.article-item', function () {
@@ -593,7 +975,17 @@
 
         $('#articleList').on('click', '.load-more', function () {
             if (state.feedId && state.hasMore) {
-                loadArticles(state.feedId, state.feedName, state.page + 1, true);
+                var $button = $(this);
+                $button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>处理中…');
+                markLoadedUnreadAsRead()
+                    .done(function () {
+                        var nextPage = state.status === 'unread' ? 1 : state.page + 1;
+                        loadArticles(state.feedId, state.feedName, nextPage, true);
+                    })
+                    .fail(function () {
+                        $button.prop('disabled', false).text('加载更多');
+                        $('#articleListHint').text('标记已读失败，请稍后重试');
+                    });
             }
         });
 
@@ -618,24 +1010,47 @@
             if (status === state.status) {
                 return;
             }
-            state.status = status;
-            state.feedId = null;
-            state.articleSubId = null;
-            $('.explorer-status-btn').removeClass('active');
-            $(this).addClass('active');
-            history.replaceState(null, '', window.location.pathname + '?status=' + encodeURIComponent(status));
-            $('#feedTree').html('<div class="explorer-state">正在加载订阅目录…</div>');
-            $('#articleListTitle').text('文章标题');
-            $('#articleListHint').text('点击左侧 Feed 后加载');
-            $('#articleList').html('<div class="explorer-state">从订阅目录中选择一个 Feed</div>');
-            $('#reader').html('<div class="explorer-state" style="padding-top:150px">选择一篇文章后，正文将在这里按需加载</div>');
-            loadFeeds();
+            $('#explorerStatusFilter').val(status);
+            $('#explorerFeedFilter').val('all');
+            applyExplorerFilters(true);
         });
 
-        $('.explorer-status-btn[data-status="' + state.status + '"]').addClass('active');
+        $('#explorerFilters').on('submit', function (event) {
+            event.preventDefault();
+            applyExplorerFilters(false);
+        });
+        $('#explorerTimeRange').on('change', function () {
+            $('#explorerCustomDates').toggleClass('active', $(this).val() === 'custom');
+        });
+        $('#explorerFeedSearch').on('input', function () {
+            filterExplorerFeedOptions();
+        });
+        $('#explorerResetFilters').on('click', function () {
+            $('#explorerFilters')[0].reset();
+            $('#explorerFeedSearch').val('');
+            $('#explorerCustomDates').removeClass('active');
+            $('#explorerStatusFilter').val('unread');
+            $('#explorerFeedFilter').val('all');
+            applyExplorerFilters(true);
+        });
+
+        $('#explorerAiPageBtn').on('click', openExplorerAi);
+        $('#explorerGenerateAiBtn').on('click', generateExplorerAi);
+        $('[data-close-explorer-modal]').on('click', function () {
+            $('#explorerAiModal').removeClass('active');
+        });
+        $('#explorerAiModal').on('click', function (event) {
+            if (event.target === this) {
+                $(this).removeClass('active');
+            }
+        });
+
+        $('#explorerStatusFilter').val(state.status);
+        syncStatusControls();
         syncDirectoryState();
 
         loadFeeds();
+        loadArticles('all', state.feedName, 1, false);
     })(jQuery);
 </script>
 @endsection

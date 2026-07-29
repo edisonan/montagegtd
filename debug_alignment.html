@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精确对齐调试测试</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8fafc;
+            padding: 20px;
+        }
+
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            background: #00b894;
+            color: white;
+            text-align: center;
+        }
+
+        .alignment-test {
+            padding: 24px;
+        }
+
+        /* 参考标尺 */
+        .reference-ruler {
+            position: relative;
+            height: 40px;
+            background: #fffbeb;
+            border: 2px solid #fbbf24;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .ruler-content {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 48rem; /* max-w-3xl */
+            height: 100%;
+            background: rgba(0, 184, 148, 0.1);
+            border: 2px dashed #00b894;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #00b894;
+            font-weight: 600;
+        }
+
+        /* 聊天容器 */
+        .chat-container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .messages-area {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        #messages-list {
+            min-height: 300px;
+        }
+
+        /* 输入框容器 - 对齐基准 */
+        .input-reference {
+            max-width: 48rem; /* max-w-3xl = 48rem */
+            margin: 0 auto 20px;
+            position: relative;
+            background: #3b82f6;
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* 消息样式 - 精确对齐 */
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 48rem; /* 与输入框完全相同的max-width */
+        }
+
+        .user .message-content {
+            width: 80%; /* 80%宽度 */
+        }
+
+        .ai .message-content {
+            width: 100%; /* 100%宽度 */
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .user .bubble {
+            background: #00b894;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai .bubble {
+            background: white;
+            border: 2px solid #00b894;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .user .timestamp {
+            text-align: right;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 4px;
+            border-radius: 6px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f1f5f9;
+            color: #00b894;
+        }
+
+        /* 对齐辅助线 */
+        .alignment-helper {
+            position: relative;
+        }
+
+        .helper-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: red;
+            opacity: 0.6;
+            z-index: 100;
+        }
+
+        .left-line {
+            left: calc(50% - 24rem); /* 48rem的一半 */
+        }
+
+        .right-line {
+            right: calc(50% - 24rem);
+        }
+
+        /* 控制面板 */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .control-group {
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .btn-primary {
+            background: #00b894;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #00a085;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .debug-info {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .debug-info h3 {
+            color: #1e40af;
+            margin-bottom: 12px;
+        }
+
+        .debug-info div {
+            margin-bottom: 8px;
+            color: #1e3a8a;
+        }
+
+        /* 滚动条样式 */
+        .messages-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #00b894;
+            border-radius: 4px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb:hover {
+            background: #00a085;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <div class="header">
+            <h1>精确对齐调试测试</h1>
+            <p>确保消息气泡与底部输入区完美对齐</p>
+        </div>
+
+        <div class="debug-info">
+            <h3>对齐调试信息：</h3>
+            <div>🎯 基准宽度: max-w-3xl = 48rem = 768px</div>
+            <div>👤 用户消息: 80% × 768px = 614.4px (靠右对齐)</div>
+            <div>🤖 助手消息: 100% × 768px = 768px (完全对齐)</div>
+            <div>📝 输入框: max-w-3xl = 768px (对齐基准)</div>
+            <div id="dynamic-info">📊 实时尺寸信息将在此显示...</div>
+        </div>
+
+        <div class="alignment-test">
+            <!-- 参考标尺 -->
+            <div class="reference-ruler">
+                <div class="ruler-content">
+                    对齐参考标尺 (48rem = 768px)
+                </div>
+            </div>
+
+            <!-- 对齐辅助线 -->
+            <div class="alignment-helper">
+                <div class="helper-line left-line"></div>
+                <div class="helper-line right-line"></div>
+                
+                <div class="chat-container">
+                    <div class="messages-area">
+                        <div id="messages-list">
+                            <!-- 消息将在这里动态添加 -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-reference">
+                    🎯 这是输入框对齐基准线 (max-w-3xl)
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button class="btn btn-primary" onclick="addUserMessage()">
+                    <i class="fas fa-user mr-2"></i>添加用户消息
+                </button>
+                <div class="text-xs text-gray-600">80%宽度 • 靠右对齐</div>
+            </div>
+            
+            <div class="control-group">
+                <button class="btn btn-primary" onclick="addAiMessage()">
+                    <i class="fas fa-robot mr-2"></i>添加AI消息
+                </button>
+                <div class="text-xs text-gray-600">100%宽度 • 完全对齐</div>
+            </div>
+            
+            <div class="control-group">
+                <button class="btn btn-warning" onclick="addLongMessage()">
+                    <i class="fas fa-align-left mr-2"></i>添加长消息
+                </button>
+                <div class="text-xs text-gray-600">测试多行内容</div>
+            </div>
+            
+            <div class="control-group">
+                <button class="btn btn-secondary" onclick="clearMessages()">
+                    <i class="fas fa-trash mr-2"></i>清空消息
+                </button>
+                <div class="text-xs text-gray-600">重置测试环境</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 格式化时间
+        function formatTime(date) {
+            return new Date(date).toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // 转义HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 添加用户消息
+        function addUserMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = '这是用户消息，宽度为聊天区域的80%，靠右侧显示并与输入框右侧精确对齐。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message user">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="whitespace-pre-wrap break-words">${escapeHtml(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            updateDebugInfo();
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 50);
+        }
+
+        // 添加AI消息
+        function addAiMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = '这是AI助手回复，宽度与输入框完全一致（100%），左右边缘都与输入框精确对齐。支持**Markdown**格式，包括*斜体*、`代码块`等元素。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message ai">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="markdown-content whitespace-pre-wrap break-words">${marked.parse(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="copyMessage('${messageId}')" title="复制消息">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-btn" onclick="likeMessage('${messageId}')" title="点赞">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            updateDebugInfo();
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 50);
+        }
+
+        // 添加长消息测试
+        function addLongMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            
+            // 随机选择消息类型
+            const isUser = Math.random() > 0.5;
+            const role = isUser ? 'user' : 'ai';
+            
+            const longContent = `这是一条很长的测试消息，用来验证气泡在内容较多时的显示效果和对齐情况。
+            
+支持多行文本显示，可以测试垂直滚动和布局稳定性。
+
+包含以下特性：
+• Markdown格式支持
+• 自动换行处理
+• 垂直滚动条显示
+• 与输入框的精确对齐
+
+${isUser ? '用户' : 'AI助手'}消息都应该保持与底部输入区域的完美对齐。`;
+
+            const messageHTML = `
+                <div id="${messageId}" class="message ${role}">
+                    <div class="message-content ${isUser ? 'w-4/5' : 'w-full'}">
+                        <div class="bubble ${isUser ? 'bg-[#00b894] text-white' : 'bg-white border-2 border-[#00b894]'}">
+                            <div class="${isUser ? 'whitespace-pre-wrap break-words' : 'markdown-content whitespace-pre-wrap break-words'}">${isUser ? escapeHtml(longContent) : marked.parse(longContent)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp ${isUser ? 'text-right' : ''}">
+                                ${formatTime(new Date())}
+                            </div>
+                            ${!isUser ? `
+                            <div class="actions">
+                                <button class="action-btn" onclick="copyMessage('${messageId}')" title="复制消息">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-btn" onclick="likeMessage('${messageId}')" title="点赞">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            updateDebugInfo();
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 50);
+        }
+
+        // 清空消息
+        function clearMessages() {
+            document.getElementById('messages-list').innerHTML = '';
+            updateDebugInfo();
+        }
+
+        // 更新调试信息
+        function updateDebugInfo() {
+            const messagesList = document.getElementById('messages-list');
+            const inputRef = document.querySelector('.input-reference');
+            const userMessages = document.querySelectorAll('.message.user');
+            const aiMessages = document.querySelectorAll('.message.ai');
+            
+            const info = document.getElementById('dynamic-info');
+            info.innerHTML = `
+                <div>📊 消息统计: 用户${userMessages.length}条, AI${aiMessages.length}条</div>
+                <div>📏 容器宽度: ${messagesList.offsetWidth}px</div>
+                <div>📝 输入框宽度: ${inputRef.offsetWidth}px</div>
+                <div>🔍 最后用户消息宽度: ${userMessages.length ? userMessages[userMessages.length-1].querySelector('.message-content').offsetWidth : 0}px</div>
+                <div>🔍 最后AI消息宽度: ${aiMessages.length ? aiMessages[aiMessages.length-1].querySelector('.message-content').offsetWidth : 0}px</div>
+            `;
+        }
+
+        // 复制消息
+        function copyMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            const contentElement = messageElement.querySelector('.markdown-content') || 
+                                 messageElement.querySelector('.whitespace-pre-wrap');
+            
+            if (contentElement) {
+                const text = contentElement.innerText || contentElement.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ 已复制到剪贴板');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('❌ 复制失败');
+                });
+            }
+        }
+
+        // 点赞消息
+        function likeMessage(messageId) {
+            const button = event.currentTarget;
+            const icon = button.querySelector('i');
+            
+            if (icon.classList.contains('fas')) {
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far');
+                button.title = '点赞';
+                alert('💔 已取消点赞');
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas', 'text-red-500');
+                button.title = '取消点赞';
+                alert('❤️ 已点赞');
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加初始测试消息
+            setTimeout(() => {
+                addUserMessage();
+                updateDebugInfo();
+            }, 500);
+            
+            setTimeout(() => {
+                addAiMessage();
+                updateDebugInfo();
+            }, 1000);
+            
+            // 定期更新调试信息
+            setInterval(updateDebugInfo, 2000);
+        });
+
+        // 窗口大小改变时更新信息
+        window.addEventListener('resize', updateDebugInfo);
+    </script>
+</body>
+</html>

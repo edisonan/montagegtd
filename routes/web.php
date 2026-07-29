@@ -121,6 +121,7 @@ Route::group([
     Route::post('/articles/workbench/articles/{articleSub}/status', 'ArticleController@workbenchStatus');
     Route::get('/articles/explorer/data/feeds', 'ArticleController@explorerFeeds');
     Route::get('/articles/explorer/data/feeds/{feedId}/articles', 'ArticleController@explorerArticleList');
+    Route::post('/articles/explorer/data/articles/read', 'ArticleController@workbenchPageRead');
     Route::get('/articles/explorer/data/articles/{articleSub}', 'ArticleController@explorerArticle');
     Route::get('/articles/stream', 'ArticleController@streamV2');
     Route::get('/articles/stream-v2', 'ArticleController@streamV2');

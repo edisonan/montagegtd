@@ -31,7 +31,8 @@ class ArticlesClassifyPending extends Command
         $result = $this->articleAiService->processPendingTasks($limit);
 
         $this->info(sprintf(
-            'processed=%d succeeded=%d failed=%d skipped=%d throttled=%d',
+            'batch_size=%d processed=%d succeeded=%d failed=%d skipped=%d throttled=%d',
+            (int)($result['batch_size'] ?? 0),
             (int)$result['processed'],
             (int)$result['succeeded'],
             (int)$result['failed'],

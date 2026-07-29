@@ -349,32 +349,92 @@ class ArticleController extends Controller
     public function explorerArticleList(Request $request, $feedId)
     {
         $status = $this->resolveExplorerStatus($request);
-        $feedSub = FeedSub::where('user_id', Auth::id())
-            ->where('feed_id', $feedId)
-            ->first();
-        if (!$feedSub) {
-            abort(404);
+        $isAllFeeds = (string)$feedId === 'all';
+        $feedSub = null;
+        if (!$isAllFeeds) {
+            $feedSub = FeedSub::where('user_id', Auth::id())
+                ->where('feed_id', $feedId)
+                ->first();
+            if (!$feedSub) {
+                abort(404);
+            }
         }
 
         $pageCount = max(10, min(100, (int)$request->input('page_count', 40)));
-        $articleSubs = ArticleSub::join('articles', 'article_subs.article_id', '=', 'articles.id')
+        $query = ArticleSub::join('articles', 'article_subs.article_id', '=', 'articles.id')
+            ->join('feeds', 'article_subs.feed_id', '=', 'feeds.id')
+            ->leftJoin('categories', 'feeds.category_id', '=', 'categories.id')
             ->where('article_subs.user_id', Auth::id())
-            ->where('article_subs.feed_id', $feedId)
-            ->where('article_subs.status', $status)
             ->select(array(
                 'article_subs.id',
                 'article_subs.article_id',
                 'article_subs.status',
                 'articles.subject',
                 'articles.published',
-            ))
-            ->orderBy('article_subs.updated_at', 'desc')
+                'articles.estimated_read_minutes',
+                'feeds.feed_name',
+                'categories.name as category_name',
+            ));
+        if ($status !== 'all') {
+            $query->where('article_subs.status', $status);
+        }
+        if (!$isAllFeeds) {
+            $query->where('article_subs.feed_id', $feedId);
+        }
+
+        $keyword = trim((string)$request->input('keyword', ''));
+        if ($keyword !== '') {
+            $like = '%' . $keyword . '%';
+            $query->where(function ($subQuery) use ($like) {
+                $subQuery->where('articles.subject', 'like', $like)
+                    ->orWhere('feeds.feed_name', 'like', $like)
+                    ->orWhere('categories.name', 'like', $like);
+            });
+        }
+
+        $minMinutes = max(0, (int)$request->input('min_read_minutes', 0));
+        $maxMinutes = max(0, (int)$request->input('max_read_minutes', 0));
+        if ($minMinutes > 0) {
+            $query->where('articles.estimated_read_minutes', '>=', $minMinutes);
+        }
+        if ($maxMinutes > 0) {
+            $query->where('articles.estimated_read_minutes', '<=', $maxMinutes);
+        }
+
+        $timeRange = (string)$request->input('time_range', 'all');
+        $now = Carbon::now();
+        $timeStart = null;
+        if ($timeRange === '3h') {
+            $timeStart = $now->copy()->subHours(3);
+        } elseif ($timeRange === '6h') {
+            $timeStart = $now->copy()->subHours(6);
+        } elseif ($timeRange === '1d') {
+            $timeStart = $now->copy()->subDay();
+        } elseif ($timeRange === '7d') {
+            $timeStart = $now->copy()->subDays(7);
+        } elseif ($timeRange === 'custom') {
+            $customStart = trim((string)$request->input('start_date', ''));
+            $customEnd = trim((string)$request->input('end_date', ''));
+            if ($customStart !== '') {
+                $query->where('articles.published', '>=', $customStart . ' 00:00:00');
+            }
+            if ($customEnd !== '') {
+                $query->where('articles.published', '<=', $customEnd . ' 23:59:59');
+            }
+        }
+        if ($timeStart) {
+            $query->where('articles.published', '>=', $timeStart->toDateTimeString());
+        }
+
+        $articleSubs = $query
+            ->orderBy('articles.published', 'desc')
+            ->orderBy('article_subs.id', 'desc')
             ->paginate($pageCount);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'feed' => array(
-                'id' => (int)$feedId,
-                'name' => $feedSub->feed_name,
+                'id' => $isAllFeeds ? 'all' : (int)$feedId,
+                'name' => $isAllFeeds ? '全部订阅' : $feedSub->feed_name,
             ),
             'status' => $status,
             'articles' => $articleSubs->items(),
@@ -389,7 +449,7 @@ class ArticleController extends Controller
     protected function resolveExplorerStatus(Request $request)
     {
         $status = (string)$request->input('status', 'unread');
-        if (!in_array($status, array('unread', 'read', 'star', 'read_later'), true)) {
+        if (!in_array($status, array('all', 'unread', 'read', 'star', 'read_later'), true)) {
             $status = 'unread';
         }
         return $status;

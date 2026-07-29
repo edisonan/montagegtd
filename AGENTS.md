@@ -96,6 +96,12 @@ npm run prod
 bash scripts/bark_notify.sh
 ```
 
+- When the requested work is finished, call the Bark script again with a concise summary of what was completed so the user receives the outcome:
+
+```bash
+bash scripts/bark_notify.sh 完成 "本次完成的主要内容"
+```
+
 - After making changes, run the narrowest useful checks from the Verification section. If the checks pass and deployment is requested or expected for the completed change, deploy with:
 
 ```bash

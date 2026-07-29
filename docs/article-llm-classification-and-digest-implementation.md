@@ -401,12 +401,14 @@
 `ArticlesClassifyPending` 命令建议：
 
 1. 查出 `pending` 且到期的任务
-2. 每次取固定数量，例如 20 条
+2. 根据启用模型的 `max_tokens` 计算批量大小，一次请求携带多个文章标题；未配置时默认 10 条
 3. 更新为 `processing`
-4. 调用 `ArticleAiClassificationService`
+4. 调用 `ArticleAiClassificationService` 批量分类
 5. 成功则写画像并置 `success`
 6. 失败则递增 `retry_count`
 7. 超过阈值置 `failed`
+
+当前估算规则为每篇结构化分类结果预留 160 个输出 token，并保留 20% 安全余量；批量大小限制在 1-50 条之间，同时不超过命令的 `--limit`。
 
 ## 6.3 文本清洗建议
 

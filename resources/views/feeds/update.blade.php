@@ -83,6 +83,7 @@
                         <div class="flex items-center justify-between"><span class="text-sm text-gray-600">未读文章</span><span id="feedUnreadText" class="text-sm font-medium text-primary-600">0</span></div>
                         <div class="flex items-center justify-between"><span class="text-sm text-gray-600">收藏文章</span><span id="feedStarredText" class="text-sm font-medium text-yellow-600">0</span></div>
                         <div class="space-y-3 pt-4">
+                            <a href="{{ url('/articles?feed_id=' . $feedSub->feed_id . '&status=all') }}" class="btn btn-primary w-full justify-center"><i class="fas fa-newspaper mr-2"></i>查看全部文章</a>
                             <button type="button" id="refreshFeedBtn" class="btn btn-secondary w-full justify-center"><i class="fas fa-sync-alt mr-2"></i>立即同步</button>
                             <button type="button" id="toggleStatusBtn" class="btn btn-outline w-full justify-center"></button>
                             <button type="button" id="clearArticlesBtn" class="btn btn-outline w-full justify-center text-red-600 border-red-600 hover:bg-red-50"><i class="fas fa-trash-alt mr-2"></i>清空文章</button>
@@ -94,11 +95,11 @@
     </div>
 
     <script>
-        window.__FEED_EDIT_INITIAL__ = @json(array(
+        window.__FEED_EDIT_INITIAL__ = {!! json_encode(array(
             'feed_sub' => $feedSub,
             'categories' => $categories,
             'stats' => $stats,
-        ));
+        ), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
     </script>
     <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
