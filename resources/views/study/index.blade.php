@@ -44,6 +44,12 @@
         .study-start-btn { background: #1e3a8a; color: #fff; border-radius: 12px; border: 0; padding: 8px 12px; font-size: 13px; font-weight: 600; }
         .study-checkin-btn { border-radius: 12px; padding: 8px 10px; }
         .study-tools-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .study-quick-create-btn { background: linear-gradient(135deg, #ff5f9d 0%, #ff8a5c 100%); color: #fff; border: 0; border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 700; box-shadow: 0 6px 16px rgba(255, 95, 157, 0.3); cursor: pointer; transition: transform .15s, box-shadow .15s; }
+        .study-quick-create-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(255, 95, 157, 0.4); }
+        .quick-plan-preset { border: 1px solid #e4e7ec; border-radius: 12px; padding: 10px; cursor: pointer; text-align: center; background: #fafbfc; transition: border-color .15s, background .15s; }
+        .quick-plan-preset:hover, .quick-plan-preset.is-active { border-color: #ff5f9d; background: #fff5f9; }
+        .quick-plan-preset-name { font-size: 13px; font-weight: 600; color: #111827; }
+        .quick-plan-preset-desc { font-size: 11px; color: #667085; margin-top: 2px; }
         @media (min-width: 900px) {
             .study-panel-grid { grid-template-columns: 1.1fr 1fr; }
             .study-week-scroll { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: visible; }
@@ -107,8 +113,11 @@
                 <button class="btn btn-outline btn-sm" onclick="openPlanListModal()">
                     <i class="fas fa-list mr-1"></i>计划列表
                 </button>
+                <button class="study-quick-create-btn" onclick="openQuickPlanModal()">
+                    <i class="fas fa-bolt mr-1"></i>快速创建计划
+                </button>
                 <button class="btn btn-primary btn-sm" onclick="openPlanModal()">
-                    <i class="fas fa-plus mr-1"></i>添加计划
+                    <i class="fas fa-plus mr-1"></i>高级创建
                 </button>
             </div>
         </div>
@@ -195,6 +204,48 @@
                 <div class="flex items-center justify-end gap-2 pt-2">
                     <button type="button" class="btn btn-outline" onclick="closePlanModal()">取消</button>
                     <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="quickPlanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeQuickPlanModal(event)">
+        <div class="bg-white rounded-xl shadow-2xl max-w-xl w-full mx-4" onclick="event.stopPropagation()">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="font-semibold text-gray-900">快速创建学习计划</div>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeQuickPlanModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="p-4 space-y-3" id="quickPlanForm">
+                <div>
+                    <label class="text-sm text-gray-700">这次想学什么？</label>
+                    <input class="input w-full mt-1" name="name" required maxlength="255" placeholder="例如：背诵英语单词、数学练习题、阅读打卡..."
+                        id="quickPlanName" autocomplete="off" />
+                    <div class="text-xs text-gray-400 mt-1">先简单起个名字，稍后可在“计划列表”里调整详细设置。</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-700 mb-2">选一个模板（可跳过）</div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="quick-plan-preset" data-preset="daily" onclick="selectQuickPreset(this)">
+                            <div class="quick-plan-preset-name"><i class="fas fa-sun mr-1"></i>每天</div>
+                            <div class="quick-plan-preset-desc">每天重复一次</div>
+                        </div>
+                        <div class="quick-plan-preset" data-preset="weekly" onclick="selectQuickPreset(this)">
+                            <div class="quick-plan-preset-name"><i class="fas fa-calendar-week mr-1"></i>每周</div>
+                            <div class="quick-plan-preset-desc">每周完成一次</div>
+                        </div>
+                        <div class="quick-plan-preset" data-preset="ebbinghaus" onclick="selectQuickPreset(this)">
+                            <div class="quick-plan-preset-name"><i class="fas fa-brain mr-1"></i>艾宾浩斯</div>
+                            <div class="quick-plan-preset-desc">科学循环复习</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-700">预计时长（分钟）</label>
+                    <input class="input w-full mt-1" type="number" min="0" max="1440" name="estimated_minutes" value="30" />
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" class="btn btn-outline" onclick="closeQuickPlanModal()">取消</button>
+                    <button type="submit" class="study-quick-create-btn" style="padding: 8px 18px;">创建计划</button>
                 </div>
             </form>
         </div>
@@ -376,7 +427,11 @@
             const node = document.getElementById('taskCards');
             const tasks = data.tasks || [];
             if (!tasks.length) {
-                node.innerHTML = '<div class="study-panel text-sm text-gray-500">这一天没有学习任务。</div>';
+                node.innerHTML = '<div class="study-panel text-sm text-gray-500">这一天没有学习任务。</div>' +
+                    '<div class="text-center mt-2">' +
+                    '<button class="study-quick-create-btn" onclick="openQuickPlanModal()">' +
+                    '<i class="fas fa-bolt mr-1"></i>快速创建计划</button>' +
+                    '</div>';
                 return;
             }
             node.innerHTML = tasks.map(t => `
@@ -636,6 +691,87 @@
             m.classList.add('hidden');
             m.classList.remove('flex');
         }
+
+        function openQuickPlanModal() {
+            document.getElementById('quickPlanForm').reset();
+            document.querySelectorAll('.quick-plan-preset').forEach(function(node) {
+                node.classList.remove('is-active');
+                node.setAttribute('data-selected', '');
+            });
+            document.getElementById('quickPlanName').focus();
+            const m = document.getElementById('quickPlanModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeQuickPlanModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            const m = document.getElementById('quickPlanModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function selectQuickPreset(el) {
+            const selected = el.getAttribute('data-selected');
+            document.querySelectorAll('.quick-plan-preset').forEach(function(node) {
+                node.classList.remove('is-active');
+                node.setAttribute('data-selected', '');
+            });
+            if (selected) {
+                // already selected -> 再次点击取消
+                return;
+            }
+            el.classList.add('is-active');
+            el.setAttribute('data-selected', '1');
+        }
+
+        document.getElementById('quickPlanForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fd = new FormData(this);
+            const name = String(fd.get('name') || '').trim();
+            if (!name) {
+                alert('请填写计划名称');
+                return;
+            }
+            const preset = document.querySelector('.quick-plan-preset.is-active');
+            const repeatType = preset ? preset.getAttribute('data-preset') : 'none';
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const startTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:00`;
+            const payload = {
+                name: name,
+                content: '',
+                start_time: startTime,
+                repeat_type: repeatType,
+                repeat_days: [],
+                sp_points: 0,
+                content_mode: 'fixed',
+                estimated_time_mode: 'fixed',
+                estimated_minutes: Number(fd.get('estimated_minutes') || 30)
+            };
+            const btn = this.querySelector('button[type="submit"]');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '创建中...';
+            try {
+                const resp = await requestApi('/study/plans', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (resp && Number(resp.code) === 9999) {
+                    closeQuickPlanModal();
+                    this.reset();
+                    await loadOverview(selectedDate);
+                    alert(`已创建计划「${name}」，并为你生成了任务！`);
+                    return;
+                }
+                alert(resp && resp.msg ? resp.msg : '创建失败');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        });
 
         function onRepeatTypeChange() {
             const t = document.getElementById('repeatType').value;
