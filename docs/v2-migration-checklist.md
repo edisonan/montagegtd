@@ -213,4 +213,4 @@ Auth target: `hybrid.token` (`pat_` + `uat_`).
   `POST /api/v2/wechat/login`,
   `GET /api/v2/wechat/explorer|articles|articleview|notes`,
   `POST /api/v2/wechat/notes|addNote|articles/status`.
-- PAT smoke test for newly added routes is blocked in current environment because `http://testtask.congcong.us` is unreachable from this sandbox (`curl: (7) Couldn't connect to server`).
+- 新增路由已通过 CLI live 冒烟（本机本地 Laravel + 铸造临时 PAT），command 均返回 `code 9999`；生产默认端点地址为 `https://task.congcong.us/api/v2`。

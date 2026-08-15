@@ -36,6 +36,7 @@ montage article list --status unread --page-count 20 --mode simple
 - 用户只要"看看有什么/列出标题/最近新增"→ 默认 `simple`，**不要盲目加 `--mode full`**，避免拉大量冗余正文。
 - 用户要做"总结这些文章、分析内容、找观点、判断是否值得读全文"→ **主动加 `--mode full`**，因为只有这样文章才带 `content` 和 `plain_text`。
 - 数量较大（`--page-count` 高）且没有内容分析需求时，绝不用 `full`，否则 payload 会非常大。
+- **热点/主题归纳优先用 `simple`（`subject` 标题就够判定）**，不必逐篇 `full` 取正文——只有对挑出来要深读的少数文章，才用 `full`/`show` 取正文或去抓 `url` 原文。长摘要不要整段喂模型，先截断（每篇 ≤100 字）再作辅助。
 
 > **默认当全文处理，判断是摘要才抓原文。** `full` 的 `content` / `show` 返回的正文**默认就当它是全文**来做分析，不要遇事就抓 URL（省一次网络抓取）。
 > 只有当 `content` 明显是摘要时才去取原文：

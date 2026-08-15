@@ -34,7 +34,7 @@ OpenAPI 中安全方案：
 ## 快速验证示例
 
 ```bash
-curl -s 'http://testtask.congcong.us/api/v2/feeds/navinfo' \
+curl -s 'https://task.congcong.us/api/v2/feeds/navinfo' \
   -H 'Authorization: Bearer <YOUR_PAT>'
 ```
 

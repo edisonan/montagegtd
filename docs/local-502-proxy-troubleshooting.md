@@ -5,8 +5,8 @@
 本地访问：
 
 ```bash
-http://testtask.congcong.us/
-http://testtask.congcong.us/login
+http://task.congcong.us/
+http://task.congcong.us/login
 ```
 
 浏览器显示 `502 Bad Gateway`，但命令行直接 `curl` 访问同一地址时返回正常。
@@ -26,7 +26,7 @@ Proxy-Connection: keep-alive
 同时，直接访问本地服务正常：
 
 ```bash
-curl -I --max-time 10 --noproxy '*' http://testtask.congcong.us/login
+curl -I --max-time 10 --noproxy '*' http://task.congcong.us/login
 ```
 
 返回：
@@ -40,7 +40,7 @@ X-Powered-By: PHP/7.3.29-to-be-removed-in-future-macOS
 但强制通过代理访问会复现浏览器里的错误：
 
 ```bash
-curl -i --max-time 10 --proxy http://127.0.0.1:7897 http://testtask.congcong.us/login
+curl -i --max-time 10 --proxy http://127.0.0.1:7897 http://task.congcong.us/login
 ```
 
 返回：
@@ -56,8 +56,8 @@ Content-Length: 0
 ### 1. 确认应用入口是否可访问
 
 ```bash
-curl -i --max-time 10 http://testtask.congcong.us/
-curl -i --max-time 10 http://testtask.congcong.us/login
+curl -i --max-time 10 http://task.congcong.us/
+curl -i --max-time 10 http://task.congcong.us/login
 ```
 
 本次排查中，首页和登录页都能返回 `200 OK`。
@@ -66,7 +66,7 @@ curl -i --max-time 10 http://testtask.congcong.us/login
 
 ```http
 HTTP/1.1 302 Found
-Location: http://testtask.congcong.us/index
+Location: http://task.congcong.us/index
 ```
 
 继续访问 `/index` 也返回 `200 OK`，说明应用本身正常。
@@ -137,20 +137,20 @@ tail -n 30 /usr/local/var/log/nginx/access.log
 ### 6. 检查域名解析
 
 ```bash
-dscacheutil -q host -a name testtask.congcong.us
+dscacheutil -q host -a name task.congcong.us
 ```
 
 正常应指向本机：
 
 ```text
-name: testtask.congcong.us
+name: task.congcong.us
 ip_address: 127.0.0.1
 ```
 
 对应 `/etc/hosts` 中应有：
 
 ```text
-127.0.0.1 testtask.congcong.us
+127.0.0.1 task.congcong.us
 ```
 
 ### 7. 检查系统代理
@@ -182,11 +182,11 @@ localhost
 <local>
 ```
 
-没有 `testtask.congcong.us`，所以 Chrome 可能把这个本地域名交给代理处理。代理未使用 `/etc/hosts` 的本地解析结果，最终返回 502。
+没有 `task.congcong.us`，所以 Chrome 可能把这个本地域名交给代理处理。代理未使用 `/etc/hosts` 的本地解析结果，最终返回 502。
 
 ## 根因
 
-`testtask.congcong.us` 虽然在 `/etc/hosts` 中指向 `127.0.0.1`，但浏览器启用了系统代理。因为该域名不在代理绕过列表里，浏览器把请求发给了 `127.0.0.1:7897` 代理。
+`task.congcong.us` 虽然在 `/etc/hosts` 中指向 `127.0.0.1`，但浏览器启用了系统代理。因为该域名不在代理绕过列表里，浏览器把请求发给了 `127.0.0.1:7897` 代理。
 
 代理访问该域名时没有按本机 hosts 直连本地 nginx，而是按代理自身逻辑解析和转发，导致返回：
 
@@ -219,7 +219,7 @@ networksetup -getproxybypassdomains Wi-Fi
 
 ### 3. 追加本地域名到代理绕过列表
 
-保留原有规则，并追加 `testtask.congcong.us` 和 `*.congcong.us`：
+保留原有规则，并追加 `task.congcong.us` 和 `*.congcong.us`：
 
 ```bash
 networksetup -setproxybypassdomains Wi-Fi \
@@ -231,7 +231,7 @@ networksetup -setproxybypassdomains Wi-Fi \
   '*.local' \
   '*.crashlytics.com' \
   '<local>' \
-  testtask.congcong.us \
+  task.congcong.us \
   '*.congcong.us'
 ```
 
@@ -244,14 +244,14 @@ networksetup -getproxybypassdomains Wi-Fi
 应包含：
 
 ```text
-testtask.congcong.us
+task.congcong.us
 *.congcong.us
 ```
 
 ### 5. 验证直连正常
 
 ```bash
-curl -I --max-time 10 --noproxy '*' http://testtask.congcong.us/login
+curl -I --max-time 10 --noproxy '*' http://task.congcong.us/login
 ```
 
 应返回：
@@ -263,7 +263,7 @@ HTTP/1.1 200 OK
 ### 6. 验证代理会返回 502
 
 ```bash
-curl -i --max-time 10 --proxy http://127.0.0.1:7897 http://testtask.congcong.us/login
+curl -i --max-time 10 --proxy http://127.0.0.1:7897 http://task.congcong.us/login
 ```
 
 若返回：
@@ -284,14 +284,14 @@ HTTP/1.1 502 Bad Gateway
 4. 在代理工具中添加直连规则：
 
 ```text
-testtask.congcong.us DIRECT
+task.congcong.us DIRECT
 *.congcong.us DIRECT
 ```
 
 5. 或者在 macOS 代理绕过列表中重新加入：
 
 ```text
-testtask.congcong.us
+task.congcong.us
 *.congcong.us
 ```
 

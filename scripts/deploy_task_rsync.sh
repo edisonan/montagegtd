@@ -92,12 +92,11 @@ rsync -azv \
   --exclude='storage/framework/views/' \
   --exclude='bootstrap/cache/*.php' \
   --exclude='desktop.zip' \
-  --exclude='skills/montage-gtd.zip' \
   --exclude='debug_*.html' \
   --exclude='test_*.html' \
   --exclude='final_alignment_test.html' \
   --exclude='public/test.php' \
-  --exclude='skills/montage-gtd/scripts/__pycache__/' \
+  --exclude='skills/montagegtd/scripts/__pycache__/' \
   --exclude='*.pyc' \
   "$ROOT_DIR/" \
   "${REMOTE_HOST}:${REMOTE_PATH}/"

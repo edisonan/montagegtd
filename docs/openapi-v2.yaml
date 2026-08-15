@@ -6,8 +6,8 @@ info:
     Auto-generated OpenAPI document for `/api/v2` routes.
     Optimized for AI agents and API clients with stable operationId and capability hints.
 servers:
-  - url: http://testtask.congcong.us/api/v2
-    description: test environment
+  - url: https://task.congcong.us/api/v2
+    description: production
   - url: http://localhost/api/v2
     description: local environment
 security:

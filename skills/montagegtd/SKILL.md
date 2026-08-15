@@ -120,6 +120,7 @@ $CLI course-list
 - 处理学习打卡/计划时读 `references/study.md`。
 - 处理鉴权、PAT、专注、计划、日报、Digest、手账、思维导图、成就、积分或通用请求时读 `references/platform.md`。
 - 遇到复合/端到端请求（复盘、阅读分析、订阅整理、知识沉淀、学习打卡）时优先读 `references/scenarios.md`。
+- 遇到"最近几小时文章热点/关注点/建议阅读""收藏/稍后读盘点"这类**聚合分析**请求时，读 `references/scenarios.md` 的场景 6/7。
 
 ## 执行约束
 

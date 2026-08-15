@@ -9,6 +9,8 @@
 - 看订阅/整理阅读偏好 → 场景 3
 - 把阅读/想法沉淀成第二个大脑 → 场景 4
 - 学习打卡闭环 → 场景 5
+- 最近几小时文章热点/关注点/建议阅读 → 场景 6
+- 近期收藏/稍后读的个性化盘点 → 场景 7
 
 ---
 
@@ -145,6 +147,74 @@ $CLI note create --title "学习复盘" --content "..."
 ```
 
 **要点**：`study-checkin` 只支持文字，且目标是学习任务（`mode=3`）；多媒体打卡走 `request`。生成任务常用批量，先确认计划再执行。
+
+---
+
+## 场景 6：最近 N 小时文章热点分析
+
+**触发**：用户说"最近几小时有啥热点""看看这一小时/半天该关注什么""推荐我读几篇"。
+
+**目标**：对最近一段时间（默认 **6 小时**，可换成 3h/1d/3d）的文章做聚合分析，产出**热点归类 + 关注点 + 建议阅读**。**纯输出给用户，不落库**。
+
+**流程**：
+
+```bash
+# 1. 圈定最近 6 小时 + 初筛（simple 即可：subject 标题已够判定热点；6h 没几条就放宽到 1d/3d）
+$CLI article list --status all --mode simple --time-range 6h --page-count 50
+
+# 2.（可选）只对挑中要深读的少数文章才取正文 / 抓原文，不要对全量做 full
+$CLI article list --status all --mode full --time-range 6h --page-count 50
+$CLI article show <article_id>
+```
+
+**分析（agent 归纳；判定顺序：标题为主 → 摘要受控截断为辅）**：
+
+> **核心规则：热点/关注点判定尽量基于标题（`subject`）。** 摘要不要把完整原文丢给模型——很多订阅源摘要很长，且内容质量参差，直接灌给模型既浪费 token 又会让判断失真。需要参考摘要时**先截断再给**（每条 ≤100 字符，用来辅助确认主题，不追求完整语义）。
+
+- **热点**：**优先按领域分桶**（先按 `feed.feed_name` 分大类——如技术/生活/财经——再按 `subject` 标题/关键词聚类）。不同领域的 feed（如技术博客 vs 社区生活帖）混在同一个"热点"里会很怪，应分开呈现。每类给"几篇、来自哪几个源"的聚合热度。主题判定以标题为主，除非标题存疑才看截断后的摘要。
+- **关注点**：每篇一句话要点（**由标题提取**；标题不清才参考截断摘要）+ 一句"是否值得读"的判断。
+- **建议阅读**：排一个优先序，标注为什么（时效新、话题贴合、字数适合通读）。
+- **若正文是摘要**：按既定策略，需要时用 `article.url` 抓原文补全再做热点评。
+- **`ai_profile` 可能为空**：新近抓取的文章常还未打 AI 画像（`ai_profile` 为 null，也无 primary_category/tags）。此时**不要依赖没用的画像字段**，直接用 `subject` 判定主题；想建立稳定偏好后才考虑 `digest-save-profile`。
+
+**要点**：默认 `6h`；命太少就放大窗口（6h 常只有几条），命太多就加 `--feed-id`/`--view-mode`/`--read-duration long` 收缩。**不要拿完整 `content`/长摘要去喂模型做归纳，除非有深读需求**——热点/关注点判定用标题 + 截断摘要足够。输出多用**分层 Markdown**（按领域分组的热点→关注点→建议阅读），别平铺列表。
+
+---
+
+## 场景 7：近期收藏/稍后读盘点
+
+**触发**：用户说"看看我收藏的/稍后读的""帮我个性化整理下加星的文章""最近标记的文章给我排个序"。
+
+**目标**：对近一段时间（默认 **7 天**，可按 `1d/3d/7d`）收藏或稍后读的文章做**个性化分组展示**。
+
+**流程**：
+
+```bash
+# 收藏（star）最近 7 天
+$CLI article list --status star --mode simple --time-range 7d --page-count 100
+# 或稍后读（read_later）
+$CLI article list --status read_later --mode simple --time-range 7d --page-count 100
+
+# 对命中的取正文做深度分组
+$CLI article list --status star --mode full --time-range 7d --page-count 100
+
+# 收藏是稀疏的：7d 常常 0 命中 → 放宽到全部收藏再盘点
+$CLI article list --status star --mode simple --page-count 100
+$CLI article list --status read_later --mode simple --page-count 100
+```
+
+**分析（agent 归纳）**：
+
+- **按主题/分类分组**：把收藏按你关注的主题分桶，每组一句话概括"这批是什么"。
+- **标注价值**：每篇标"为什么当时值得收藏"（话题、观点、待办用法），以及现在的阅读优先级（时间敏感度高的先读）。
+- **建议阅读顺序**：按主题 + 时效给一个顺序；对已读完的可提示清理。
+
+**要点**：
+
+- 默认 `--status star --time-range 7d`；要"整理稍后读"就换 `--status read_later`。
+- **收藏/稍后读是稀疏异步的**：不是每周都有，`7d` 常命中 0。7d 为空时**去掉 `--time-range` 放宽到全部收藏**再盘，别误报"没有收藏"。
+- **status 计数 ≠ 有效文章数**：`article_subs` 可能含孤儿记录（对应 `article` 已删除的历史残留），`article list` 只返回 join 得上的有效文章。不能拿数据库里 status 的总数告诉用户"你有 N 篇可盘"，要以 `article list` 实际返回为准。
+- 个性化分组依赖 `preferred_categories`/`ai_profile` 的标签做聚合，`ai_profile` 为空时内容不足就按 feed 分组。
 
 ---
 
