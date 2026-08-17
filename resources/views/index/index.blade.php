@@ -340,6 +340,56 @@
         </div>
     </div>
 
+    <div id="todayTaskModal" class="hidden fixed inset-0 z-50">
+        <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closeTodayTaskModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center px-4">
+            <div class="w-full max-w-md bg-white rounded-xl shadow-xl">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 class="text-base font-semibold text-gray-900">设为今日待办</h3>
+                    <button class="text-gray-400 hover:text-gray-700" onclick="closeTodayTaskModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="px-5 py-4 space-y-4">
+                    <div>
+                        <div class="text-xs text-gray-500 mb-1">任务</div>
+                        <div id="todayTaskTitle" class="text-sm text-gray-800 break-words"></div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between gap-3 flex-wrap">
+                            <label for="todayTaskDeadlineInput" class="text-sm text-gray-700">截止时间</label>
+                            <div class="flex gap-1 flex-wrap">
+                                <button type="button" class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                                        onclick="adjustTodayTaskDeadline(-10)">
+                                    <i class="fas fa-minus mr-1"></i>10 分钟
+                                </button>
+                                <button type="button" class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                                        onclick="adjustTodayTaskDeadline(10)">
+                                    <i class="fas fa-plus mr-1"></i>10 分钟
+                                </button>
+                                <button type="button" class="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors"
+                                        onclick="resetTodayTaskDeadline()" title="重置为今天 18:00">
+                                    <i class="fas fa-undo mr-1"></i>今天 18:00
+                                </button>
+                                <button type="button" class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
+                                        onclick="clearTodayTaskDeadline()">
+                                    清空
+                                </button>
+                            </div>
+                        </div>
+                        <input id="todayTaskDeadlineInput" type="datetime-local" class="input w-full mt-1">
+                    </div>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-200 flex justify-end gap-2">
+                    <button class="btn btn-outline" onclick="closeTodayTaskModal()">取消</button>
+                    <button class="btn btn-primary" onclick="saveTodayTaskModal()">
+                        <i class="fas fa-calendar-check mr-1"></i>设为今日待办
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="reviewModal" class="hidden fixed inset-0 z-50">
         <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closeReviewModal()"></div>
         <div class="fixed inset-0 flex items-center justify-center px-4">
@@ -706,6 +756,7 @@
         let isSwitchingDoing = false;
         let isTaskPanelCollapsed = false;
         let currentScheduleTaskId = 0;
+        let currentTodayTaskId = 0;
         let reviewTargetType = '';
         let reviewTargetId = 0;
         let pomoNotifyBackoffStep = 0;
@@ -1448,6 +1499,12 @@
                 <i class="far fa-clock"></i>
             </button>
 
+            <button class="action-button text-gray-400 hover:text-sky-500"
+                    onclick="openTodayTaskModal(${data.id})"
+                    title="设为今日待办">
+                <i class="fas fa-calendar-check"></i>
+            </button>
+
             <button class="action-button text-gray-400 hover:text-amber-500"
                     onclick='openReviewModal("task", ${data.id}, ${JSON.stringify(String(data.name || ''))}, ${data.rating || 'null'}, ${JSON.stringify(String(data.review_note || ''))})'
                     title="评分备注">
@@ -1860,6 +1917,51 @@
             });
         }
 
+        // 首页待办面板排序：先按父子分组（保持父子相邻），再按
+        // ① 置顶优先 → ② 有 deadline 在前 → ③ deadline 越接近当前时刻越靠前 → ④ priority/updated_at 兜底 → ⑤ 保持原序（稳定）
+        function sortIndexTaskGroups(list) {
+            const groups = [];
+            let currentGroup = null;
+            list.forEach(function(task) {
+                const parentId = task.parent_task_id;
+                if (parentId === null || parentId === undefined || parentId === 0) {
+                    currentGroup = { head: task, members: [task] };
+                    groups.push(currentGroup);
+                } else if (currentGroup) {
+                    currentGroup.members.push(task);
+                } else {
+                    currentGroup = { head: task, members: [task] };
+                    groups.push(currentGroup);
+                }
+            });
+
+            const now = Date.now();
+            groups.forEach(function(group, idx) {
+                group._index = idx;
+                group._isTop = Number(group.head.is_top || 0);
+                const deadline = new Date(String(group.head.deadline || '').replace(' ', 'T')).getTime();
+                group._hasDeadline = !isNaN(deadline);
+                group._deadlineDist = group._hasDeadline ? Math.abs(deadline - now) : Infinity;
+                group._priority = Number(group.head.priority || 0);
+                group._updatedAt = new Date(String(group.head.updated_at || '').replace(' ', 'T')).getTime() || 0;
+            });
+
+            groups.sort(function(a, b) {
+                if (a._isTop !== b._isTop) return b._isTop - a._isTop;
+                if (a._hasDeadline !== b._hasDeadline) return a._hasDeadline ? -1 : 1;
+                if (a._hasDeadline && a._deadlineDist !== b._deadlineDist) return a._deadlineDist - b._deadlineDist;
+                if (a._priority !== b._priority) return b._priority - a._priority;
+                if (a._updatedAt !== b._updatedAt) return b._updatedAt - a._updatedAt;
+                return a._index - b._index;
+            });
+
+            const sorted = [];
+            groups.forEach(function(group) {
+                sorted.push.apply(sorted, group.members);
+            });
+            return sorted;
+        }
+
         // 显示待办列表
         function showtasks() {
             indexDebug('showtasks start');
@@ -1899,12 +2001,12 @@
                             return Number(task.is_doing || 0) === 1 && Number(task.status || 1) === 1;
                         });
                         const primaryDoingTask = doingTasksRaw.length > 0 ? doingTasksRaw[0] : null;
-                        const normalTasks = list.filter(function(task) {
+                        const normalTasks = sortIndexTaskGroups(list.filter(function(task) {
                             if (!primaryDoingTask) {
                                 return true;
                             }
                             return Number(task.id) !== Number(primaryDoingTask.id);
-                        });
+                        }));
 
                         if (tasksList) tasksList.innerHTML = '';
                         if (doingCard) {
@@ -2334,6 +2436,97 @@
                     closeTaskScheduleModal();
                     showtasks();
                     showNotification('success', '任务时间已更新');
+                } else {
+                    showNotification('error', (response && response.msg) ? response.msg : '保存失败');
+                }
+            }).catch(function() {
+                showNotification('error', '保存失败，请稍后重试');
+            });
+        }
+
+        // ===== 设为今日待办 =====
+        // 默认截止时间：当天 18:00；若当前已过 18:00，顺延为当前时刻 + 3 小时
+        function buildTodayTaskDefaultDeadline() {
+            const now = new Date();
+            const today18 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
+            if (now.getTime() > today18.getTime()) {
+                return new Date(now.getTime() + 3 * 3600 * 1000);
+            }
+            return today18;
+        }
+
+        function openTodayTaskModal(taskId) {
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                return;
+            }
+            apiRequest('GET', '/tasks/' + taskId, {}).then(function(response) {
+                if (!response || response.code != 9999 || !response.result) {
+                    showNotification('error', '加载任务信息失败');
+                    return;
+                }
+                const task = response.result;
+                currentTodayTaskId = Number(task.id || 0);
+                document.getElementById('todayTaskTitle').textContent = task.name || '未命名任务';
+                const input = document.getElementById('todayTaskDeadlineInput');
+                if (task.deadline) {
+                    // 已有 deadline：回填展示之前的截止时间
+                    input.value = toLocalDatetimeValue(task.deadline);
+                } else {
+                    input.value = formatLocalDatetimeInput(buildTodayTaskDefaultDeadline());
+                }
+                document.getElementById('todayTaskModal').classList.remove('hidden');
+            }).catch(function() {
+                showNotification('error', '加载任务信息失败');
+            });
+        }
+
+        function getTodayTaskDeadlineDate() {
+            const raw = document.getElementById('todayTaskDeadlineInput').value;
+            if (raw) {
+                const d = new Date(raw);
+                if (!isNaN(d.getTime())) {
+                    return d;
+                }
+            }
+            return buildTodayTaskDefaultDeadline();
+        }
+
+        // 快捷方式：加减 10 分钟（可连续点击叠加）
+        function adjustTodayTaskDeadline(deltaMin) {
+            const base = getTodayTaskDeadlineDate();
+            base.setMinutes(base.getMinutes() + Number(deltaMin || 0));
+            document.getElementById('todayTaskDeadlineInput').value = formatLocalDatetimeInput(base);
+        }
+
+        function resetTodayTaskDeadline() {
+            const now = new Date();
+            const today18 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
+            document.getElementById('todayTaskDeadlineInput').value = formatLocalDatetimeInput(today18);
+        }
+
+        function clearTodayTaskDeadline() {
+            document.getElementById('todayTaskDeadlineInput').value = '';
+        }
+
+        function closeTodayTaskModal() {
+            currentTodayTaskId = 0;
+            document.getElementById('todayTaskModal').classList.add('hidden');
+        }
+
+        function saveTodayTaskModal() {
+            if (!currentTodayTaskId) {
+                return;
+            }
+            const inputValue = document.getElementById('todayTaskDeadlineInput').value;
+            const deadline = inputValue ? toApiDatetimeValue(inputValue) : null;
+            apiRequest('PUT', '/tasks/' + currentTodayTaskId, {
+                deadline: deadline
+            }).then(function(response) {
+                if (response && response.code == 9999) {
+                    closeTodayTaskModal();
+                    showtasks();
+                    showNotification('success', '已设为今日待办');
                 } else {
                     showNotification('error', (response && response.msg) ? response.msg : '保存失败');
                 }
