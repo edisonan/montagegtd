@@ -37,8 +37,8 @@
         </div>
 
         <div class="card p-4">
-            <div id="checkinList" class="space-y-3">
-                <div class="text-sm text-gray-500">加载中...</div>
+            <div id="checkinList" class="divide-y divide-gray-100">
+                <div class="text-sm text-gray-500 py-2">加载中...</div>
             </div>
             <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
                 <button id="prevBtn" class="btn btn-outline btn-sm" onclick="changePage(-1)">上一页</button>
@@ -47,6 +47,15 @@
             </div>
         </div>
     </div>
+
+    <div id="checkinPopover" class="hidden fixed"></div>
+
+    <style>
+        .checkin-row { cursor: default; transition: background-color .12s; }
+        .checkin-row:hover { background: #f8fafc; }
+        #checkinPopover { z-index: 1000; }
+        #checkinPopover.show { display: block; }
+    </style>
 
     <script>
         let pageState = {
@@ -77,26 +86,94 @@
             });
         }
 
+        let checkinData = [];
+        let popoverHideTimer = null;
+        const popover = document.getElementById('checkinPopover');
+
+        function mediaIcons(it) {
+            let icons = '';
+            if (it.audio_path) icons += '<i class="fas fa-microphone text-emerald-600" title="有语音打卡"></i>';
+            if (it.image_path) icons += '<i class="fas fa-image text-blue-600" title="有图片"></i>';
+            if (it.video_path) icons += '<i class="fas fa-video text-purple-600" title="有视频"></i>';
+            return icons;
+        }
+
         function renderList(items) {
             const node = document.getElementById('checkinList');
             if (!items || !items.length) {
-                node.innerHTML = '<div class="text-sm text-gray-500">暂无打卡记录。</div>';
+                checkinData = [];
+                node.innerHTML = '<div class="text-sm text-gray-500 py-2">暂无打卡记录。</div>';
                 return;
             }
-            node.innerHTML = items.map(function(it) {
+            checkinData = items.map(function(it) { return it; });
+            node.innerHTML = items.map(function(it, i) {
+                const icons = mediaIcons(it);
                 return `
-                    <div class="border border-gray-200 rounded-lg p-3">
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="font-medium text-gray-900">${escapeHtml(it.task_name || '学习任务')}</div>
-                            <div class="text-xs text-gray-500">${escapeHtml(it.checkin_date || '')}</div>
+                    <div class="checkin-row flex items-center justify-between gap-3 px-3 py-2.5"
+                         data-idx="${i}"
+                         onmouseenter="showCheckinCard(this, ${i})"
+                         onmouseleave="scheduleHideCheckinCard()">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <span class="text-xs font-medium text-gray-900 truncate">${escapeHtml(it.task_name || '学习任务')}</span>
+                            <span class="text-[11px] text-gray-400 whitespace-nowrap shrink-0">${escapeHtml(it.checkin_date || '')}</span>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">计划时间：${escapeHtml(it.planned_start_time || '')}</div>
-                        <div class="text-sm text-gray-700 mt-2 whitespace-pre-wrap">${escapeHtml(it.content || '（无文字打卡内容）')}</div>
-                        <div class="text-xs text-gray-500 mt-2">音频：${it.audio_path ? '有' : '无'} | 图片：${it.image_path ? '有' : '无'} | 视频：${it.video_path ? '有' : '无'}</div>
+                        <div class="flex items-center gap-2 text-[11px] text-gray-500 shrink-0">
+                            ${icons ? '<span class="flex items-center gap-1.5">' + icons + '</span>' : ''}
+                            <span class="text-gray-300">·</span>
+                            <span class="whitespace-nowrap">${escapeHtml(it.planned_start_time || '')}</span>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
+
+        function buildCheckinCardHtml(it) {
+            return `
+                <div class="w-80 max-w-[85vw] rounded-xl border border-gray-200 bg-white shadow-xl p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="font-semibold text-gray-900 min-w-0">${escapeHtml(it.task_name || '学习任务')}</div>
+                        <div class="text-xs text-gray-500 whitespace-nowrap shrink-0">${escapeHtml(it.checkin_date || '')}</div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">计划时间：${escapeHtml(it.planned_start_time || '-')}</div>
+                    <div class="text-sm text-gray-700 mt-3 whitespace-pre-wrap max-h-64 overflow-y-auto">${escapeHtml(it.content || '（无文字打卡内容）')}</div>
+                    <div class="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-100 flex items-center gap-3">
+                        <span class="flex items-center gap-1"><i class="fas fa-microphone text-emerald-600"></i>音频：${it.audio_path ? '有' : '无'}</span>
+                        <span class="flex items-center gap-1"><i class="fas fa-image text-blue-600"></i>图片：${it.image_path ? '有' : '无'}</span>
+                        <span class="flex items-center gap-1"><i class="fas fa-video text-purple-600"></i>视频：${it.video_path ? '有' : '无'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showCheckinCard(rowEl, idx) {
+            clearTimeout(popoverHideTimer);
+            const it = checkinData[idx] || {};
+            popover.innerHTML = buildCheckinCardHtml(it);
+            popover.classList.add('show');
+            popover.style.visibility = 'hidden';
+            const rect = rowEl.getBoundingClientRect();
+            const pw = popover.offsetWidth;
+            const ph = popover.offsetHeight;
+            let left = Math.max(8, rect.left);
+            let top = rect.bottom + 8;
+            if (left + pw > window.innerWidth - 8) left = Math.max(8, window.innerWidth - pw - 8);
+            if (top + ph > window.innerHeight - 8) top = Math.max(8, rect.top - ph - 8);
+            popover.style.left = left + 'px';
+            popover.style.top = top + 'px';
+            popover.style.visibility = 'visible';
+        }
+
+        function scheduleHideCheckinCard() {
+            clearTimeout(popoverHideTimer);
+            popoverHideTimer = setTimeout(function() {
+                popover.classList.remove('show');
+            }, 150);
+        }
+
+        popover.addEventListener('mouseenter', function() { clearTimeout(popoverHideTimer); });
+        popover.addEventListener('mouseleave', scheduleHideCheckinCard);
+        window.addEventListener('scroll', function() { popover.classList.remove('show'); }, true);
+        window.addEventListener('resize', function() { popover.classList.remove('show'); });
 
         function updatePager() {
             document.getElementById('pageInfo').textContent = `第 ${pageState.current} / ${pageState.last} 页，共 ${pageState.total} 条`;
