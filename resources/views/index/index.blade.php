@@ -1549,12 +1549,6 @@
                 <i class="far fa-clock"></i>
             </button>
 
-            <button class="action-button text-gray-400 hover:text-amber-500"
-                    onclick='openReviewModal("task", ${data.id}, ${JSON.stringify(String(data.name || ''))}, ${data.rating || 'null'}, ${JSON.stringify(String(data.review_note || ''))})'
-                    title="评分备注">
-                <i class="fas fa-star-half-alt"></i>
-            </button>
-
             <button class="action-button text-gray-400 hover:text-red-500"
                     onclick="deleteTask(${data.id})"
                     title="删除">
@@ -1564,14 +1558,20 @@
             <button class="action-button text-gray-400 hover:text-gray-600"
                     onclick="foldTask(${data.id})"
                     title="折叠">
-                <i class="fas fa-folder"></i>
+                <i class="fas fa-folder-minus"></i>
+            </button>
+
+            <button class="action-button text-gray-400 hover:text-amber-500"
+                    onclick='openReviewModal("task", ${data.id}, ${JSON.stringify(String(data.name || ''))}, ${data.rating || 'null'}, ${JSON.stringify(String(data.review_note || ''))})'
+                    title="评分备注">
+                <i class="fas fa-star"></i>
             </button>
 
             <a href="/notes?source_type=3&source_id=${data.id}"
                class="action-button text-gray-400 hover:text-purple-500"
                target="_blank"
                title="记录想法">
-                <i class="fas fa-sticky-note"></i>
+                <i class="fas fa-lightbulb"></i>
             </a>
         </div>
     </li>
@@ -1615,11 +1615,6 @@
                         title="时间设置">
                     <i class="far fa-clock"></i>
                 </button>
-                <button class="action-button text-gray-400 hover:text-amber-500"
-                        onclick='openReviewModal("task", ${task.id}, ${JSON.stringify(String(task.name || ''))}, ${task.rating || 'null'}, ${JSON.stringify(String(task.review_note || ''))})'
-                        title="评分备注">
-                    <i class="fas fa-star-half-alt"></i>
-                </button>
                 <button class="action-button text-gray-400 hover:text-red-500"
                         onclick="deleteTask(${task.id})"
                         title="删除">
@@ -1628,7 +1623,12 @@
                 <button class="action-button text-gray-400 hover:text-gray-600"
                         onclick="foldTask(${task.id})"
                         title="折叠">
-                    <i class="fas fa-folder"></i>
+                    <i class="fas fa-folder-minus"></i>
+                </button>
+                <button class="action-button text-gray-400 hover:text-amber-500"
+                        onclick='openReviewModal("task", ${task.id}, ${JSON.stringify(String(task.name || ''))}, ${task.rating || 'null'}, ${JSON.stringify(String(task.review_note || ''))})'
+                        title="评分备注">
+                    <i class="fas fa-star"></i>
                 </button>
             </div>
         </div>
