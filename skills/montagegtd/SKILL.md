@@ -29,6 +29,7 @@ whenToUse: Trigger for phrases such as 新建/完成一个待办或任务, 列�
 4. 领域命令不覆盖时，再使用 `request METHOD /path --data ...`。
 5. 不向用户展示完整 token。必要时只说明 token 类型或脱敏前后缀。
 6. 最终反馈要说业务结果，不要只贴 API 响应：例如“已创建任务，id=...”，“已标记 12 篇文章为已读”。
+7. 发布/创建笔记后，**必须向用户展示可查看的地址**：私有笔记展示“作者本人可看，无公开链接”；用户要别人能看/免登录看时，调分享接口给链接（见 `references/notes.md` 的“发布后展示地址”）。
 
 ## 配置
 
@@ -71,6 +72,11 @@ $CLI task complete 123 --rating 5 --review-note "按计划完成"
 $CLI note list --keyword "会议"
 $CLI note create --title "日复盘" --content "今天完成了..."
 $CLI note show 45
+
+# 发布后给可查看地址（先看 references/notes.md 的“发布后展示地址”）
+$CLI note show <id>                     # 私有：作者可读，无公开链接
+$CLI note update <id> --status 2        # 改为公开（仍需后台审核）
+$CLI request POST /notes/<id>/share     # 公开后生成免登录分享链接（返回随机 token+key）
 
 # 文章
 $CLI article list --status unread --page-count 10            # 默认 simple：只要标题

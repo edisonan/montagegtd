@@ -6,8 +6,8 @@
     <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
 
     <div class="fixed inset-0 overflow-y-auto py-4 sm:py-8 px-4">
-        <div class="min-h-full flex items-center justify-center">
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-all">
+        <div class="min-h-full flex items-start justify-center">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl transform transition-all m-auto">
                 <div class="sticky top-0 z-10 bg-white rounded-t-lg flex items-center justify-between px-5 py-4 border-b border-gray-200">
                     <div class="flex items-center gap-3 flex-1 min-w-0">
                         <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">

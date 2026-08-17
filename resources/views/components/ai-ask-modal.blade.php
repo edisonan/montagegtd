@@ -4,11 +4,11 @@
 
     <!-- 修复：使用fixed和flex居中容器 -->
     <div class="fixed inset-0 overflow-y-auto py-2 sm:py-4 px-2 sm:px-4">
-        <!-- 修复：添加flex居中容器 -->
-        <div class="min-h-full flex items-center justify-center">
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-3xl transform transition-all">
-                <!-- 模态框头部 -->
-                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <!-- 修复：添加flex居中容器（items-start + m-auto 防止超高内容顶部被截断） -->
+        <div class="min-h-full flex items-start justify-center">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-3xl transform transition-all flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] m-auto overflow-hidden">
+                <!-- 模态框头部 - 固定高度 -->
+                <div class="flex-shrink-0 flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
                     <h3 class="text-xl font-semibold text-gray-900" id="askAIModalLabel">AI对话助手</h3>
                     <div class="flex items-center space-x-2">
                         <button type="button" class="minimize-btn p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -28,9 +28,9 @@
                 <input type="hidden" id="current_session_id" value="">
 
                 <!-- 模态框内容 -->
-                <div class="p-0">
+                <div class="p-0 flex-1 min-h-0 flex flex-col">
                     <!-- 引用文本显示区域 -->
-                    <div id="referenceTextContainer" class="hidden border-b border-gray-200 bg-gray-50">
+                    <div id="referenceTextContainer" class="hidden flex-shrink-0 border-b border-gray-200 bg-gray-50">
                         <div class="p-4">
                             <div class="flex items-center justify-between mb-2">
                                 <h4 class="text-sm font-medium text-gray-700">引用文本</h4>
@@ -43,8 +43,8 @@
                         </div>
                     </div>
 
-                    <!-- 聊天容器 -->
-                    <div id="chatContainer" class="chat-container h-[300px] overflow-y-auto p-4 bg-gray-50">
+                    <!-- 聊天容器 - 弹性填满中间区域 -->
+                    <div id="chatContainer" class="chat-container flex-1 min-h-[80px] overflow-y-auto p-4 bg-gray-50">
                         <!-- 聊天消息将在这里动态添加 -->
                         <div class="message message-assistant">
                             <div class="avatar">
@@ -56,8 +56,8 @@
                         </div>
                     </div>
 
-                    <!-- 快速模板区域 -->
-                    <div class="px-4 py-3 border-t border-gray-200">
+                    <!-- 快速模板区域 - 固定 -->
+                    <div class="flex-shrink-0 px-4 py-3 border-t border-gray-200">
                         <div class="templates-container flex overflow-x-auto space-x-2 pb-2">
                             <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('润色', '请帮我润色这段文字')">润色</button>
                             <button type="button" class="btn btn-sm btn-outline flex-shrink-0" onclick="setTemplate('总结', '请帮我总结这段文字')">总结</button>
@@ -71,8 +71,8 @@
                         </div>
                     </div>
 
-                    <!-- 输入区域 -->
-                    <div class="p-4 border-t border-gray-200">
+                    <!-- 输入区域 - 固定 -->
+                    <div class="flex-shrink-0 p-4 border-t border-gray-200">
                         <div class="flex items-end space-x-2">
                             <div class="flex-1">
                                 <textarea class="input w-full resize-none min-h-[50px] max-h-[150px]"
@@ -339,7 +339,8 @@
     }
     
     .max-h-none {
-        max-height: none;
+        max-height: 30vh;
+        overflow-y: auto;
     }
     
     #referenceTextContent {
@@ -363,7 +364,7 @@
         }
         
         .chat-container {
-            height: 250px !important;
+            min-height: 160px;
         }
         
         .p-4 {
@@ -381,7 +382,7 @@
         }
         
         .chat-container {
-            height: 200px !important;
+            min-height: 120px;
         }
     }
 </style>
@@ -956,7 +957,34 @@
         const content = contentElement.innerText || contentElement.textContent;
 
         try {
-            document.getElementById(replaceTextId).value = content;
+            const target = document.getElementById(replaceTextId);
+            if (!target) {
+                alert('替换失败，未找到目标输入框');
+                return;
+            }
+
+            // EasyMDE / CodeMirror 编辑器：需通过实例 value() 更新，直接改隐藏 textarea 不会反映到编辑器
+            let mde = null;
+            if (typeof easymde !== 'undefined' && easymde && easymde.element && easymde.element.id === replaceTextId) {
+                mde = easymde;
+            }
+
+            if (mde) {
+                mde.value(content);
+            } else if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+                target.value = content;
+                // 触发 input 事件，让字符计数等依赖 change 的逻辑刷新
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+                target.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                // 展示型元素（如笔记列表中的 markdown-content div）
+                if (window.marked && typeof window.marked.parse === 'function') {
+                    target.innerHTML = window.marked.parse(content);
+                } else {
+                    target.innerHTML = content.replace(/\n/g, '<br>');
+                }
+            }
+
             button.textContent = '已替换';
             setTimeout(() => {
                 button.textContent = '替换';

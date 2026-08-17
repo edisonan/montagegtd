@@ -11,6 +11,7 @@
 - 学习打卡闭环 → 场景 5
 - 最近几小时文章热点/关注点/建议阅读 → 场景 6
 - 近期收藏/稍后读的个性化盘点 → 场景 7
+- 发布/保存一条笔记并要可查看地址 → 场景 8
 
 ---
 
@@ -215,6 +216,37 @@ $CLI article list --status read_later --mode simple --page-count 100
 - **收藏/稍后读是稀疏异步的**：不是每周都有，`7d` 常命中 0。7d 为空时**去掉 `--time-range` 放宽到全部收藏**再盘，别误报"没有收藏"。
 - **status 计数 ≠ 有效文章数**：`article_subs` 可能含孤儿记录（对应 `article` 已删除的历史残留），`article list` 只返回 join 得上的有效文章。不能拿数据库里 status 的总数告诉用户"你有 N 篇可盘"，要以 `article list` 实际返回为准。
 - 个性化分组依赖 `preferred_categories`/`ai_profile` 的标签做聚合，`ai_profile` 为空时内容不足就按 feed 分组。
+
+---
+
+## 场景 8：发布笔记并给出可查看地址
+
+**触发**：用户说"发一篇笔记""记一条并给我链接""发表完把地址告诉我""把这篇文章转成笔记发出去"。
+
+**目标**：创建/发布笔记后，**必须把可查看的地址告诉用户**，不能只给 id 或裸贴 API 响应。
+
+**流程**：
+
+```bash
+# 1. 创建笔记（CLI 默认私有 status=1）
+$CLI note create --title "标题" --content-file ./body.md --tag 标签
+
+# 2. 判断要私有还是公开：
+#    - 用户没说要公开 → 保持私有，反馈"作者可查看，无公开链接"
+#    - 用户要分享给他人/免登录看 → 先设公开，再生成分享链接
+$CLI note update <id> --status 2
+$CLI request POST /notes/<id>/share     # 返回随机 token + key，拼出分享 URL
+
+# 3. 校验（可选）：确认创建成功与当前状态
+$CLI note show <id>
+```
+
+**要点**：
+
+- **默认反馈链路**：`已发布笔记 id=<id>（私有，作者本人可查看；无公开链接）`。用户没要求分享就不要擅自改公开状态。
+- **公开分享时**：先 `note update --status 2`（注意必须同时带上 `--name`/`--content`，完整内容更新语义）再 `POST /notes/{id}/share`（仅公开笔记可生成，实测私有返回 `code 1001`）。share 响应直接返回完整 `url`（`https://task.congcong.us/notes/share/{token}?key={key}`），**展示返回的 `url` 即可，别手工拼**。
+- **必须说明审核前置**：公开笔记要后台 `audit_status=1` 审核通过才进他人可见列表；未审核时仅持分享链接+随机密码者可看。
+- **链接一次性**：每次 `POST /notes/{id}/share` 都重置随机密码，旧 key 失效；别把旧链接当稳定的公开地址重复宣称。
 
 ---
 

@@ -7,9 +7,9 @@
 
     <!-- 修复：使用fixed和flex居中容器 -->
     <div class="fixed inset-0 overflow-y-auto py-4 sm:py-8 px-4">
-        <!-- 修复：添加flex居中容器 -->
-        <div class="min-h-full flex items-center justify-center">
-            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all">
+        <!-- 修复：添加flex居中容器（items-start + m-auto 防止超高内容顶部被截断） -->
+        <div class="min-h-full flex items-start justify-center">
+            <div class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl transform transition-all m-auto">
                 <!-- 模态框头部 - 固定 -->
                 <div class="sticky top-0 z-10 bg-white rounded-t-lg flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
                     <h3 class="text-lg sm:text-xl font-semibold text-gray-900">修改待办</h3>

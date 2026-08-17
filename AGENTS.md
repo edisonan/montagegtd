@@ -16,6 +16,8 @@ Production/demo URL referenced by the README:
 
 - `https://task.congcong.us`
 
+Environment mapping (IMPORTANT): `testtask` = local (via `/etc/hosts` → `127.0.0.1`), `task` = remote production (`23.238.119.21`). See `docs/environments.md` for details, deployment notes, and Blade view-cache troubleshooting.
+
 ## Tech Stack
 
 - PHP `>=7.0`

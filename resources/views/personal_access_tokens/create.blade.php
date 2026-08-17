@@ -119,32 +119,27 @@
                                         'read' => [
                                             'label' => '读取权限',
                                             'desc' => '允许查看数据，包括文章、任务、订阅源等',
-                                            'icon' => 'fas fa-eye',
-                                            'color' => 'border-blue-300 peer-checked:border-blue-500 peer-checked:bg-blue-50'
+                                            'icon' => 'fas fa-eye'
                                         ],
                                         'write' => [
                                             'label' => '写入权限',
                                             'desc' => '允许创建和修改数据，如添加文章、更新任务',
-                                            'icon' => 'fas fa-edit',
-                                            'color' => 'border-green-300 peer-checked:border-green-500 peer-checked:bg-green-50'
+                                            'icon' => 'fas fa-edit'
                                         ],
                                         'delete' => [
                                             'label' => '删除权限',
                                             'desc' => '允许删除数据，包括文章、任务、订阅源等',
-                                            'icon' => 'fas fa-trash-alt',
-                                            'color' => 'border-red-300 peer-checked:border-red-500 peer-checked:bg-red-50'
+                                            'icon' => 'fas fa-trash-alt'
                                         ],
                                         'admin' => [
                                             'label' => '管理权限',
                                             'desc' => '完全控制权限，包括账户设置和所有数据',
-                                            'icon' => 'fas fa-cog',
-                                            'color' => 'border-purple-300 peer-checked:border-purple-500 peer-checked:bg-purple-50'
+                                            'icon' => 'fas fa-cog'
                                         ],
                                         'code:execute' => [
                                             'label' => 'Code 执行',
                                             'desc' => '允许调用配置为 PAT 鉴权的 Code 应用',
-                                            'icon' => 'fas fa-terminal',
-                                            'color' => 'border-orange-300 peer-checked:border-orange-500 peer-checked:bg-orange-50'
+                                            'icon' => 'fas fa-terminal'
                                         ]
                                     ];
 
@@ -152,31 +147,31 @@
                                 @endphp
 
                                 @foreach($scopes as $scope => $info)
-                                    <label class="cursor-pointer">
+                                    <label class="cursor-pointer block scope-option" data-scope="{{ $scope }}">
                                         <input type="checkbox"
                                                name="scopes[]"
                                                value="{{ $scope }}"
                                                {{ in_array($scope, $oldScopes) ? 'checked' : '' }}
-                                               class="peer sr-only">
-                                        <div class="p-4 rounded-lg border-2 border-gray-200 {{ $info['color'] }} hover:border-gray-300 transition-all duration-200 h-full">
+                                               class="scope-checkbox sr-only">
+                                        <div class="scope-card p-4 rounded-lg border-2 border-gray-200 h-full transition-all duration-200">
                                             <div class="flex items-start gap-3">
                                                 <div class="flex-shrink-0">
-                                                    <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center peer-checked:bg-blue-100 peer-checked:text-blue-600 transition-colors">
-                                                        <i class="{{ $info['icon'] }} text-gray-500 peer-checked:text-blue-500"></i>
+                                                    <div class="scope-icon w-8 h-8 bg-gray-100 rounded flex items-center justify-center transition-colors">
+                                                        <i class="{{ $info['icon'] }} text-gray-500"></i>
                                                     </div>
                                                 </div>
                                                 <div class="flex-1 min-w-0">
-                                                    <div class="font-medium text-gray-800 peer-checked:text-gray-900">
+                                                    <div class="scope-title font-medium text-gray-800">
                                                         {{ $info['label'] }}
                                                         <span class="text-xs font-normal text-gray-500">({{ $scope }})</span>
                                                     </div>
-                                                    <div class="text-xs text-gray-500 mt-2">
+                                                    <div class="scope-desc text-xs text-gray-500 mt-2">
                                                         {{ $info['desc'] }}
                                                     </div>
                                                 </div>
                                                 <div class="flex-shrink-0 ml-2">
-                                                    <div class="w-5 h-5 border-2 border-gray-300 rounded peer-checked:border-blue-500 peer-checked:bg-blue-500 flex items-center justify-center">
-                                                        <i class="fas fa-check text-white text-xs hidden peer-checked:block"></i>
+                                                    <div class="scope-check" aria-hidden="true">
+                                                        <span class="scope-check-mark"></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -442,15 +437,108 @@
     </div>
 
     <style>
-        /* 复选框自定义样式 */
-        input[type="checkbox"]:checked + div .fa-check {
-            display: block !important;
+        /* ===== 权限范围卡片（自定义选中样式，兼容无法依赖 Tailwind peer 变体的场景）===== */
+
+        /* 右侧复选方框：尺寸与样式写在 CSS 内，不依赖 Tailwind/字体图标 */
+        .scope-option .scope-check {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #9ca3af;
+            border-radius: 5px;
+            background-color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
         }
 
-        /* 权限卡片悬停效果 */
-        label input[type="checkbox"] + div:hover {
+        /* 纯 CSS 绘制的白色对勾（默认隐藏） */
+        .scope-option .scope-check .scope-check-mark {
+            display: none;
+            width: 11px;
+            height: 6px;
+            border-left: 2.5px solid #ffffff;
+            border-bottom: 2.5px solid #ffffff;
+            transform: rotate(-45deg);
+            margin-top: -3px;
+        }
+
+        /* 卡片悬停效果 */
+        .scope-option .scope-card:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 选中状态：卡片高亮 + 边框 */
+        .scope-option .scope-checkbox:checked + .scope-card {
+            border-width: 2px;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* 选中后图标圆形底色与图标颜色 */
+        .scope-option .scope-checkbox:checked + .scope-card .scope-icon {
+            background-color: #dbeafe;
+        }
+        .scope-option .scope-checkbox:checked + .scope-card .scope-icon i {
+            color: #2563eb;
+        }
+
+        /* 选中后标题加粗变深 */
+        .scope-option .scope-checkbox:checked + .scope-card .scope-title {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        /* 选中后右侧复选方框：填充主题色并显示纯 CSS 对勾 */
+        .scope-option .scope-checkbox:checked + .scope-card .scope-check {
+            background-color: var(--primary-color, #1744e0);
+            border-color: var(--primary-color, #1744e0);
+        }
+        .scope-option .scope-checkbox:checked + .scope-card .scope-check .scope-check-mark {
+            display: block;
+        }
+
+        /* 各权限对应的选中主题色（保持原设计的颜色区分） */
+        .scope-option[data-scope="read"] .scope-checkbox:checked + .scope-card {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .scope-option[data-scope="read"] .scope-checkbox:checked + .scope-card .scope-check {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .scope-option[data-scope="write"] .scope-checkbox:checked + .scope-card {
+            border-color: #22c55e;
+            background-color: #f0fdf4;
+        }
+        .scope-option[data-scope="write"] .scope-checkbox:checked + .scope-card .scope-check {
+            background-color: #22c55e;
+            border-color: #22c55e;
+        }
+        .scope-option[data-scope="delete"] .scope-checkbox:checked + .scope-card {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        .scope-option[data-scope="delete"] .scope-checkbox:checked + .scope-card .scope-check {
+            background-color: #ef4444;
+            border-color: #ef4444;
+        }
+        .scope-option[data-scope="admin"] .scope-checkbox:checked + .scope-card {
+            border-color: #a855f7;
+            background-color: #faf5ff;
+        }
+        .scope-option[data-scope="admin"] .scope-checkbox:checked + .scope-card .scope-check {
+            background-color: #a855f7;
+            border-color: #a855f7;
+        }
+        .scope-option[data-scope="code:execute"] .scope-checkbox:checked + .scope-card {
+            border-color: #f97316;
+            background-color: #fff7ed;
+        }
+        .scope-option[data-scope="code:execute"] .scope-checkbox:checked + .scope-card .scope-check {
+            background-color: #f97316;
+            border-color: #f97316;
         }
 
         /* 过期时间选项选中效果 */
@@ -799,17 +887,8 @@
                 }, 5000);
             }
 
-            // 权限选择变化时更新样式
-            scopeCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const card = this.closest('label').querySelector('div');
-                    if (this.checked) {
-                        card.classList.add('ring-2', 'ring-blue-300');
-                    } else {
-                        card.classList.remove('ring-2', 'ring-blue-300');
-                    }
-                });
-            });
+            // 依赖 scope-card 的 CSS :checked 规则自动更新选中样式，
+            // 无需在 JS 中手动切换 class（也能保证“全选/取消全选”时样式同步）。
         });
     </script>
 @endsection
