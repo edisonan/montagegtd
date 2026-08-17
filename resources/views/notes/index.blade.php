@@ -1385,6 +1385,64 @@
             }
         }
 
+        // 生成并复制分享链接（后端生成随机码 + 随机访问密码，链接里带 key）
+        function copyNoteShareLink(noteId) {
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
+
+            function fallbackCopy(value) {
+                const textArea = document.createElement('textarea');
+                textArea.value = value;
+                textArea.setAttribute('readonly', 'readonly');
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                let copied = false;
+                try {
+                    copied = document.execCommand('copy');
+                } catch (e) {
+                    copied = false;
+                }
+                document.body.removeChild(textArea);
+                return copied;
+            }
+
+            function done(copied) {
+                if (copied) {
+                    showToast('分享链接已复制（含访问密码）', 'success');
+                } else {
+                    showToast('复制失败，请手动复制', 'error');
+                }
+            }
+
+            function copyUrl(url) {
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(url).then(() => {
+                        done(true);
+                    }).catch(() => {
+                        done(fallbackCopy(url));
+                    });
+                    return;
+                }
+                done(fallbackCopy(url));
+            }
+
+            apiRequest('POST', '/notes/' + Number(noteId) + '/share').then(function(response) {
+                const payload = response && (response.result || response.data);
+                if (!response || Number(response.code) !== 9999 || !payload || !payload.url) {
+                    throw new Error((response && response.msg) ? response.msg : '生成分享链接失败');
+                }
+                copyUrl(String(payload.url));
+            }).catch(function(error) {
+                showToast('生成分享链接失败: ' + (error && error.message ? error.message : '网络错误'), 'error');
+            });
+        }
+
         // 标签过滤
         function filterNotes(tag, evt) {
             const currentFilter = document.querySelector('.filter-tag.active');
@@ -1717,6 +1775,9 @@
                 ? '<button class="operation-btn edit" onclick="window.location=\'/notes/' + Number(note.id) + '/edit\'" title="编辑笔记"><i class="fas fa-edit"></i></button>' +
                   '<button class="operation-btn delete delete_note" note_value="' + Number(note.id) + '" title="删除笔记"><i class="fas fa-trash"></i></button>'
                 : '<button class="operation-btn like like_note" note_value="' + Number(note.id) + '" title="点赞"><i class="far fa-thumbs-up"></i></button>';
+            const shareHtml = isPublic
+                ? '<button class="operation-btn" onclick="copyNoteShareLink(\'' + Number(note.id) + '\')" title="复制分享链接"><i class="fas fa-link"></i></button>'
+                : '';
 
             return (
                 '<div class="note-card" id="note-' + Number(note.id) + '">' +
@@ -1733,6 +1794,7 @@
                         '<div class="note-operations">' +
                             '<button class="operation-btn ai" onclick="openNoteAI(\'' + Number(note.id) + '\')" title="AI助手"><i class="fas fa-robot"></i></button>' +
                             '<button class="operation-btn" onclick="copyNoteContent(\'' + Number(note.id) + '\')" title="复制内容"><i class="fas fa-copy"></i></button>' +
+                            shareHtml +
                             actionsHtml +
                         '</div>' +
                     '</div>' +

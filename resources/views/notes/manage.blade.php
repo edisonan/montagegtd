@@ -580,6 +580,9 @@
                         <button type="button" class="btn btn-danger" id="delete-note-btn" onclick="deleteCurrentNote()" style="display:none;">
                             <i class="fas fa-trash"></i> 删除
                         </button>
+                        <button type="button" class="btn" id="share-link-btn" onclick="copyShareLink()" style="display:none;" title="复制公开分享链接">
+                            <i class="fas fa-link"></i> 分享链接
+                        </button>
                         <button type="button" class="btn btn-primary" onclick="saveCurrentNote()">
                             <i class="fas fa-save"></i> 保存
                         </button>
@@ -790,6 +793,77 @@
             currentStatus = Number(status) === 2 ? 2 : 1;
             document.getElementById('status-private-btn').classList.toggle('active', currentStatus === 1);
             document.getElementById('status-public-btn').classList.toggle('active', currentStatus === 2);
+            updateShareBtn();
+        }
+
+        // 更新分享链接按钮的显隐：已保存且状态为公开时显示
+        function updateShareBtn() {
+            const btn = document.getElementById('share-link-btn');
+            if (btn) {
+                btn.style.display = (currentNoteId && currentStatus === 2) ? '' : 'none';
+            }
+        }
+
+        // 生成并复制公开分享链接（后端生成随机码 + 随机访问密码，链接里带 key）
+        function copyShareLink() {
+            if (!currentNoteId) {
+                showToast('请先保存笔记，再复制分享链接', 'warning');
+                return;
+            }
+            if (!apiRequest) {
+                showToast('API客户端未初始化', 'error');
+                return;
+            }
+
+            function fallbackCopy(value) {
+                const textArea = document.createElement('textarea');
+                textArea.value = value;
+                textArea.setAttribute('readonly', 'readonly');
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                let copied = false;
+                try {
+                    copied = document.execCommand('copy');
+                } catch (e) {
+                    copied = false;
+                }
+                document.body.removeChild(textArea);
+                return copied;
+            }
+
+            function done(copied) {
+                if (copied) {
+                    showToast('分享链接已复制（含访问密码）', 'success');
+                } else {
+                    showToast('复制失败，请手动复制', 'error');
+                }
+            }
+
+            function copyUrl(url) {
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(url).then(function() {
+                        done(true);
+                    }).catch(function() {
+                        done(fallbackCopy(url));
+                    });
+                    return;
+                }
+                done(fallbackCopy(url));
+            }
+
+            apiRequest('POST', '/notes/' + currentNoteId + '/share').then(function(response) {
+                const payload = response && (response.result || response.data);
+                if (!response || Number(response.code) !== 9999 || !payload || !payload.url) {
+                    throw new Error((response && response.msg) ? response.msg : '生成分享链接失败');
+                }
+                copyUrl(String(payload.url));
+            }).catch(function(error) {
+                showToast('生成分享链接失败: ' + (error && error.message ? error.message : '网络错误'), 'error');
+            });
         }
 
         function setEditorState(text, iconClass) {

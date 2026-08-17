@@ -95,6 +95,8 @@ montage note record ./idea.mp3 --content "临时想法"
 - `status=2` 记公开，但**仍需 `audit_status=1` 审核通过**才会进入他人可见列表。
 - 笔记详情接口 `GET /notes/{id}` 仅作者可读；更新/删除也是作者权限。
 - 你"把笔记设为公开/分享"时返回值不等于"别人立刻能看到"，要向用户说明审核前提。
+- 公开笔记支持免登录分享链接 `GET /notes/share/{token}`：随机码定位（不用笔记 ID），未审核的公开笔记也能分享；分享带随机密码，URL 需带 `?key=`，无 key/错误 key 时显示密码输入页。列表页/管理页的"复制分享链接"按钮调用 `POST /api/v2/notes/{id}/share` 生成链接并复制（每次生成都会重置随机密码，旧 key 失效）。
+- 后台 `/admin/notes` 可审核公开笔记（审核通过/撤销审核，`audit_status` 0↔1）。
 
 ## 字段
 

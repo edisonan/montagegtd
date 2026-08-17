@@ -27,6 +27,7 @@ Route::group ( [
 	$router->resource ( 'kindlelogs', KindleLogController::class );
 	$router->resource ( 'minds', MindController::class );
 	$router->resource ( 'notes', NoteController::class );
+	$router->post ( 'notes/audit/{id}', 'NoteController@audit' );
 	$router->resource ( 'focus', FocusController::class );
 	$router->resource ( 'settings', SettingController::class );
 	$router->resource ( 'tasks', TaskController::class );

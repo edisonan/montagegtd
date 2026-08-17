@@ -33,6 +33,7 @@ Note 用于记录想法、知识片段、文章摘录、任务/专注/手账关�
 | POST | `/notes/upload` | `NoteController@upload` | 旧 Web 音频上传 |
 | GET | `/note/getRecord/{note}` | `NoteController@getRecord` | 旧 Web 音频读取 |
 | GET | `/note/welcome` | `NoteController@welcome` | 笔记介绍页 |
+| GET | `/notes/share/{token}` | `NoteController@share` | 公开笔记只读分享页（免登录，随机码定位，可选密码 `?key=`） |
 
 Web 控制器保留了旧表单兼容能力。现代前端页面 `resources/views/notes/index.blade.php` 和 `resources/views/notes/update.blade.php` 实际主要通过 `TaskApiBridge` 调用 `/api/v2/notes*`。
 
@@ -50,6 +51,7 @@ Web 控制器保留了旧表单兼容能力。现代前端页面 `resources/view
 | PUT | `/notes/{note}` | `hybrid.token:write` | `update` | 更新正文和状态 |
 | DELETE | `/notes/{note}` | `hybrid.token:write` | `destroy` | 删除笔记 |
 | POST | `/notes/{note}/like` | `hybrid.token:write` | `like` | 点赞兼容接口，目前不落库 |
+| POST | `/notes/{note}/share` | `hybrid.token:write` | `shareLink` | 生成/刷新公开笔记分享链接（随机码 + 随机密码） |
 
 API 响应沿用统一结构：
 
@@ -117,6 +119,7 @@ API 响应沿用统一结构：
 - 当前用户自己的笔记全部可见。
 - 其他用户笔记只有 `status=2` 且 `audit_status=1` 才进入列表。
 - 查询结果按 `id desc` 排序，每页 20 条。
+- 分享页 `GET /notes/share/{token}` 免登录可见：用 `share_token` 随机码定位（不使用笔记 ID），只要 `status=2` 即可（分享链接不受 `audit_status` 限制，未审核的公开笔记也能分享）；若笔记带 `share_password`，URL 需携带正确的 `key` 才能查看内容。
 
 ### 4.2 来源预填逻辑
 
@@ -512,7 +515,9 @@ note_created:note:{note_id}:rule:{rule_id}
 `app/Admin/Controllers/NoteController.php`：
 
 - 按 `id desc` 展示。
-- 展示 ID、创建者、内容、创建时间。
+- 展示 ID、创建者、笔记状态（私密/公开）、审核状态（待审核/已通过）、内容、创建时间。
+- 支持按 `user_id`、`status`、`audit_status` 过滤。
+- 公开笔记提供"审核通过/撤销审核"操作，通过 `POST /admin/notes/audit/{id}`（body `value=0|1`）更新 `audit_status`，是当前唯一把 `audit_status` 置为 `1` 的入口。
 - 禁用创建、行选择和默认操作。
 - 支持按 `user_id` 过滤。
 
@@ -525,7 +530,9 @@ note_created:note:{note_id}:rule:{rule_id}
 3. `note_tag_maps.status` 字段当前未参与查询过滤。
 4. 删除笔记不会清理标签关系、音频文件或图片文件。
 5. Web 旧创建接口不会触发 V2 的积分和成就逻辑。
-6. `GET /api/v2/notes/{note}` 只允许作者读取，公开笔记不能通过详情接口直接读取。
-7. 音频读取对公开笔记只判断 `status=2`，没有判断 `audit_status=1`。
+6. `GET /api/v2/notes/{note}` 只允许作者读取，公开笔记不能通过详情接口直接读取；公开读者走 `GET /notes/share/{token}` 免登录分享页（随机码定位）。
+7. 音频读取对公开笔记只判断 `status=2`，没有判断 `audit_status=1`；分享页暂不提供匿名播放语音（现有录音读取路由要求登录态）。
 8. 当前代码的来源类型主要是数字枚举，但存在前端传值不一致的风险：例如 LLM 页面传 `source_type: 'llm'`，部分文章详情入口曾出现传 `source_type=3` 的路径；`notes.source_type` 当前数据库类型是 `tinyint(4)`，这类入口需要单独核对。
 9. `database/db.sql` 中的 `notes` 表结构落后于当前本地数据库，缺少 `source_type/source_id` 字段；排查表结构时应优先以迁移和实际库为准。
+10. 公开笔记分享：`GET /notes/share/{token}` 免登录只读页，随机码定位（`notes.share_token`）、不暴露笔记 ID，仅校验 `status=2`，不校验 `audit_status`；分享链接由 `POST /api/v2/notes/{note}/share` 生成，每次生成都会重置随机密码（bcrypt 存 `notes.share_password`），URL 形式为 `/notes/share/{token}?key={password}`，无 key 或 key 错误时进入密码输入页。列表页/管理页均有"复制分享链接"按钮。
+11. 后台审核入口：`/admin/notes` 可把 `audit_status` 置为 `1`/`0`；`NoteService::update()` 在正文/标题变化时仍会把 `audit_status` 重置为 `0`，需重新审核。

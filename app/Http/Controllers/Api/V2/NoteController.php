@@ -187,6 +187,42 @@ class NoteController extends Controller
         )));
     }
 
+    /**
+     * 生成/刷新公开笔记分享链接。
+     *
+     * 规则：
+     * - 仅作者可操作，且仅 `status=2` 的公开笔记可分享（不要求 `audit_status=1`，未审核的公开笔记也能分享）。
+     * - 分享链接使用随机码 `share_token` 定位，不使用笔记 ID。
+     * - 每次调用都会重新生成随机访问密码（bcrypt 落库），旧链接中的 key 将失效。
+     *
+     * @param Request $request
+     * @param Note $note
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function shareLink(Request $request, Note $note)
+    {
+        $this->authorize('destroy', $note);
+
+        if ((int)$note->status !== 2) {
+            throw new CustomException('仅公开笔记可生成分享链接');
+        }
+
+        if (empty($note->share_token)) {
+            $note->share_token = str_random(24);
+        }
+        $password = str_random(12);
+        $note->share_password = bcrypt($password);
+        $note->save();
+
+        $url = url('/notes/share/' . $note->share_token) . '?key=' . urlencode($password);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'url' => $url,
+            'token' => $note->share_token,
+            'password' => $password,
+        )));
+    }
+
     protected function resolveNameAndContent(Request $request)
     {
         if ($request->has('content')) {

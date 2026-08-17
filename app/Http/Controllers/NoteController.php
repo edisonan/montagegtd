@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Services\TagService;
 use App\Exceptions\CustomException;
 use App\Http\Utils\ResponseDataUtil;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * 笔记控制器
@@ -33,7 +34,8 @@ class NoteController extends Controller {
 	public function __construct(NoteService $noteService) {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
-						'welcome' 
+						'welcome',
+						'share' 
 				] 
 		] );
 		
@@ -156,6 +158,47 @@ class NoteController extends Controller {
 	    $this->noteService->update ( $note, $name, $content, $request->status, $tags );
 	    
 	    return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc (), '/notes' );
+	}
+
+	/**
+	 * 公开笔记分享页（免登录）。
+	 * 通过随机码 share_token 定位笔记（不使用笔记ID），
+	 * 若笔记带分享密码，则需要 URL 中携带正确的 key 才能查看。
+	 *
+	 * @param Request $request        	
+	 * @param string $token        	
+	 */
+	public function share(Request $request, $token) {
+		$note = Note::where ( 'share_token', $token )->first ();
+		
+		// 随机码不存在或笔记非公开：不泄露任何信息
+		if (empty ( $note ) || ( int ) $note->status !== 2) {
+			return view ( 'notes.share', array (
+					'note' => null,
+					'locked' => false,
+					'wrong' => false 
+			) );
+		}
+		
+		// 带密码分享：校验 URL 中的 key
+		if (! empty ( $note->share_password )) {
+			$key = ( string ) $request->input ( 'key', '' );
+			if ($key === '' || ! Hash::check ( $key, $note->share_password )) {
+				return view ( 'notes.share', array (
+						'note' => $note,
+						'locked' => true,
+						'wrong' => $key !== '' 
+				) );
+			}
+		}
+		
+		$note->load ( 'user', 'noteTagMaps.tag' );
+		
+		return view ( 'notes.share', array (
+				'note' => $note,
+				'locked' => false,
+				'wrong' => false 
+		) );
 	}
 
 	protected function resolveNameAndContent(Request $request) {
