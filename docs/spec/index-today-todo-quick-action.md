@@ -1,7 +1,7 @@
 # 首页待办「设为今日待办」快捷操作 规格说明
 
-状态：Draft
-版本：0.2
+状态：Accepted（已确认并实现）
+版本：0.3
 日期：2026-07-23
 范围：首页（`/index`）待办面板（仅首页，不影响 `/tasks` 列表页与四象限页）
 
@@ -9,7 +9,7 @@
 
 首页右侧「待办事项」面板是高频操作台。目前每条任务的悬浮操作栏（`.task-actions`）已提供添子任务、置顶、设为正在做、编辑、时间设置、评分备注、删除、折叠、记想法等操作，但缺少一个"快速把任务排到今天"的入口。
 
-目标：在待办项操作栏中新增一个快捷操作按钮，点击后弹出「设为今日待办」弹窗，快速把该任务的截止时间（`deadline`）设为今天（默认当天 18:00，支持 ±10 分钟微调，已有 deadline 时回填原值），并在**首页待办面板**的列表排序中让"越接近今天的 deadline 越靠前"。
+目标：在待办项操作栏中新增一个快捷操作按钮，点击后弹出「设为今日待办」弹窗，快速把该任务的截止时间（`deadline`）设为今天（快捷方式含 ±10 分钟微调、今天 18:00、延迟至明天；已有 deadline 时回填原值；**无 deadline 时不预填**），并在**首页待办面板**提供视觉标示：今天是绿色横线、超期是红色横线；列表排序让"越接近今天的 deadline 越靠前"。
 
 ## 2. 现状梳理
 
@@ -31,8 +31,6 @@
 
 ### 2.3 排序现状（后端，保持不变）
 
-`TaskRepository::getUserAllListByStatusMode()`（L103）：
-
 ```php
 $tasks->orderBy('is_top', 'desc')
      ->orderBy('priority', 'desc')
@@ -43,20 +41,21 @@ $tasks->orderBy('is_top', 'desc')
 
 ## 3. 需求拆解
 
-1. 待办项操作栏新增一个快捷操作按钮。
+1. 待办项操作栏新增一个快捷操作按钮（位于「正在做」按钮之后）。
 2. 点击弹出「设为今日待办」弹窗。
 3. 弹窗内展示截止时间输入：
    - 若任务已有 `deadline`：回填展示之前的 deadline 时间；
-   - 否则默认当天 18:00（若当前已过 18:00，顺延 3 小时，见 4.3）。
-4. 提供「+10 分钟 / -10 分钟」快捷微调。
-5. 保存后任务获得当天 deadline；**首页待办面板**排序让"有 deadline 且越接近当前时间（今天）的越靠前"。
-6. **排序约束（已确认）**：置顶（`is_top`）仍为第一优先级，始终排最前；排序仅在首页待办面板生效，不影响 `/tasks` 列表页与四象限页。
+   - 若无 deadline：**不默认填充**，输入框留空。
+4. 快捷录入按钮：`-10 分钟`、`+10 分钟`、`今天 18:00`、`延迟至明天`、`清空`。
+5. 视觉标示：deadline 为今天的任务顶部显示**绿色横线**；已超期的显示**红色横线**。
+6. 保存后任务获得当天 deadline；**首页待办面板**排序让"有 deadline 且越接近当前时间（今天）的越靠前"。
+7. **排序约束（已确认）**：置顶（`is_top`）仍为第一优先级，始终排最前；排序仅在首页待办面板生效，不影响 `/tasks` 列表页与四象限页。
 
 ## 4. 交互规格
 
 ### 4.1 操作栏按钮
 
-位置：`.task-actions` 内，紧跟「时间设置」（`far fa-clock`）按钮之后。
+位置：`.task-actions` 内，紧跟「正在做」（`toggleTaskDoing`）按钮之后。
 
 ```html
 <button class="action-button text-gray-400 hover:text-sky-500"
@@ -66,8 +65,9 @@ $tasks->orderBy('is_top', 'desc')
 </button>
 ```
 
-- 图标建议 `fa-calendar-check`，hover 用 sky/cyan 系色（区别于现有蓝/绿/黄/红/紫）。
-- 所有任务（含子任务）都渲染该按钮；行为见 9.5。
+- 图标 `fa-calendar-check`，hover 用 sky/cyan 系色（区别于现有蓝/绿/黄/红/紫）。
+- 按钮顺序：… 置顶 → 正在做 → **设为今日待办** → 编辑 → 时间设置 → …
+- 所有任务（含子任务）都渲染该按钮；行为见 9.6。
 
 ### 4.2 弹窗结构与状态
 
@@ -75,11 +75,13 @@ $tasks->orderBy('is_top', 'desc')
 
 - 标题：**设为今日待办**；右上角 × 关闭。
 - 任务名展示（只读）。
-- 截止时间：`datetime-local` 输入框（id 建议 `todayTaskDeadlineInput`）。
-- 快捷操作行：
+- 截止时间：`datetime-local` 输入框（id `todayTaskDeadlineInput`，placeholder：选择时间或使用上方快捷按钮）。
+- 快捷录入按钮行（输入框上方）：
   - `-10 分钟`（`far fa-minus`）
   - `+10 分钟`（`far fa-plus`）
-  - （可选项）`今天 18:00` 重置、`清除`（清除时后端传 `deadline: null`）
+  - `今天 18:00`（重置为当天 18:00）
+  - `延迟至明天`（置为次日 18:00）
+  - `清空`（保存时后端传 `deadline: null`）
 - 底部：`取消` / `设为今日待办`（主按钮）。
 
 ### 4.3 打开与默认值逻辑
@@ -88,33 +90,47 @@ $tasks->orderBy('is_top', 'desc')
 
 1. `GET /api/v2/tasks/{id}` 拉取任务。
 2. `task.deadline` 非空 → 用 `toLocalDatetimeValue(deadline)` 回填输入框（**展示之前 deadline 时间**）。
-3. 为空 → 按以下规则取默认值：
-   - 当前时刻 ≤ 当天 18:00：默认当天 18:00（`YYYY-MM-DDT18:00`）；
-   - 当前时刻 > 当天 18:00：默认值顺延为**当前时刻 + 3 小时**（分钟取整，跨天自然顺延）。
-4. 打开弹窗并聚焦输入框。
+3. 为空 → **不预填**，输入框留空，由用户通过快捷按钮或手动选择录入。
 
-### 4.4 ±10 分钟微调
+隐藏基准值 `buildTodayTaskDefaultDeadline()`（**仅用于输入为空时 ±10 分钟等快捷按钮的起点计算，不写入输入框**）：
 
-`adjustTodayTaskDeadline(deltaMin)`：
+- 当天 18:00；
+- 若当前时刻已过当天 18:00，顺延为当前时刻 + 3 小时（分钟取整，跨天自然顺延）。
 
-- 读取当前输入值（`datetime-local`），±10 分钟写入回输入框（复用 `formatLocalDatetimeInput`）。
-- 支持连续点击叠加。
-- 输入为空时点击：基于默认值（4.3 规则）计算。
+### 4.4 快捷按钮行为
+
+- `adjustTodayTaskDeadline(±10)`：读取当前输入值 ±10 分钟；输入为空时基于隐藏基准值（4.3）计算；支持连续点击叠加。
+- `resetTodayTaskDeadline()`：输入框置为**当天 18:00**（显式填充）。
+- `delayTodayTaskDeadlineToTomorrow()`：输入框置为**次日 18:00**（显式填充）。
+- `clearTodayTaskDeadline()`：清空输入框。
 
 ### 4.5 保存
 
 `saveTodayTaskModal()`：
 
-- `PUT /api/v2/tasks/{id}`，body：`{ "deadline": toApiDatetimeValue(inputValue) }`（转为 `Y-m-d H:i:s`）。
-- 成功：关闭弹窗 → `showtasks()` 刷新 → 新排序立即生效，提示"已设为今日待办"。
+- `PUT /api/v2/tasks/{id}`，body：`{ "deadline": toApiDatetimeValue(inputValue) }`（`datetime-local` → `Y-m-d H:i:s`；输入为空传 `null`）。
+- 成功：关闭弹窗 → `showtasks()` 刷新 → 新排序与视觉标示立即生效，提示"已设为今日待办"。
 - 失败：沿用 `showNotification('error', …)` 提示，不关闭弹窗。
+
+### 4.6 视觉标示（今日待办横线）
+
+任务列表项顶部叠加一条 3px 横线（`position: absolute; top: 0`，任务卡片需加 `relative`）：
+
+- `deadline` 为**今天**（与当前日期同年月日）：**绿色横线**（`deadline-today`，`--success-color`）；
+- `deadline` **早于当前时刻**（已超期）：**红色横线**（`deadline-overdue`，`--danger-color`）；
+- 其他（无 deadline、或未来非今天）：不显示。
+
+判定按"今天"优先：
+
+1. 先判断是否今天 → 绿色；
+2. 否则判断是否早于当前时刻 → 红色；
+3. 否则（未来且非今天）→ 无色。
 
 ## 5. 数据与接口
 
 - 读：`GET /api/v2/tasks/{id}`（已返回 `deadline`，无需改动）。
 - 写：`PUT /api/v2/tasks/{id}` 已支持 `deadline` 字段，**无需后端改动**。
 - 数据库：`tasks.deadline` 已存在，无迁移。
-- 文档：`docs/openapi-v2.md` 中 `PUT /tasks/{task}` 参数表若未列 `deadline`，本次实现时一并补齐（该字段实际已被 v2 校验规则支持）。
 
 ## 6. 排序规格（核心，仅首页待办面板）
 
@@ -122,7 +138,7 @@ $tasks->orderBy('is_top', 'desc')
 
 分组与排序算法：
 
-1. **分组**：遍历后端返回的任务列表，`parent_task_id == null` 的任务开启新组，其余（子任务、孙任务）追加到当前组尾部——保持父子相邻。
+1. **分组**：遍历后端返回的任务列表，`parent_task_id == null/0/undefined` 的任务开启新组，其余（子任务、孙任务）追加到当前组尾部——保持父子相邻。
 2. **组级排序键**（从高到低）：
    - ① `is_top` 降序 —— 置顶任务始终最前（第一优先级，已确认不变）；
    - ② 是否为"有 deadline"分组 —— 有 `deadline` 的组排在无 `deadline` 的组之前；
@@ -141,41 +157,48 @@ $tasks->orderBy('is_top', 'desc')
 
 | 文件 | 改动 |
 | --- | --- |
-| `resources/views/index/index.blade.php` | ① `createTaskListItem` 的 `.task-actions` 增加快捷按钮；② 新增 `#todayTaskModal` 弹窗 HTML（参考 `#taskScheduleModal`）；③ 新增 `openTodayTaskModal` / `adjustTodayTaskDeadline` / `saveTodayTaskModal` / `closeTodayTaskModal`（复用 `toLocalDatetimeValue` / `toApiDatetimeValue` / `showNotification` / `apiRequest`）；④ `showtasks()` 内增加第 6 节的"分组 → 稳定排序 → 扁平化"逻辑 |
-| `docs/openapi-v2.md`（若缺） | `PUT /tasks/{task}` 参数表补充 `deadline` |
+| `resources/views/index/index.blade.php` | ① `createTaskListItem` 的 `.task-actions` 增加快捷按钮（位于「正在做」之后），`<li>` 增加 `relative` 并在顶部插入 `getTodayDeadlineBarHtml(data.deadline)` 生成的横线；② 新增 `#todayTaskModal` 弹窗 HTML（含 ±10 分钟 / 今天 18:00 / 延迟至明天 / 清空快捷按钮）；③ 新增 `openTodayTaskModal`（无 deadline 不预填）/ `adjustTodayTaskDeadline` / `resetTodayTaskDeadline` / `delayTodayTaskDeadlineToTomorrow` / `clearTodayTaskDeadline` / `saveTodayTaskModal` / `closeTodayTaskModal` / `getTodayDeadlineBarHtml`（复用 `toLocalDatetimeValue` / `toApiDatetimeValue` / `showNotification` / `apiRequest`）；④ `showtasks()` 内增加第 6 节的"分组 → 稳定排序 → 扁平化"逻辑；⑤ `<style>` 块增加 `.deadline-bar` / `.deadline-today` / `.deadline-overdue` 样式 |
 
 **后端（`TaskRepository` / `TaskService` / 控制器）不改动。**
 
 ## 8. 验收标准
 
-1. 首页任一待办项 hover 出现操作栏，含新"设为今日待办"按钮。
+1. 首页任一待办项 hover 出现操作栏，新"设为今日待办"按钮位于「正在做」按钮之后。
 2. 点击后弹出弹窗，标题为"设为今日待办"。
-3. 无 deadline 的任务：输入框默认当天 18:00（已过 18:00 时默认当前时刻 + 3 小时）；已有 deadline 的任务：回填原时间。
-4. 点 ±10 分钟，输入值相应增减，可叠加；点保存，任务 deadline 更新成功并提示。
-5. 保存后首页列表刷新，排序满足：置顶始终最前；有 deadline 的任务排在没有的之前；deadline 越接近当前时间越靠前；其余顺序与现状一致，父子任务保持相邻。
-6. `/tasks` 列表页与 `/taskpriority` 排序与现状完全一致（未受影响）。
-7. 全部改动后 `npm run dev` 编译通过，首页无 JS 报错。
+3. 已有 deadline 的任务：输入框回填原时间；**无 deadline 的任务：输入框留空（不预填）**。
+4. 快捷按钮：
+   - ±10 分钟：输入值相应增减，可叠加；空输入时基于隐藏基准值（当天 18:00 / 已过 18:00 顺延 3 小时）；
+   - `今天 18:00`：置为当天 18:00；`延迟至明天`：置为次日 18:00；`清空`：清空输入。
+5. 点保存：deadline 更新成功并提示；空输入保存则清除 deadline（传 `null`）。
+6. **视觉标示**：deadline 为今天的任务卡片顶部显示 3px 绿色横线；已超期的显示红色横线；未来非今天的、无 deadline 的不显示。
+7. 保存后首页列表刷新，排序满足：置顶始终最前；有 deadline 的任务排在没有的之前；deadline 越接近当前时间越靠前；其余顺序与现状一致，父子任务保持相邻。
+8. `/tasks` 列表页与 `/taskpriority` 排序与现状完全一致（未受影响）。
+9. 全部改动后首页无 JS 报错（index 为纯内联 JS，无打包依赖）。
 
 ## 9. 边界情况
 
-1. **空输入保存**：弹窗内用户清空输入后保存 → `deadline` 传 `null`，任务进入无 deadline 分组（排序靠后）。`update()` 的校验允许 `null`。
-2. **过期时间**：`PUT update()` 不校验过去时间（仅 `store` 校验），回填历史 deadline 或微调后仍可保存；已过期任务按距当前时刻的接近程度参与排序（刚过期的排在很久以前过期的前面）。
-3. **默认值"顺延 3 小时"的边界**：当前时刻 = 当天 18:00 整时，按"≤ 18:00"处理，默认当天 18:00；跨天场景（如 23:30 打开，默认次日 02:30）自然顺延，`datetime-local` 自动切换到次日日期。
-4. **时区**：`datetime-local` 为浏览器本地时间，转换复用现有 `toLocalDatetimeValue` / `toApiDatetimeValue`，与现有「任务时间设置」弹窗约定一致，无需新逻辑。
-5. **子任务**：子任务同样显示该按钮并可单独设 deadline；排序上子任务跟随父任务位置，不单独上浮（见第 6 节）。
-6. **性能**：排序为纯前端操作，任务量级为个人待办，无性能问题。
-7. **并发**：沿用现有 `apiRequest` 流程，无新增并发风险。
+1. **空输入保存**：弹窗内用户清空输入后保存 → `deadline` 传 `null`，任务进入无 deadline 分组（排序靠后、无横线）。`update()` 的校验允许 `null`。
+2. **过期时间**：`PUT update()` 不校验过去时间（仅 `store` 校验），回填历史 deadline 或微调后仍可保存；已过期任务显示红色横线，并按距当前时刻的接近程度参与排序。
+3. **隐藏基准值边界**：当前时刻 = 当天 18:00 整时，按"≤ 18:00"处理，基准为当天 18:00；跨天场景（如 23:30 打开，基准为次日 02:30）自然顺延，`datetime-local` 自动切换到次日日期。
+4. **今日判定边界**：以本地时区"同年月日"判定"今天"；23:59 的 deadline 也属于今天（绿色）；午夜后一分钟的昨天 deadline 立即变红。
+5. **时区**：`datetime-local` 为浏览器本地时间，转换复用现有 `toLocalDatetimeValue` / `toApiDatetimeValue`，与现有「任务时间设置」弹窗约定一致，无需新逻辑。
+6. **子任务**：子任务同样显示该按钮并可单独设 deadline；排序上子任务跟随父任务位置，不单独上浮（见第 6 节）；横线按子任务自身 deadline 判定。
+7. **性能**：排序与标示均为纯前端操作，任务量级为个人待办，无性能问题。
+8. **并发**：沿用现有 `apiRequest` 流程，无新增并发风险。
 
 ## 10. 已确认决策
 
 1. **排序口径**：按 deadline 距"当前时刻"的绝对值升序（今天 18:00 排明天之前，刚过期紧随其后）。
-2. **默认值已过 18:00 时**：顺延为当前时刻 + 3 小时。
+2. **默认值已过 18:00 时**：隐藏基准顺延为当前时刻 + 3 小时（仅作为空输入时快捷按钮起点，不预填）。
 3. **排序生效范围**：仅首页待办面板（前端排序），不影响 `/tasks` 列表页与四象限页。
 4. **置顶第一优先级**：`is_top` 始终排最前，保持不变。
+5. **按钮位置**：位于「正在做」按钮之后。
+6. **无 deadline 不预填**：输入框留空，不做默认填充。
+7. **新增「延迟至明天」**：快捷按钮置为次日 18:00。
+8. **视觉标示**：今天=绿色横线，超期=红色横线，其他不显示。
 
 ## 11. 遗留待确认项（小项）
 
-1. "顺延 3 小时"的精确口径：本规格按"当前时刻 + 3 小时"理解；若意图是固定"18:00 + 3 小时 = 21:00"，请指出。
-2. 按钮位置与图标：默认"时间设置"之后 + `fa-calendar-check`；如需调整可改。
-3. 是否提供「清除」（把任务移出今日待办分组）按钮：默认提供，可去掉。
-4. 子任务是否允许"设为今日待办"：默认允许（与现有操作栏一致）。
+1. 「延迟至明天」固定为次日 18:00；如需"顺延 24 小时（保留当前时刻）"，请指出。
+2. 横线样式细节（3px 顶部横线）：如需加"今日待办/已超期"文字标签或改为左侧竖条，可再调整。
+3. 子任务是否允许"设为今日待办"：默认允许（与现有操作栏一致）。

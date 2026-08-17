@@ -371,13 +371,17 @@
                                         onclick="resetTodayTaskDeadline()" title="重置为今天 18:00">
                                     <i class="fas fa-undo mr-1"></i>今天 18:00
                                 </button>
+                                <button type="button" class="text-xs px-2 py-1 bg-amber-100 text-amber-600 rounded hover:bg-amber-200 transition-colors"
+                                        onclick="delayTodayTaskDeadlineToTomorrow()" title="延迟至明天 18:00">
+                                    <i class="fas fa-calendar-plus mr-1"></i>延迟至明天
+                                </button>
                                 <button type="button" class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors"
                                         onclick="clearTodayTaskDeadline()">
                                     清空
                                 </button>
                             </div>
                         </div>
-                        <input id="todayTaskDeadlineInput" type="datetime-local" class="input w-full mt-1">
+                        <input id="todayTaskDeadlineInput" type="datetime-local" class="input w-full mt-1" placeholder="选择时间或使用上方快捷按钮">
                     </div>
                 </div>
                 <div class="px-5 py-4 border-t border-gray-200 flex justify-end gap-2">
@@ -459,6 +463,22 @@
         /* 任务和专注项样式 */
         .task-item, .focus-item {
             transition: all 0.2s ease;
+        }
+
+        /* 今日待办标示横线：今天=绿，超期=红 */
+        .deadline-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 6px 6px 0 0;
+        }
+        .deadline-today {
+            background: var(--success-color);
+        }
+        .deadline-overdue {
+            background: var(--danger-color);
         }
 
         .task-item:hover, .focus-item:hover {
@@ -1426,6 +1446,28 @@
     `;
         }
 
+        // 今日待办视觉标示：deadline 为今天 → 绿色横线；已超期 → 红色横线；其他 → 不显示
+        function getTodayDeadlineBarHtml(deadline) {
+            if (!deadline) {
+                return '';
+            }
+            const dl = new Date(String(deadline).replace(' ', 'T'));
+            if (isNaN(dl.getTime())) {
+                return '';
+            }
+            const now = new Date();
+            const isToday = dl.getFullYear() === now.getFullYear() &&
+                dl.getMonth() === now.getMonth() &&
+                dl.getDate() === now.getDate();
+            if (isToday) {
+                return '<div class="deadline-bar deadline-today" title="今日待办"></div>';
+            }
+            if (dl.getTime() < now.getTime()) {
+                return '<div class="deadline-bar deadline-overdue" title="已超期"></div>';
+            }
+            return '';
+        }
+
         // 创建任务列表项
         function createTaskListItem(data, listType) {
             const isChild = data.parent_task_id !== null;
@@ -1438,9 +1480,11 @@
             const reviewNote = escapeHtml(data.review_note || '');
             const scheduleSummary = [formatDateTime(data.planned_start_time), formatDateTime(data.planned_end_time)].filter(Boolean).join(' ~ ');
             const remindSummary = formatDateTime(data.remindtime);
+            const deadlineBarHtml = getTodayDeadlineBarHtml(data.deadline);
 
             return `
-    <li id="task${data.id}" class="task-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors ${isChild ? 'child-task ml-8' : ''}">
+    <li id="task${data.id}" class="task-item relative bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors ${isChild ? 'child-task ml-8' : ''}">
+        ${deadlineBarHtml}
         <div class="flex items-start gap-3">
             <!-- 复选框 -->
             <div class="flex-shrink-0">
@@ -1487,6 +1531,12 @@
                 <i class="fas fa-bolt ${isDoing || isDoingList ? 'text-emerald-500' : ''}"></i>
             </button>
 
+            <button class="action-button text-gray-400 hover:text-sky-500"
+                    onclick="openTodayTaskModal(${data.id})"
+                    title="设为今日待办">
+                <i class="fas fa-calendar-check"></i>
+            </button>
+
             <button class="action-button text-gray-400 hover:text-blue-500"
                     onclick="editTask(${data.id})"
                     title="编辑">
@@ -1497,12 +1547,6 @@
                     onclick="openTaskScheduleModal(${data.id})"
                     title="时间设置">
                 <i class="far fa-clock"></i>
-            </button>
-
-            <button class="action-button text-gray-400 hover:text-sky-500"
-                    onclick="openTodayTaskModal(${data.id})"
-                    title="设为今日待办">
-                <i class="fas fa-calendar-check"></i>
             </button>
 
             <button class="action-button text-gray-400 hover:text-amber-500"
@@ -2445,7 +2489,8 @@
         }
 
         // ===== 设为今日待办 =====
-        // 默认截止时间：当天 18:00；若当前已过 18:00，顺延为当前时刻 + 3 小时
+        // 隐藏基准值（仅用于输入为空时 ±10 分钟等快捷按钮的起点计算，不预填）：
+        // 当天 18:00；若当前已过 18:00，顺延为当前时刻 + 3 小时
         function buildTodayTaskDefaultDeadline() {
             const now = new Date();
             const today18 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
@@ -2473,7 +2518,8 @@
                     // 已有 deadline：回填展示之前的截止时间
                     input.value = toLocalDatetimeValue(task.deadline);
                 } else {
-                    input.value = formatLocalDatetimeInput(buildTodayTaskDefaultDeadline());
+                    // 无 deadline：不默认填充，留空让用户选择快捷录入
+                    input.value = '';
                 }
                 document.getElementById('todayTaskModal').classList.remove('hidden');
             }).catch(function() {
@@ -2503,6 +2549,13 @@
             const now = new Date();
             const today18 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0);
             document.getElementById('todayTaskDeadlineInput').value = formatLocalDatetimeInput(today18);
+        }
+
+        // 快捷方式：延迟至明天 18:00
+        function delayTodayTaskDeadlineToTomorrow() {
+            const now = new Date();
+            const tomorrow18 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 18, 0, 0);
+            document.getElementById('todayTaskDeadlineInput').value = formatLocalDatetimeInput(tomorrow18);
         }
 
         function clearTodayTaskDeadline() {
