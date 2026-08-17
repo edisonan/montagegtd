@@ -133,12 +133,12 @@
     </div>
 
     <div id="planModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closePlanModal(event)">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4" onclick="event.stopPropagation()">
-            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between shrink-0">
                 <div class="font-semibold text-gray-900">添加学习计划</div>
                 <button class="text-gray-400 hover:text-gray-600" onclick="closePlanModal()"><i class="fas fa-times"></i></button>
             </div>
-            <form class="p-4 space-y-3" id="planForm">
+            <form class="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto" id="planForm">
                 <div>
                     <label class="text-sm text-gray-700">计划名称</label>
                     <input class="input w-full mt-1" name="name" required maxlength="255" />
@@ -252,12 +252,12 @@
     </div>
 
     <div id="checkinModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeCheckinModal(event)">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4" onclick="event.stopPropagation()">
-            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between shrink-0">
                 <div class="font-semibold text-gray-900">学习打卡</div>
                 <button class="text-gray-400 hover:text-gray-600" onclick="closeCheckinModal()"><i class="fas fa-times"></i></button>
             </div>
-            <form class="p-4 space-y-3" id="checkinForm">
+            <form class="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto" id="checkinForm">
                 <input type="hidden" name="task_id" />
                 <div>
                     <label class="text-sm text-gray-700">打卡文字</label>
@@ -1053,6 +1053,23 @@
                 return;
             }
             alert(resp && resp.msg ? resp.msg : '打卡失败');
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Escape') return;
+            const modalMap = [
+                ['planModal', 'closePlanModal'],
+                ['quickPlanModal', 'closeQuickPlanModal'],
+                ['checkinModal', 'closeCheckinModal'],
+                ['planListModal', 'closePlanListModal']
+            ];
+            for (let i = 0; i < modalMap.length; i++) {
+                const m = document.getElementById(modalMap[i][0]);
+                if (m && !m.classList.contains('hidden')) {
+                    window[modalMap[i][1]]();
+                    return;
+                }
+            }
         });
 
         document.addEventListener('DOMContentLoaded', function() {
