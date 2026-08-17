@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CodeHistory extends Model
 {
-    protected $table = 'code_historys';
+    protected $table = 'code_histories';
     
     protected $fillable = [
         'code_id',

@@ -1,7 +1,7 @@
 interface:
-  display_name: "App Workbench"
+  display_name: "Montage App"
   short_description: "快速创建和管理可预览的 Montage 应用工作台项目"
-  default_prompt: "使用 $app-workbench 快速创建或管理一个应用工作台项目。"
+  default_prompt: "使用 $montageapp 快速创建或管理一个应用工作台项目。"
 
 policy:
   allow_implicit_invocation: true

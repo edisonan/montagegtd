@@ -1,11 +1,32 @@
 ---
-name: app-workbench
-description: Create and manage small web apps in the Montage application workbench. Use when the user or an automation agent asks to create, scaffold, update, preview, publish, inspect, or maintain an APP under /admin/applications, including HTML/CSS/JS files, entry pages, virtual data tables, and iterative fixes. Trigger for phrases such as 创建 APP、应用工作台、网页应用、龙虾创建应用、修改应用页面、预览应用、管理应用文件 or app-workbench.
+name: montageapp
+description: Create and manage small web apps in the Montage application workbench. Use when the user or an automation agent asks to create, scaffold, update, preview, publish, inspect, or maintain an APP under /admin/applications, including HTML/CSS/JS files, entry pages, virtual data tables, and iterative fixes. Trigger for phrases such as 创建 APP、应用工作台、网页应用、龙虾创建应用、修改应用页面、预览应用、管理应用文件、montageapp or app-workbench (legacy).
 ---
 
-# App Workbench
+# Montage App Workbench
 
 为 Montage 应用工作台提供一套稳定的创建和维护约定。目标是让龙虾、Codex 或人工操作者都能用同样的文件结构快速生成可预览、可继续编辑的小型 Web APP。
+
+## 这个 Skill 负责什么
+
+把用户关于"创建/修改/预览/发布应用工作台 APP"的自然语言请求转成具体动作：创建应用、管理 HTML/CSS/JS 文件、建虚拟数据表和字段、读写记录、检查预览并发布。优先使用 `scripts/montage_cli.py` 完成操作；后台 `/admin` 只用于人工查看页面。
+
+## 配置
+
+```bash
+export MONTAGE_APP_TOKEN="pat_with_write"
+CLI=skills/montageapp/scripts/montage
+```
+
+- 默认 API 基址为 `https://task.congcong.us/api/v2`，无需配置；需要改环境时用 `MONTAGE_APP_BASE_URL` 或 `--base-url`。
+- HTTPS 证书校验默认宽松（跳过校验，开箱即用），无需设置证书环境变量；如需严格校验加 `--verify`。
+- 兼容旧环境变量：`TASK_GITEE_TOKEN`、`TASK_GITEE_BASE_URL`。
+
+安全约束（重要）：
+
+- 应用管理走 `/api/v2/app-manage/*`，需要 `hybrid.token:write` 的 PAT，且**当前用户必须在应用管理者白名单内**（`APP_MANAGE_ALLOWED_EMAILS` / `APP_MANAGE_ALLOWED_USER_IDS`），否则 403。普通注册用户不能发布应用。
+- API 层**禁止** type=1（PHP）文件：会被 eval 执行，只能由后台人工维护。CLI 只支持 2=html、3=js、4=css、5=json。
+- 不向用户展示完整 token。
 
 ## 工作流
 
@@ -53,6 +74,7 @@ data.json        # 可选，代码类型 json，仅用于静态初始数据
 - 必须支持的移动端行为：
 - 是否需要虚拟数据表：是/否
 - 数据表、字段、字段类型和是否可空：
+- 访问控制 auth_mode：public(公开)/ login(登录)/ whitelist(白名单)/ pat(PAT)
 - 视觉方向：
 - 不允许：外部 CDN、占位文字、未实现按钮、把 CSS/JS 全塞进 index.html
 
@@ -67,7 +89,7 @@ data.json        # 可选，代码类型 json，仅用于静态初始数据
 - 修改：只更新明确的文件；保留现有功能，避免整页重写造成回归。
 - 删除或大范围覆盖：先列出影响的应用、文件和数据表，必须得到明确确认。
 - 历史版本：每次保存代码后使用历史版本确认变更；回滚前说明会覆盖当前内容。
-- 预览：优先使用 `/app/{slug}/index.html`；若应用 slug 或路径异常，先检查路径是否带多余斜杠。
+- 预览：统一用 `https://task.congcong.us/app/{slug}/index.html`；若应用 slug 或路径异常，先检查路径是否带多余斜杠。
 - 部署：若用户要求上线，部署完成后必须重新打开预览并报告线上结果；若工作区有无关改动，不要把无关文件一并发布。
 
 ## 验证清单
@@ -79,8 +101,42 @@ data.json        # 可选，代码类型 json，仅用于静态初始数据
 - HTML 引用的每个 CSS/JS 文件都存在且路径一致。
 - 桌面和窄屏布局都可用，按钮和主要交互有实际行为。
 - 数据表字段与前端使用的字段名一致，空数据和接口失败有处理。
+- 若用到虚拟数据表：新增/修改/删除记录能真正读写（POST/PUT/DELETE records），编辑时保留当前字段值。
+- 若改动过代码：保存后历史版本(+1)与回滚能正常确认，回滚前说明会覆盖当前内容。
 - 预览页面没有明显白屏、404 资源或 JavaScript 初始化错误。
 - 交付反馈包含应用 ID、预览地址、文件和数据表清单，以及是否已部署。
+
+## CLI 速查
+
+首选命令（完整列表见 `scripts/montage_cli.py --help`）：
+
+```bash
+# 应用
+$CLI app-list                      # 列出应用（--output table 人工查看）
+$CLI app-create --name "习惯打卡" --slug habit-checkin --auth-mode public
+$CLI app-show 5                    # 详情 + 文件清单 + 预览地址
+$CLI app-update 5 --description "…" --status 2
+$CLI app-delete 5
+
+# 文件（type: 2=html 3=js 4=css 5=json）
+$CLI code-create 5 --name index --path index.html --type 2 --content-file ./index.html
+$CLI code-create 5 --name styles --path styles.css --type 4 --content-file ./styles.css
+$CLI code-create 5 --name app --path app.js --type 3 --content-file ./app.js
+$CLI code-update 5 12 --content-file ./index.html
+$CLI code-history 5 12            # 历史版本
+$CLI code-rollback 5 12 34        # 回滚到历史版本 34
+$CLI code-delete 5 12
+
+# 虚拟数据表与记录（数据持久化走这里，别把业务数据硬编码进 HTML）
+$CLI table-create 5 --name 打卡记录 --slug habit_logs
+$CLI table-field 5 3 --name 习惯 --slug habit_name --type string --nullable 0
+$CLI record-create 5 3 --data '{"habit_name":"喝水"}'     # 或 --data @file.json
+$CLI record-list 5 3 --output table
+$CLI record-update 5 3 7 --data '{"habit_name":"喝水2"}'
+$CLI record-delete 5 3 7
+```
+
+预览地址统一为 `https://task.congcong.us/app/{slug}/index.html`，创建后必须打开预览验证。
 
 ## 失败处理
 
@@ -88,3 +144,10 @@ data.json        # 可选，代码类型 json，仅用于静态初始数据
 - 代码框空白：检查入口文件是否返回、Ace 本地资源是否为 200、当前文件接口是否成功、编辑器容器是否有高度。
 - 预览缺少样式或交互：检查 HTML 的相对引用和应用内文件路径，不要直接改成随机 CDN 地址。
 - 需要后端能力但工作台没有对应接口：先说明限制，再把数据结构和前端降级方案写清楚；不要伪造成功响应。
+
+## 参考
+
+- 完整使用指南（安装、配置、权限、工作流）：[docs/skill-montageapp-guide.md](../../docs/skill-montageapp-guide.md)。
+- CLI 完整参数：`skills/montageapp/scripts/montage_cli.py --help` 或 `montage <子命令> --help`。
+- 应用契约（文件类型、auth_mode、虚拟表约定、后台接口）：[references/app-contract.md](references/app-contract.md)。
+- 后台人工维护走 `/admin` 工作台页面（session 登录），自动化一律走 `/api/v2/app-manage/*`（PAT + 白名单）。

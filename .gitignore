@@ -19,3 +19,7 @@ yarn-error.log
 /newfile.php
 /test.php
 /.settings/
+
+# Python
+__pycache__/
+*.pyc

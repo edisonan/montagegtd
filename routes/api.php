@@ -173,6 +173,27 @@ Route::prefix('v2')->group(function () {
 
     // write capability: 写操作接口（兼容 PAT + UAT）
     Route::group(['middleware' => ['hybrid.token:write']], function () {
+        // 应用工作台管理（控制器内有管理者白名单二次校验；API 层禁止 PHP 文件）
+        Route::get('/app-manage/apps', 'Api\\V2\\AppManageController@index');
+        Route::post('/app-manage/apps', 'Api\\V2\\AppManageController@store');
+        Route::get('/app-manage/apps/{id}', 'Api\\V2\\AppManageController@show')->where('id', '[0-9]+');
+        Route::put('/app-manage/apps/{id}', 'Api\\V2\\AppManageController@update')->where('id', '[0-9]+');
+        Route::delete('/app-manage/apps/{id}', 'Api\\V2\\AppManageController@destroy')->where('id', '[0-9]+');
+
+        Route::post('/app-manage/apps/{id}/codes', 'Api\\V2\\AppManageController@storeCode')->where('id', '[0-9]+');
+        Route::put('/app-manage/apps/{id}/codes/{codeId}', 'Api\\V2\\AppManageController@updateCode')->where('id', '[0-9]+')->where('codeId', '[0-9]+');
+        Route::delete('/app-manage/apps/{id}/codes/{codeId}', 'Api\\V2\\AppManageController@destroyCode')->where('id', '[0-9]+')->where('codeId', '[0-9]+');
+        Route::get('/app-manage/apps/{id}/codes/{codeId}/history', 'Api\\V2\\AppManageController@codeHistory')->where('id', '[0-9]+')->where('codeId', '[0-9]+');
+        Route::post('/app-manage/apps/{id}/codes/{codeId}/rollback/{historyId}', 'Api\\V2\\AppManageController@rollbackCode')->where('id', '[0-9]+')->where('codeId', '[0-9]+')->where('historyId', '[0-9]+');
+
+        Route::get('/app-manage/apps/{id}/virtual-tables', 'Api\\V2\\AppManageController@virtualTables')->where('id', '[0-9]+');
+        Route::post('/app-manage/apps/{id}/virtual-tables', 'Api\\V2\\AppManageController@storeVirtualTable')->where('id', '[0-9]+');
+        Route::post('/app-manage/apps/{id}/virtual-tables/{tableId}/fields', 'Api\\V2\\AppManageController@storeVirtualField')->where('id', '[0-9]+')->where('tableId', '[0-9]+');
+        Route::get('/app-manage/apps/{id}/virtual-tables/{tableId}/records', 'Api\\V2\\AppManageController@virtualTableRecords')->where('id', '[0-9]+')->where('tableId', '[0-9]+');
+        Route::post('/app-manage/apps/{id}/virtual-tables/{tableId}/records', 'Api\\V2\\AppManageController@storeVirtualRecord')->where('id', '[0-9]+')->where('tableId', '[0-9]+');
+        Route::put('/app-manage/apps/{id}/virtual-tables/{tableId}/records/{recordId}', 'Api\\V2\\AppManageController@updateVirtualRecord')->where('id', '[0-9]+')->where('tableId', '[0-9]+')->where('recordId', '[0-9]+');
+        Route::delete('/app-manage/apps/{id}/virtual-tables/{tableId}/records/{recordId}', 'Api\\V2\\AppManageController@deleteVirtualRecord')->where('id', '[0-9]+')->where('tableId', '[0-9]+')->where('recordId', '[0-9]+');
+
         Route::post('/minds', 'Api\\V2\\MindController@store');
         Route::post('/minds/{mind}', 'Api\\V2\\MindController@update');
         Route::put('/minds/{mind}', 'Api\\V2\\MindController@update');
