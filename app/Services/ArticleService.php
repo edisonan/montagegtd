@@ -126,6 +126,14 @@ class ArticleService {
 					'category_id' => $item->category_id 
 			);
 			
+			if (!isset ( $navInfos [$item->category_id] ['list'] )) {
+				$navInfos [$item->category_id] ['list'] = array ();
+			}
+			// 分类下没有启用订阅时 feed_id 为 NULL，跳过该行但保留分类本身
+			if (empty ( $item->feed_id )) {
+				continue;
+			}
+			
 			$navInfos [$item->category_id] ['list'] [] = array (
 					'feed_id' => $item->feed_id,
 					'feed_name' => $item->feed_name,

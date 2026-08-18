@@ -282,6 +282,7 @@
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : function() { return Promise.reject(new Error("API客户端未初始化")); };
+            var Swal = window.Swal || { fire: function(opts) { var ok = window.confirm(opts && opts.title ? String(opts.title).replace(/<[^>]*>/g, '') : '确认操作？'); return Promise.resolve({ isConfirmed: ok }); } };
             var feedIndexState = {
                 categorys: [],
                 feedSubs: [],

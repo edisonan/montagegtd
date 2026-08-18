@@ -62,7 +62,8 @@ class CategoryController extends Controller
             throw new CustomException("超过分类数量，最多20个");
         }
         $category = $request->user()->categorys()->create(array(
-            'name' => $request->name
+            'name' => $request->name,
+            'category_order' => (int)Category::where('user_id', $request->user()->id)->max('category_order') + 1,
         ));
 
         return $this->jsonAndRedirectAutoResponse($request, ResponseDataUtil::genSimpleSucc($category), '/categorys');

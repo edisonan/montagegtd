@@ -23,14 +23,18 @@ class FeedSubRepository {
 	}
 	
 	/**
-	 * 获取用户带分类信息的订列表 inner join
+	 * 获取用户带分类信息的订阅列表（LEFT JOIN）
+	 * 
+	 * 即使分类下没有启用订阅，也会返回该分类，避免空分类/全部停用的分类
+	 * 在阅读侧边栏中“消失/看起来像被停用”。
 	 * 
 	 * @param unknown $userId        	
 	 * @return unknown
 	 */
 	public function getCategoryFeedInfos($userId) {
-		$categoryFeedInfos = DB::select ( 'select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from feed_subs f,categories c where f.category_id = c.id and f.user_id = :user_id and f.status =1 order by c.category_order asc,f.feed_order asc', [ 
-				':user_id' => $userId 
+		$categoryFeedInfos = DB::select ( 'select c.id as category_id,c.name as category_name,f.feed_id as feed_id,f.feed_name as feed_name from categories c left join feed_subs f on f.category_id = c.id and f.user_id = :user_id and f.status =1 where c.user_id = :user_id2 order by c.category_order asc,c.id desc,f.feed_order asc', [ 
+				':user_id' => $userId,
+				':user_id2' => $userId 
 		] );
 		return $categoryFeedInfos;
 	}

@@ -55,7 +55,7 @@ class CategoryController extends Controller
         $category = Category::create(array(
             'name' => (string)$request->input('name'),
             'user_id' => $userId,
-            'category_order' => 0,
+            'category_order' => (int)Category::where('user_id', $userId)->max('category_order') + 1,
         ));
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($category));

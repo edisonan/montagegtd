@@ -122,7 +122,8 @@
         .btn-danger:hover { background: linear-gradient(135deg, #dc2626, var(--danger-color)); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3); }
     </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.0/Sortable.min.js"></script>
+    <script src="{{ asset('js/sortable.min.js') }}"></script>
+    <script>window.Sortable || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.0/Sortable.min.js"><\/script>');</script>
     <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback
@@ -194,20 +195,20 @@
                         var feedSubId = Number(feed.feed_sub_id || 0);
                         var feedName = escapeHtml(feed.feed_name || '未命名订阅');
                         feedItems += ''
-                            + '<div id="' + feedSubId + '" data-category-id="' + categoryId + '" class="feed-item group cursor-move bg-white border border-gray-200 rounded-lg p-3 hover:border-blue-300 hover:shadow-sm transition-all duration-200">'
+                            + '<div id="feed-' + feedSubId + '" data-feed-id="' + feedSubId + '" data-category-id="' + categoryId + '" class="feed-item group cursor-move bg-white border border-gray-200 rounded-lg p-3 hover:border-blue-300 hover:shadow-sm transition-all duration-200">'
                             + '<div class="flex items-center justify-between">'
                             + '<div class="flex items-center gap-3 flex-1 min-w-0"><div class="flex-shrink-0 w-6 h-6 bg-gray-100 rounded flex items-center justify-center"><i class="fas fa-rss text-gray-400 text-xs"></i></div><span class="font-medium text-gray-700 truncate">' + feedName + '</span></div>'
-                            + '<div class="flex items-center gap-2 flex-shrink-0 ml-4"><a href="/feed/' + feedSubId + '" class="p-2 text-gray-400 hover:text-blue-500 rounded-lg hover:bg-blue-50 transition-colors" title="编辑"><i class="fas fa-edit"></i></a><button type="button" data-feed-id="' + feedSubId + '" class="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors delete-feed" title="删除"><i class="fas fa-trash-alt"></i></button></div>'
+                            + '<div class="flex items-center gap-2 flex-shrink-0 ml-4"><a href="/feed/' + feedSubId + '" class="btn btn-sm btn-outline flex items-center px-2 py-1" title="编辑订阅"><i class="fas fa-edit mr-1"></i>编辑</a><button type="button" data-feed-id="' + feedSubId + '" class="btn btn-sm btn-outline text-red-600 border-red-600 hover:bg-red-50 flex items-center px-2 py-1 delete-feed" title="删除订阅"><i class="fas fa-trash-alt mr-1"></i>删除</button></div>'
                             + '</div></div>';
                     });
                 }
 
                 html += ''
-                    + '<div id="' + categoryId + '" class="category-card card hover:border-gray-300 transition-colors">'
+                    + '<div id="cat-' + categoryId + '" data-category-id="' + categoryId + '" class="category-card card hover:border-gray-300 transition-colors">'
                     + '<div class="tile__handle px-5 py-3 border-b border-gray-200 bg-gray-50 cursor-move flex items-center justify-between">'
                     + '<div class="flex items-center gap-3"><div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center"><i class="fas fa-folder text-white"></i></div><div><h3 class="font-semibold text-gray-800 text-lg">' + categoryName + '</h3><p class="text-xs text-gray-500 mt-1 category-count">' + list.length + ' 个订阅源</p></div></div><div class="flex items-center gap-1"><button type="button" class="edit-category p-2 text-gray-400 hover:text-blue-500" data-category-id="' + categoryId + '" data-category-name="' + categoryName + '" title="编辑分类"><i class="fas fa-edit"></i></button><button type="button" class="delete-category p-2 text-gray-400 hover:text-red-500" data-category-id="' + categoryId + '" data-category-name="' + categoryName + '" title="删除分类"><i class="fas fa-trash-alt"></i></button><i class="fas fa-arrows-alt text-gray-400 ml-2"></i></div>'
                     + '</div>'
-                    + '<div class="tile__list p-4 bg-gray-50"><div class="space-y-2">' + feedItems + '</div></div>'
+                    + '<div class="tile__list p-4 bg-gray-50 space-y-2">' + feedItems + '</div>'
                     + '</div>';
             });
 
@@ -225,17 +226,24 @@
         function initSortables() {
             var multiContainer = document.getElementById('multi');
             if (!multiContainer) return;
+            if (typeof Sortable === 'undefined') {
+                showNotification('warning', '排序组件加载失败，请刷新页面重试');
+                return;
+            }
 
             Sortable.create(multiContainer, {
                 animation: 150,
                 handle: '.tile__handle',
                 draggable: '.category-card',
+                forceFallback: true,
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
                 dragClass: 'sortable-drag',
                 onEnd: function(evt) {
                     if (evt.oldIndex === evt.newIndex || !apiRequest) return;
-                    var categoryIds = Array.from(document.querySelectorAll('.category-card')).map(function(card) { return card.id; }).join(',');
+                    var categoryIds = Array.from(document.querySelectorAll('.category-card')).map(function(card) {
+                        return card.getAttribute('data-category-id');
+                    }).join(',');
                     apiRequest('POST', '/categories/sort', { category_ids: categoryIds }).then(function(resp) {
                         if (!resp || resp.code !== 9999) showNotification('warning', '分类排序保存失败');
                     }).catch(function() { showNotification('warning', '分类排序保存失败'); });
@@ -247,24 +255,30 @@
                     group: 'feeds',
                     animation: 150,
                     handle: '.feed-item',
+                    draggable: '.feed-item',
+                    forceFallback: true,
                     ghostClass: 'sortable-ghost',
                     chosenClass: 'sortable-chosen',
                     dragClass: 'sortable-drag',
                     onEnd: function(evt) {
                         if (!apiRequest) return;
                         var item = evt.item;
-                        var newCategoryId = item.closest('.category-card').id;
+                        var newCategoryId = item.closest('.category-card').getAttribute('data-category-id');
                         var originalCategoryId = item.getAttribute('data-category-id');
                         item.setAttribute('data-category-id', newCategoryId);
 
-                        var feedIds = Array.from(item.parentNode.querySelectorAll('.feed-item')).map(function(el) { return el.id; }).join(',');
+                        var feedIds = Array.from(item.parentNode.querySelectorAll('.feed-item')).map(function(el) {
+                            return el.getAttribute('data-feed-id');
+                        }).join(',');
                         var categoryFeedSubIds = {};
                         document.querySelectorAll('.category-card').forEach(function(card) {
-                            categoryFeedSubIds[card.id] = Array.from(card.querySelectorAll('.feed-item')).map(function(el) { return Number(el.id); });
+                            categoryFeedSubIds[card.getAttribute('data-category-id')] = Array.from(card.querySelectorAll('.feed-item')).map(function(el) {
+                                return Number(el.getAttribute('data-feed-id'));
+                            });
                         });
                         var payload = { feed_sub_ids: feedIds, category_feed_sub_ids: categoryFeedSubIds };
                         if (originalCategoryId !== newCategoryId) {
-                            payload.change_feed_sub_id = item.id;
+                            payload.change_feed_sub_id = String(item.getAttribute('data-feed-id'));
                             payload.change_feed_sub_category = newCategoryId;
                         }
 
@@ -369,7 +383,7 @@
 
                 apiRequest('DELETE', '/feeds/' + currentFeedId, {}).then(function(resp) {
                     if (resp && resp.code === 9999) {
-                        var feedEl = document.getElementById(currentFeedId);
+                        var feedEl = document.getElementById('feed-' + currentFeedId);
                         if (feedEl && feedEl.parentNode) {
                             feedEl.parentNode.removeChild(feedEl);
                             updateCategoryCounts();

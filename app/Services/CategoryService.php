@@ -104,7 +104,7 @@ class CategoryService {
 	public function quickCreateCategory($categoryName) {
 		$category = new Category ();
 		$category->name = $categoryName;
-		$category->category_order = 0;
+		$category->category_order = (int)Category::where ( 'user_id', Auth::id () )->max ( 'category_order' ) + 1;
 		$category->user_id = Auth::id ();
 		$category->save ();
 		

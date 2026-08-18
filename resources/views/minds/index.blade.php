@@ -116,6 +116,7 @@
             var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                 ? window.TaskApiBridge.requestWithFallback
                 : null;
+            var Swal = window.Swal || { fire: function(opts) { var ok = window.confirm(opts && opts.title ? String(opts.title).replace(/<[^>]*>/g, '') : '确认操作？'); return Promise.resolve({ isConfirmed: ok }); } };
             var mindsState = {
                 items: [],
                 pagination: { current_page: 1, last_page: 1, total: 0 },

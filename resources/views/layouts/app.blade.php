@@ -23,8 +23,14 @@
     <!-- 引入谷歌字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- 引入jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 引入jQuery（本地优先，CDN不可用时自动回退，避免网络问题导致全站JS失效） -->
+    <script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script>
+    <script>window.jQuery || document.write('<script src="https://code.jquery.com/jquery-3.6.0.min.js"><\/script>');</script>
+
+    <!-- 引入SweetAlert2（本地优先，删除/确认弹窗依赖） -->
+    <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
+    <script>window.Swal || document.write('<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"><\/script>');</script>
+
     <!-- 提前加载API客户端，避免内容区内联脚本执行时未初始化 -->
     <script src="{{ asset('js/hybrid-api-client.js') }}"></script>
 

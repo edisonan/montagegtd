@@ -258,9 +258,14 @@
             var originQuadrant = null;
 
             document.querySelectorAll('.priority-task-item').forEach(function(item) {
-                item.addEventListener('dragstart', function() {
+                item.addEventListener('dragstart', function(e) {
                     draggedItem = this;
                     originQuadrant = this.closest('.task-list') ? this.closest('.task-list').dataset.quadrant : null;
+                    // Firefox 要求 dragstart 中必须写入 dataTransfer，否则拖拽会被取消
+                    if (e.dataTransfer) {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', this.dataset.taskId || '');
+                    }
                     setTimeout(function() { item.classList.add('dragging'); }, 0);
                 });
                 item.addEventListener('dragend', function() {
