@@ -4,7 +4,7 @@
 @section('description', '管理和组织您的分类系统')
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- 页面标题 -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-6">

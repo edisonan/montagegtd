@@ -5,7 +5,7 @@
 
 @section('content')
     <div class="fade-in">
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-7xl mx-auto">
             <!-- 页面标题和导航 -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>

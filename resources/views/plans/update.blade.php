@@ -4,12 +4,13 @@
 @section('description', '编辑计划信息')
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900">修改计划</h1>
         <a href="{{ url('/plans') }}" class="btn btn-secondary"><i class="fas fa-arrow-left mr-2"></i>返回</a>
     </div>
 
+    <div class="max-w-3xl mx-auto">
     <div class="card">
         <div class="p-6 border-b border-gray-200">
             <div class="text-sm text-gray-500">计划ID: <span id="planIdText">-</span></div>
@@ -34,6 +35,7 @@
                 </div>
             </form>
         </div>
+    </div>
     </div>
 </div>
 

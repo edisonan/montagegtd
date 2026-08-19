@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-5xl mx-auto">
             <!-- 主表单卡片 -->
             <div class="card mb-6">
                 <div class="px-6 py-4 border-b border-gray-200">

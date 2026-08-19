@@ -4,7 +4,7 @@
 @section('description', '管理您的第三方账户授权和连接设置')
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- 页面标题 -->
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-gray-900 flex items-center">

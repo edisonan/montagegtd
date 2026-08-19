@@ -3,8 +3,8 @@
 @section('title', '学习专注 - 蒙太奇')
 
 @section('content')
-    <div class="max-w-5xl mx-auto">
-        <div class="card p-4 sm:p-6 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="card p-4 sm:p-6 md:p-8 max-w-5xl mx-auto">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-xl font-bold text-gray-900">学习专注</h1>

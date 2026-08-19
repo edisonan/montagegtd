@@ -4,7 +4,7 @@
 @section('description', '向我们提供宝贵意见，帮助我们改进产品')
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- 页面标题 -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-6">

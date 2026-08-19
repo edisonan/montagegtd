@@ -4,7 +4,7 @@
 @section('description', '创建新的学习课程，系统化您的学习计划')
 
 @section('content')
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- 页面标题和导航 -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-6">
