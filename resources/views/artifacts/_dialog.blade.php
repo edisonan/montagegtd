@@ -46,6 +46,15 @@
     .dlg-fill-btn { padding: 5px 10px; border-radius: 7px; font-size: 12px; border: 1px solid #e2e8f0; background: #fff; color: #475569; cursor: pointer; text-decoration: none; }
     .dlg-fill-btn:hover { border-color: #38bdf8; color: #0284c7; }
     .dlg-html-content { margin-top: 10px; }
+    .ai-key-points { font-size: 14px; line-height: 1.8; color: #1e293b; }
+    .ai-key-points h2 { font-size: 16px; font-weight: 700; color: #0f172a; margin: 14px 0 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+    .ai-key-points h3 { font-size: 15px; font-weight: 600; color: #0f172a; margin: 12px 0 6px; }
+    .ai-key-points ul, .ai-key-points ol { padding-left: 20px; margin: 6px 0; }
+    .ai-key-points li { margin: 5px 0; }
+    .ai-key-points strong { color: #0f172a; font-weight: 700; }
+    .ai-key-points p { margin: 6px 0; }
+    .ai-key-points blockquote { border-left: 3px solid #94a3b8; padding-left: 12px; color: #475569; margin: 8px 0; }
+    .ai-key-points code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 13px; color: #dc2626; }
 </style>
 
 <script>
@@ -53,6 +62,7 @@
         var TYPE_LABELS = {
             visual_reading: '可视化阅读',
             mind_map: '思维导图',
+            key_points: 'AI 关键信息',
             briefing_latest: '最新简报',
             briefing_followed: '关注简报'
         };
@@ -61,6 +71,17 @@
             return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
             });
+        }
+
+        // markdown 渲染：优先用全局 marked，回退为纯文本
+        function renderMarkdown(md) {
+            if (window.marked && typeof window.marked.parse === 'function') {
+                return window.marked.parse(String(md));
+            }
+            if (window.marked) {
+                return window.marked(String(md));
+            }
+            return '<pre>' + escapeHtml(md) + '</pre>';
         }
 
         function getAccessToken() {
@@ -155,6 +176,11 @@
                     } else {
                         html += '<div class="artifact-dialog-error">思维导图数据无法解析</div>';
                     }
+                } else if (artifactType === 'key_points') {
+                    // 关键信息（markdown）：弹窗内直接渲染
+                    success.forEach(function () {
+                        html += '<div id="dlgKeyPointsContent" class="dlg-md-content"><div class="artifact-dialog-loading"><i class="fas fa-spinner fa-spin"></i> 正在加载关键信息…</div></div>';
+                    });
                 } else {
                     // visual_reading / 其他：弹窗内直接展示，独立页保留
                     success.forEach(function (a) {
@@ -179,26 +205,33 @@
                 });
             }
 
-            // visual_reading 内嵌展示：调 show 接口拉完整内容
-            if (artifactType !== 'mind_map' && success.length > 0) {
-                var vr = success[0];
-                var contentEl = document.getElementById('dlgVisualContent');
-                if (contentEl) {
-                    requestJson('/api/v2/artifacts/' + vr.id)
-                        .then(function (data) {
-                            var el = document.getElementById('dlgVisualContent');
-                            if (!el) return;
-                            var full = data && data.result && data.result.artifact;
-                            if (full && full.content) {
-                                el.innerHTML = '<div class="ai-render-content max-w-none rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">' + full.content + '</div>';
-                            } else {
-                                el.innerHTML = '<div class="artifact-dialog-error">加载可视化内容失败</div>';
-                            }
-                        })
-                        .catch(function () {
-                            var el = document.getElementById('dlgVisualContent');
-                            if (el) el.innerHTML = '<div class="artifact-dialog-error">加载可视化内容失败</div>';
-                        });
+            // 关键信息 / 可视化阅读：调 show 接口拉完整内容内嵌展示
+            if (artifactType === 'key_points' || artifactType === 'visual_reading') {
+                if (success.length > 0) {
+                    var vr = success[0];
+                    var containerId = artifactType === 'key_points' ? 'dlgKeyPointsContent' : 'dlgVisualContent';
+                    var contentEl = document.getElementById(containerId);
+                    if (contentEl) {
+                        requestJson('/api/v2/artifacts/' + vr.id)
+                            .then(function (data) {
+                                var el = document.getElementById(containerId);
+                                if (!el) return;
+                                var full = data && data.result && data.result.artifact;
+                                if (full && full.content) {
+                                    if (artifactType === 'key_points') {
+                                        el.innerHTML = '<div class="ai-key-points max-w-none rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">' + renderMarkdown(full.content) + '</div>';
+                                    } else {
+                                        el.innerHTML = '<div class="ai-render-content max-w-none rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">' + full.content + '</div>';
+                                    }
+                                } else {
+                                    el.innerHTML = '<div class="artifact-dialog-error">加载内容失败</div>';
+                                }
+                            })
+                            .catch(function () {
+                                var el = document.getElementById(containerId);
+                                if (el) el.innerHTML = '<div class="artifact-dialog-error">加载内容失败</div>';
+                            });
+                    }
                 }
             }
 

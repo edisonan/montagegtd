@@ -1972,6 +1972,9 @@
                         '</div>' +
                         '<div class="note-operations">' +
                             '<button class="operation-btn" onclick="window.location=\'/notes/' + Number(note.id) + '/view\'" title="查看详情"><i class="fas fa-eye"></i></button>' +
+                            '<button class="operation-btn ai js-note-artifact" data-note-id="' + Number(note.id) + '" data-artifact-type="visual_reading" title="可视化阅读"><i class="fas fa-book-open"></i></button>' +
+                            '<button class="operation-btn ai js-note-artifact" data-note-id="' + Number(note.id) + '" data-artifact-type="mind_map" title="思维导图"><i class="fas fa-diagram-project"></i></button>' +
+                            '<button class="operation-btn ai js-note-artifact" data-note-id="' + Number(note.id) + '" data-artifact-type="key_points" title="AI关键信息"><i class="fas fa-list-check"></i></button>' +
                             '<button class="operation-btn ai" onclick="openNoteAI(\'' + Number(note.id) + '\')" title="AI助手"><i class="fas fa-robot"></i></button>' +
                             '<button class="operation-btn" onclick="copyNoteContent(\'' + Number(note.id) + '\')" title="复制内容"><i class="fas fa-copy"></i></button>' +
                             exportHtml +
@@ -2272,5 +2275,25 @@
                     });
             });
         });
+    </script>
+
+    {{-- AI 制品弹窗（可视化/思维导图/关键信息） --}}
+    @include('artifacts._dialog')
+
+    <script type="text/javascript">
+        // 笔记可视化/思维导图/关键信息 → 制品库弹窗
+        (function () {
+            $(document).on('click.notesArtifact', '.js-note-artifact', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var noteId = $(this).data('note-id');
+                var artifactType = $(this).data('artifact-type');
+                if (window.openArtifactDialog && noteId) {
+                    window.openArtifactDialog({ relatedType: 'note', relatedId: noteId, artifactType: artifactType });
+                } else {
+                    showToast('制品弹窗未初始化', 'error');
+                }
+            });
+        })();
     </script>
 @endsection

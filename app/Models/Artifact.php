@@ -15,6 +15,7 @@ class Artifact extends Model
 
     const TYPE_VISUAL_READING = 'visual_reading';
     const TYPE_MIND_MAP = 'mind_map';
+    const TYPE_KEY_POINTS = 'key_points';
     const TYPE_BRIEFING_LATEST = 'briefing_latest';
     const TYPE_BRIEFING_FOLLOWED = 'briefing_followed';
     const TYPE_NOTE_MIND_MAP = 'note_mind_map';

@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $note ? (trim($note->name) !== '' ? e($note->name) : '笔记详情') : '笔记详情' }} - 蒙太奇</title>
     <meta name="description" content="蒙太奇笔记详情">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/js/jquery-3.6.0.min.js"></script>
+    <script src="/js/hybrid-api-client.js"></script>
     <script src="/js/marked.min.js"></script>
     <script src="/plugins/purify/purify.min.js"></script>
     <style>
@@ -179,6 +182,15 @@
 
             @if($canEdit)
                 <div class="actions">
+                    <button type="button" class="action-btn js-note-artifact" data-note-id="{{ $note->id }}" data-artifact-type="visual_reading">
+                        <i class="fas fa-book-open"></i> 可视化
+                    </button>
+                    <button type="button" class="action-btn js-note-artifact" data-note-id="{{ $note->id }}" data-artifact-type="mind_map">
+                        <i class="fas fa-diagram-project"></i> 思维导图
+                    </button>
+                    <button type="button" class="action-btn js-note-artifact" data-note-id="{{ $note->id }}" data-artifact-type="key_points">
+                        <i class="fas fa-list-check"></i> 关键信息
+                    </button>
                     <a class="action-btn primary" href="{{ url('/notes/' . $note->id . '/edit') }}">
                         <i class="fas fa-edit"></i> 编辑
                     </a>
@@ -325,6 +337,24 @@
             if (el) {
                 el.innerHTML = renderMarkdownContent(window.__NOTE_CONTENT__ || '');
             }
+        });
+    </script>
+
+    @include('artifacts._dialog')
+
+    <script>
+        // 笔记可视化/思维导图/关键信息 → 制品库弹窗
+        document.querySelectorAll('.js-note-artifact').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                var noteId = btn.getAttribute('data-note-id');
+                var artifactType = btn.getAttribute('data-artifact-type');
+                if (window.openArtifactDialog && noteId) {
+                    window.openArtifactDialog({ relatedType: 'note', relatedId: noteId, artifactType: artifactType });
+                } else {
+                    alert('制品弹窗未初始化');
+                }
+            });
         });
     </script>
 </body>
