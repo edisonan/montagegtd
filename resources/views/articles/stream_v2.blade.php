@@ -691,6 +691,8 @@
 
     <aside class="v2-rail">
         <a href="#" target="_blank" class="v2-action" id="v2OriginBtn"><span class="v2-action-icon"><i class="fas fa-external-link-alt"></i></span><span>原文</span></a>
+        <button type="button" class="v2-action" id="v2VisualReadingBtn" title="生成/查看可视化阅读"><span class="v2-action-icon"><i class="fas fa-book-open"></i></span><span>可视化阅读</span></button>
+        <button type="button" class="v2-action" id="v2MindMapBtn" title="生成/查看思维导图"><span class="v2-action-icon"><i class="fas fa-diagram-project"></i></span><span>思维导图</span></button>
         <button type="button" class="v2-action" id="v2StarBtn"><span class="v2-action-icon"><i class="far fa-star"></i></span><span>收藏</span></button>
         <button type="button" class="v2-action" id="v2LaterBtn"><span class="v2-action-icon"><i class="far fa-clock"></i></span><span>稍后读</span></button>
         <button type="button" class="v2-action" id="v2ReadStateBtn"><span class="v2-action-icon"><i class="fas fa-check"></i></span><span id="v2ReadStateText">未读</span></button>
@@ -699,6 +701,8 @@
 
     <div class="v2-swipe-hint"><i class="fas fa-chevron-up"></i><span>上滑下一篇</span></div>
 </section>
+
+@include('artifacts._dialog')
 
 <div class="v2-sheet-wrap" id="v2FilterSheet">
     <div class="v2-sheet-backdrop" id="v2FilterBackdrop"></div>
@@ -928,6 +932,22 @@
             $('#v2WordCount').text(Number(article.word_count || 0).toLocaleString() + ' 字');
             $('#v2ReadTime').text('预计 ' + Math.max(1, Number(article.estimated_read_minutes || 1)) + ' 分钟');
             $('#v2OriginBtn').attr('href', article.url || '#');
+            $('#v2VisualReadingBtn').off('click.artifact').on('click.artifact', function (e) {
+                e.stopPropagation();
+                if (window.openArtifactDialog && article.id) {
+                    window.openArtifactDialog({ relatedType: 'article', relatedId: article.id, artifactType: 'visual_reading' });
+                } else {
+                    window.location.href = '/article/' + article.id + '/artifacts';
+                }
+            });
+            $('#v2MindMapBtn').off('click.artifact').on('click.artifact', function (e) {
+                e.stopPropagation();
+                if (window.openArtifactDialog && article.id) {
+                    window.openArtifactDialog({ relatedType: 'article', relatedId: article.id, artifactType: 'mind_map' });
+                } else {
+                    window.location.href = '/article/' + article.id + '/artifacts';
+                }
+            });
             $('#v2Position').text((state.index + 1) + ' / ' + state.items.length);
             $('#v2Progress').css('width', (((state.index + 1) / Math.max(1, state.items.length)) * 100).toFixed(1) + '%');
             $('#v2Card').toggleClass('is-read', item.status === 'read').removeClass('enter-next enter-prev');

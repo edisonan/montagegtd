@@ -147,6 +147,8 @@
     </section>
 </main>
 
+@include('artifacts._dialog')
+
 <div class="workbench-modal" id="aiModal">
     <div class="workbench-modal-panel">
         <header class="modal-head"><div><h2 class="modal-title" id="aiModalTitle">AI 辅助阅读</h2><div class="modal-meta">默认按标题、订阅和分类梳理文章，每个主题分成 3-5 个小节</div></div><button type="button" class="modal-close" data-close-modal="aiModal"><i class="fas fa-times"></i></button></header>
@@ -266,6 +268,8 @@
             if (article.published) html += ' · ' + escapeHtml(article.published);
             html += '</div><div class="workbench-reader-actions">';
             if (article.url) html += '<a href="' + escapeHtml(article.url) + '" target="_blank" rel="noopener noreferrer" class="row-action"><i class="fas fa-external-link-alt mr-1"></i>查看原文</a>';
+            if (article.id) html += '<button type="button" class="row-action js-artifact-action" data-related-type="article" data-related-id="' + Number(article.id) + '" data-artifact-type="visual_reading"><i class="fas fa-book-open mr-1"></i>可视化阅读</button>';
+            if (article.id) html += '<button type="button" class="row-action js-artifact-action" data-related-type="article" data-related-id="' + Number(article.id) + '" data-artifact-type="mind_map"><i class="fas fa-diagram-project mr-1"></i>思维导图</button>';
             html += '<button type="button" class="row-action reader-status-action' + (result.status === 'read_later' ? ' active' : '') + '" data-reader-status="read_later"><i class="far fa-clock mr-1"></i>稍后阅读</button>';
             html += '<button type="button" class="row-action reader-status-action' + (result.status === 'star' ? ' active' : '') + '" data-reader-status="star"><i class="far fa-star mr-1"></i>收藏</button>';
             html += '</div></header><article class="workbench-reader-content">' + (article.content || '<p>暂无正文</p>') + '</article>';
@@ -349,6 +353,17 @@
     });
     $('#workbenchReader').on('click', '[data-reader-status]', function () {
         if (state.articleSubId) updateStatus(state.articleSubId, $(this).data('reader-status'));
+    });
+    // AI 制品弹窗（事件委托，阅读区是动态生成的）
+    $('#workbenchReader').on('click', '.js-artifact-action', function () {
+        var btn = this;
+        if (window.openArtifactDialog) {
+            window.openArtifactDialog({
+                relatedType: $(btn).data('related-type'),
+                relatedId: $(btn).data('related-id'),
+                artifactType: $(btn).data('artifact-type')
+            });
+        }
     });
     $('#aiPageBtn').on('click', openAi);
     $('#markPageReadBtn').on('click', markPageRead);

@@ -548,9 +548,14 @@
                                 添加订阅
                             </a>
 
-                            <a href="{{ url('/article/'.$article->id.'/ai-render') }}" class="header-action-btn">
+                            <a href="javascript:void(0);" class="header-action-btn js-ai-preview" data-article-id="{{ $article->id }}">
                                 <i class="fas fa-wand-magic-sparkles"></i>
                                 AI可视化
+                            </a>
+
+                            <a href="{{ url('/article/'.$article->id.'/artifacts') }}" class="header-action-btn">
+                                <i class="fas fa-box-archive"></i>
+                                AI制品库
                             </a>
 
                             <a href="{{ url('/articles') }}" class="header-action-btn">
@@ -611,7 +616,7 @@
                             AI生成导图
                         </a>
 
-                        <a href="{{ url('/article/'.$article->id.'/ai-render') }}" class="share-btn">
+                        <a href="javascript:void(0);" class="share-btn js-ai-preview" data-article-id="{{ $article->id }}">
                             <i class="fas fa-wand-magic-sparkles"></i>
                             AI可视化
                         </a>
@@ -1350,5 +1355,133 @@
                 }
             });
         });
+    </script>
+
+    <!-- AI 可视化预览弹窗 -->
+    <div class="ai-preview-mask" id="aiPreviewMask" style="display:none;">
+        <div class="ai-preview-dialog">
+            <div class="ai-preview-head">
+                <div class="ai-preview-title"><i class="fas fa-wand-magic-sparkles mr-2 text-sky-500"></i>AI 可视化阅读</div>
+                <div class="ai-preview-actions">
+                    <a href="#" class="ai-preview-fullscreen-btn" id="aiPreviewFullscreen" target="_blank">
+                        <i class="fas fa-expand mr-1"></i>全屏阅读
+                    </a>
+                    <button type="button" class="ai-preview-close" id="aiPreviewClose"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="ai-preview-body" id="aiPreviewBody">
+                <div class="ai-preview-loading"><i class="fas fa-spinner fa-spin"></i> 正在加载 AI 可视化…</div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .ai-preview-mask { position: fixed; inset: 0; z-index: 140; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(15,23,42,.55); }
+        .ai-preview-dialog { width: min(720px, 100%); max-height: 90vh; display: flex; flex-direction: column; border-radius: 16px; background: #f8fafc; box-shadow: 0 24px 80px rgba(15,23,42,.35); overflow: hidden; }
+        .ai-preview-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+        .ai-preview-title { font-size: 16px; font-weight: 750; color: #0f172a; }
+        .ai-preview-actions { display: flex; align-items: center; gap: 10px; }
+        .ai-preview-fullscreen-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; color: #475569; font-size: 12px; text-decoration: none; background: #fff; }
+        .ai-preview-fullscreen-btn:hover { border-color: #38bdf8; color: #0284c7; }
+        .ai-preview-close { border: 0; background: transparent; color: #64748b; font-size: 17px; cursor: pointer; }
+        .ai-preview-body { overflow-y: auto; padding: 20px; }
+        .ai-preview-loading { display: flex; align-items: center; justify-content: center; gap: 8px; color: #64748b; padding: 60px 0; }
+        .ai-preview-empty { text-align: center; color: #64748b; padding: 40px 0; }
+        .ai-preview-empty .icon { font-size: 30px; margin-bottom: 12px; color: #cbd5e1; }
+        .ai-preview-empty p { margin: 4px 0; font-size: 14px; }
+        .ai-preview-empty .err { color: #b91c1c; font-size: 13px; margin-top: 8px; }
+        .ai-preview-generate-btn { display: inline-block; margin-top: 16px; padding: 9px 20px; border: 0; border-radius: 9px; background: #0284c7; color: #fff; font-size: 14px; cursor: pointer; }
+        .ai-preview-generate-btn:hover { background: #0369a1; }
+        .ai-preview-generate-btn:disabled { opacity: .6; cursor: not-allowed; }
+    </style>
+
+    <script type="text/javascript">
+        (function () {
+            var mask = document.getElementById('aiPreviewMask');
+            var body = document.getElementById('aiPreviewBody');
+            var fullscreenBtn = document.getElementById('aiPreviewFullscreen');
+            if (!mask || !body) return;
+
+            function openAiPreview(articleId) {
+                mask.style.display = 'flex';
+                fullscreenBtn.href = '/article/' + articleId + '/ai-render';
+                body.innerHTML = '<div class="ai-preview-loading"><i class="fas fa-spinner fa-spin"></i> 正在加载 AI 可视化…</div>';
+
+                var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                    ? window.TaskApiBridge.requestWithFallback
+                    : function () { return Promise.reject(new Error('API 未初始化')); };
+
+                apiRequest('GET', '/articles/' + articleId + '/ai-render', {}).then(function (resp) {
+                    if (!resp || resp.code !== 9999 || !resp.result) throw new Error((resp && resp.msg) || '加载失败');
+                    var render = resp.result.ai_render || {};
+                    if (render.status === 'success' && render.html_content) {
+                        body.innerHTML = '<div class="ai-render-content max-w-none rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">' + render.html_content + '</div>';
+                        body.insertAdjacentHTML('beforeend',
+                            '<div style="text-align:center;padding:18px 0 6px;"><a href="/article/' + articleId + '/ai-render" target="_blank" class="ai-preview-fullscreen-btn" style="display:inline-block;padding:8px 16px;">进入独立阅读页 &rarr;</a></div>');
+                    } else {
+                        renderEmpty(render);
+                    }
+                }).catch(function (err) {
+                    body.innerHTML = '<div class="ai-preview-empty"><div class="icon"><i class="fas fa-circle-exclamation"></i></div><p>加载 AI 可视化失败</p><div class="err">' + (err && err.message ? err.message : '未知错误') + '</div></div>';
+                });
+            }
+
+            function renderEmpty(render) {
+                body.innerHTML = '<div class="ai-preview-empty"><div class="icon"><i class="fas fa-wand-magic-sparkles"></i></div>'
+                    + '<p>当前还没有 AI 可视化内容</p>'
+                    + (render.error_message ? '<div class="err">' + render.error_message + '</div>' : '')
+                    + '<button type="button" class="ai-preview-generate-btn" id="aiPreviewGenBtn"><i class="fas fa-wand-magic-sparkles mr-1"></i> 立即生成</button></div>';
+                var genBtn = document.getElementById('aiPreviewGenBtn');
+                if (genBtn) genBtn.addEventListener('click', function () { generatePreview(); });
+            }
+
+            function generatePreview() {
+                var genBtn = document.getElementById('aiPreviewGenBtn');
+                if (genBtn) { genBtn.disabled = true; genBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中，约 1-2 分钟…'; }
+                body.insertAdjacentHTML('beforeend', '<div class="ai-preview-loading" id="aiPreviewGenerating"><i class="fas fa-spinner fa-spin"></i> AI 正在生成…</div>');
+                var articleId = getCurrentArticleId();
+                var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
+                    ? window.TaskApiBridge.requestWithFallback
+                    : function () { return Promise.reject(new Error('API 未初始化')); };
+                apiRequest('POST', '/articles/' + articleId + '/ai-render/generate', { force: 1 }).then(function (resp) {
+                    if (!resp || resp.code !== 9999 || !resp.result) throw new Error((resp && resp.msg) || '生成失败');
+                    var render = resp.result.ai_render || {};
+                    if (render.status === 'success' && render.html_content) {
+                        openAiPreview(articleId);
+                    } else {
+                        var g = document.getElementById('aiPreviewGenerating'); if (g) g.remove();
+                        renderEmpty(render);
+                    }
+                }).catch(function (err) {
+                    var g = document.getElementById('aiPreviewGenerating'); if (g) g.remove();
+                    if (genBtn) { genBtn.disabled = false; genBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles mr-1"></i> 重新生成'; }
+                    body.insertAdjacentHTML('beforeend', '<div class="ai-preview-empty err" style="padding:10px;color:#b91c1c;">生成失败：' + ((err && err.message) || '请稍后重试') + '，也可进入独立页重试。</div>');
+                });
+            }
+
+            function getCurrentArticleId() {
+                var el = document.querySelector('.container.current[data-article-id], [data-article-id]');
+                var container = document.querySelector('#article_subject');
+                return (el && el.getAttribute('data-article-id')) || '{{ $article->id }}';
+            }
+
+            // 绑定弹窗打开按钮
+            document.querySelectorAll('.js-ai-preview').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var id = btn.getAttribute('data-article-id') || '{{ $article->id }}';
+                    openAiPreview(id);
+                });
+            });
+
+            // 关闭
+            document.getElementById('aiPreviewClose').addEventListener('click', function () { mask.style.display = 'none'; });
+            mask.addEventListener('click', function (e) { if (e.target === mask) mask.style.display = 'none'; });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') mask.style.display = 'none'; });
+
+            // 全局暴露（信息流等页面若引用可用）
+            window.openAiPreviewDialog = openAiPreview;
+        })();
     </script>
 @endsection

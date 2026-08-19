@@ -2346,9 +2346,9 @@
                         + '</div>'
                         + '<div class="article-footer' + footerClass + '"><div class="action-buttons" style="margin-left:auto;">'
                         + '<a class="action-btn" href="' + streamHref + '" title="沉浸刷文"><i class="fas fa-mobile-screen-button"></i><span class="action-label">沉浸</span></a>'
-                        + '<a class="action-btn" href="/article/' + articleId + '/ai-render" title="AI可视化"><i class="fas fa-wand-magic-sparkles"></i><span class="action-label">AI可视化</span></a>'
+                        + '<button type="button" class="action-btn js-artifact-open" data-article-id="' + articleId + '" data-artifact-type="visual_reading" title="AI可视化阅读"><i class="fas fa-wand-magic-sparkles"></i><span class="action-label">AI可视化</span></button>'
                         + '<button type="button" class="action-btn ai-assist-btn" data-content-id="desc' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI助手"><i class="fas fa-robot"></i><span class="action-label">AI助手</span></button>'
-                        + '<button type="button" class="action-btn article-mindmap-btn" data-content-id="desc' + subId + '" data-article-sub-id="' + subId + '" data-title="' + escapeHtml(article.subject || '') + '" title="AI生成导图"><i class="fas fa-brain"></i><span class="action-label">导图</span></button>'
+                        + '<button type="button" class="action-btn js-artifact-open" data-article-id="' + articleId + '" data-artifact-type="mind_map" title="AI思维导图"><i class="fas fa-brain"></i><span class="action-label">导图</span></button>'
                         + '<div class="share-container"><button type="button" class="action-btn share-btn" title="分享"><i class="fas fa-share-alt"></i><span class="action-label">分享</span></button><div class="share-menu"><a href="javascript:void(0);" class="share-option icon-heart" data-id="' + articleId + '"><i class="fas fa-heart"></i><span>记录想法</span></a></div></div>'
                         + '<button type="button" class="action-btn set_read ' + (articleSub.status === 'read' ? 'active' : '') + '" data-article-id="' + subId + '" title="标记已读"><i class="fas fa-check"></i><span class="action-label">已读</span></button>'
                         + '<button type="button" class="action-btn set_read_later ' + (articleSub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '" title="稍后阅读"><i class="far fa-clock"></i><span class="action-label">稍后</span></button>'
@@ -3473,5 +3473,30 @@
                 });
             }
         });
+    </script>
+
+    @include('artifacts._dialog')
+
+    <script type="text/javascript">
+        // AI 制品弹窗（可视化阅读 / 思维导图）：先查制品库，有就展示，没有才生成
+        (function () {
+            function openArtifactById(articleId, artifactType) {
+                if (window.openArtifactDialog && articleId) {
+                    window.openArtifactDialog({ relatedType: 'article', relatedId: articleId, artifactType: artifactType });
+                    return true;
+                }
+                return false;
+            }
+            // 事件委托（按钮是动态生成的）
+            $(document).on('click.artifactIndex', '.js-artifact-open', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var articleId = $(this).data('article-id');
+                var artifactType = $(this).data('artifact-type');
+                if (!openArtifactById(articleId, artifactType)) {
+                    window.location.href = '/article/' + articleId + '/artifacts';
+                }
+            });
+        })();
     </script>
 @endsection
