@@ -110,6 +110,7 @@
                                 'icon'=>'fas fa-comments',
                                 'submenu' => [
                                     ['url'=>'/llm/index', 'label'=>'智能助手', 'icon'=>'fas fa-comments'],
+                                    ['url'=>'/artifacts', 'label'=>'制品库管理', 'icon'=>'fas fa-box-archive'],
                                     ['url'=>'/llm/llmmanagement', 'label'=>'模型管理', 'icon'=>'fas fa-cogs'],
                                     ['url'=>'/llm/agentmanagement', 'label'=>'智能体管理', 'icon'=>'fas fa-robot'],
                                 ]
