@@ -58,7 +58,7 @@ class ArticleAiRenderService
                     . ' 必须只输出一个 JSON 对象，字段固定为 title, subtitle, summary, outline, html。不要输出其他任何文字，不要用 markdown，不要代码块包裹。'
                     . ' title=一句话概况主题；subtitle=说清这篇文章解决什么问题；summary=1-2 句导读；outline=3-5 条核心要点；html=完整 HTML 片段。'
                     . ' html 设计规范（模仿精美 PPT / 信息图）：'
-                    . ' 1. 开头一个醒目的标题横幅(h2)，中间按 3-4 张「卡片」呈现每个板块，每张卡片配色块表头(h3)和要点列表(ul/li)。'
+                    . ' 1. 不要在 html 里再放文章的大标题横幅：文章标题由页面标题栏单独展示，html 直接用 3-4 张「卡片」呈现各板块内容即可；每张卡片配色块表头(h3)和要点列表(ul/li)。'
                     . ' 2. 大量使用 Tailwind class 做视觉层次：如 bg-sky-50, text-sky-900, border-l-4, border-sky-500, rounded-xl, shadow-sm, px-4, py-3, font-bold, text-sm, text-slate-600, space-y-2 等。'
                     . ' 3. 关键数字、核心结论、专有名词用 <strong> 或 <mark> 高亮。'
                     . ' 4. 可在合适处用 <blockquote> 做金句/引语强调；有对比时用简单列表。'
@@ -337,7 +337,38 @@ class ArticleAiRenderService
         $cleanHtml = preg_replace('/\s(on\w+|style|id|data-[a-z0-9\-_]+)=("|\').*?("|\')/i', '', $cleanHtml);
         $cleanHtml = preg_replace('/\s(?!class\b)[a-z0-9\-_:]+=("|\')[^"\']*\1/i', '', $cleanHtml);
 
+        $cleanHtml = $this->stripLeadingTitleBanner($cleanHtml);
+
         return trim($cleanHtml);
+    }
+
+    /**
+     * 去掉 html 开头的大标题横幅（由页面标题栏单独展示，避免出现两个标题）。
+     * 只处理最开头的标题块：wrapper div 内含 h2（+可选 subtitle p），或裸 h2。
+     * 卡片自身的 h3 表头不受影响。
+     */
+    protected function stripLeadingTitleBanner($html)
+    {
+        $html = trim((string)$html);
+        $consumedSection = false;
+
+        // 情况 A：<section> 包裹标题块（<div…><h2>…[<p>副标题]…</div> 或 裸 <h2>[+<p>]）
+        if (preg_match('/\A\s*<section\b[^>]*>\s*(?:<div\b[^>]*>\s*<h2\b[^>]*>.*?<\/h2>(?:\s*<p\b[^>]*>.*?<\/p>)?\s*<\/div>|<h2\b[^>]*>.*?<\/h2>(?:\s*<p\b[^>]*>.*?<\/p>)?)/is', $html)) {
+            $html = preg_replace('/\A\s*<section\b[^>]*>\s*(?:<div\b[^>]*>\s*<h2\b[^>]*>.*?<\/h2>(?:\s*<p\b[^>]*>.*?<\/p>)?\s*<\/div>|<h2\b[^>]*>.*?<\/h2>(?:\s*<p\b[^>]*>.*?<\/p>)?)\s*/is', '', $html, 1);
+            $consumedSection = true;
+        } else {
+            // 情况 B：直接以 <div 包装><h2>…</div> 开头
+            $html = preg_replace('/\A\s*<div\b[^>]*>\s*<h2\b[^>]*>.*?<\/h2>(?:\s*<p\b[^>]*>.*?<\/p>)?\s*<\/div>\s*/is', '', $html, 1);
+            // 情况 C：直接以裸 <h2>[+<p>] 开头
+            $html = preg_replace('/\A\s*<h2\b[^>]*>.*?<\/h2>(?:\s*<p\b[^>]*>.*?<\/p>)?\s*/is', '', $html, 1);
+        }
+
+        // 若开头 <section> 被消费，移除结尾对应的 </section>，保持标签平衡
+        if ($consumedSection) {
+            $html = preg_replace('/<\/section>\s*\z/is', '', $html, 1);
+        }
+
+        return trim((string)$html);
     }
 
     protected function normalizeOutline($outline)
