@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\LlmModel;
+use App\Models\LlmProvider;
 use App\Models\LlmUsageLog;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -30,6 +31,14 @@ class LlmStructuredTaskService
 
         $model = $this->resolveModel($options);
         $provider = $model ? $model->provider : null;
+
+        // 支持直接指定模型名（不走 llm_models 表，如自建网关背后的模型）
+        $forceModel = !empty($options['force_model']) ? (string)$options['force_model'] : null;
+        if ($forceModel !== null) {
+            $provider = $model && $model->provider ? $model->provider : LlmProvider::query()->where('is_active', true)->orderBy('id')->first();
+            $model = ($model instanceof LlmModel) ? clone $model : new LlmModel();
+            $model->name = $forceModel;
+        }
 
         $apiKey = $provider ? $provider->getPlainApiKey() : null;
         if (!$model || !$provider || empty($provider->base_url) || empty($apiKey)) {
@@ -67,7 +76,9 @@ class LlmStructuredTaskService
             'stream' => false,
         );
 
-        if (!empty($model->max_tokens)) {
+        if (!empty($options['max_tokens'])) {
+            $payload['max_tokens'] = (int)$options['max_tokens'];
+        } elseif (!empty($model->max_tokens)) {
             $payload['max_tokens'] = (int)$model->max_tokens;
         }
 

@@ -33,7 +33,7 @@ class ArticleAiRenderService
         }
 
         $templateStyle = !empty($options['template_style']) ? (string)$options['template_style'] : 'magazine';
-        $promptVersion = $customPrompt !== '' ? 'article_reader_render:custom-v1' : 'article_reader_render:v8';
+        $promptVersion = $customPrompt !== '' ? 'article_reader_render:custom-v1' : 'article_reader_render:v10-ppt';
         $articleText = $this->buildArticleText($article);
 
         if ($articleText === '') {
@@ -54,25 +54,21 @@ class ArticleAiRenderService
         $messages = array(
             array(
                 'role' => 'system',
-                'content' => '你是一个面向学习场景的文章可视化编辑器。你的工作是把原文重组为更容易理解的 HTML 片段，而不是套固定模板。必须只输出 JSON，不要 markdown，不要解释。'
-                    . ' 输出 JSON 字段固定为 title, subtitle, summary, outline, html。'
-                    . ' 输出语言使用中文；保留必要英文专有名词、公司名、产品名和原文数字。'
-                    . ' title 要概括主题，不要照抄长标题；subtitle 用一句话说明这篇文章解决什么理解问题；summary 只写 1-2 句导读。'
-                    . ' outline 必须是 3-7 条真正的要点，每条都要包含原文中的实质信息，禁止写“导读”“关键要点”“收束思考”这类空泛标题。'
-                    . ' html 是一个可直接嵌入页面的 HTML 片段，由你按文章内容自由设计结构。允许使用 main, article, section, header, footer, aside, div, h2, h3, h4, p, ul, ol, li, blockquote, strong, b, em, code, hr, table, thead, tbody, tr, th, td, dl, dt, dd, figure, figcaption, mark, span。'
-                    . ' html 字符串内部的 HTML 属性必须使用单引号，例如 class=\'rounded-lg p-4\'，不要在 html 字符串内部使用未转义双引号。'
-                    . ' 可以使用 Tailwind 风格 class 来表达视觉层次，例如卡片、列表、提示块、对比块、步骤块、数据块；但只有在内容真的适合时才使用。'
-                    . ' 严禁硬凑模块：没有案例就不要做案例卡，没有有意义的指标就不要做数字卡，没有步骤就不要做步骤条。年份只有在表达趋势阶段时才能作为信息，不要把年份当成指标。'
-                    . ' 每个区块必须提供新的信息，不能重复 summary；删除套话、空话、说明性废话。'
-                    . ' 结构选择规则：报告/趋势文章优先展示核心判断、分类框架、证据数据、组织影响、行动建议；教程文章优先展示步骤、注意事项、示例；观点文章优先展示论点、论据、反方或边界。'
-                    . ' 严禁补全原文没有给出的细节。如果原文只说有某类趋势，但没有列出具体趋势名称或例子，只能写“原文将其归为某类”，不能自行编造该类下的示例。'
-                    . ' 所有卡片、列表、表格、数据块都必须能在原文中找到对应依据；找不到依据就删掉该区块。可以压缩、重组、对比原文信息，但不能扩写事实。'
-                    . ' html 中必须忠实原文，不要编造事实。不要使用 emoji 或装饰性特殊符号。不要输出 script/style/iframe/img/audio/video/button/form/input。'
+                'content' => '你是一个高级 PPT 视觉设计师，且不会有冗长的内心思考，看到文章后立即直接输出结果。把下面的文章做成一份「重点突出、层次分明」的 HTML 卡片/幻灯片式阅读页，让读者不用看全文就能抓住重点。'
+                    . ' 必须只输出一个 JSON 对象，字段固定为 title, subtitle, summary, outline, html。不要输出其他任何文字，不要用 markdown，不要代码块包裹。'
+                    . ' title=一句话概况主题；subtitle=说清这篇文章解决什么问题；summary=1-2 句导读；outline=3-5 条核心要点；html=完整 HTML 片段。'
+                    . ' html 设计规范（模仿精美 PPT / 信息图）：'
+                    . ' 1. 开头一个醒目的标题横幅(h2)，中间按 3-4 张「卡片」呈现每个板块，每张卡片配色块表头(h3)和要点列表(ul/li)。'
+                    . ' 2. 大量使用 Tailwind class 做视觉层次：如 bg-sky-50, text-sky-900, border-l-4, border-sky-500, rounded-xl, shadow-sm, px-4, py-3, font-bold, text-sm, text-slate-600, space-y-2 等。'
+                    . ' 3. 关键数字、核心结论、专有名词用 <strong> 或 <mark> 高亮。'
+                    . ' 4. 可在合适处用 <blockquote> 做金句/引语强调；有对比时用简单列表。'
+                    . ' 5. html 整体控制在 700-1200 个字符，够做 3-5 张卡片。'
+                    . ' 6. html 内所有属性用单引号，例如 class=\'bg-white rounded-xl\'；只允许标签 section, div, h2, h3, h4, p, ul, ol, li, blockquote, strong, b, em, code, hr, table, thead, tbody, tr, th, td, mark, span；绝不要使用 style, script, img, a, button, form, input。'
+                    . ' 7. 内容必须忠实原文，禁止编造原文没有的事实；不要使用 emoji 或装饰性特殊符号。'
             ),
             array(
                 'role' => 'user',
-                'content' => "请将下面文章转换为适合学习理解的可视化 HTML 页面，并返回 JSON：\n"
-                    . "默认要求：先按文章所属分类和 Feed 判断主题，再将内容拆成 3-5 个有信息量的小节，每个小节用 3-5 句话概括；页面要优先帮助用户快速理解文章，不要重复原文。\n"
+                'content' => "请将下面文章转换为精美卡片式阅读页，返回 JSON：\n"
                     . ($customPrompt !== '' ? "用户自定义补充要求：\n" . $customPrompt . "\n" : '')
                     . $articleText,
             ),
@@ -82,7 +78,9 @@ class ArticleAiRenderService
             'article_reader_render',
             $messages,
             array(
-                'timeout' => 150,
+                'timeout' => 240,
+                'max_tokens' => (int)($options['max_tokens'] ?? 8192),
+                'force_model' => $this->pickRenderModel($options),
             )
         );
 
@@ -302,6 +300,22 @@ class ArticleAiRenderService
         }
 
         return str_replace(array('\\n', '\\r', '\\t', '\\/', '\\"'), array("\n", "\r", "\t", '/', '"'), (string)$value);
+    }
+
+    /**
+     * 选择可视化阅读可用的模型名。
+     * 优先用自建网关背后更稳/更强的模型（minimax），其次保留默认；也可通过 options['model'] 覆盖。
+     */
+    protected function pickRenderModel(array $options = array())
+    {
+        // 兼容 options 显式指定完整模型名
+        $explicit = trim((string)($options['model'] ?? $options['model_name'] ?? ''));
+        if ($explicit !== '') {
+            return $explicit;
+        }
+
+        // 默认在自建网关背后选一个解析能力强于 gemma-free 的模型
+        return 'deepseek-v4-flash';
     }
 
     protected function sanitizeReaderHtml($html)
