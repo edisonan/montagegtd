@@ -63,6 +63,15 @@
             });
         }
 
+        function getAccessToken() {
+            try {
+                if (window.TaskApiClient && typeof window.TaskApiClient.getAccessToken === 'function') {
+                    return window.TaskApiClient.getAccessToken() || '';
+                }
+            } catch (e) {}
+            return '';
+        }
+
         function requestJson(url, options) {
             options = options || {};
             var headers = Object.assign({}, options.headers || {});
@@ -71,6 +80,11 @@
             headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
             if (options.body) {
                 headers['Content-Type'] = 'application/json';
+            }
+            // 与页面其他 API 一致：附加 access token（session 登录时由客户端注入）
+            var accessToken = getAccessToken();
+            if (accessToken && !headers['Authorization']) {
+                headers['Authorization'] = 'Bearer ' + accessToken;
             }
             return fetch(url, Object.assign({ headers: headers, credentials: 'same-origin' }, options)).then(function (res) {
                 return res.json();
