@@ -19,7 +19,7 @@
             min-height: 100vh;
             line-height: 1.7;
         }
-        .wrap { max-width: 760px; margin: 0 auto; padding: 48px 20px 64px; }
+        .wrap { max-width: 1080px; margin: 0 auto; padding: 48px 20px 64px; }
         .brand {
             display: flex; align-items: center; justify-content: center; gap: 8px;
             color: #9ca3af; font-size: 14px; margin-bottom: 24px; text-decoration: none;
@@ -28,7 +28,7 @@
         .card {
             background: #fff; border-radius: 14px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-            padding: 32px 36px;
+            padding: 40px 48px;
         }
         .card.not-found, .card.locked { text-align: center; padding: 64px 36px; }
         .not-found .icon, .locked .icon { font-size: 48px; color: #d1d5db; margin-bottom: 16px; }
