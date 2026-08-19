@@ -138,6 +138,12 @@ Route::group([
     Route::get('/article/view/{article}', 'ArticleController@view');
     Route::get('/article/{article}/ai-render', 'ArticleController@aiRender');
     Route::post('/article/{article}/ai-render/generate', 'ArticleController@generateAiRenderWeb');
+    Route::get('/article/{article}/artifacts', 'ArtifactController@articleArtifacts');
+    Route::post('/article/{article}/artifacts/generate', 'ArtifactController@generateWeb');
+    Route::get('/artifacts', 'ArtifactController@manage');
+    Route::get('/artifacts/{artifact}', 'ArtifactController@show');
+    Route::post('/artifacts/{artifact}/to-mind', 'ArtifactController@toMindWeb');
+    Route::post('/artifacts/{artifact}/delete', 'ArtifactController@destroyWeb');
     Route::get('/articles/status/{articleSub}', 'ArticleController@status');
     Route::get('/articles/allstatus', 'ArticleController@status');
     Route::delete('/article/{article}', 'ArticleController@destroy');

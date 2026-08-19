@@ -130,6 +130,9 @@ Route::prefix('v2')->group(function () {
         Route::get('/articles/{articleSub}/record', 'Api\\V2\\ArticleController@getRecord');
         Route::get('/music/hot-playlist', 'Api\\V2\\ArticleController@hotPlaylist');
 
+        Route::get('/artifacts', 'Api\\V2\\ArtifactController@index');
+        Route::get('/artifacts/{artifact}', 'Api\\V2\\ArtifactController@show');
+
         Route::get('/courses', 'Api\\V2\\CourseController@index');
         Route::get('/courses/management', 'Api\\V2\\CourseController@management');
         Route::get('/course-enrollments', 'Api\\V2\\CourseController@enrollments');
@@ -285,6 +288,10 @@ Route::prefix('v2')->group(function () {
         Route::post('/digest/profile', 'Api\\V2\\DigestController@saveProfile');
         Route::post('/digest/pages/generate', 'Api\\V2\\DigestController@generate');
         Route::delete('/articles/{articleSub}', 'Api\\V2\\ArticleController@destroy');
+
+        Route::post('/artifacts/generate', 'Api\\V2\\ArtifactController@generate');
+        Route::post('/artifacts/{artifact}/to-mind', 'Api\\V2\\ArtifactController@toMind');
+        Route::delete('/artifacts/{artifact}', 'Api\\V2\\ArtifactController@destroy');
 
         Route::post('/courses', 'Api\\V2\\CourseController@store');
         Route::post('/courses/{id}', 'Api\\V2\\CourseController@update');
