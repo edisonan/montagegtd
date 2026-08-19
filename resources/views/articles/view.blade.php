@@ -548,10 +548,15 @@
                                 添加订阅
                             </a>
 
-                            <a href="javascript:void(0);" class="header-action-btn js-ai-preview" data-article-id="{{ $article->id }}">
+                            <button type="button" class="header-action-btn js-artifact-open" data-article-id="{{ $article->id }}" data-artifact-type="visual_reading">
                                 <i class="fas fa-wand-magic-sparkles"></i>
                                 AI可视化
-                            </a>
+                            </button>
+
+                            <button type="button" class="header-action-btn js-artifact-open" data-article-id="{{ $article->id }}" data-artifact-type="mind_map">
+                                <i class="fas fa-brain"></i>
+                                思维导图
+                            </button>
 
                             <a href="{{ url('/article/'.$article->id.'/artifacts') }}" class="header-action-btn">
                                 <i class="fas fa-box-archive"></i>
@@ -611,15 +616,15 @@
                             </div>
                         </div>
 
-                        <a href="javascript:void(0);" id="article_mindmap_btn" class="share-btn">
+                        <button type="button" class="share-btn js-artifact-open" data-article-id="{{ $article->id }}" data-artifact-type="mind_map">
                             <i class="fas fa-brain"></i>
-                            AI生成导图
-                        </a>
+                            思维导图
+                        </button>
 
-                        <a href="javascript:void(0);" class="share-btn js-ai-preview" data-article-id="{{ $article->id }}">
+                        <button type="button" class="share-btn js-artifact-open" data-article-id="{{ $article->id }}" data-artifact-type="visual_reading">
                             <i class="fas fa-wand-magic-sparkles"></i>
                             AI可视化
-                        </a>
+                        </button>
 
                         <a href="{{ url('/articles') }}" class="continue-reading">
                             <i class="fas fa-book-reader"></i>
@@ -1482,6 +1487,33 @@
 
             // 全局暴露（信息流等页面若引用可用）
             window.openAiPreviewDialog = openAiPreview;
+        })();
+    </script>
+
+    {{-- AI 制品弹窗（可视化/思维导图，先查制品库，有就展示、没有才生成） --}}
+    @include('artifacts._dialog')
+
+    <script type="text/javascript">
+        // 参考文章列表页：可视化 / 思维导图 统一走制品库弹窗
+        (function () {
+            function openArtifactById(articleId, artifactType) {
+                if (window.openArtifactDialog && articleId) {
+                    window.openArtifactDialog({ relatedType: 'article', relatedId: articleId, artifactType: artifactType });
+                    return true;
+                }
+                return false;
+            }
+            document.querySelectorAll('.js-artifact-open').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var articleId = btn.getAttribute('data-article-id');
+                    var artifactType = btn.getAttribute('data-artifact-type');
+                    if (!openArtifactById(articleId, artifactType)) {
+                        window.location.href = '/article/' + articleId + '/artifacts';
+                    }
+                });
+            });
         })();
     </script>
 @endsection
