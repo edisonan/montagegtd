@@ -42,6 +42,7 @@ Route::group([
     Route::get('/note/getRecord/{note}', 'NoteController@getRecord');
     Route::get('/notes/share/{token}', 'NoteController@share');
     Route::get('/notes/{note}/edit', 'NoteController@update');
+    Route::get('/notes/{note}/view', 'NoteController@detail');
 
     // 笔记分享链接生成接口（注册在 web 路由文件，路径/中间件与 api/v2 一致，便于按文件选择性部署）
     Route::group(['prefix' => 'api/v2', 'middleware' => ['api', 'hybrid.token:write']], function () {

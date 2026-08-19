@@ -581,6 +581,16 @@
         .markdown-content h3 { font-size: 1.25rem; }
         .markdown-content h4 { font-size: 1.125rem; }
 
+        .note-title-link {
+            color: var(--gray-900);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .note-title-link:hover {
+            color: var(--primary-color);
+        }
+
         .markdown-content p {
             margin: 1em 0;
             line-height: 1.8;
@@ -1956,6 +1966,7 @@
                             '</div>' +
                         '</div>' +
                         '<div class="note-operations">' +
+                            '<button class="operation-btn" onclick="window.location=\'/notes/' + Number(note.id) + '/view\'" title="查看详情"><i class="fas fa-eye"></i></button>' +
                             '<button class="operation-btn ai" onclick="openNoteAI(\'' + Number(note.id) + '\')" title="AI助手"><i class="fas fa-robot"></i></button>' +
                             '<button class="operation-btn" onclick="copyNoteContent(\'' + Number(note.id) + '\')" title="复制内容"><i class="fas fa-copy"></i></button>' +
                             exportHtml +
@@ -1972,7 +1983,7 @@
                             ? '<div class="note-media"><a href="' + escapeHtml(note.image_path) + '" target="_blank"><img src="' + escapeHtml(note.image_path) + '" alt="笔记图片" class="note-image"></a></div>'
                             : ''
                         ) +
-                        (noteTitle ? '<h3 class="text-lg font-semibold text-gray-900 mb-3">' + escapeHtml(noteTitle) + '</h3>' : '') +
+                        (noteTitle ? '<h3 class="text-lg font-semibold text-gray-900 mb-3"><a class="note-title-link" href="/notes/' + Number(note.id) + '/view">' + escapeHtml(noteTitle) + '</a></h3>' : '') +
                         (tagsHtml ? '<div class="note-tags mb-3">' + tagsHtml + '</div>' : '') +
                         '<div class="note-content markdown-content" id="note-content-' + Number(note.id) + '">' + contentHtml + '</div>' +
                     '</div>' +

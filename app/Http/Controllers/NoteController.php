@@ -35,7 +35,8 @@ class NoteController extends Controller {
 		$this->middleware ( 'auth', [ 
 				'except' => [ 
 						'welcome',
-						'share' 
+						'share',
+						'detail' 
 				] 
 		] );
 		
@@ -198,6 +199,35 @@ class NoteController extends Controller {
 				'note' => $note,
 				'locked' => false,
 				'wrong' => false 
+		) );
+	}
+
+	/**
+	 * 笔记详情页。
+	 * 无论公开还是私有笔记，作者本人总能查看；
+	 * 公开笔记（status=2）任何人都可查看（免登录）；
+	 * 私有笔记仅作者本人可查看，其他人无权访问。
+	 *
+	 * @param Request $request
+	 * @param Note $note
+	 * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+	 */
+	public function detail(Request $request, Note $note) {
+		if ((int) $note->status !== 2) {
+			// 私有笔记：仅作者本人可看（需登录）
+			if (auth ()->guest () || (int) auth ()->id () !== (int) $note->user_id) {
+				abort ( 403, '无权查看该笔记' );
+			}
+		}
+
+		$note->load ( 'user', 'noteTagMaps.tag' );
+
+		$canEdit = auth ()->check () && (int) auth ()->id () === (int) $note->user_id;
+
+		return view ( 'notes.detail', array (
+				'note' => $note,
+				'canEdit' => $canEdit,
+				'isPublic' => (int) $note->status === 2
 		) );
 	}
 
