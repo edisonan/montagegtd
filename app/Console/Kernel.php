@@ -40,6 +40,7 @@ class Kernel extends ConsoleKernel
         Commands\DigestWhitelistUserCommand::class,
         Commands\DigestUpsertProfileCommand::class,
         Commands\CourseGenerateScheduled::class,
+        Commands\ArticlesGenerateArtifacts::class,
 //        Commands\AddLlmMenuItems::class
     ];
 
@@ -89,6 +90,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('daily_summary_reminder')->dailyAt('18:10');
         $schedule->command('study:generate-tasks --days=14')->dailyAt('00:05');
         $schedule->command('course:generate-scheduled --limit=5')->hourly();
+        // 稍后阅读/收藏文章自动生成可视化+思维导图（每篇最多 2 次尝试）
+        $schedule->command('articles:generate-artifacts --limit=10 --max-attempts=2')->everyThirtyMinutes();
 
         // $schedule->command ( 'backup2qiniu', array (
         // env ( 'TASK_SQL_FILE_PATH' )

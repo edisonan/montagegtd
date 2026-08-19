@@ -36,11 +36,13 @@ class Artifact extends Model
         'prompt_version',
         'generated_at',
         'error_message',
+        'attempt_count',
     );
 
     protected $casts = array(
         'user_id' => 'integer',
         'related_id' => 'integer',
+        'attempt_count' => 'integer',
         'generated_at' => 'datetime',
     );
 

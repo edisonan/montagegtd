@@ -151,6 +151,8 @@ class ArtifactService
             'prompt_version' => $result['prompt_version'] ?? null,
             'generated_at' => $result['generated_at'] ?? date('Y-m-d H:i:s'),
             'error_message' => $result['error_message'] ?? null,
+            // 统计真实调用生成的次数（定时任务「每篇最多试 N 次」用）
+            'attempt_count' => ((int)($existing->attempt_count ?? 0)) + 1,
         );
 
         if ($existing) {
