@@ -217,6 +217,11 @@
             return textarea.value;
         }
 
+        function stripLeadingH1(value) {
+            // 去掉内容开头的一级标题（# ...），避免与笔记标题重复显示成两个大标题
+            return String(value || '').replace(/^\s*#[ \t]+[^\n]*\n?/, '').replace(/^\n+/, '');
+        }
+
         function escapeHtml(value) {
             return String(value || '')
                 .replace(/&/g, '&amp;')
@@ -227,7 +232,7 @@
         }
 
         function renderMarkdownContent(value) {
-            const markdown = decodeNoteContent(value);
+            const markdown = stripLeadingH1(decodeNoteContent(value));
             const html = (window.marked && typeof window.marked.parse === 'function')
                 ? window.marked.parse(markdown)
                 : escapeHtml(markdown).replace(/\n/g, '<br>');
