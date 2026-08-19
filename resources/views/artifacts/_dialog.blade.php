@@ -156,11 +156,10 @@
                         html += '<div class="artifact-dialog-error">思维导图数据无法解析</div>';
                     }
                 } else {
-                    // visual_reading / 其他：给独立页查看链接（内容大，在独立页全屏看更合适）
+                    // visual_reading / 其他：弹窗内直接展示，独立页保留
                     success.forEach(function (a) {
-                        html += '<div class="artifact-dialog-item"><div class="info"><div class="name">' + escapeHtml(a.name || label) + ' 已生成</div>';
-                        html += '<div class="meta">' + (a.model_name ? escapeHtml(a.model_name) : '') + (a.generated_at ? ' · ' + escapeHtml(a.generated_at) : '') + '</div></div>';
-                        html += '<div class="ops"><a href="/artifacts/' + a.id + '" target="_blank"><i class="fas fa-eye"></i> 查看阅读</a></div></div>';
+                        html += '<div id="dlgVisualContent" class="dlg-html-content"><div class="artifact-dialog-loading"><i class="fas fa-spinner fa-spin"></i> 正在加载可视化内容…</div></div>';
+                        html += '<div class="dlg-tip">如弹窗内展示不完整，可点上方「独立页」查看全屏版本。</div>';
                     });
                 }
 
@@ -178,6 +177,29 @@
                 genBtn.addEventListener('click', function () {
                     generate(relatedType, relatedId, artifactType, label);
                 });
+            }
+
+            // visual_reading 内嵌展示：调 show 接口拉完整内容
+            if (artifactType !== 'mind_map' && success.length > 0) {
+                var vr = success[0];
+                var contentEl = document.getElementById('dlgVisualContent');
+                if (contentEl) {
+                    requestJson('/api/v2/artifacts/' + vr.id)
+                        .then(function (data) {
+                            var el = document.getElementById('dlgVisualContent');
+                            if (!el) return;
+                            var full = data && data.result && data.result.artifact;
+                            if (full && full.content) {
+                                el.innerHTML = '<div class="ai-render-content max-w-none rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">' + full.content + '</div>';
+                            } else {
+                                el.innerHTML = '<div class="artifact-dialog-error">加载可视化内容失败</div>';
+                            }
+                        })
+                        .catch(function () {
+                            var el = document.getElementById('dlgVisualContent');
+                            if (el) el.innerHTML = '<div class="artifact-dialog-error">加载可视化内容失败</div>';
+                        });
+                }
             }
 
             // mind_map 内嵌导图渲染
@@ -202,15 +224,37 @@
 
         // 在弹窗内渲染 jsMind
         function renderMindmapInDialog(nodeTree, name) {
+            // 确保 jsmind.css 已加载（缺 css 会显示空白/乱排）
+            loadCss('/css/jsmind.css');
             var containerId = 'artifactDialogMindmap';
             var container = document.getElementById(containerId);
             if (!container) return;
             if (typeof jsMind === 'undefined') {
-                // 动态加载 jsmind
-                loadScript('/js/jsmind.js', function () { var c = document.getElementById(containerId); if (c) doRenderMindmap(c, nodeTree, name); });
+                // 动态加载 jsmind.js（依赖 jquery）
+                loadScript('/js/jsmind.js', function () {
+                    var c = document.getElementById(containerId);
+                    if (c && typeof jsMind !== 'undefined') doRenderMindmap(c, nodeTree, name);
+                    else if (c) c.innerHTML = '<div class="artifact-dialog-error">jsMind 加载失败</div>';
+                });
                 return;
             }
             doRenderMindmap(container, nodeTree, name);
+        }
+
+        function loadCss(href) {
+            var links = document.querySelectorAll('link[rel="stylesheet"]');
+            for (var i = 0; i < links.length; i++) {
+                if (links[i].href && links[i].href.indexOf(basename(href)) !== -1) return;
+            }
+            var l = document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = href;
+            document.head.appendChild(l);
+        }
+
+        function basename(path) {
+            var parts = String(path).split('/');
+            return parts[parts.length - 1];
         }
 
         function doRenderMindmap(container, nodeTree, name) {
@@ -224,16 +268,24 @@
                 view: { hmargin: 80, vmargin: 40, line_width: 2, line_color: '#cbd5e1' },
                 layout: { hspace: 60, vspace: 34, pspace: 22 }
             };
-            try {
-                var jm = new jsMind(options);
-                jm.show({
-                    meta: { name: name || '思维导图', author: 'MontageGTD AI', version: '1.0' },
-                    format: 'node_tree',
-                    data: nodeTree
-                });
-            } catch (e) {
-                container.innerHTML = '<div class="artifact-dialog-error">思维导图渲染失败</div>';
-            }
+            var cid = container.id;
+            // 延迟到容器布局就绪再渲染，避免 canvas 尺寸为 0
+            setTimeout(function () {
+                var el = document.getElementById(cid);
+                if (!el) return;
+                try {
+                    el.innerHTML = '';
+                    var jm = new jsMind(options);
+                    jm.show({
+                        meta: { name: name || '思维导图', author: 'MontageGTD AI', version: '1.0' },
+                        format: 'node_tree',
+                        data: nodeTree
+                    });
+                } catch (e) {
+                    var errEl = document.getElementById(cid);
+                    if (errEl) errEl.innerHTML = '<div class="artifact-dialog-error">思维导图渲染失败：' + escapeHtml(e && e.message ? e.message : String(e)) + '</div>';
+                }
+            }, 50);
         }
 
         function loadScript(src, cb) {
