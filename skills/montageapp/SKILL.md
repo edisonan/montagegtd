@@ -28,6 +28,14 @@ CLI=skills/montageapp/scripts/montage
 - API 层**禁止** type=1（PHP）文件：会被 eval 执行，只能由后台人工维护。CLI 只支持 2=html、3=js、4=css、5=json。
 - 不向用户展示完整 token。
 
+## 执行原则
+
+**创建/修改/发布任何内容后，必须告知用户如何在网页端访问**，不要只报 id 或对象名。收尾固定给出：
+
+- 应用预览/访问地址：`https://task.congcong.us/app/{slug}/index.html`（生产；本地环境对应 `http://testtask.congcong.us/app/{slug}/index.html`）。
+- 若改动仅限某个文件或数据表，说明该文件/数据表对应页面里哪里能看到变化。
+- 已发布上线时明确说“已部署/可在线上预览地址访问”；仅保存未发布时说明“已保存，可在预览地址查看，尚未部署上线”。
+
 ## 工作流
 
 1. 明确应用名称、slug、用途、入口页面和是否需要数据表。slug 只能使用小写字母、数字和连字符，且必须唯一。

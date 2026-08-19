@@ -29,7 +29,10 @@ whenToUse: Trigger for phrases such as 新建/完成一个待办或任务, 列�
 4. 领域命令不覆盖时，再使用 `request METHOD /path --data ...`。
 5. 不向用户展示完整 token。必要时只说明 token 类型或脱敏前后缀。
 6. 最终反馈要说业务结果，不要只贴 API 响应：例如“已创建任务，id=...”，“已标记 12 篇文章为已读”。
-7. 发布/创建笔记后，**必须向用户展示可查看的地址**：私有笔记展示“作者本人可看，无公开链接”；用户要别人能看/免登录看时，调分享接口给链接（见 `references/notes.md` 的“发布后展示地址”）。
+7. **插入/创建/发布任何内容后，必须告知用户如何在网页端访问**：创建了可网页查看的对象（任务、笔记、文章、学习计划、专注、手账、思维导图、计划、应用等），收尾时都要附上网页访问入口/地址，不要只报 id。网页端访问入口见下方「网页端访问入口」对照，特殊链接（如笔记分享）按对应 reference 生成。
+   - 消息类（任务、状态流转等）：给出对应页面入口即可，如“去任务页 /index 可看到”。
+   - 笔记：按 `references/notes.md` 的“发布后展示地址”：私有笔记展示“作者本人可查看，无公开链接”；要对外/免登录看时调分享接口给免登录链接。
+   - 其它可生成独立分享/查看地址的对象，同样要给可查看地址。
 
 ## 配置
 
@@ -117,6 +120,27 @@ $CLI course-list
 ```
 
 使用 `--output table` 做人工查看；默认 JSON 适合 Codex 和脚本解析。
+
+## 网页端访问入口
+
+创建/插入内容后，按对象类型给用户网页端入口（生产 `https://task.congcong.us`，本地 `http://testtask.congcong.us`；用户未指明环境时默认给生产域名）：
+
+| 内容类型 | 网页端入口 |
+| --- | --- |
+| 待办/任务/首页 | `https://task.congcong.us/index`（或 `/home`） |
+| 笔记列表 | `https://task.congcong.us/notes` |
+| 笔记分享（免登录） | 分享接口返回的 `url`，见 `references/notes.md` |
+| 文章阅读队列 | `https://task.congcong.us/articles`（工作台 `/articles/workbench`） |
+| 订阅源发现 | `https://task.congcong.us/articles/explorer` |
+| 专注 | `https://task.congcong.us/focuss` |
+| 学习计划/打卡 | `https://task.congcong.us/study` |
+| 手账 | `https://task.congcong.us/journals` |
+| 思维导图 | `https://task.congcong.us/minds` |
+| 计划 | `https://task.congcong.us/plans` |
+| 积分 | `https://task.congcong.us/points` |
+| 成就 | `https://task.congcong.us/achievements` |
+
+规则：创建/发布后收尾固定给出上述入口；能精确到对象（如某笔记）就给该对象的地址；只有一个入口的页面直接给页面地址并说明大致在哪能看到新增内容。
 
 ## 读取参考
 
