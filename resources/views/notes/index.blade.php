@@ -446,6 +446,62 @@
             background: rgba(138, 108, 255, 0.1);
         }
 
+        /* 导出功能 */
+        .operation-btn.export-group {
+            position: relative;
+        }
+
+        .operation-btn.export-group:hover {
+            color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .export-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            min-width: 170px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            padding: 6px;
+            z-index: 300;
+        }
+
+        .operation-btn.export-group.open .export-menu,
+        .operation-btn.export-group:hover .export-menu,
+        .operation-btn.export-group:focus-within .export-menu {
+            display: block;
+        }
+
+        .export-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-700);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .export-menu-item i {
+            width: 16px;
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+
+        .export-menu-item:hover {
+            background: var(--gray-50);
+            color: var(--primary-color);
+        }
+
         /* 笔记内容区域 */
         .note-body {
             padding: 24px;
@@ -1385,6 +1441,105 @@
             }
         }
 
+        // 导出笔记（markdown 或 html）
+        function buildSafeFilename(name) {
+            const cleaned = String(name || '')
+                .replace(/[\\/:*?"<>|\r\n\t]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return cleaned || '笔记';
+        }
+
+        function downloadTextFile(filename, content, mime) {
+            const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        }
+
+        function exportHtmlDocument(title, bodyHtml) {
+            // 与页面渲染一致的 markdown 内容样式，生成独立的 HTML 文件
+            return '<!DOCTYPE html>\n' +
+                '<html lang="zh-CN">\n' +
+                '<head>\n' +
+                '  <meta charset="utf-8">\n' +
+                '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+                '  <title>' + escapeHtml(title) + '</title>\n' +
+                '  <style>\n' +
+                '    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; line-height: 1.8; color: #1f2937; max-width: 860px; margin: 0 auto; padding: 40px 24px; }\n' +
+                '    h1, h2, h3, h4 { color: #111827; margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; line-height: 1.3; }\n' +
+                '    h1 { font-size: 1.875rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.25rem; }\n' +
+                '    p { margin: 1em 0; } ul, ol { padding-left: 1.5em; margin: 1em 0; } li { margin: 0.5em 0; }\n' +
+                '    blockquote { border-left: 4px solid #4a90e2; margin: 1.5em 0; padding: 0.5em 1em; background: #f9fafb; border-radius: 0 8px 8px 0; color: #4b5563; }\n' +
+                '    code { background: #f3f4f6; color: #1f2937; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }\n' +
+                '    pre { background: #111827; color: #f3f4f6; padding: 1.25em; border-radius: 8px; overflow-x: auto; margin: 1.5em 0; }\n' +
+                '    pre code { background: transparent; color: inherit; padding: 0; }\n' +
+                '    table { width: 100%; border-collapse: collapse; margin: 1.5em 0; }\n' +
+                '    th, td { padding: 0.75em 1em; border: 1px solid #e5e7eb; text-align: left; }\n' +
+                '    th { background: #f9fafb; font-weight: 600; }\n' +
+                '    img { max-width: 100%; height: auto; border-radius: 8px; }\n' +
+                '  </style>\n' +
+                '</head>\n' +
+                '<body>\n' +
+                '  <h1>' + escapeHtml(title) + '</h1>\n' +
+                '  <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 0;">\n' +
+                '  ' + bodyHtml + '\n' +
+                '</body>\n' +
+                '</html>\n';
+        }
+
+        function exportNote(noteId, format) {
+            const id = Number(noteId);
+            const items = Array.isArray(notesState.items) ? notesState.items : [];
+            const note = items.filter(function(n) { return Number(n.id) === id; })[0];
+
+            if (!note) {
+                showToast('未找到该笔记，请刷新后重试', 'error');
+                return;
+            }
+
+            const title = note.name || '笔记';
+            const markdown = decodeNoteContent(note.content || note.name || '');
+            const filename = buildSafeFilename(title);
+            const timeSuffix = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+            if (format === 'md') {
+                const mdContent = markdown;
+                downloadTextFile(filename + '.md', mdContent, 'text/markdown');
+            } else if (format === 'html') {
+                let bodyHtml;
+                try {
+                    bodyHtml = (window.marked && typeof window.marked.parse === 'function')
+                        ? window.marked.parse(markdown)
+                        : escapeHtml(markdown).replace(/\n/g, '<br>');
+                    bodyHtml = sanitizeMarkdownHtml(bodyHtml);
+                } catch (e) {
+                    bodyHtml = escapeHtml(markdown).replace(/\n/g, '<br>');
+                }
+                const html = exportHtmlDocument(filename + ' - ' + timeSuffix, bodyHtml);
+                downloadTextFile(filename + '.html', html, 'text/html');
+            } else {
+                showToast('不支持的导出格式', 'error');
+                return;
+            }
+
+            showToast('笔记已导出为 ' + format.toUpperCase(), 'success');
+        }
+
+        // 点击页面其他位置时关闭导出菜单
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest || !event.target.closest('.export-group')) {
+                document.querySelectorAll('.operation-btn.export-group.open').forEach(function(el) {
+                    el.classList.remove('open');
+                });
+            }
+        });
+
         // 生成并复制分享链接（后端生成随机码 + 随机访问密码，链接里带 key）
         function copyNoteShareLink(noteId) {
             if (!apiRequest) {
@@ -1778,6 +1933,15 @@
             const shareHtml = isPublic
                 ? '<button class="operation-btn" onclick="copyNoteShareLink(\'' + Number(note.id) + '\')" title="复制分享链接"><i class="fas fa-link"></i></button>'
                 : '';
+            // 导出功能：markdown / html
+            const exportHtml =
+                '<div class="operation-btn export-group" title="导出笔记">' +
+                    '<i class="fas fa-download"></i>' +
+                    '<div class="export-menu">' +
+                        '<div class="export-menu-item" onclick="exportNote(\'' + Number(note.id) + '\', \'md\')"><i class="fab fa-markdown"></i>导出 Markdown</div>' +
+                        '<div class="export-menu-item" onclick="exportNote(\'' + Number(note.id) + '\', \'html\')"><i class="fas fa-code"></i>导出 HTML</div>' +
+                    '</div>' +
+                '</div>';
 
             return (
                 '<div class="note-card" id="note-' + Number(note.id) + '">' +
@@ -1794,6 +1958,7 @@
                         '<div class="note-operations">' +
                             '<button class="operation-btn ai" onclick="openNoteAI(\'' + Number(note.id) + '\')" title="AI助手"><i class="fas fa-robot"></i></button>' +
                             '<button class="operation-btn" onclick="copyNoteContent(\'' + Number(note.id) + '\')" title="复制内容"><i class="fas fa-copy"></i></button>' +
+                            exportHtml +
                             shareHtml +
                             actionsHtml +
                         '</div>' +

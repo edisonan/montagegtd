@@ -8,6 +8,8 @@
 
     <link href="https://unpkg.com/easymde/dist/easymde.min.css" rel="stylesheet">
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <script src="/js/marked.min.js"></script>
+    <script src="/plugins/purify/purify.min.js"></script>
 
     <style>
         .notes-workspace {
@@ -283,6 +285,57 @@
             border-color: #ef4444;
             color: #ef4444;
             background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* 导出菜单 */
+        .btn.export-group {
+            position: relative;
+        }
+
+        .btn.export-group .export-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            min-width: 170px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            padding: 6px;
+            z-index: 300;
+        }
+
+        .btn.export-group:hover .export-menu,
+        .btn.export-group.open .export-menu,
+        .btn.export-group:focus-within .export-menu {
+            display: block;
+        }
+
+        .btn.export-group .export-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-700);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .btn.export-group .export-menu-item i {
+            width: 16px;
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+
+        .btn.export-group .export-menu-item:hover {
+            background: var(--gray-50);
+            color: var(--primary-color);
         }
 
         .editor-body {
@@ -583,6 +636,13 @@
                         <button type="button" class="btn" id="share-link-btn" onclick="copyShareLink()" style="display:none;" title="复制公开分享链接">
                             <i class="fas fa-link"></i> 分享链接
                         </button>
+                        <div class="btn export-group" id="export-group-btn" title="导出笔记">
+                            <i class="fas fa-download"></i> 导出
+                            <div class="export-menu">
+                                <div class="export-menu-item" onclick="exportCurrentNote('md')"><i class="fab fa-markdown"></i>导出 Markdown</div>
+                                <div class="export-menu-item" onclick="exportCurrentNote('html')"><i class="fas fa-code"></i>导出 HTML</div>
+                            </div>
+                        </div>
                         <button type="button" class="btn btn-primary" onclick="saveCurrentNote()">
                             <i class="fas fa-save"></i> 保存
                         </button>
@@ -1023,6 +1083,111 @@
                 showToast('保存失败: ' + (error && error.message ? error.message : '网络错误'), 'error');
             });
         }
+
+        function buildSafeFilename(name) {
+            const cleaned = String(name || '')
+                .replace(/[\\/:*?"<>|\r\n\t]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return cleaned || '笔记';
+        }
+
+        function downloadTextFile(filename, content, mime) {
+            const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+        }
+
+        function exportHtmlDocument(title, bodyHtml) {
+            return '<!DOCTYPE html>\n' +
+                '<html lang="zh-CN">\n' +
+                '<head>\n' +
+                '  <meta charset="utf-8">\n' +
+                '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+                '  <title>' + escapeHtml(title) + '</title>\n' +
+                '  <style>\n' +
+                '    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; line-height: 1.8; color: #1f2937; max-width: 860px; margin: 0 auto; padding: 40px 24px; }\n' +
+                '    h1, h2, h3, h4 { color: #111827; margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; line-height: 1.3; }\n' +
+                '    h1 { font-size: 1.875rem; } h2 { font-size: 1.5rem; } h3 { font-size: 1.25rem; }\n' +
+                '    p { margin: 1em 0; } ul, ol { padding-left: 1.5em; margin: 1em 0; } li { margin: 0.5em 0; }\n' +
+                '    blockquote { border-left: 4px solid #4a90e2; margin: 1.5em 0; padding: 0.5em 1em; background: #f9fafb; border-radius: 0 8px 8px 0; color: #4b5563; }\n' +
+                '    code { background: #f3f4f6; color: #1f2937; padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em; }\n' +
+                '    pre { background: #111827; color: #f3f4f6; padding: 1.25em; border-radius: 8px; overflow-x: auto; margin: 1.5em 0; }\n' +
+                '    pre code { background: transparent; color: inherit; padding: 0; }\n' +
+                '    table { width: 100%; border-collapse: collapse; margin: 1.5em 0; }\n' +
+                '    th, td { padding: 0.75em 1em; border: 1px solid #e5e7eb; text-align: left; }\n' +
+                '    th { background: #f9fafb; font-weight: 600; }\n' +
+                '    img { max-width: 100%; height: auto; border-radius: 8px; }\n' +
+                '  </style>\n' +
+                '</head>\n' +
+                '<body>\n' +
+                '  <h1>' + escapeHtml(title) + '</h1>\n' +
+                '  <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 0;">\n' +
+                '  ' + bodyHtml + '\n' +
+                '</body>\n' +
+                '</html>\n';
+        }
+
+        function renderExportMarkdownHtml(markdown) {
+            let html;
+            try {
+                if (window.marked && typeof window.marked.parse === 'function') {
+                    html = window.marked.parse(markdown);
+                } else if (window.marked && typeof window.marked === 'function') {
+                    html = window.marked(markdown);
+                } else {
+                    html = escapeHtml(markdown).replace(/\n/g, '<br>');
+                }
+                if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+                    html = window.DOMPurify.sanitize(html);
+                }
+            } catch (e) {
+                html = escapeHtml(markdown).replace(/\n/g, '<br>');
+            }
+            return html;
+        }
+
+        // 导出当前正在编辑的笔记（markdown 或 html）
+        function exportCurrentNote(format) {
+            const title = (document.getElementById('note-title-input') || {}).value || '';
+            const markdown = easymde ? easymde.value() : '';
+
+            if (!title.trim() && !markdown.trim()) {
+                showToast('当前笔记为空，无法导出', 'warning');
+                return;
+            }
+
+            const filename = buildSafeFilename(title || markdown.slice(0, 28));
+            const timeSuffix = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+            if (format === 'md') {
+                downloadTextFile(filename + '.md', markdown, 'text/markdown');
+            } else if (format === 'html') {
+                const bodyHtml = renderExportMarkdownHtml(markdown);
+                const html = exportHtmlDocument(filename + ' - ' + timeSuffix, bodyHtml);
+                downloadTextFile(filename + '.html', html, 'text/html');
+            } else {
+                showToast('不支持的导出格式', 'error');
+                return;
+            }
+
+            showToast('笔记已导出为 ' + String(format).toUpperCase(), 'success');
+        }
+
+        // 点击页面其他位置时关闭导出菜单
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest || !event.target.closest('.export-group')) {
+                document.querySelectorAll('.btn.export-group.open').forEach(function(el) {
+                    el.classList.remove('open');
+                });
+            }
+        });
 
         function deleteCurrentNote() {
             if (!currentNoteId) return;
