@@ -9,16 +9,18 @@
     <style>
         .study-shell { max-width: 1080px; margin: 0 auto; }
         .study-top-card { background: linear-gradient(135deg, #fff9fb 0%, #f8fff6 100%); border: 1px solid #f5dce6; border-radius: 24px; padding: 18px; box-shadow: 0 8px 22px rgba(27, 43, 99, 0.06); }
-        .study-quick-btn { width: 44px; height: 44px; border-radius: 999px; border: 0; background: #1f3d8a; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
-        .study-week-wrap { margin-top: 14px; background: rgba(255, 255, 255, 0.85); border: 1px solid #e9eef5; border-radius: 16px; padding: 10px; }
-        .study-week-title { font-size: 13px; color: #667085; margin-bottom: 8px; padding: 0 2px; }
-        .study-week-scroll { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding: 2px 2px 8px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-        .study-day-item { flex: 0 0 76px; min-height: 78px; border-radius: 16px; padding: 10px 8px; border: 0; text-align: center; background: #d7f6ca; color: #111827; display: flex; flex-direction: column; align-items: center; justify-content: center; scroll-snap-align: start; white-space: nowrap; }
-        .study-day-item.is-selected { background: #ff5f9d; color: #fff; box-shadow: 0 8px 20px rgba(255, 95, 157, 0.35); }
-        .study-day-week { font-size: 12px; font-weight: 600; }
-        .study-day-date { font-size: 13px; margin-top: 4px; }
-        .study-day-today { font-size: 10px; margin-top: 4px; opacity: 0.9; }
-        .study-panel-grid { display: grid; gap: 14px; margin-top: 14px; grid-template-columns: 1fr; }
+        .study-quick-btn { width: 40px; height: 40px; border-radius: 999px; border: 0; background: #1f3d8a; color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+        .study-summary-wrap { position: relative; }
+        .study-summary-card { position: absolute; right: 0; top: calc(100% + 10px); width: 340px; max-width: 85vw; background: #fff; border: 1px solid #e6edf7; border-radius: 16px; box-shadow: 0 16px 40px rgba(27, 43, 99, 0.16); z-index: 60; }
+        .study-summary-card.show { display: block; }
+        .study-week-wrap { margin-top: 12px; background: rgba(255, 255, 255, 0.85); border: 1px solid #e9eef5; border-radius: 14px; padding: 8px; }
+        .study-week-title { font-size: 12px; color: #667085; margin-bottom: 6px; padding: 0 2px; }
+        .study-week-scroll { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; padding: 2px 2px 6px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+        .study-day-item { flex: 0 0 64px; min-height: 62px; border-radius: 14px; padding: 8px 6px; border: 0; text-align: center; background: #d7f6ca; color: #111827; display: flex; flex-direction: column; align-items: center; justify-content: center; scroll-snap-align: start; white-space: nowrap; }
+        .study-day-item.is-selected { background: #ff5f9d; color: #fff; box-shadow: 0 6px 16px rgba(255, 95, 157, 0.3); }
+        .study-day-week { font-size: 11px; font-weight: 600; }
+        .study-day-date { font-size: 12px; margin-top: 3px; }
+        .study-day-today { font-size: 9px; margin-top: 3px; opacity: 0.9; }
         .study-panel { border-radius: 20px; border: 1px solid #e6edf7; background: #fff; padding: 16px; }
         .study-mascot { width: 64px; height: 64px; border-radius: 16px; background: #f2f4f7; border: 1px dashed #c8d2e0; display: inline-flex; align-items: center; justify-content: center; color: #74839b; font-size: 24px; }
         .study-level-line { height: 8px; background: #edf1f7; border-radius: 999px; overflow: hidden; }
@@ -51,9 +53,8 @@
         .quick-plan-preset-name { font-size: 13px; font-weight: 600; color: #111827; }
         .quick-plan-preset-desc { font-size: 11px; color: #667085; margin-top: 2px; }
         @media (min-width: 900px) {
-            .study-panel-grid { grid-template-columns: 1.1fr 1fr; }
             .study-week-scroll { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: visible; }
-            .study-day-item { min-height: 86px; flex: initial; width: 100%; }
+            .study-day-item { min-height: 68px; flex: initial; width: 100%; }
         }
     </style>
 
@@ -61,49 +62,53 @@
         <div class="study-top-card">
             <div class="flex items-center justify-between">
                 <div class="text-xl font-semibold text-gray-900" id="greetingText">中午好，{{ $displayName }}</div>
-                <a href="/study/checkins" class="study-quick-btn" title="打卡日历">
-                    <i class="fas fa-calendar-alt"></i>
-                </a>
+                <div class="flex items-center gap-2">
+                    <div class="study-summary-wrap" id="studySummaryWrap">
+                        <button type="button" class="study-quick-btn" id="studySummaryBtn" title="宠物与学习统计">
+                            <i class="fas fa-paw"></i>
+                        </button>
+                        <div id="studySummaryCard" class="study-summary-card hidden">
+                            <div class="p-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="study-mascot">
+                                        <i class="fas fa-paw"></i>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-sm text-gray-500">宠物商店吉祥物</div>
+                                        <div class="text-base font-semibold text-gray-900 mt-1">默认形象，点击可前往领取</div>
+                                        <div class="text-sm text-gray-600 mt-2">Lv.6</div>
+                                        <div class="study-level-line mt-2">
+                                            <div class="study-level-progress"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="study-reward-row">
+                                    <div class="study-reward-pill"><i class="fas fa-coins"></i>金币 x<span id="todayGoldReward">0</span></div>
+                                    <div class="study-reward-pill energy"><i class="fas fa-circle"></i>能量球 x<span id="todayEnergyReward">0</span></div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 p-4 pt-0">
+                                <div class="study-stat-item">
+                                    <div class="study-stat-name">学习总时长</div>
+                                    <div class="study-stat-value"><span id="todayLearnedMinutes">0</span> 分钟</div>
+                                </div>
+                                <div class="study-stat-item">
+                                    <div class="study-stat-name">预估总时长</div>
+                                    <div class="study-stat-value"><span id="todayEstimatedMinutes">0</span> 分钟</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/study/checkins" class="study-quick-btn" title="打卡日历">
+                        <i class="fas fa-calendar-alt"></i>
+                    </a>
+                </div>
             </div>
 
             <div class="study-week-wrap">
                 <div class="study-week-title" id="weekLabel">-</div>
                 <div class="study-week-scroll" id="daysContainer">
                     <div class="text-sm text-gray-500">加载中...</div>
-                </div>
-            </div>
-
-            <div class="study-panel-grid">
-                <div class="study-panel">
-                    <div class="flex items-start gap-3">
-                        <div class="study-mascot">
-                            <i class="fas fa-paw"></i>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <div class="text-sm text-gray-500">宠物商店吉祥物</div>
-                            <div class="text-base font-semibold text-gray-900 mt-1">默认形象，点击可前往领取</div>
-                            <div class="text-sm text-gray-600 mt-2">Lv.6</div>
-                            <div class="study-level-line mt-2">
-                                <div class="study-level-progress"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="study-panel">
-                    <div class="study-stat-grid">
-                        <div class="study-stat-item">
-                            <div class="study-stat-name">学习总时长</div>
-                            <div class="study-stat-value"><span id="todayLearnedMinutes">0</span> 分钟</div>
-                        </div>
-                        <div class="study-stat-item">
-                            <div class="study-stat-name">预估总时长</div>
-                            <div class="study-stat-value"><span id="todayEstimatedMinutes">0</span> 分钟</div>
-                        </div>
-                    </div>
-                    <div class="study-reward-row">
-                        <div class="study-reward-pill"><i class="fas fa-coins"></i>金币 x<span id="todayGoldReward">0</span></div>
-                        <div class="study-reward-pill energy"><i class="fas fa-circle"></i>能量球 x<span id="todayEnergyReward">0</span></div>
-                    </div>
                 </div>
             </div>
 
@@ -1072,11 +1077,49 @@
             }
         });
 
+        let summaryHideTimer = null;
+
+        function showStudySummary() {
+            clearTimeout(summaryHideTimer);
+            const card = document.getElementById('studySummaryCard');
+            card.classList.remove('hidden');
+            card.classList.add('show');
+        }
+
+        function scheduleHideStudySummary() {
+            clearTimeout(summaryHideTimer);
+            summaryHideTimer = setTimeout(function() {
+                const card = document.getElementById('studySummaryCard');
+                card.classList.remove('show');
+                card.classList.add('hidden');
+            }, 150);
+        }
+
+        function initStudySummary() {
+            const btn = document.getElementById('studySummaryBtn');
+            const card = document.getElementById('studySummaryCard');
+            if (!btn || !card) return;
+            btn.addEventListener('mouseenter', showStudySummary);
+            btn.addEventListener('mouseleave', scheduleHideStudySummary);
+            card.addEventListener('mouseenter', showStudySummary);
+            card.addEventListener('mouseleave', scheduleHideStudySummary);
+            // 点击按钮切换展示
+            btn.addEventListener('click', function() {
+                if (card.classList.contains('show')) {
+                    card.classList.remove('show');
+                    card.classList.add('hidden');
+                } else {
+                    showStudySummary();
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const today = formatLocalDate(new Date());
             selectedDate = today;
             updateGreeting();
             onPlanModeChange();
+            initStudySummary();
             document.querySelectorAll('input[name="repeat_days"]').forEach(function(node) {
                 node.addEventListener('change', onPlanModeChange);
             });
