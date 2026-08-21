@@ -3099,10 +3099,14 @@
             function checkMobile() {
                 var ua = navigator.userAgent;
                 var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+                // 与 CSS 断点(1024px)保持一致：窄屏一律默认折叠订阅目录，
+                // 避免仅依赖 UA 判断(部分手机 webview / 桌面模式 / 平板检测不到)时
+                // 在手机上仍加载 feed 目录数据。目录改为点击“订阅目录”时才懒加载。
+                var narrowScreen = window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
 
-                setSidebarCollapsed(isMobile || sidebarCollapsed, false);
+                setSidebarCollapsed(isMobile || narrowScreen, false);
 
-                return isMobile;
+                return isMobile || narrowScreen;
             }
 
             // 快速订阅
