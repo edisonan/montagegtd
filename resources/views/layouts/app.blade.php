@@ -76,7 +76,8 @@
                                     ['url'=>'/', 'label'=>'开始专注', 'icon'=>'fas fa-play'],
 //                                    ['url'=>'/focuss', 'label'=>'专注列表', 'icon'=>'fas fa-list'],
                                     ['url'=>'/tasks', 'label'=>'待办列表', 'icon'=>'fas fa-tasks'],
-                                    ['url'=>'/journals', 'label'=>'手账列表', 'icon'=>'fas fa-check-circle']
+                                    ['url'=>'/journals', 'label'=>'手账列表', 'icon'=>'fas fa-check-circle'],
+                                    ['url'=>'/journals/daily', 'label'=>'每日手账', 'icon'=>'fas fa-calendar-day']
                                 ]
                             ],
                             [

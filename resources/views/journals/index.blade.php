@@ -13,6 +13,9 @@
                 <p class="text-gray-600">查看和回顾您已完成的手账记录</p>
             </div>
             <div class="flex items-center space-x-4">
+                <a href="{{ url('/journals/daily') }}" class="btn btn-outline">
+                    <i class="fas fa-calendar-day mr-2"></i>每日手账
+                </a>
                 <button type="button" class="btn btn-primary" onclick="showJournalCreateModal()">
                     <i class="fas fa-plus mr-2"></i>新增手账
                 </button>

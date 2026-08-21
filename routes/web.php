@@ -232,6 +232,8 @@ Route::group([
 
     Route::get('/journals', 'JournalController@index');
     Route::get('/journals/data', 'JournalController@data');
+    Route::get('/journals/daily', 'JournalController@daily');
+    Route::get('/journals/daily/data', 'JournalController@dailyData');
     Route::post('/journal', 'JournalController@store');
     Route::delete('/journal/{journal}', 'JournalController@destroy');
     Route::post('/journal/{journal}', 'JournalController@update');

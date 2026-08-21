@@ -132,8 +132,13 @@
                                     </div>
                                     <h3 class="font-medium text-gray-800">今日成果</h3>
                                 </div>
-                                <div class="text-sm text-gray-500">
-                                    已记录 <span id="focusCount" class="font-semibold text-gray-900">0</span> 条手账
+                                <div class="flex items-center gap-3">
+                                    <div class="text-sm text-gray-500">
+                                        已记录 <span id="focusCount" class="font-semibold text-gray-900">0</span> 条手账
+                                    </div>
+                                    <a href="{{ url('/journals/daily') }}" class="text-xs font-medium inline-flex items-center text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-calendar-day mr-1"></i>每日手账
+                                    </a>
                                 </div>
                             </div>
 

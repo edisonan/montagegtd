@@ -147,4 +147,38 @@ class JournalController extends Controller {
 		
 		return $this->jsonAndRedirectAutoResponse ( $request, ResponseDataUtil::genSimpleSucc ( $journal ), '/journals' );
 	}
+
+	/**
+	 * 每日手账视图（按天展示 24 小时轨迹 + 当天手账内容）
+	 *
+	 * @param Request $request
+	 */
+	public function daily(Request $request) {
+		return view('journals.daily');
+	}
+
+	/**
+	 * 获取某一天的全部手账（用于每日手账的时间轴与内容展示）。
+	 *
+	 * @param Request $request
+	 * @return mixed
+	 */
+	public function dailyData(Request $request) {
+		$this->validate($request, array(
+			'date' => 'required|date_format:Y-m-d',
+		));
+
+		$date = $request->input('date');
+
+		$journals = $request->user()->journals()
+			->where('start_time', '>=', $date . ' 00:00:00')
+			->where('start_time', '<=', $date . ' 23:59:59')
+			->orderBy('start_time', 'asc')
+			->get();
+
+		return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+			'date' => $date,
+			'journals' => $journals,
+		)));
+	}
 }
