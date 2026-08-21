@@ -208,7 +208,7 @@ class TaskService {
 			$params ['status'] = 2;
 			$params ['is_doing'] = 0;
 			
-			$this->journalService->storeJournal ( 2, $task->name, $task->created_at, date ( 'Y-m-d H:i:s' ) );
+			$this->journalService->storeJournal ( 2, $task->name, date ( 'Y-m-d H:i:s' ), date ( 'Y-m-d H:i:s' ) );
 		} elseif ($type == 'restore') {
 			$params ['status'] = 1;
 			$params ['is_doing'] = 0;
