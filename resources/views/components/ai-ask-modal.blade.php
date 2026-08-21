@@ -1148,8 +1148,8 @@
 
 <!-- 引入 Markdown 解析库 -->
 <script src="/js/marked.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="{{ asset('vendor_local/lib/github.min.css') }}">
+<script src="{{ asset('vendor_local/lib/highlight.min.js') }}"></script>
 <script>
     // 初始化 Markdown 渲染器的高亮功能
     if (typeof marked !== 'undefined') {

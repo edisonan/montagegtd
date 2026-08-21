@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>离线 - 蒙太奇</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+      background: linear-gradient(135deg, #f8fafc, #eef2f7);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #334155;
+    }
+    .card {
+      text-align: center;
+      padding: 48px 40px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 12px 32px rgba(0,0,0,.08);
+      max-width: 420px;
+      width: 90%;
+    }
+    .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      color: #00b894;
+    }
+    h1 { font-size: 22px; margin-bottom: 12px; color: #0f172a; }
+    p { font-size: 15px; color: #64748b; margin-bottom: 28px; line-height: 1.6; }
+    button {
+      background: #00b894; color: #fff; border: none;
+      padding: 12px 28px; border-radius: 9999px; font-size: 15px; font-weight: 500;
+      cursor: pointer;
+    }
+    button:hover { background: #00a085; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">📶</div>
+    <h1>当前处于离线状态</h1>
+    <p>网络连接似乎不可用。请检查网络后重试；你保存到本地的离线操作会自动同步。</p>
+    <button onclick="location.reload()">重新连接</button>
+  </div>
+</body>
+</html>

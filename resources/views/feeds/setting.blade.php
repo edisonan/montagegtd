@@ -123,7 +123,7 @@
     </style>
 
     <script src="{{ asset('js/sortable.min.js') }}"></script>
-    <script>window.Sortable || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.6.0/Sortable.min.js"><\/script>');</script>
+    <script>window.Sortable || document.write('<script src="{{ asset('vendor_local/lib/Sortable.min.js') }}"><\/script>');</script>
     <script>
         var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
             ? window.TaskApiBridge.requestWithFallback

@@ -10,18 +10,27 @@
     <meta name="description" content="@yield('description', '蒙太奇是一个专注于提升个人效率的时间管理工具，提供专注工作法、待办事项、阅读管理等核心功能。')">
     <meta name="keywords" content="蒙太奇,番茄工作法,时间管理,待办事项,GTD,RSS阅读,效率工具">
 
+    <!-- PWA -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#00b894">
+    <link rel="apple-touch-icon" href="{{ asset('pwa/apple-touch-icon.png') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="蒙太奇">
+
     @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
         <meta name="referrer" content="never">
     @endif
 
-    <!-- 引入Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Tailwind CSS（本地化，PWA离线可用；Play CDN为运行时编译器，本地化后离线不破） -->
+    <script src="{{ asset('vendor_local/tailwind-play.js') }}"></script>
 
-    <!-- 引入Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- 引入Font Awesome（本地化） -->
+    <link href="{{ asset('vendor_local/fa/all.min.css') }}" rel="stylesheet">
 
-    <!-- 引入谷歌字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 引入谷歌字体（本地化，含woff2子集） -->
+    <link href="{{ asset('vendor_local/fonts/inter.css') }}" rel="stylesheet">
 
     <!-- 引入jQuery（本地优先，CDN不可用时自动回退，避免网络问题导致全站JS失效） -->
     <script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script>
@@ -34,8 +43,8 @@
     <!-- 提前加载API客户端，避免内容区内联脚本执行时未初始化 -->
     <script src="{{ asset('js/hybrid-api-client.js') }}"></script>
 
-    <!-- 引入ECharts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js" defer></script>
+    <!-- 引入ECharts（本地化） -->
+    <script src="{{ asset('vendor_local/echarts/echarts.min.js') }}" defer></script>
 
     <!-- 引入自定义CSS -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
@@ -687,5 +696,22 @@
 </script>
 
 @yield('scripts')
+
+<!-- ========== PWA UI 控件 ========== -->
+<!-- 离线/待同步状态指示 -->
+<div id="pwaOfflineIndicator" style="display:none; position:fixed; left:16px; bottom:16px; z-index:9999; align-items:center; gap:8px; background:#1f2937; color:#fff; padding:10px 14px; border-radius:9999px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.25);">
+    <i class="fas fa-cloud-arrow-down" style="color:#fbbf24;"></i>
+    <span>离线模式</span>
+    <span id="pwaPendingBadge" class="hidden" style="background:#ef4444; border-radius:9999px; padding:0 8px; font-size:12px; line-height:20px;"></span>
+</div>
+
+<!-- 安装到主屏幕按钮（beforeinstallprompt 触发后显示） -->
+<button id="pwaInstallButton" type="button" style="display:none; position:fixed; right:16px; bottom:16px; z-index:9999; align-items:center; gap:8px; background:#00b894; color:#fff; border:none; padding:10px 16px; border-radius:9999px; font-size:14px; font-weight:500; cursor:pointer; box-shadow:0 8px 24px rgba(0,184,148,.4);">
+    <i class="fas fa-download"></i>
+    <span>安装应用</span>
+</button>
+
+<!-- ========== PWA 离线模块 ========== -->
+<script src="{{ asset('js/pwa-offline.js') }}"></script>
 </body>
 </html>

@@ -22,8 +22,13 @@ Route::group([
 ], function () {
 
     Route::get('/', function () {
+        /* iOS standalone PWA 白屏修复：已登录用户直接渲染应用页，
+           不再走 guest 中间件的 302 重定向（iOS standalone 首屏遇到重定向会白屏）。 */
+        if (\Auth::check()) {
+            return app(\App\Http\Controllers\IndexController::class)->index(request());
+        }
         return view('welcome');
-    })->middleware('guest');
+    })->middleware('web');
 
     Route::get('/home', 'IndexController@index');
     Route::get('/index', 'IndexController@index');

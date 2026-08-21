@@ -1,0 +1,65 @@
+{
+  "name": "蒙太奇 - 专注效率工具",
+  "short_name": "蒙太奇",
+  "description": "蒙太奇是一个专注于提升个人效率的时间管理工具，提供专注工作法、待办事项、笔记、阅读管理等核心功能，支持离线使用。",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#00b894",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["productivity", "utilities", "lifestyle"],
+  "icons": [
+    {
+      "src": "/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/pwa/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "开始专注",
+      "short_name": "专注",
+      "description": "立即开始一个专注周期",
+      "url": "/",
+      "icons": [{ "src": "/pwa/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "待办列表",
+      "short_name": "待办",
+      "description": "查看和管理待办任务",
+      "url": "/tasks",
+      "icons": [{ "src": "/pwa/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "快速笔记",
+      "short_name": "笔记",
+      "description": "新建一条想法笔记",
+      "url": "/notes",
+      "icons": [{ "src": "/pwa/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

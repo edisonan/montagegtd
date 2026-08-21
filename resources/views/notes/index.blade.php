@@ -7,8 +7,8 @@
     @include('components.ai-ask-modal')
 
     <!-- 引入Markdown编辑器 -->
-    <link href="https://unpkg.com/easymde/dist/easymde.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <link href="{{ asset('vendor_local/lib/easymde.min.css') }}" rel="stylesheet">
+    <script src="{{ asset('vendor_local/lib/easymde.min.js') }}"></script>
     <script src="/js/marked.min.js"></script>
     <script src="/plugins/purify/purify.min.js"></script>
 
