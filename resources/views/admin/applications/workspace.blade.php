@@ -10,6 +10,7 @@
                 <span class="workspace-glance-pill">{{ count($files) }} 个文件</span>
                 <span class="workspace-glance-pill workspace-glance-pill-accent">实时预览</span>
             </div>
+            <button id="newCodeBtnTop" class="workspace-btn workspace-btn-new-code" type="button">＋ 新建code</button>
             <button id="quickSaveBtn" class="workspace-btn workspace-btn-primary" type="button">保存</button>
             <button id="quickPreviewBtn" class="workspace-btn workspace-btn-light" type="button">预览</button>
             <button id="toggleMetaBtn" class="workspace-btn workspace-btn-light" type="button">基础信息</button>
@@ -137,7 +138,7 @@
                         <h3>文件</h3>
                         <span class="workspace-panel-subtitle">按目录分组</span>
                     </div>
-                    <button id="newFileBtn" class="workspace-btn workspace-btn-primary" type="button">新建文件</button>
+                    <button id="newFileBtn" class="workspace-btn workspace-btn-new-code" type="button">＋ 新建code</button>
                 </div>
                 <div class="workspace-file-search">
                     <input id="fileSearch" class="workspace-input" type="text" placeholder="搜索文件名或路径">
@@ -249,7 +250,7 @@
     <div id="newFileModal" class="workspace-modal" style="display:none;">
         <div class="workspace-modal-card">
             <div class="workspace-panel-header">
-                <h3>新建文件</h3>
+                <h3>新建code</h3>
                 <button id="closeNewFileModal" class="workspace-modal-close" type="button">&times;</button>
             </div>
             <div class="workspace-modal-body">
@@ -278,12 +279,12 @@
                         </select>
                     </label>
                     <label class="workspace-form-full">
-                        <span>初始内容</span>
+                        <span>初始内容 <em style="font-style:normal;color:#98a6b7;font-weight:600;">（切换类型会自动预置对应模版，可再修改）</em></span>
                         <textarea id="newFileContent" class="workspace-textarea" rows="8"></textarea>
                     </label>
                 </div>
                 <div class="workspace-modal-actions">
-                    <button id="submitNewFileBtn" class="workspace-btn workspace-btn-primary" type="button">创建文件</button>
+                    <button id="submitNewFileBtn" class="workspace-btn workspace-btn-primary" type="button">创建code</button>
                 </div>
             </div>
         </div>
@@ -672,6 +673,16 @@
         background: #f3f8fb;
         color: #4d6782;
         border: 1px solid var(--ws-border);
+    }
+    .workspace-btn-new-code {
+        background: linear-gradient(135deg, #2f9e92 0%, #3fa8a4 55%, #4aa3a2 100%);
+        color: #fff;
+        box-shadow: 0 10px 24px rgba(47, 158, 146, 0.32);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        font-weight: 800;
+    }
+    .workspace-btn-new-code:hover {
+        box-shadow: 0 12px 28px rgba(47, 158, 146, 0.42);
     }
     .workspace-file-search { padding: 0 18px 14px; }
     .workspace-file-filters {
@@ -1986,8 +1997,79 @@
             });
         });
 
+        function getNewFileTemplate(type) {
+            var templates = {
+                1: '\u003C?php\n'
+                    + '// PHP 模版\n'
+                    + '// 在这里写你的 PHP 逻辑\n'
+                    + 'echo "Hello, PHP!";\n'
+                    + '\u003F?>',
+                2: '<!DOCTYPE html>\n'
+                    + '<html lang="zh-CN">\n'
+                    + '<head>\n'
+                    + '    <meta charset="UTF-8">\n'
+                    + '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+                    + '    <title>我的页面</title>\n'
+                    + '    <style>\n'
+                    + '        body {\n'
+                    + '            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;\n'
+                    + '            margin: 0;\n'
+                    + '            padding: 32px;\n'
+                    + '            color: #213043;\n'
+                    + '            background: #f6f9fc;\n'
+                    + '        }\n'
+                    + '        h1 { color: #3d8f8e; }\n'
+                    + '    </style>\n'
+                    + '</head>\n'
+                    + '<body>\n'
+                    + '    <h1>你好，世界</h1>\n'
+                    + '    <p>这是一个 HTML 模版页面。</p>\n'
+                    + '</body>\n'
+                    + '</html>',
+                3: '// JavaScript 模版\n'
+                    + '\n'
+                    + '(function () {\n'
+                    + '    document.addEventListener("DOMContentLoaded", function () {\n'
+                    + '        console.log("Hello, JavaScript!");\n'
+                    + '    });\n'
+                    + '})();',
+                4: '/* CSS 模版 */\n'
+                    + '\n'
+                    + 'body {\n'
+                    + '    margin: 0;\n'
+                    + '    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;\n'
+                    + '    color: #213043;\n'
+                    + '    background: #f6f9fc;\n'
+                    + '}\n'
+                    + '\n'
+                    + 'h1 {\n'
+                    + '    color: #3d8f8e;\n'
+                    + '}',
+                5: '{\n'
+                    + '    "title": "我的应用",\n'
+                    + '    "version": "1.0.0",\n'
+                    + '    "items": []\n'
+                    + '}'
+            };
+            return templates[Number(type)] || '';
+        }
+
+        function fillNewFileTemplate(type) {
+            $('#newFileContent').val(getNewFileTemplate(type));
+        }
+
+        $('#newFileType').on('change', function () {
+            fillNewFileTemplate($(this).val());
+        });
+
         $('#newFileBtn').on('click', function () {
             $('#newFileModal').show();
+            fillNewFileTemplate($('#newFileType').val());
+        });
+
+        $('#newCodeBtnTop').on('click', function () {
+            $('#newFileModal').show();
+            fillNewFileTemplate($('#newFileType').val());
         });
 
         $('#closeNewFileModal').on('click', function () {
