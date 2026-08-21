@@ -158,6 +158,13 @@ Route::group([
     Route::get('/article/navcountinfo', 'ArticleController@navcountinfo');
     Route::get('/article/proxyview', 'ArticleController@proxyView');
 
+    // 文章简报
+    Route::get('/briefings', 'BriefingController@index');
+    Route::get('/briefings/config', 'BriefingController@config');
+    Route::get('/briefings/config/{id}', 'BriefingController@config');
+    Route::get('/briefings/generate/{configId}', 'BriefingController@generate');
+    Route::get('/briefings/{id}', 'BriefingController@show');
+
     Route::get('/focuss', 'FocusController@index');
     Route::get('/focusstoday', 'FocusController@todayFocuss');
     Route::get('/focuss/start', 'FocusController@start');
