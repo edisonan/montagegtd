@@ -185,6 +185,7 @@
                             <div class="quick-plan-preset-desc">科学循环复习</div>
                         </div>
                     </div>
+                    <div class="text-xs text-gray-400 mt-1">选「每周」会自动展开更多设置勾选重复日；「每天」默认每天都生成，可在更多设置里调整。</div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -510,11 +511,9 @@
             }
             updateTaskDateTitle(data.selected_date || selectedDate);
             if (!tasks.length) {
-                node.innerHTML = '<div class="study-panel text-sm text-gray-500">' + (showOnlyPending ? '没有未打卡的任务。' : '这一天没有学习任务。') + '</div>' +
-                    (showOnlyPending ? '' : '<div class="text-center mt-2">' +
-                    '<button class="study-quick-create-btn" onclick="openPlanModal(0)">' +
-                    '<i class="fas fa-plus mr-1"></i>新建计划</button>' +
-                    '</div>');
+                node.innerHTML = '<div class="study-panel text-sm text-gray-500">' +
+                    (showOnlyPending ? '没有未打卡的任务。' : '这一天没有学习任务，点击上方「新建计划」开始。') +
+                    '</div>';
                 return;
             }
             node.innerHTML = tasks.map(t => `
@@ -818,6 +817,20 @@
             el.classList.add('is-active');
             document.getElementById('repeatType').value = preset;
             onRepeatTypeChange();
+            // 每周模板需要勾选重复日——自动展开“更多设置”并定位到重复日区域
+            if (preset === 'weekly') {
+                const wrap = document.getElementById('planAdvancedWrap');
+                if (wrap.classList.contains('hidden')) {
+                    togglePlanAdvanced();
+                }
+                onRepeatTypeChange();
+                const daysWrap = document.getElementById('repeatDaysWrap');
+                if (daysWrap && !daysWrap.classList.contains('hidden')) {
+                    setTimeout(function() {
+                        daysWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 60);
+                }
+            }
         }
 
         async function openPlanModal(planId) {
