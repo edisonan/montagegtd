@@ -130,7 +130,7 @@
                     @foreach ($menuItems as $item)
                         <div class="dropdown relative">
                             <a href="{{ url($item['url']) }}" class="nav-link group">
-                                <i class="{{ $item['icon'] }} text-gray-500 text-sm mr-2"></i>
+                                <i class="{{ $item['icon'] }} fa-fw text-gray-500 text-sm mr-2"></i>
                                 <span class="font-medium">{{ $item['label'] }}</span>
                                 <i class="fas fa-chevron-down text-gray-400 text-xs ml-1"></i>
                             </a>
@@ -138,7 +138,7 @@
                             <div class="dropdown-menu hidden">
                                 @foreach($item['submenu'] as $subitem)
                                     <a href="{{ url($subitem['url']) }}" class="dropdown-item">
-                                        <i class="{{ $subitem['icon'] }} text-gray-400 text-sm"></i>
+                                        <i class="{{ $subitem['icon'] }} fa-fw text-gray-400 text-sm"></i>
                                         <span>{{ $subitem['label'] }}</span>
                                     </a>
                                 @endforeach
@@ -273,7 +273,7 @@
                 <div class="mb-2">
                     <div class="nav-link justify-between cursor-pointer mobile-menu-item" data-index="{{ $index }}">
                         <div class="flex items-center space-x-3">
-                            <i class="{{ $item['icon'] }} text-gray-500 text-sm"></i>
+                            <i class="{{ $item['icon'] }} fa-fw text-gray-500 text-sm"></i>
                             <span class="font-medium">{{ $item['label'] }}</span>
                         </div>
                         <i class="fas fa-chevron-right text-gray-400 text-xs mobile-menu-icon"></i>
@@ -282,7 +282,7 @@
                     <div class="ml-8 mt-1 space-y-1 hidden" id="mobileSubmenu-{{ $index }}">
                         @foreach($item['submenu'] as $subitem)
                             <a href="{{ url($subitem['url']) }}" class="nav-link py-2 mobile-submenu-link">
-                                <i class="{{ $subitem['icon'] }} text-gray-400 text-sm mr-3"></i>
+                                <i class="{{ $subitem['icon'] }} fa-fw text-gray-400 text-sm mr-3"></i>
                                 <span>{{ $subitem['label'] }}</span>
                             </a>
                         @endforeach
