@@ -219,6 +219,62 @@ class StudyController extends Controller
         )));
     }
 
+    public function updatePlan(Request $request, Plan $plan)
+    {
+        $this->validate($request, array(
+            'name' => 'required|string|max:255',
+            'content' => 'nullable|string|max:3000',
+            'start_time' => 'required|date_format:Y-m-d H:i:s',
+            'repeat_type' => 'required|in:none,daily,weekly,ebbinghaus',
+            'repeat_days' => 'nullable|array',
+            'repeat_days.*' => 'in:1,2,3,4,5,6,7',
+            'sp_points' => 'nullable|integer|min:0|max:10000',
+            'content_mode' => 'nullable|in:fixed,by_repeat',
+            'estimated_time_mode' => 'nullable|in:fixed,by_repeat',
+            'estimated_minutes' => 'nullable|integer|min:0|max:1440',
+            'content_by_slot' => 'nullable|array',
+            'content_by_slot.*' => 'nullable|string|max:3000',
+            'estimated_by_slot' => 'nullable|array',
+            'estimated_by_slot.*' => 'nullable|integer|min:0|max:1440',
+        ));
+
+        $userId = (int)$this->getAuthUserId($request);
+        if ((int)$plan->user_id !== $userId || (string)$plan->plan_type !== 'study') {
+            abort(403);
+        }
+
+        $result = $this->studyService->updatePlan($plan, $request->all());
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    public function destroyTask(Request $request, Task $task)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        if ((int)$task->user_id !== $userId || (int)$task->mode !== 3) {
+            abort(403);
+        }
+
+        $result = $this->studyService->destroyTask($userId, (int)$task->id);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    public function rescheduleTask(Request $request, Task $task)
+    {
+        $this->validate($request, array(
+            'date' => 'required|date_format:Y-m-d',
+        ));
+
+        $userId = (int)$this->getAuthUserId($request);
+        if ((int)$task->user_id !== $userId || (int)$task->mode !== 3) {
+            abort(403);
+        }
+
+        $result = $this->studyService->rescheduleTask($userId, (int)$task->id, (string)$request->input('date'));
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'task' => $result,
+        )));
+    }
+
     public function destroyPlan(Request $request, Plan $plan)
     {
         $userId = (int)$this->getAuthUserId($request);

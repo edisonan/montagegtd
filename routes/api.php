@@ -224,12 +224,15 @@ Route::prefix('v2')->group(function () {
         Route::put('/tasks/{task}', 'Api\\V2\\TaskController@update');
         Route::delete('/tasks/{task}', 'Api\\V2\\TaskController@destroy');
         Route::post('/study/plans', 'Api\\V2\\StudyController@createPlan');
+        Route::put('/study/plans/{plan}', 'Api\\V2\\StudyController@updatePlan');
         Route::post('/study/plans/{plan}/status', 'Api\\V2\\StudyController@updatePlanStatus');
         Route::post('/study/generate', 'Api\\V2\\StudyController@generate');
         Route::post('/study/plans/{plan}/generate', 'Api\\V2\\StudyController@generateByPlan');
         Route::delete('/study/plans/{plan}', 'Api\\V2\\StudyController@destroyPlan');
         Route::post('/study/tasks/{task}/checkin', 'Api\\V2\\StudyController@checkin');
         Route::post('/study/tasks/{task}/focus-sessions', 'Api\\V2\\StudyController@createFocusSession');
+        Route::delete('/study/tasks/{task}', 'Api\\V2\\StudyController@destroyTask');
+        Route::post('/study/tasks/{task}/reschedule', 'Api\\V2\\StudyController@rescheduleTask');
 
         Route::post('/focuss/start', 'Api\\V2\\FocusController@start');
         Route::post('/focuss/discard', 'Api\\V2\\FocusController@discardCurrent');

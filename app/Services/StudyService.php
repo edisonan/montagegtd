@@ -26,16 +26,54 @@ class StudyService
     {
         $currentDate = $this->resolveDate($date);
         $weekStart = $currentDate->copy()->startOfWeek(Carbon::MONDAY);
+        $weekDateStart = $weekStart->format('Y-m-d');
+        $weekDateEnd = $weekStart->copy()->addDays(6)->format('Y-m-d');
+
+        // 本周每日任务/打卡密度
+        $weekTaskCounts = Task::where('user_id', $userId)
+            ->where('mode', self::STUDY_MODE)
+            ->whereBetween('study_scheduled_date', array($weekDateStart, $weekDateEnd))
+            ->selectRaw('study_scheduled_date as d, COUNT(*) as c')
+            ->groupBy('study_scheduled_date')
+            ->pluck('c', 'd');
+        $weekCheckinCounts = StudyCheckin::where('user_id', $userId)
+            ->whereBetween('checkin_date', array($weekDateStart, $weekDateEnd))
+            ->selectRaw('checkin_date as d, COUNT(*) as c')
+            ->groupBy('checkin_date')
+            ->pluck('c', 'd');
+
         $weekDays = array();
         for ($i = 0; $i < 7; $i++) {
             $day = $weekStart->copy()->addDays($i);
+            $key = $day->format('Y-m-d');
             $weekDays[] = array(
-                'date' => $day->format('Y-m-d'),
+                'date' => $key,
                 'day_label' => '周' . array('一', '二', '三', '四', '五', '六', '日')[$i],
                 'day_of_month' => $day->format('m-d'),
                 'is_today' => $day->isSameDay(Carbon::today()),
                 'is_selected' => $day->isSameDay($currentDate),
+                'task_count' => (int)($weekTaskCounts[$key] ?? 0),
+                'checkin_count' => (int)($weekCheckinCounts[$key] ?? 0),
             );
+        }
+
+        // 连续打卡天数（今天未打卡时从昨天起算，不打断连续）
+        $streakDays = 0;
+        $checkinDates = StudyCheckin::where('user_id', $userId)
+            ->distinct()
+            ->orderBy('checkin_date', 'desc')
+            ->pluck('checkin_date');
+        $dateSet = array();
+        foreach ($checkinDates as $d) {
+            $dateSet[(string)$d] = true;
+        }
+        $streakCursor = Carbon::today();
+        if (!isset($dateSet[$streakCursor->format('Y-m-d')])) {
+            $streakCursor->subDay();
+        }
+        while (isset($dateSet[$streakCursor->format('Y-m-d')])) {
+            $streakDays++;
+            $streakCursor->subDay();
         }
 
         $tasks = Task::where('user_id', $userId)
@@ -96,6 +134,8 @@ class StudyService
                 'content' => (string)($task->content ?: ''),
                 'status' => (int)$task->status,
                 'planned_start_time' => $task->planned_start_time ? (string)$task->planned_start_time : '',
+                'study_scheduled_date' => !empty($task->study_scheduled_date) ? (string)$task->study_scheduled_date : '',
+                'repeat_type' => (string)($task->study_repeat_type ?: 'none'),
                 'estimated_minutes' => $estimatedMinutes,
                 'sp_points' => (int)($task->study_sp_points ?: 0),
                 'is_checked_in' => $checkin ? true : false,
@@ -123,6 +163,9 @@ class StudyService
                 'estimated_minutes' => $estimatedMinutesTotal,
                 'gold_reward' => $goldRewardTotal,
                 'energy_reward' => $energyRewardTotal,
+                'week_total_tasks' => (int)array_sum($weekTaskCounts->all()),
+                'week_done_tasks' => (int)array_sum($weekCheckinCounts->all()),
+                'streak_days' => $streakDays,
             ),
             'tasks' => $taskList,
         );
@@ -235,6 +278,106 @@ class StudyService
         $plan->status = $status === 1 ? 1 : 0;
         $plan->save();
         return $plan->fresh();
+    }
+
+    /**
+     * 更新学习计划（编辑不重建已生成任务）
+     */
+    public function updatePlan(Plan $plan, array $data): array
+    {
+        $name = trim((string)($data['name'] ?? ''));
+        if ($name === '') {
+            $name = (string)$plan->name;
+        }
+        $content = trim((string)($data['content'] ?? ''));
+        $startAt = Carbon::parse((string)($data['start_time'] ?? $plan->start_time));
+        $repeatType = $this->normalizeRepeatType((string)($data['repeat_type'] ?? ($plan->repeat_type ?: 'none')));
+        $repeatDays = (array)($data['repeat_days'] ?? array());
+        $spPoints = max(0, (int)($data['sp_points'] ?? $plan->sp_points));
+        $contentMode = $this->normalizePlanMode((string)($data['content_mode'] ?? 'fixed'));
+        $estimatedTimeMode = $this->normalizePlanMode((string)($data['estimated_time_mode'] ?? 'fixed'));
+        $estimatedMinutes = $this->clampEstimatedMinutes((int)($data['estimated_minutes'] ?? 0));
+        $contentBySlot = $this->normalizeContentMap((array)($data['content_by_slot'] ?? array()));
+        $estimatedBySlot = $this->normalizeEstimatedMap((array)($data['estimated_by_slot'] ?? array()));
+        $meta = array(
+            'seed_date' => $startAt->format('Y-m-d'),
+            'content_mode' => $contentMode,
+            'estimated_time_mode' => $estimatedTimeMode,
+            'fixed_estimated_minutes' => $estimatedMinutes,
+            'content_by_slot' => $contentBySlot,
+            'estimated_by_slot' => $estimatedBySlot,
+        );
+
+        $plan->name = $name;
+        $plan->content = $content;
+        $plan->start_time = $startAt->format('Y-m-d H:i:s');
+        $plan->repeat_type = $repeatType;
+        $plan->repeat_days = empty($repeatDays) ? '' : implode(',', $repeatDays);
+        $plan->repeat_meta = json_encode($meta, JSON_UNESCAPED_UNICODE);
+        $plan->sp_points = $spPoints;
+        $plan->save();
+
+        return array(
+            'plan' => $plan->fresh(),
+        );
+    }
+
+    /**
+     * 删除单个学习任务（已有打卡时打卡记录保留，仅不再生成/展示任务）
+     */
+    public function destroyTask(int $userId, int $taskId): array
+    {
+        $task = $this->getFocusTask($userId, $taskId);
+        $checkinKept = StudyCheckin::where('user_id', $userId)
+            ->where('task_id', $taskId)
+            ->exists();
+        $task->delete();
+
+        return array(
+            'task_id' => $taskId,
+            'checkin_kept' => $checkinKept,
+        );
+    }
+
+    /**
+     * 学习任务改期（study_scheduled_date + planned_start/end 按天数差平移）
+     */
+    public function rescheduleTask(int $userId, int $taskId, string $targetDate): Task
+    {
+        $task = $this->getFocusTask($userId, $taskId);
+        $target = $this->resolveDate($targetDate);
+
+        // 同一计划在目标日期已有任务则冲突
+        if (!empty($task->study_source_task_id)) {
+            $conflict = Task::where('user_id', $userId)
+                ->where('mode', self::STUDY_MODE)
+                ->where('study_source_task_id', (int)$task->study_source_task_id)
+                ->where('study_scheduled_date', $target->format('Y-m-d'))
+                ->where('id', '!=', (int)$task->id)
+                ->exists();
+            if ($conflict) {
+                throw new \RuntimeException('该计划在此日期已有任务，请选择其他日期');
+            }
+        }
+
+        $oldDate = !empty($task->study_scheduled_date)
+            ? $this->resolveDate((string)$task->study_scheduled_date)
+            : (!empty($task->planned_start_time) ? $this->resolveDate((string)$task->planned_start_time) : null);
+        $task->study_scheduled_date = $target->format('Y-m-d');
+        if ($oldDate) {
+            $diffDays = $target->startOfDay()->diffInDays($oldDate->startOfDay(), false);
+            if (!empty($task->planned_start_time)) {
+                $task->planned_start_time = Carbon::parse((string)$task->planned_start_time)
+                    ->addDays($diffDays)->format('Y-m-d H:i:s');
+            }
+            if (!empty($task->planned_end_time)) {
+                $task->planned_end_time = Carbon::parse((string)$task->planned_end_time)
+                    ->addDays($diffDays)->format('Y-m-d H:i:s');
+            }
+        }
+        $task->save();
+
+        return $task->fresh();
     }
 
     public function deletePlan(Plan $plan): array

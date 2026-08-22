@@ -11,20 +11,22 @@
         .study-top-card { background: linear-gradient(135deg, #fff9fb 0%, #f8fff6 100%); border: 1px solid #f5dce6; border-radius: 24px; padding: 18px; box-shadow: 0 8px 22px rgba(27, 43, 99, 0.06); }
         .study-quick-btn { width: 40px; height: 40px; border-radius: 999px; border: 0; background: #1f3d8a; color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
         .study-summary-wrap { position: relative; }
-        .study-summary-card { position: absolute; right: 0; top: calc(100% + 10px); width: 340px; max-width: 85vw; background: #fff; border: 1px solid #e6edf7; border-radius: 16px; box-shadow: 0 16px 40px rgba(27, 43, 99, 0.16); z-index: 60; }
+        .study-summary-card { position: absolute; right: 0; top: calc(100% + 10px); width: 360px; max-width: 88vw; background: #fff; border: 1px solid #e6edf7; border-radius: 16px; box-shadow: 0 16px 40px rgba(27, 43, 99, 0.16); z-index: 60; }
         .study-summary-card.show { display: block; }
         .study-week-wrap { margin-top: 12px; background: rgba(255, 255, 255, 0.85); border: 1px solid #e9eef5; border-radius: 14px; padding: 8px; }
         .study-week-title { font-size: 12px; color: #667085; margin-bottom: 6px; padding: 0 2px; }
         .study-week-scroll { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; padding: 2px 2px 6px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-        .study-day-item { flex: 0 0 64px; min-height: 62px; border-radius: 14px; padding: 8px 6px; border: 0; text-align: center; background: #d7f6ca; color: #111827; display: flex; flex-direction: column; align-items: center; justify-content: center; scroll-snap-align: start; white-space: nowrap; }
+        .study-day-item { flex: 0 0 64px; min-height: 62px; border-radius: 14px; padding: 8px 6px; border: 0; text-align: center; background: #d7f6ca; color: #111827; display: flex; flex-direction: column; align-items: center; justify-content: center; scroll-snap-align: start; white-space: nowrap; position: relative; }
         .study-day-item.is-selected { background: #ff5f9d; color: #fff; box-shadow: 0 6px 16px rgba(255, 95, 157, 0.3); }
         .study-day-week { font-size: 11px; font-weight: 600; }
         .study-day-date { font-size: 12px; margin-top: 3px; }
         .study-day-today { font-size: 9px; margin-top: 3px; opacity: 0.9; }
+        .study-day-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 999px; background: #94a3b8; }
+        .study-day-dot.done { background: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
+        .study-day-item.is-selected .study-day-dot.done { background: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.35); }
+        .study-day-item.is-selected .study-day-dot { background: rgba(255,255,255,.9); }
         .study-panel { border-radius: 20px; border: 1px solid #e6edf7; background: #fff; padding: 16px; }
         .study-mascot { width: 64px; height: 64px; border-radius: 16px; background: #f2f4f7; border: 1px dashed #c8d2e0; display: inline-flex; align-items: center; justify-content: center; color: #74839b; font-size: 24px; }
-        .study-level-line { height: 8px; background: #edf1f7; border-radius: 999px; overflow: hidden; }
-        .study-level-progress { height: 100%; width: 68%; background: linear-gradient(90deg, #52be6b 0%, #1f7f44 100%); }
         .study-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .study-stat-item { border-radius: 14px; background: #f8fafc; padding: 10px 12px; }
         .study-stat-name { font-size: 12px; color: #475467; }
@@ -32,26 +34,33 @@
         .study-reward-row { margin-top: 8px; display: flex; gap: 10px; }
         .study-reward-pill { border-radius: 999px; background: #eef4ff; color: #1e3a8a; font-size: 12px; padding: 5px 10px; display: inline-flex; align-items: center; gap: 6px; }
         .study-reward-pill.energy { background: #f4ebff; color: #6d28d9; }
+        .study-week-summary { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e6edf7; font-size: 12px; color: #475467; line-height: 1.9; }
+        .study-week-summary .num { font-weight: 700; color: #0f172a; }
         .study-motivation { margin-top: 16px; border-radius: 14px; background: #f2eaff; color: #5b21b6; font-size: 14px; text-align: center; padding: 11px 12px; font-weight: 600; }
         .study-section-title { margin-top: 14px; font-size: 18px; font-weight: 700; color: #101828; display: flex; align-items: center; gap: 8px; }
         .study-task-list { margin-top: 12px; display: grid; gap: 12px; }
         .study-task-card { border-radius: 18px; border: 1px solid #e4e7ec; background: #fff; padding: 14px; box-shadow: 0 4px 14px rgba(17, 24, 39, 0.04); }
-        .study-tag { display: inline-block; border-radius: 999px; background: #ffecf4; color: #be185d; font-size: 11px; font-weight: 700; padding: 4px 10px; }
+        .study-tag { display: inline-block; border-radius: 999px; background: #eef4ff; color: #1e3a8a; font-size: 11px; font-weight: 700; padding: 4px 10px; }
         .study-task-name { margin-top: 8px; font-size: 17px; font-weight: 700; color: #111827; }
         .study-task-meta { margin-top: 6px; font-size: 12px; color: #667085; }
         .study-task-desc { margin-top: 8px; font-size: 14px; color: #344054; }
-        .study-task-foot { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .study-task-foot { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
         .study-task-reward { font-size: 13px; color: #ca8a04; font-weight: 600; }
-        .study-task-actions { display: flex; gap: 8px; align-items: center; }
+        .study-task-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .study-start-btn { background: #1e3a8a; color: #fff; border-radius: 12px; border: 0; padding: 8px 12px; font-size: 13px; font-weight: 600; }
         .study-checkin-btn { border-radius: 12px; padding: 8px 10px; }
-        .study-tools-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .study-icon-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid #e4e7ec; background: #fff; color: #667085; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+        .study-icon-btn:hover { border-color: #ff5f9d; color: #ff5f9d; }
+        .study-icon-btn.danger:hover { border-color: #dc2626; color: #dc2626; }
+        .study-tools-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         .study-quick-create-btn { background: linear-gradient(135deg, #ff5f9d 0%, #ff8a5c 100%); color: #fff; border: 0; border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 700; box-shadow: 0 6px 16px rgba(255, 95, 157, 0.3); cursor: pointer; transition: transform .15s, box-shadow .15s; }
         .study-quick-create-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(255, 95, 157, 0.4); }
         .quick-plan-preset { border: 1px solid #e4e7ec; border-radius: 12px; padding: 10px; cursor: pointer; text-align: center; background: #fafbfc; transition: border-color .15s, background .15s; }
         .quick-plan-preset:hover, .quick-plan-preset.is-active { border-color: #ff5f9d; background: #fff5f9; }
         .quick-plan-preset-name { font-size: 13px; font-weight: 600; color: #111827; }
         .quick-plan-preset-desc { font-size: 11px; color: #667085; margin-top: 2px; }
+        .study-advanced-toggle { margin-top: 2px; font-size: 12px; color: #1e3a8a; background: none; border: 0; cursor: pointer; padding: 6px 0; }
+        .study-only-pending { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #475467; cursor: pointer; user-select: none; }
         @media (min-width: 900px) {
             .study-week-scroll { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: visible; }
             .study-day-item { min-height: 68px; flex: initial; width: 100%; }
@@ -64,8 +73,8 @@
                 <div class="text-xl font-semibold text-gray-900" id="greetingText">中午好，{{ $displayName }}</div>
                 <div class="flex items-center gap-2">
                     <div class="study-summary-wrap" id="studySummaryWrap">
-                        <button type="button" class="study-quick-btn" id="studySummaryBtn" title="宠物与学习统计">
-                            <i class="fas fa-paw"></i>
+                        <button type="button" class="study-quick-btn" id="studySummaryBtn" title="学习概览与统计">
+                            <i class="fas fa-chart-line"></i>
                         </button>
                         <div id="studySummaryCard" class="study-summary-card hidden">
                             <div class="p-4">
@@ -93,6 +102,13 @@
                                     <div class="study-stat-value"><span id="todayEstimatedMinutes">0</span> 分钟</div>
                                 </div>
                             </div>
+                            <div class="study-week-summary px-4 pb-4">
+                                <div>本周完成率：<span class="num" id="weekDoneText">0/0</span></div>
+                                <div>连续打卡：<span class="num" id="streakDaysText">0</span> 天</div>
+                                <a href="/study/checkins" class="inline-flex items-center gap-1 text-[12px] text-[#1e3a8a] hover:underline mt-1">
+                                    <i class="fas fa-calendar-alt"></i>查看打卡日历
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <a href="/study/checkins" class="study-quick-btn" title="打卡日历">
@@ -111,14 +127,17 @@
             <div class="study-tools-row">
                 <button class="btn btn-outline btn-sm" onclick="switchDate(-1)">前一天</button>
                 <button class="btn btn-outline btn-sm" onclick="switchDate(1)">后一天</button>
+                <button class="btn btn-outline btn-sm" onclick="goToday()" title="回到今天">今天</button>
+                <button class="btn btn-outline btn-sm" onclick="weekNav(-1)" title="上一周">上一周</button>
+                <button class="btn btn-outline btn-sm" onclick="weekNav(1)" title="下一周">下一周</button>
                 <button class="btn btn-outline btn-sm" onclick="openPlanListModal()">
                     <i class="fas fa-list mr-1"></i>计划列表
                 </button>
-                <button class="study-quick-create-btn" onclick="openQuickPlanModal()">
-                    <i class="fas fa-bolt mr-1"></i>快速创建计划
-                </button>
-                <button class="btn btn-primary btn-sm" onclick="openPlanModal()">
-                    <i class="fas fa-plus mr-1"></i>高级创建
+                <label class="study-only-pending">
+                    <input type="checkbox" id="onlyPendingCheck" onchange="toggleOnlyPending()">只看未打卡
+                </label>
+                <button class="study-quick-create-btn" onclick="openPlanModal(0)">
+                    <i class="fas fa-plus mr-1"></i>新建计划
                 </button>
             </div>
         </div>
@@ -126,81 +145,110 @@
         <div class="study-motivation">从第一个任务开始，一步步前进！</div>
         <div class="study-section-title">
             <i class="fas fa-tasks"></i>
-            待办任务
+            <span id="taskDateTitle">待办任务</span>
         </div>
         <div class="study-task-list" id="taskCards">
             <div class="text-gray-500 text-sm">加载任务中...</div>
         </div>
     </div>
 
+    <!-- 新建/编辑计划弹窗（统一入口，高级设置折叠） -->
     <div id="planModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closePlanModal(event)">
         <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-200 flex items-center justify-between shrink-0">
-                <div class="font-semibold text-gray-900">添加学习计划</div>
+                <div class="font-semibold text-gray-900" id="planModalTitle">新建学习计划</div>
                 <button class="text-gray-400 hover:text-gray-600" onclick="closePlanModal()"><i class="fas fa-times"></i></button>
             </div>
             <form class="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto" id="planForm">
+                <input type="hidden" name="plan_id" id="planIdInput" value="0" />
                 <div>
-                    <label class="text-sm text-gray-700">计划名称</label>
-                    <input class="input w-full mt-1" name="name" required maxlength="255" />
+                    <label class="text-sm text-gray-700">这个计划学什么？</label>
+                    <input class="input w-full mt-1" name="name" required maxlength="255" placeholder="例如：背诵英语单词、数学练习题、阅读打卡..." id="planNameInput" autocomplete="off" />
                 </div>
                 <div>
-                    <label class="text-sm text-gray-700">任务内容类型</label>
-                    <select class="input w-full mt-1" name="content_mode" id="contentMode" onchange="onPlanModeChange()">
-                        <option value="fixed">固定内容</option>
-                        <option value="by_repeat">按重复策略自定义</option>
-                    </select>
+                    <div class="text-sm text-gray-700 mb-2">模板（可跳过，选后自动设置重复策略）</div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div class="quick-plan-preset" data-preset="none" onclick="selectPlanTemplate(this)">
+                            <div class="quick-plan-preset-name"><i class="fas fa-minus mr-1"></i>单次</div>
+                            <div class="quick-plan-preset-desc">只做一次</div>
+                        </div>
+                        <div class="quick-plan-preset" data-preset="daily" onclick="selectPlanTemplate(this)">
+                            <div class="quick-plan-preset-name"><i class="fas fa-sun mr-1"></i>每天</div>
+                            <div class="quick-plan-preset-desc">每天重复一次</div>
+                        </div>
+                        <div class="quick-plan-preset" data-preset="weekly" onclick="selectPlanTemplate(this)">
+                            <div class="quick-plan-preset-name"><i class="fas fa-calendar-week mr-1"></i>每周</div>
+                            <div class="quick-plan-preset-desc">每周固定日子</div>
+                        </div>
+                        <div class="quick-plan-preset" data-preset="ebbinghaus" onclick="selectPlanTemplate(this)">
+                            <div class="quick-plan-preset-name"><i class="fas fa-brain mr-1"></i>艾宾浩斯</div>
+                            <div class="quick-plan-preset-desc">科学循环复习</div>
+                        </div>
+                    </div>
                 </div>
-                <div id="fixedContentWrap">
-                    <label class="text-sm text-gray-700">固定任务内容</label>
-                    <textarea class="input w-full mt-1" name="content" rows="3" maxlength="3000" placeholder="每次任务都使用这段内容"></textarea>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-sm text-gray-700">开始时间</label>
-                        <input class="input w-full mt-1" type="datetime-local" name="start_time_local" required />
+                        <label class="text-sm text-gray-700">开始时间（生成任务的起点）</label>
+                        <input class="input w-full mt-1" type="datetime-local" name="start_time_local" id="startTimeLocal" required />
+                        <div class="text-xs text-gray-400 mt-1" id="startTimeHint">默认今天，之后每天/每周按此生成任务</div>
                     </div>
                     <div>
                         <label class="text-sm text-gray-700">自定义积分 SP</label>
                         <input class="input w-full mt-1" type="number" min="0" max="10000" name="sp_points" value="0" />
                     </div>
                 </div>
-                <div>
-                    <label class="text-sm text-gray-700">重复策略</label>
-                    <select class="input w-full mt-1" name="repeat_type" id="repeatType" onchange="onRepeatTypeChange()">
-                        <option value="none">不重复</option>
-                        <option value="daily">每天</option>
-                        <option value="weekly">每周</option>
-                        <option value="ebbinghaus">艾宾浩斯复习</option>
-                    </select>
-                </div>
-                <div id="repeatDaysWrap" class="hidden">
-                    <label class="text-sm text-gray-700">每周重复日</label>
-                    <div class="mt-1 grid grid-cols-4 gap-2 text-sm">
-                        <label><input type="checkbox" name="repeat_days" value="1"> 周一</label>
-                        <label><input type="checkbox" name="repeat_days" value="2"> 周二</label>
-                        <label><input type="checkbox" name="repeat_days" value="3"> 周三</label>
-                        <label><input type="checkbox" name="repeat_days" value="4"> 周四</label>
-                        <label><input type="checkbox" name="repeat_days" value="5"> 周五</label>
-                        <label><input type="checkbox" name="repeat_days" value="6"> 周六</label>
-                        <label><input type="checkbox" name="repeat_days" value="7"> 周日</label>
+                <button type="button" class="study-advanced-toggle" onclick="togglePlanAdvanced()">
+                    <i class="fas fa-chevron-down mr-1" id="advancedArrow"></i>更多设置（内容/重复日/时长）
+                </button>
+                <div id="planAdvancedWrap" class="hidden space-y-3 border-t border-gray-100 pt-3">
+                    <div>
+                        <label class="text-sm text-gray-700">重复策略</label>
+                        <select class="input w-full mt-1" name="repeat_type" id="repeatType" onchange="onRepeatTypeChange()">
+                            <option value="none">不重复</option>
+                            <option value="daily">每天</option>
+                            <option value="weekly">每周</option>
+                            <option value="ebbinghaus">艾宾浩斯复习</option>
+                        </select>
                     </div>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-700">预计时间类型</label>
-                    <select class="input w-full mt-1" name="estimated_time_mode" id="estimatedTimeMode" onchange="onPlanModeChange()">
-                        <option value="fixed">固定时长</option>
-                        <option value="by_repeat">按重复策略自定义</option>
-                    </select>
-                </div>
-                <div id="fixedEstimatedWrap">
-                    <label class="text-sm text-gray-700">固定预计时长（分钟）</label>
-                    <input class="input w-full mt-1" type="number" min="0" max="1440" name="estimated_minutes" value="30" />
-                </div>
-                <div id="slotConfigWrap" class="hidden">
-                    <label class="text-sm text-gray-700">按重复策略自定义配置</label>
-                    <div class="text-xs text-gray-500 mt-1">按当前重复策略填写内容和时长，可只填写其中一项。</div>
-                    <div id="slotConfigList" class="mt-2 space-y-2"></div>
+                    <div id="repeatDaysWrap" class="hidden">
+                        <label class="text-sm text-gray-700">每周重复日</label>
+                        <div class="mt-1 grid grid-cols-4 gap-2 text-sm">
+                            <label><input type="checkbox" name="repeat_days" value="1"> 周一</label>
+                            <label><input type="checkbox" name="repeat_days" value="2"> 周二</label>
+                            <label><input type="checkbox" name="repeat_days" value="3"> 周三</label>
+                            <label><input type="checkbox" name="repeat_days" value="4"> 周四</label>
+                            <label><input type="checkbox" name="repeat_days" value="5"> 周五</label>
+                            <label><input type="checkbox" name="repeat_days" value="6"> 周六</label>
+                            <label><input type="checkbox" name="repeat_days" value="7"> 周日</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-700">任务内容类型</label>
+                        <select class="input w-full mt-1" name="content_mode" id="contentMode" onchange="onPlanModeChange()">
+                            <option value="fixed">固定内容</option>
+                            <option value="by_repeat">按重复策略自定义</option>
+                        </select>
+                    </div>
+                    <div id="fixedContentWrap">
+                        <label class="text-sm text-gray-700">固定任务内容</label>
+                        <textarea class="input w-full mt-1" name="content" rows="3" maxlength="3000" placeholder="每次任务都使用这段内容"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-700">预计时间类型</label>
+                        <select class="input w-full mt-1" name="estimated_time_mode" id="estimatedTimeMode" onchange="onPlanModeChange()">
+                            <option value="fixed">固定时长</option>
+                            <option value="by_repeat">按重复策略自定义</option>
+                        </select>
+                    </div>
+                    <div id="fixedEstimatedWrap">
+                        <label class="text-sm text-gray-700">固定预计时长（分钟）</label>
+                        <input class="input w-full mt-1" type="number" min="0" max="1440" name="estimated_minutes" value="30" />
+                    </div>
+                    <div id="slotConfigWrap" class="hidden">
+                        <label class="text-sm text-gray-700">按重复策略自定义配置</label>
+                        <div class="text-xs text-gray-500 mt-1">按当前重复策略填写内容和时长，可只填写其中一项。</div>
+                        <div id="slotConfigList" class="mt-2 space-y-2"></div>
+                    </div>
                 </div>
                 <div class="flex items-center justify-end gap-2 pt-2">
                     <button type="button" class="btn btn-outline" onclick="closePlanModal()">取消</button>
@@ -210,52 +258,11 @@
         </div>
     </div>
 
-    <div id="quickPlanModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeQuickPlanModal(event)">
-        <div class="bg-white rounded-xl shadow-2xl max-w-xl w-full mx-4" onclick="event.stopPropagation()">
-            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-                <div class="font-semibold text-gray-900">快速创建学习计划</div>
-                <button class="text-gray-400 hover:text-gray-600" onclick="closeQuickPlanModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <form class="p-4 space-y-3" id="quickPlanForm">
-                <div>
-                    <label class="text-sm text-gray-700">这次想学什么？</label>
-                    <input class="input w-full mt-1" name="name" required maxlength="255" placeholder="例如：背诵英语单词、数学练习题、阅读打卡..."
-                        id="quickPlanName" autocomplete="off" />
-                    <div class="text-xs text-gray-400 mt-1">先简单起个名字，稍后可在“计划列表”里调整详细设置。</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-700 mb-2">选一个模板（可跳过）</div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="quick-plan-preset" data-preset="daily" onclick="selectQuickPreset(this)">
-                            <div class="quick-plan-preset-name"><i class="fas fa-sun mr-1"></i>每天</div>
-                            <div class="quick-plan-preset-desc">每天重复一次</div>
-                        </div>
-                        <div class="quick-plan-preset" data-preset="weekly" onclick="selectQuickPreset(this)">
-                            <div class="quick-plan-preset-name"><i class="fas fa-calendar-week mr-1"></i>每周</div>
-                            <div class="quick-plan-preset-desc">每周完成一次</div>
-                        </div>
-                        <div class="quick-plan-preset" data-preset="ebbinghaus" onclick="selectQuickPreset(this)">
-                            <div class="quick-plan-preset-name"><i class="fas fa-brain mr-1"></i>艾宾浩斯</div>
-                            <div class="quick-plan-preset-desc">科学循环复习</div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-700">预计时长（分钟）</label>
-                    <input class="input w-full mt-1" type="number" min="0" max="1440" name="estimated_minutes" value="30" />
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" class="btn btn-outline" onclick="closeQuickPlanModal()">取消</button>
-                    <button type="submit" class="study-quick-create-btn" style="padding: 8px 18px;">创建计划</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    <!-- 打卡弹窗 -->
     <div id="checkinModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeCheckinModal(event)">
         <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-200 flex items-center justify-between shrink-0">
-                <div class="font-semibold text-gray-900">学习打卡</div>
+                <div class="font-semibold text-gray-900" id="checkinModalTitle">学习打卡</div>
                 <button class="text-gray-400 hover:text-gray-600" onclick="closeCheckinModal()"><i class="fas fa-times"></i></button>
             </div>
             <form class="p-4 space-y-3 flex-1 min-h-0 overflow-y-auto" id="checkinForm">
@@ -291,6 +298,7 @@
         </div>
     </div>
 
+    <!-- 计划管理弹窗 -->
     <div id="planListModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closePlanListModal(event)">
         <div class="bg-white rounded-xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-200 flex items-center justify-between">
@@ -317,11 +325,34 @@
         </div>
     </div>
 
+    <!-- 任务改期弹窗 -->
+    <div id="rescheduleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closeRescheduleModal(event)">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4" onclick="event.stopPropagation()">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="font-semibold text-gray-900">任务改期</div>
+                <button class="text-gray-400 hover:text-gray-600" onclick="closeRescheduleModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-4 space-y-3">
+                <div class="text-sm text-gray-600" id="rescheduleTaskName">-</div>
+                <div>
+                    <label class="text-sm text-gray-700">改到哪一天？</label>
+                    <input class="input w-full mt-1" type="date" id="rescheduleDate" />
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-1">
+                    <button type="button" class="btn btn-outline" onclick="closeRescheduleModal()">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="submitReschedule()">确认改期</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const profileName = @json($displayName);
         let selectedDate = '';
         let selectedTaskId = 0;
         let selectedPlanId = 0;
+        let showOnlyPending = false;
+        let rescheduleTaskId = 0;
         let recordingStream = null;
         let mediaRecorder = null;
         let recordedAudioFile = null;
@@ -416,28 +447,26 @@
             node.textContent = `${getGreetingByHour()}，${profileName}`;
         }
 
-        function inferTaskType(task) {
-            const raw = `${task.name || ''} ${task.content || ''}`.toLowerCase();
-            if (raw.indexOf('语文') >= 0) return '语文';
-            if (raw.indexOf('英语') >= 0 || raw.indexOf('english') >= 0) return '英语';
-            return '其他';
-        }
-
         function displayMinutes(task) {
             const minutes = Number(task.estimated_minutes || 0);
             return minutes > 0 ? minutes : 10;
         }
 
+        function repeatTypeLabel(t) {
+            if (t === 'daily') return '每天';
+            if (t === 'weekly') return '每周';
+            if (t === 'ebbinghaus') return '艾宾浩斯';
+            return '单次';
+        }
+
         function updateDashboard(data) {
             const stats = data.dashboard || {};
-            const learned = Number(stats.learned_minutes || 0);
-            const estimated = Number(stats.estimated_minutes || 0);
-            const gold = Number(stats.gold_reward || 0);
-            const energy = Number(stats.energy_reward || 0);
-            document.getElementById('todayLearnedMinutes').textContent = String(learned);
-            document.getElementById('todayEstimatedMinutes').textContent = String(estimated);
-            document.getElementById('todayGoldReward').textContent = String(gold);
-            document.getElementById('todayEnergyReward').textContent = String(energy);
+            document.getElementById('todayLearnedMinutes').textContent = String(Number(stats.learned_minutes || 0));
+            document.getElementById('todayEstimatedMinutes').textContent = String(Number(stats.estimated_minutes || 0));
+            document.getElementById('todayGoldReward').textContent = String(Number(stats.gold_reward || 0));
+            document.getElementById('todayEnergyReward').textContent = String(Number(stats.energy_reward || 0));
+            document.getElementById('weekDoneText').textContent = `${Number(stats.week_done_tasks || 0)}/${Number(stats.week_total_tasks || 0)}`;
+            document.getElementById('streakDaysText').textContent = String(Number(stats.streak_days || 0));
         }
 
         function renderDays(data) {
@@ -448,41 +477,62 @@
                 node.innerHTML = '<div class="text-sm text-gray-500">暂无日期数据</div>';
                 return;
             }
-            node.innerHTML = days.map(d => `
+            node.innerHTML = days.map(d => {
+                const hasTask = Number(d.task_count || 0) > 0;
+                const done = Number(d.checkin_count || 0) > 0;
+                return `
                 <button class="study-day-item ${d.is_selected ? 'is-selected' : ''}"
                     onclick="pickDate('${d.date}')">
                     <div class="study-day-week">${d.day_label}</div>
                     <div class="study-day-date">${d.day_of_month}</div>
                     ${d.is_today ? '<div class="study-day-today">今天</div>' : ''}
+                    ${hasTask ? `<span class="study-day-dot ${done ? 'done' : ''}"></span>` : ''}
                 </button>
-            `).join('');
+            `;
+            }).join('');
+        }
+
+        function updateTaskDateTitle(dateStr) {
+            const node = document.getElementById('taskDateTitle');
+            if (!node) return;
+            const d = new Date(dateStr + 'T00:00:00');
+            const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()];
+            const today = new Date();
+            const isToday = formatLocalDate(today) === dateStr;
+            node.textContent = `${d.getMonth() + 1}月${d.getDate()}日 ${week}${isToday ? ' · 今天' : ''}`;
         }
 
         function renderTasks(data) {
             const node = document.getElementById('taskCards');
-            const tasks = data.tasks || [];
+            let tasks = data.tasks || [];
+            if (showOnlyPending) {
+                tasks = tasks.filter(t => !t.is_checked_in);
+            }
+            updateTaskDateTitle(data.selected_date || selectedDate);
             if (!tasks.length) {
-                node.innerHTML = '<div class="study-panel text-sm text-gray-500">这一天没有学习任务。</div>' +
-                    '<div class="text-center mt-2">' +
-                    '<button class="study-quick-create-btn" onclick="openQuickPlanModal()">' +
-                    '<i class="fas fa-bolt mr-1"></i>快速创建计划</button>' +
-                    '</div>';
+                node.innerHTML = '<div class="study-panel text-sm text-gray-500">' + (showOnlyPending ? '没有未打卡的任务。' : '这一天没有学习任务。') + '</div>' +
+                    (showOnlyPending ? '' : '<div class="text-center mt-2">' +
+                    '<button class="study-quick-create-btn" onclick="openPlanModal(0)">' +
+                    '<i class="fas fa-plus mr-1"></i>新建计划</button>' +
+                    '</div>');
                 return;
             }
             node.innerHTML = tasks.map(t => `
                 <div class="study-task-card">
-                    <span class="study-tag">${inferTaskType(t)}</span>
+                    <span class="study-tag">${repeatTypeLabel(t.repeat_type)}</span>
                     <div class="study-task-name">${escapeHtml(t.name || '复习当天功课')}</div>
                     <div class="study-task-meta">预计耗时 ${displayMinutes(t)} 分钟</div>
                     <div class="study-task-desc">${escapeHtml(t.content || '暂无任务描述')}</div>
                     <div class="study-task-foot">
-                        <div class="study-task-reward"><i class="fas fa-coins mr-1"></i>x${Number(t.sp_points || 0)}</div>
+                        <div class="study-task-reward">${Number(t.sp_points || 0) > 0 ? '<i class="fas fa-coins mr-1"></i>x' + Number(t.sp_points) : ''}</div>
                         <div class="study-task-actions">
                             <span class="text-xs px-2 py-1 rounded-full ${t.is_checked_in ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}">
                                 ${t.is_checked_in ? '已打卡' : '未打卡'}
                             </span>
                             <a class="btn btn-outline btn-sm" href="/studyfocus/${t.id}">进入专注</a>
-                            <button class="study-start-btn study-checkin-btn" onclick="openCheckinModal(${t.id})">开始挑战</button>
+                            <button class="study-start-btn study-checkin-btn" onclick="openCheckinModal(${t.id}, ${t.is_checked_in ? 1 : 0})">${t.is_checked_in ? '改打卡' : '去打卡'}</button>
+                            <button class="study-icon-btn" title="改期" onclick="openRescheduleModal(${t.id}, '${escapeHtml(String(t.name || '').replace(/'/g, "\\'"))}')"><i class="fas fa-calendar-plus"></i></button>
+                            <button class="study-icon-btn danger" title="删除任务" onclick="deleteTask(${t.id}, '${escapeHtml(String(t.name || '').replace(/'/g, "\\'"))}', ${t.is_checked_in ? 1 : 0})"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                 </div>
@@ -524,6 +574,7 @@
                     </div>
                     <div class="mt-3 flex items-center gap-2 flex-wrap">
                         <button class="btn btn-outline btn-sm" onclick="viewPlanDetail(${Number(p.id)})">详情</button>
+                        <button class="btn btn-outline btn-sm" onclick="openPlanModal(${Number(p.id)})">编辑</button>
                         <button class="btn btn-outline btn-sm" onclick="togglePlanStatus(${Number(p.id)}, ${Number(p.status)})">${Number(p.status) === 1 ? '停用' : '启用'}</button>
                         <button class="btn btn-outline btn-sm" onclick="generateByPlan(${Number(p.id)})">生成任务</button>
                         <button class="btn btn-outline btn-sm text-red-600 border-red-600 hover:bg-red-50" onclick="deletePlan(${Number(p.id)})">删除</button>
@@ -554,6 +605,7 @@
                         <div class="text-gray-500">预计时长</div><div class="text-gray-900">${Number(plan.estimated_minutes || 0)} 分钟</div>
                         <div class="text-gray-500">SP积分</div><div class="text-gray-900">${Number(plan.sp_points || 0)}</div>
                         <div class="text-gray-500">任务进度</div><div class="text-gray-900">${Number(plan.task_done || 0)}/${Number(plan.task_total || 0)}</div>
+                        <div class="text-gray-500">最后生成</div><div class="text-gray-900">${escapeHtml(plan.last_generated_date || '-')}</div>
                     </div>
                     <div class="mt-4 border-t border-gray-200 pt-3">
                         <div class="font-medium text-gray-900 mb-2">已生成任务（最多30条）</div>
@@ -562,7 +614,7 @@
                                 ${tasks.map(t => `
                                     <div class="border border-gray-200 rounded p-2 text-sm">
                                         <div class="font-medium text-gray-900">${escapeHtml(t.name || '')}</div>
-                                        <div class="text-xs text-gray-500 mt-1">${escapeHtml(t.study_scheduled_date || '')} ${escapeHtml(t.planned_start_time || '')}</div>
+                                        <div class="text-xs text-gray-500 mt-1">${escapeHtml(t.study_scheduled_date || '')} ${escapeHtml(t.planned_start_time || '')} ${Number(t.status) === 2 ? '<span class="text-emerald-600">· 已完成</span>' : ''}</div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -607,6 +659,23 @@
             const base = selectedDate ? new Date(selectedDate + 'T00:00:00') : new Date();
             base.setDate(base.getDate() + offset);
             pickDate(formatLocalDate(base));
+        }
+
+        function goToday() {
+            pickDate(formatLocalDate(new Date()));
+        }
+
+        function weekNav(dir) {
+            const base = selectedDate ? new Date(selectedDate + 'T00:00:00') : new Date();
+            const dow = (base.getDay() + 6) % 7; // 0=周一
+            const monday = new Date(base);
+            monday.setDate(base.getDate() - dow + dir * 7);
+            pickDate(formatLocalDate(monday));
+        }
+
+        function toggleOnlyPending() {
+            showOnlyPending = document.getElementById('onlyPendingCheck').checked;
+            if (selectedDate) loadOverview(selectedDate);
         }
 
         async function loadPlanList(pickFirst = false) {
@@ -714,160 +783,98 @@
             });
         }
 
-        function openPlanModal() {
-            const m = document.getElementById('planModal');
-            m.classList.remove('hidden');
-            m.classList.add('flex');
-        }
-
-        function closePlanModal(e) {
-            if (e && e.target !== e.currentTarget) return;
-            const m = document.getElementById('planModal');
-            m.classList.add('hidden');
-            m.classList.remove('flex');
-        }
-
-        function openQuickPlanModal() {
-            document.getElementById('quickPlanForm').reset();
-            document.querySelectorAll('.quick-plan-preset').forEach(function(node) {
-                node.classList.remove('is-active');
-                node.setAttribute('data-selected', '');
+        // ===== 统一的新建/编辑计划弹窗 =====
+        function resetPlanForm() {
+            const form = document.getElementById('planForm');
+            form.reset();
+            document.getElementById('planIdInput').value = '0';
+            document.getElementById('planModalTitle').textContent = '新建学习计划';
+            document.querySelectorAll('.quick-plan-preset').forEach(function(n) {
+                n.classList.remove('is-active');
             });
-            document.getElementById('quickPlanName').focus();
-            const m = document.getElementById('quickPlanModal');
-            m.classList.remove('hidden');
-            m.classList.add('flex');
-        }
-
-        function closeQuickPlanModal(e) {
-            if (e && e.target !== e.currentTarget) return;
-            const m = document.getElementById('quickPlanModal');
-            m.classList.add('hidden');
-            m.classList.remove('flex');
-        }
-
-        function selectQuickPreset(el) {
-            const selected = el.getAttribute('data-selected');
-            document.querySelectorAll('.quick-plan-preset').forEach(function(node) {
-                node.classList.remove('is-active');
-                node.setAttribute('data-selected', '');
-            });
-            if (selected) {
-                // already selected -> 再次点击取消
-                return;
-            }
-            el.classList.add('is-active');
-            el.setAttribute('data-selected', '1');
-        }
-
-        document.getElementById('quickPlanForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const fd = new FormData(this);
-            const name = String(fd.get('name') || '').trim();
-            if (!name) {
-                toast('请填写计划名称', 'warning');
-                return;
-            }
-            const preset = document.querySelector('.quick-plan-preset.is-active');
-            const repeatType = preset ? preset.getAttribute('data-preset') : 'none';
+            // 默认开始时间=今天
             const now = new Date();
             const pad = n => String(n).padStart(2, '0');
-            const startTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:00`;
-            const payload = {
-                name: name,
-                content: '',
-                start_time: startTime,
-                repeat_type: repeatType,
-                repeat_days: [],
-                sp_points: 0,
-                content_mode: 'fixed',
-                estimated_time_mode: 'fixed',
-                estimated_minutes: Number(fd.get('estimated_minutes') || 30)
-            };
-            const btn = this.querySelector('button[type="submit"]');
-            const original = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '创建中...';
-            try {
-                const resp = await requestApi('/study/plans', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (resp && Number(resp.code) === 9999) {
-                    closeQuickPlanModal();
-                    this.reset();
-                    await loadOverview(selectedDate);
-                    toast(`已创建计划「${name}」，并为你生成了任务！`, 'success');
+            document.getElementById('startTimeLocal').value =
+                `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            onPlanModeChange();
+            if (document.getElementById('planAdvancedWrap').classList.contains('hidden') === false) {
+                togglePlanAdvanced();
+            }
+        }
+
+        function togglePlanAdvanced() {
+            const wrap = document.getElementById('planAdvancedWrap');
+            const arrow = document.getElementById('advancedArrow');
+            const open = wrap.classList.toggle('hidden');
+            arrow.className = 'fas fa-chevron-' + (open ? 'down' : 'up') + ' mr-1';
+        }
+
+        function selectPlanTemplate(el) {
+            document.querySelectorAll('.quick-plan-preset').forEach(function(n) {
+                n.classList.remove('is-active');
+            });
+            const preset = el.getAttribute('data-preset');
+            el.classList.add('is-active');
+            document.getElementById('repeatType').value = preset;
+            onRepeatTypeChange();
+        }
+
+        async function openPlanModal(planId) {
+            if (Number(planId || 0) > 0) {
+                const resp = await requestApi('/study/plans/' + Number(planId));
+                const plan = resp && Number(resp.code) === 9999 ? getResult(resp).plan : null;
+                if (!plan) {
+                    toast('计划加载失败', 'error');
                     return;
                 }
-                toast(resp && resp.msg ? resp.msg : '创建失败', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = original;
-            }
-        });
-
-        function onRepeatTypeChange() {
-            const t = document.getElementById('repeatType').value;
-            const wrap = document.getElementById('repeatDaysWrap');
-            if (t === 'weekly') {
-                wrap.classList.remove('hidden');
+                fillPlanForm(plan);
             } else {
-                wrap.classList.add('hidden');
+                resetPlanForm();
             }
-            onPlanModeChange();
+            const m = document.getElementById('planModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
         }
 
-        function getRepeatSlots() {
-            const repeatType = document.getElementById('repeatType').value;
-            if (repeatType === 'weekly') {
-                const selected = Array.from(document.querySelectorAll('input[name="repeat_days"]:checked')).map(function(x) {
-                    return String(x.value || '');
-                });
-                if (!selected.length) {
-                    return weeklySlots;
-                }
-                return weeklySlots.filter(function(s) {
-                    return selected.indexOf(s.key) >= 0;
-                });
-            }
-            if (repeatType === 'ebbinghaus') {
-                return ebbinghausSlots;
-            }
-            return [{ key: 'default', label: '默认' }];
-        }
-
-        function collectSlotMap(attrName, parser) {
-            const out = {};
-            const nodes = document.querySelectorAll('[data-' + attrName + '-key]');
-            nodes.forEach(function(node) {
-                const key = node.getAttribute('data-' + attrName + '-key');
-                const val = parser(node.value);
-                if (key && val !== null) {
-                    out[key] = val;
-                }
+        function fillPlanForm(plan) {
+            const form = document.getElementById('planForm');
+            form.reset();
+            document.querySelectorAll('.quick-plan-preset').forEach(function(n) {
+                n.classList.remove('is-active');
             });
-            return out;
+            document.getElementById('planIdInput').value = Number(plan.id || 0);
+            document.getElementById('planModalTitle').textContent = '编辑计划';
+            document.getElementById('planNameInput').value = plan.name || '';
+            const st = String(plan.start_time || '').slice(0, 16).replace(' ', 'T');
+            document.getElementById('startTimeLocal').value = st;
+            form.querySelector('input[name="sp_points"]').value = Number(plan.sp_points || 0);
+            form.querySelector('select[name="repeat_type"]').value = plan.repeat_type || 'none';
+            form.querySelector('select[name="content_mode"]').value = plan.content_mode || 'fixed';
+            form.querySelector('select[name="estimated_time_mode"]').value = plan.estimated_time_mode || 'fixed';
+            form.querySelector('textarea[name="content"]').value = plan.content || '';
+            form.querySelector('input[name="estimated_minutes"]').value = Number(plan.estimated_minutes || 0);
+            const days = plan.repeat_days || [];
+            form.querySelectorAll('input[name="repeat_days"]').forEach(function(node) {
+                node.checked = days.indexOf(String(node.value)) >= 0;
+            });
+            document.getElementById('repeatType').value = plan.repeat_type || 'none';
+            onRepeatTypeChange();
+            // 回填按策略自定义的值
+            const contentBySlot = plan.content_by_slot || {};
+            const estimatedBySlot = plan.estimated_by_slot || {};
+            renderSlotConfigListWithoutPreserve(contentBySlot, estimatedBySlot);
         }
 
-        function renderSlotConfigList() {
+        // 编辑时回填 slot 配置
+        function renderSlotConfigListWithoutPreserve(contentMap, estimatedMap) {
             const node = document.getElementById('slotConfigList');
-            const contentCurrent = collectSlotMap('slot-content', function(v) {
-                const t = String(v || '').trim();
-                return t === '' ? null : t;
-            });
-            const estimatedCurrent = collectSlotMap('slot-estimated', function(v) {
-                if (String(v || '').trim() === '') return null;
-                const n = Number(v);
-                return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null;
-            });
             const contentMode = document.getElementById('contentMode').value;
             const timeMode = document.getElementById('estimatedTimeMode').value;
             const slots = getRepeatSlots();
             node.innerHTML = slots.map(function(slot) {
-                const contentValue = contentCurrent[slot.key] || '';
-                const estimatedValue = estimatedCurrent[slot.key] != null ? estimatedCurrent[slot.key] : '';
+                const contentValue = (contentMap[slot.key] || '');
+                const estimatedValue = estimatedMap[slot.key] != null ? estimatedMap[slot.key] : '';
                 return `
                     <div class="border border-gray-200 rounded-lg p-3">
                         <div class="font-medium text-sm text-gray-800 mb-2">${slot.label}</div>
@@ -888,36 +895,21 @@
             }).join('');
         }
 
-        function onPlanModeChange() {
-            const contentMode = document.getElementById('contentMode').value;
-            const timeMode = document.getElementById('estimatedTimeMode').value;
-            const fixedContentWrap = document.getElementById('fixedContentWrap');
-            const fixedEstimatedWrap = document.getElementById('fixedEstimatedWrap');
-            const slotConfigWrap = document.getElementById('slotConfigWrap');
-            if (contentMode === 'fixed') {
-                fixedContentWrap.classList.remove('hidden');
-            } else {
-                fixedContentWrap.classList.add('hidden');
-            }
-            if (timeMode === 'fixed') {
-                fixedEstimatedWrap.classList.remove('hidden');
-            } else {
-                fixedEstimatedWrap.classList.add('hidden');
-            }
-            if (contentMode === 'by_repeat' || timeMode === 'by_repeat') {
-                slotConfigWrap.classList.remove('hidden');
-                renderSlotConfigList();
-            } else {
-                slotConfigWrap.classList.add('hidden');
-                document.getElementById('slotConfigList').innerHTML = '';
-            }
+        function closePlanModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            const m = document.getElementById('planModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
         }
 
-        function openCheckinModal(taskId) {
+        // ===== 打卡 =====
+        function openCheckinModal(taskId, alreadyCheckedIn) {
             selectedTaskId = taskId;
             const form = document.getElementById('checkinForm');
             form.task_id.value = taskId;
             clearRecordedAudio();
+            document.getElementById('checkinModalTitle').textContent =
+                alreadyCheckedIn ? '修改打卡（重复提交将更新当日内容）' : '学习打卡';
             const m = document.getElementById('checkinModal');
             m.classList.remove('hidden');
             m.classList.add('flex');
@@ -989,6 +981,71 @@
             if (audioInput) audioInput.value = '';
         }
 
+        function closeCheckinModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            clearRecordedAudio();
+            const m = document.getElementById('checkinModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ===== 任务单条操作：删除 / 改期 =====
+        function deleteTask(taskId, name, checkedIn) {
+            const tip = checkedIn
+                ? '该任务已有打卡记录，删除后记录仍保留在打卡列表，但任务名将显示为空。'
+                : '删除后这一天的任务将不再展示。';
+            confirmAction('确认删除任务「' + name + '」？' + tip, async function() {
+                const resp = await requestApi('/study/tasks/' + Number(taskId), { method: 'DELETE' });
+                if (resp && Number(resp.code) === 9999) {
+                    toast('任务已删除', 'success');
+                    await loadOverview(selectedDate);
+                    if (!document.getElementById('planListModal').classList.contains('hidden') && selectedPlanId) {
+                        await viewPlanDetail(selectedPlanId);
+                    }
+                    return;
+                }
+                toast(resp && resp.msg ? resp.msg : '删除失败', 'error');
+            });
+        }
+
+        function openRescheduleModal(taskId, name) {
+            rescheduleTaskId = Number(taskId);
+            document.getElementById('rescheduleTaskName').textContent = '任务：' + name;
+            document.getElementById('rescheduleDate').value = selectedDate || formatLocalDate(new Date());
+            const m = document.getElementById('rescheduleModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeRescheduleModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            rescheduleTaskId = 0;
+            const m = document.getElementById('rescheduleModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        async function submitReschedule() {
+            const date = document.getElementById('rescheduleDate').value;
+            if (!date || !rescheduleTaskId) {
+                toast('请选择日期', 'warning');
+                return;
+            }
+            const resp = await requestApi('/study/tasks/' + rescheduleTaskId + '/reschedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: date })
+            });
+            if (resp && Number(resp.code) === 9999) {
+                closeRescheduleModal();
+                toast('任务已改期', 'success');
+                await loadOverview(selectedDate);
+                return;
+            }
+            toast(resp && resp.msg ? resp.msg : '改期失败', 'error');
+        }
+
+        // ===== 计划生成 =====
         async function generateUpcoming() {
             confirmAction('将为未来 14 天内的所有启用学习计划生成任务，确认继续吗？', async function() {
                 const resp = await requestApi('/study/generate', {
@@ -1006,19 +1063,95 @@
             });
         }
 
-        function closeCheckinModal(e) {
-            if (e && e.target !== e.currentTarget) return;
-            clearRecordedAudio();
-            const m = document.getElementById('checkinModal');
-            m.classList.add('hidden');
-            m.classList.remove('flex');
+        // ===== 重复策略与 slot 配置 =====
+        function onRepeatTypeChange() {
+            const t = document.getElementById('repeatType').value;
+            const wrap = document.getElementById('repeatDaysWrap');
+            if (t === 'weekly') {
+                wrap.classList.remove('hidden');
+            } else {
+                wrap.classList.add('hidden');
+            }
+            onPlanModeChange();
         }
 
+        function getRepeatSlots() {
+            const repeatType = document.getElementById('repeatType').value;
+            if (repeatType === 'weekly') {
+                const selected = Array.from(document.querySelectorAll('input[name="repeat_days"]:checked')).map(function(x) {
+                    return String(x.value || '');
+                });
+                if (!selected.length) {
+                    return weeklySlots;
+                }
+                return weeklySlots.filter(function(s) {
+                    return selected.indexOf(s.key) >= 0;
+                });
+            }
+            if (repeatType === 'ebbinghaus') {
+                return ebbinghausSlots;
+            }
+            return [{ key: 'default', label: '默认' }];
+        }
+
+        function collectSlotMap(attrName, parser) {
+            const out = {};
+            const nodes = document.querySelectorAll('[data-' + attrName + '-key]');
+            nodes.forEach(function(node) {
+                const key = node.getAttribute('data-' + attrName + '-key');
+                const val = parser(node.value);
+                if (key && val !== null) {
+                    out[key] = val;
+                }
+            });
+            return out;
+        }
+
+        function renderSlotConfigList() {
+            renderSlotConfigListWithoutPreserve({}, {});
+        }
+
+        function onPlanModeChange() {
+            const contentMode = document.getElementById('contentMode').value;
+            const timeMode = document.getElementById('estimatedTimeMode').value;
+            const fixedContentWrap = document.getElementById('fixedContentWrap');
+            const fixedEstimatedWrap = document.getElementById('fixedEstimatedWrap');
+            const slotConfigWrap = document.getElementById('slotConfigWrap');
+            if (contentMode === 'fixed') {
+                fixedContentWrap.classList.remove('hidden');
+            } else {
+                fixedContentWrap.classList.add('hidden');
+            }
+            if (timeMode === 'fixed') {
+                fixedEstimatedWrap.classList.remove('hidden');
+            } else {
+                fixedEstimatedWrap.classList.add('hidden');
+            }
+            if (contentMode === 'by_repeat' || timeMode === 'by_repeat') {
+                slotConfigWrap.classList.remove('hidden');
+                renderSlotConfigList();
+            } else {
+                slotConfigWrap.classList.add('hidden');
+                document.getElementById('slotConfigList').innerHTML = '';
+            }
+        }
+
+        // ===== 表单提交 =====
         document.getElementById('planForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const fd = new FormData(this);
+            const planId = Number(document.getElementById('planIdInput').value || 0);
+            const name = String(fd.get('name') || '').trim();
+            if (!name) {
+                toast('请填写计划名称', 'warning');
+                return;
+            }
             const dt = fd.get('start_time_local');
             const startTime = dt ? (String(dt).replace('T', ' ') + ':00') : '';
+            if (!startTime) {
+                toast('请选择开始时间', 'warning');
+                return;
+            }
             const repeatDays = Array.from(this.querySelectorAll('input[name="repeat_days"]:checked')).map(x => x.value);
             const contentMode = fd.get('content_mode') || 'fixed';
             const estimatedTimeMode = fd.get('estimated_time_mode') || 'fixed';
@@ -1032,7 +1165,7 @@
                 return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null;
             });
             const payload = {
-                name: fd.get('name'),
+                name: name,
                 content: contentMode === 'fixed' ? (fd.get('content') || '') : '',
                 start_time: startTime,
                 repeat_type: fd.get('repeat_type') || 'none',
@@ -1044,22 +1177,39 @@
                 content_by_slot: contentBySlot,
                 estimated_by_slot: estimatedBySlot
             };
-            const resp = await requestApi('/study/plans', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (resp && Number(resp.code) === 9999) {
-                closePlanModal();
-                this.reset();
-                onPlanModeChange();
-                await loadOverview(selectedDate);
-                if (!document.getElementById('planListModal').classList.contains('hidden')) {
-                    await loadPlanList(true);
+            const btn = this.querySelector('button[type="submit"]');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '保存中...';
+            try {
+                const resp = await requestApi(planId > 0 ? ('/study/plans/' + planId) : '/study/plans', {
+                    method: planId > 0 ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (resp && Number(resp.code) === 9999) {
+                    closePlanModal();
+                    this.reset();
+                    onPlanModeChange();
+                    await loadOverview(selectedDate);
+                    if (!document.getElementById('planListModal').classList.contains('hidden')) {
+                        await loadPlanList(true);
+                    }
+                    if (planId > 0) {
+                        toast('计划已更新', 'success');
+                    } else {
+                        const data = getResult(resp);
+                        const count = Number(data.count || 0);
+                        const start = String((data.plan && data.plan.start_time) || startTime).slice(0, 10);
+                        toast(count > 0 ? `已创建计划「${name}」，生成 ${count} 个任务（自 ${start} 起）` : `已创建计划「${name}」`, 'success');
+                    }
+                    return;
                 }
-                return;
+                toast(resp && resp.msg ? resp.msg : '保存失败', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
             }
-            toast(resp && resp.msg ? resp.msg : '保存失败', 'error');
         });
 
         document.getElementById('checkinForm').addEventListener('submit', async function(e) {
@@ -1096,9 +1246,9 @@
             if (e.key !== 'Escape') return;
             const modalMap = [
                 ['planModal', 'closePlanModal'],
-                ['quickPlanModal', 'closeQuickPlanModal'],
                 ['checkinModal', 'closeCheckinModal'],
-                ['planListModal', 'closePlanListModal']
+                ['planListModal', 'closePlanListModal'],
+                ['rescheduleModal', 'closeRescheduleModal']
             ];
             for (let i = 0; i < modalMap.length; i++) {
                 const m = document.getElementById(modalMap[i][0]);
@@ -1135,7 +1285,6 @@
             btn.addEventListener('mouseleave', scheduleHideStudySummary);
             card.addEventListener('mouseenter', showStudySummary);
             card.addEventListener('mouseleave', scheduleHideStudySummary);
-            // 点击按钮切换展示
             btn.addEventListener('click', function() {
                 if (card.classList.contains('show')) {
                     card.classList.remove('show');
@@ -1150,7 +1299,7 @@
             const today = formatLocalDate(new Date());
             selectedDate = today;
             updateGreeting();
-            onPlanModeChange();
+            resetPlanForm();
             initStudySummary();
             document.querySelectorAll('input[name="repeat_days"]').forEach(function(node) {
                 node.addEventListener('change', onPlanModeChange);
