@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '记录想法 - 蒙太奇')
+@section('title', '笔记 - 蒙太奇')
 @section('description', '记录和分享您的思考、笔记和灵感，支持Markdown、语音、图片多种形式')
 
 @section('content')
@@ -1773,7 +1773,7 @@
                     <i class="fas fa-sticky-note text-4xl text-gray-400"></i>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">还没有笔记</h3>
-                <p class="text-gray-600 mb-6">开始记录您的第一个想法吧！</p>
+                <p class="text-gray-600 mb-6">开始记录您的第一条笔记吧！</p>
                 <button type="button" class="btn btn-primary" onclick="easymde && easymde.codemirror.focus()">
                     <i class="fas fa-plus mr-2"></i>
                     开始记录

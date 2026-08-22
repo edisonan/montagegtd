@@ -127,6 +127,14 @@ class CourseController extends Controller
     }
 
     /**
+     * 显示编辑课程表单（复用创建视图，JS 加载数据后走 v2 update）
+     */
+    public function edit(Request $request, $id)
+    {
+        return view('courses.create', ['editCourseId' => (int)$id]);
+    }
+
+    /**
      * 用户加入课程
      */
     public function joinCourse(Request $request, $id)

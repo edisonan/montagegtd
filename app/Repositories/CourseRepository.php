@@ -104,32 +104,35 @@ class CourseRepository
      */
     public function getUserCreatedCourses($userId, $withTrashed = false)
     {
-        $query = Course::where('created_by', $userId);
-        
+        $query = Course::withCount('courseItems')
+            ->withCount('courseEnrollments')
+            ->where('created_by', $userId);
+
         if ($withTrashed) {
             $query->withTrashed();
         }
-        
+
         return $query->orderBy('created_at', 'desc')->get();
     }
-    
+
     /**
      * 获取所有公开课程（包括待审核的）
      */
     public function getPublicCourses($withTrashed = false, $includePending = false)
     {
-        $query = Course::query();
-        
+        $query = Course::withCount('courseItems')
+            ->withCount('courseEnrollments');
+
         if ($includePending) {
             $query->whereIn('public_status', [2, 3]); // 包括待审核和已审核的
         } else {
             $query->where('public_status', 3); // 只获取审核通过的
         }
-        
+
         if ($withTrashed) {
             $query->withTrashed();
         }
-        
+
         return $query->orderBy('created_at', 'desc')->get();
     }
 }

@@ -310,6 +310,10 @@ Route::prefix('v2')->group(function () {
         Route::delete('/courses/{id}', 'Api\\V2\\CourseController@destroy');
         Route::post('/courses/{id}/join', 'Api\\V2\\CourseController@join');
         Route::post('/courses/{id}/publish', 'Api\\V2\\CourseController@publish');
+        Route::post('/courses/{id}/request-public', 'Api\\V2\\CourseController@requestPublic');
+        Route::post('/courses/{id}/approve', 'Api\\V2\\CourseController@approve');
+        Route::post('/courses/{id}/unapprove', 'Api\\V2\\CourseController@unapprove');
+        Route::put('/course-enrollments/{id}', 'Api\\V2\\CourseController@updateEnrollment');
         Route::post('/courses/{id}/automation', 'Api\\V2\\CourseController@automation');
         Route::post('/courses/{courseId}/generate', 'Api\\V2\\CourseContentController@generate');
         Route::post('/courses/{courseId}/fetch', 'Api\\V2\\CourseContentController@fetch');

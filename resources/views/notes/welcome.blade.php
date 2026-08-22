@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', '记想法 - 蒙太奇')
-@section('description', '蒙太奇记想法这里支持通过插件快速分享chrome等浏览器所浏览的网站、图片与文字，同时可以你可以实时去记录你的想法，其更支持语音录入极大方便你的学习生活')
+@section('title', '记笔记 - 蒙太奇')
+@section('description', '蒙太奇记笔记这里支持通过插件快速分享chrome等浏览器所浏览的网站、图片与文字，同时可以你可以实时去记录你的笔记，其更支持语音录入极大方便你的学习生活')
 
 <style>
-    /* 记想法页面专用样式 */
+    /* 记笔记页面专用样式 */
     .notes-feature-page {
         max-width: 1200px;
     }
@@ -383,7 +383,7 @@
             <div class="notes-feature-card-header">
                 <h1 class="notes-feature-title">
                     <i class="fas fa-lightbulb"></i>
-                    记想法
+                    记笔记
                 </h1>
                 <p class="notes-feature-subtitle">
                     捕捉灵感，记录思考，构建你的知识体系
@@ -394,7 +394,7 @@
             <div class="notes-feature-card-body">
                 <!-- 介绍段落 -->
                 <div class="intro-content" style="font-size: 1.125rem; line-height: 1.8; color: #475569;">
-                    <b>记想法</b>是蒙太奇的核心功能之一，旨在帮助您随时随地捕捉灵感、记录思考。无论是网页浏览时的发现，还是生活中的灵感闪现，都能快速记录并整理，构建属于您个人的知识体系。
+                    <b>记笔记</b>是蒙太奇的核心功能之一，旨在帮助您随时随地捕捉灵感、记录思考。无论是网页浏览时的发现，还是生活中的灵感闪现，都能快速记录并整理，构建属于您个人的知识体系。
                 </div>
 
                 <!-- 特色功能网格 -->
@@ -437,7 +437,7 @@
                     </div>
                     <h2 class="voice-title">语音录入，极速记录</h2>
                     <p class="voice-desc">
-                        在忙碌的生活中，掏出手机说话比打字更方便。蒙太奇的语音识别技术能准确识别您的语音，自动转换为文字记录，让记录想法变得前所未有的轻松。
+                        在忙碌的生活中，掏出手机说话比打字更方便。蒙太奇的语音识别技术能准确识别您的语音，自动转换为文字记录，让记录笔记变得前所未有的轻松。
                     </p>
                 </div>
 
@@ -506,7 +506,7 @@
                     <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-top: 20px;">
                         <p style="color: #475569; font-size: 0.95rem; line-height: 1.6;">
                             <i class="fas fa-mouse-pointer text-purple-500 mr-2"></i>
-                            <strong>使用方法：</strong> 在网页上选中文字或图片 → 点击插件图标 → 自动保存到蒙太奇想法库 → 随时随地查看和编辑
+                            <strong>使用方法：</strong> 在网页上选中文字或图片 → 点击插件图标 → 自动保存到蒙太奇笔记库 → 随时随地查看和编辑
                         </p>
                     </div>
                 </div>
@@ -514,8 +514,8 @@
                 <!-- 图片展示 -->
                 <div class="image-gallery animate-floatIn" style="animation-delay: 0.7s;">
                     <div class="gallery-item">
-                        <img src="/img/note.png" alt="蒙太奇记想法界面"
-                             title="蒙太奇记想法主界面 - 简洁高效的知识管理">
+                        <img src="/img/note.png" alt="蒙太奇记笔记界面"
+                             title="蒙太奇记笔记主界面 - 简洁高效的知识管理">
                         <div class="gallery-caption">主界面 - 清爽的笔记管理</div>
                     </div>
                     <div class="gallery-item">
@@ -529,7 +529,7 @@
                 <div class="mt-10 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                         <i class="fas fa-bullseye text-purple-600"></i>
-                        为什么选择蒙太奇记想法？
+                        为什么选择蒙太奇记笔记？
                     </h3>
                     <ul class="space-y-3">
                         <li class="flex items-start">
@@ -555,7 +555,7 @@
                 <div class="notes-action-section">
                     <a href="{{ url('/notes') }}" class="notes-primary-btn">
                         <i class="fas fa-edit"></i>
-                        开始记录想法
+                        开始记录笔记
                     </a>
                     <p style="color: #64748b; margin-top: 20px; font-size: 0.95rem;">
                         立即体验高效的灵感捕捉和知识管理

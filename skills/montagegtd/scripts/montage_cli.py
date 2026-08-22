@@ -975,8 +975,111 @@ def cmd_course_item_complete(args):
     call(args, "POST", "/course-items/%s/complete" % args.item_id, data={})
 
 
+def cmd_course_create(args):
+    body = load_json(args.data) or {}
+    add_if_present(body, "title", args.title)
+    for key in ("description", "platform", "instructor", "public_url", "cover_image_url", "difficulty",
+                "content_status", "source_type", "source_key", "content_hash"):
+        add_if_present(body, key, getattr(args, key.replace("-", "_"), None))
+    add_if_present(body, "estimated_hours", args.estimated_hours)
+    add_if_present(body, "public_status", args.public_status)
+    if args.tags:
+        body.setdefault("tags", [t.strip() for t in args.tags.split(",") if t.strip()])
+    if not body.get("title"):
+        raise SystemExit("course create requires --title or --data with title.")
+    call(args, "POST", "/courses", data=body)
+
+
+def cmd_course_update(args):
+    body = load_json(args.data) or {}
+    for key in ("title", "description", "platform", "instructor", "public_url", "cover_image_url", "difficulty",
+                "content_status", "source_type", "source_key", "content_hash"):
+        add_if_present(body, key, getattr(args, key.replace("-", "_"), None))
+    add_if_present(body, "estimated_hours", args.estimated_hours)
+    add_if_present(body, "public_status", args.public_status)
+    if args.tags:
+        body.setdefault("tags", [t.strip() for t in args.tags.split(",") if t.strip()])
+    # 后端 PUT /courses/{id} 为整行更新（public_status 缺省变 2、difficulty 缺省变 beginner），
+    # 客户端先取现有课程做合并：未提供的字段沿用现值，避免部分更新重置公开状态/难度。
+    status, parsed, _ = api_request(args, "GET", "/courses/%s" % args.course_id)
+    existing = nested_value(parsed, ("result", "course"), {})
+    for key in ("title", "description", "platform", "instructor", "public_url", "cover_image_url", "difficulty",
+                "content_status", "source_type", "source_key", "content_hash", "estimated_hours", "public_status"):
+        if key not in body:
+            value = existing.get(key)
+            if value is not None:
+                body[key] = value
+    if not body:
+        raise SystemExit("course update requires at least one field or --data.")
+    call(args, "PUT", "/courses/%s" % args.course_id, data=body)
+
+
+def cmd_course_delete(args):
+    call(args, "DELETE", "/courses/%s" % args.course_id)
+
+
+def cmd_course_enroll(args):
+    body = {}
+    add_if_present(body, "custom_title", args.custom_title)
+    call(args, "POST", "/courses/%s/join" % args.course_id, data=body)
+
+
+def cmd_course_item_create(args):
+    body = load_json(args.data) or {}
+    add_if_present(body, "title", args.title)
+    add_if_present(body, "item_type", args.item_type)
+    for key in ("description", "duration", "external_url", "parent_id", "content", "content_status",
+                "source_type", "source_key", "content_hash", "order_index"):
+        add_if_present(body, key, getattr(args, key.replace("-", "_"), None))
+    if args.content_file:
+        body["content"] = text_value(None, file_path=args.content_file)
+    if not body.get("title") or not body.get("item_type"):
+        raise SystemExit("course item create requires --title and --item-type (module|chapter|video|assignment|quiz|reading).")
+    call(args, "POST", "/courses/%s/items" % args.course_id, data=body)
+
+
+def cmd_course_item_update(args):
+    body = load_json(args.data) or {}
+    for key in ("title", "item_type", "description", "duration", "external_url", "parent_id", "content",
+                "content_status", "source_type", "source_key", "content_hash", "order_index"):
+        add_if_present(body, key, getattr(args, key.replace("-", "_"), None))
+    if args.content_file:
+        body["content"] = text_value(None, file_path=args.content_file)
+    # 后端 PUT 是整行更新（title/item_type 必填，未传字段会覆盖为空），
+    # 这里先取现有小节做客户端合并：未提供的字段一律沿用现值，避免部分更新清空内容。
+    status, parsed, _ = api_request(args, "GET", "/course-items/%s" % args.item_id)
+    existing = nested_value(parsed, ("result", "course_item"), {})
+    for key in ("title", "item_type", "description", "duration", "external_url", "parent_id", "content",
+                "content_status", "source_type", "source_key", "content_hash", "order_index"):
+        if key not in body:
+            value = existing.get(key)
+            if value is not None:
+                body[key] = value
+    if not body:
+        raise SystemExit("course item update requires at least one field or --data.")
+    call(args, "PUT", "/courses/%s/items/%s" % (args.course_id, args.item_id), data=body)
+
+
+def cmd_course_item_delete(args):
+    # 注意：嵌套路由 DELETE /courses/{courseId}/items/{id} 的控制器形参只有 ($request,$id)，
+    # Laravel 5.5 按位置绑定会把 courseId 传给 $id，导致删除错对象；
+    # 因此小节删除走 modal 路由 DELETE /course-items/{id}（形参准确）。
+    call(args, "DELETE", "/course-items/%s" % args.item_id)
+
+
 def cmd_quiz_show(args):
     call(args, "GET", "/course-items/%s/quiz" % args.item_id)
+
+
+def cmd_quiz_create(args):
+    body = load_json(args.data) or {}
+    add_if_present(body, "passing_score", args.passing_score)
+    add_if_present(body, "attempts_allowed", args.attempts_allowed)
+    add_if_present(body, "status", args.status)
+    questions = body.get("questions")
+    if not isinstance(questions, list) or not questions:
+        raise SystemExit("quiz create requires --data with questions array (question/options/is_correct).")
+    call(args, "POST", "/course-items/%s/quiz" % args.item_id, data=body)
 
 
 def cmd_quiz_submit(args):
@@ -1457,10 +1560,45 @@ def build_parser():
     p = sub.add_parser("course-management"); common(p); p.set_defaults(func=cmd_course_management)
     p = sub.add_parser("course-show"); common(p)
     p.add_argument("course_id"); p.set_defaults(func=cmd_course_show)
+    p = sub.add_parser("course-create"); common(p)
+    p.add_argument("--title"); p.add_argument("--description"); p.add_argument("--platform"); p.add_argument("--instructor")
+    p.add_argument("--public-url"); p.add_argument("--cover-image-url"); p.add_argument("--difficulty")
+    p.add_argument("--estimated-hours", type=int); p.add_argument("--tags"); p.add_argument("--public-status", type=int)
+    p.add_argument("--content-status"); p.add_argument("--source-type"); p.add_argument("--source-key"); p.add_argument("--content-hash")
+    p.add_argument("--data"); p.set_defaults(func=cmd_course_create)
+    p = sub.add_parser("course-update"); common(p)
+    p.add_argument("course_id")
+    p.add_argument("--title"); p.add_argument("--description"); p.add_argument("--platform"); p.add_argument("--instructor")
+    p.add_argument("--public-url"); p.add_argument("--cover-image-url"); p.add_argument("--difficulty")
+    p.add_argument("--estimated-hours", type=int); p.add_argument("--tags"); p.add_argument("--public-status", type=int)
+    p.add_argument("--content-status"); p.add_argument("--source-type"); p.add_argument("--source-key"); p.add_argument("--content-hash")
+    p.add_argument("--data"); p.set_defaults(func=cmd_course_update)
+    p = sub.add_parser("course-delete"); common(p)
+    p.add_argument("course_id"); p.set_defaults(func=cmd_course_delete)
+    p = sub.add_parser("course-enroll"); common(p)
+    p.add_argument("course_id"); p.add_argument("--custom-title"); p.set_defaults(func=cmd_course_enroll)
     p = sub.add_parser("course-enrollments"); common(p)
     p.add_argument("--status"); p.set_defaults(func=cmd_course_enrollments)
     p = sub.add_parser("course-items"); common(p)
     p.add_argument("course_id"); p.set_defaults(func=cmd_course_items)
+    p = sub.add_parser("course-item-create"); common(p)
+    p.add_argument("course_id")
+    p.add_argument("--title"); p.add_argument("--item-type")
+    p.add_argument("--description"); p.add_argument("--duration", type=int); p.add_argument("--external-url")
+    p.add_argument("--parent-id", type=int); p.add_argument("--content"); p.add_argument("--content-file")
+    p.add_argument("--content-status"); p.add_argument("--source-type"); p.add_argument("--source-key"); p.add_argument("--content-hash")
+    p.add_argument("--order-index", type=float); p.add_argument("--data")
+    p.set_defaults(func=cmd_course_item_create)
+    p = sub.add_parser("course-item-update"); common(p)
+    p.add_argument("course_id"); p.add_argument("item_id")
+    p.add_argument("--title"); p.add_argument("--item-type")
+    p.add_argument("--description"); p.add_argument("--duration", type=int); p.add_argument("--external-url")
+    p.add_argument("--parent-id", type=int); p.add_argument("--content"); p.add_argument("--content-file")
+    p.add_argument("--content-status"); p.add_argument("--source-type"); p.add_argument("--source-key"); p.add_argument("--content-hash")
+    p.add_argument("--order-index", type=float); p.add_argument("--data")
+    p.set_defaults(func=cmd_course_item_update)
+    p = sub.add_parser("course-item-delete"); common(p)
+    p.add_argument("course_id"); p.add_argument("item_id"); p.set_defaults(func=cmd_course_item_delete)
     p = sub.add_parser("course-structure"); common(p)
     p.add_argument("course_id"); p.set_defaults(func=cmd_course_structure)
     p = sub.add_parser("course-item-show"); common(p)
@@ -1469,6 +1607,11 @@ def build_parser():
     p.add_argument("item_id"); p.set_defaults(func=cmd_course_item_complete)
     p = sub.add_parser("quiz-show"); common(p)
     p.add_argument("item_id"); p.set_defaults(func=cmd_quiz_show)
+    p = sub.add_parser("quiz-create"); common(p)
+    p.add_argument("item_id")
+    p.add_argument("--passing-score", type=float); p.add_argument("--attempts-allowed", type=int)
+    p.add_argument("--status"); p.add_argument("--data")
+    p.set_defaults(func=cmd_quiz_create)
     p = sub.add_parser("quiz-submit"); common(p)
     p.add_argument("item_id"); p.add_argument("--data"); p.set_defaults(func=cmd_quiz_submit)
     p = sub.add_parser("quiz-attempts"); common(p)

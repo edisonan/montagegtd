@@ -2,6 +2,7 @@
 
 @section('content')
 @include('components.course-item-modal')
+@include('components.course-quiz-editor-modal')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
@@ -85,6 +86,7 @@ function renderStructureItems(items, child) {
             + '</div>'
             + '<div>'
             + '<span class="badge badge-secondary mr-2">' + escapeHtml(String(item.item_type || '')) + '</span>'
+            + (item.item_type === 'quiz' ? '<button class="btn btn-sm" style="background:#8b5cf6;color:#fff;cursor:pointer" onclick="openQuizEditorModal(' + Number(item.id || 0) + ')">测验</button> ' : '')
             + '<button class="btn btn-sm btn-primary" onclick="editItem(' + Number(item.id || 0) + ')">编辑</button> '
             + '<button class="btn btn-sm btn-danger" onclick="deleteItem(' + Number(item.id || 0) + ')">删除</button>'
             + '</div></div>'
@@ -133,140 +135,58 @@ function loadPageData() {
     });
 }
 
-// 提交课程章节表单
-function submitCourseItemForm() {
-    if (!apiRequest) {
-        alert('API客户端未初始化');
-        return;
-    }
-
-    var itemId = $('#item_id_modal').val();
-    var courseId = $('#course_id_modal').val();
-
-    var payload = {
-        course_id: courseId,
-        title: $('#title_modal').val(),
-        parent_id: $('#parent_id_modal').val() || null,
-        item_type: $('#item_type_modal').val(),
-        duration: $('#duration_modal').val(),
-        external_url: $('#external_url_modal').val(),
-        description: $('#description_modal').val(),
-        order_index: $('#order_index_modal').val()
-    };
-
-    var apiPath = itemId ? ('/course-items/' + itemId) : '/course-items';
-
-    apiRequest(itemId ? 'PUT' : 'POST', apiPath, payload).then(function(response) {
-        if(response.code == 9999) {
-            $('#courseItemModal').modal('hide');
-            alert(response.msg || '操作成功');
-            loadPageData();
-            return;
-        }
-        $('#courseItemErrorList').empty();
-        $('#courseItemErrorList').append('<li>' + (response.msg || '操作失败') + '</li>');
-        $('#courseItemErrors').show();
-    }).catch(function() {
-        $('#courseItemErrorList').empty();
-        $('#courseItemErrorList').append('<li>操作失败，请稍后重试</li>');
-        $('#courseItemErrors').show();
-    });
-}
-
-function loadCourseStructure(courseId, excludeItemId, currentParentId) {
-    if (!apiRequest) return;
-    apiRequest('GET', '/course-items/structure/' + courseId, {}).then(function(response) {
-        if(response.code != 9999) return;
-        var selectElement = $('#parent_id_modal');
-        selectElement.empty();
-        selectElement.append('<option value="">无父级（顶级章节）</option>');
-
-        function buildOptions(items, level) {
-            var prefix = level > 0 ? '--'.repeat(level) + ' ' : '';
-            $.each(items, function(index, item) {
-                if(excludeItemId && item.id == excludeItemId) return true;
-                selectElement.append('<option value="' + item.id + '">' + prefix + item.title + '</option>');
-                if(item.children && item.children.length > 0) buildOptions(item.children, level + 1);
-            });
-        }
-
-        buildOptions(response.result || [], 0);
-        if(currentParentId) selectElement.val(currentParentId);
-    });
-}
-
-function openCourseItemModal(courseId, itemData) {
-    $('#courseItemErrors').hide();
-    $('#courseItemErrorList').empty();
-    $('#course_id_modal').val(courseId);
-
-    if(itemData) {
-        $('#courseItemModalLabel').text('编辑章节');
-        $('#item_id_modal').val(itemData.id);
-        $('#title_modal').val(itemData.title);
-        $('#parent_id_modal').val(itemData.parent_id || '');
-        $('#item_type_modal').val(itemData.item_type);
-        $('#duration_modal').val(itemData.duration || 0);
-        $('#external_url_modal').val(itemData.external_url || '');
-        $('#description_modal').val(itemData.description || '');
-        $('#order_index_modal').val(itemData.order_index || 0);
-        loadCourseStructure(courseId, itemData.id, itemData.parent_id);
-    } else {
-        $('#courseItemModalLabel').text('添加章节');
-        $('#item_id_modal').val('');
-        $('#title_modal').val('');
-        $('#parent_id_modal').val('');
-        $('#item_type_modal').val('chapter');
-        $('#duration_modal').val(0);
-        $('#external_url_modal').val('');
-        $('#description_modal').val('');
-        $('#order_index_modal').val(0);
-        loadCourseStructure(courseId, null, null);
-    }
-
-    $('#courseItemModal').modal('show');
-}
-
-function cancelEdit() {
-    $('#courseItemModal').modal('hide');
-}
+// 章节的新增/编辑统一走组件（course-item-modal.blade.php）中的 openCourseItemModal / submitCourseItemForm
+// 这里不再重复定义同名函数，避免覆盖组件实现导致弹窗失效（旧版误用 Bootstrap .modal()）
 
 function deleteItem(id) {
     if (!apiRequest) {
-        alert('API客户端未初始化');
+        Swal.fire('提示', 'API客户端未初始化', 'warning');
         return;
     }
-    if (!confirm('确定要删除这个章节吗？')) return;
-    apiRequest('DELETE', '/course-items/' + id, {}).then(function(response) {
-        if(response.code == 9999) {
-            alert(response.msg || '删除成功');
-            loadPageData();
-            return;
-        }
-        alert('删除失败: ' + (response.msg || '未知错误'));
-    }).catch(function() {
-        alert('删除失败: 未知错误');
+    Swal.fire({
+        title: '确定要删除这个章节吗？',
+        text: '删除后不可恢复，其子章节也将无法通过课程查看',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#dc2626'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+        apiRequest('DELETE', '/course-items/' + id, {}).then(function(response) {
+            if (response && response.code == 9999) {
+                Swal.fire('已删除', (response.msg || '删除成功'), 'success').then(function() {
+                    loadPageData();
+                });
+                return;
+            }
+            Swal.fire('删除失败', (response && response.msg) ? response.msg : '未知错误', 'error');
+        }).catch(function() {
+            Swal.fire('删除失败', '网络错误，请稍后重试', 'error');
+        });
     });
 }
 
 function editItem(id) {
     if (!apiRequest) {
-        alert('API客户端未初始化');
+        Swal.fire('提示', 'API客户端未初始化', 'warning');
         return;
     }
     apiRequest('GET', '/course-items/' + id, {}).then(function(response) {
-        if(response.code == 9999) {
-            var item = response.result.course_item;
-            openCourseItemModal(COURSE_ID, item);
+        if (response && response.code == 9999 && response.result && response.result.course_item) {
+            openCourseItemModal(COURSE_ID, response.result.course_item);
             return;
         }
-        alert('获取章节信息失败: ' + (response.msg || '未知错误'));
+        Swal.fire('获取章节信息失败', (response && response.msg) ? response.msg : '未知错误', 'error');
     }).catch(function() {
-        alert('获取章节信息失败: 未知错误');
+        Swal.fire('获取章节信息失败', '网络错误，请稍后重试', 'error');
     });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 供组件在保存成功后刷新整棵树，替代 location.reload
+    window.refreshCourseStructure = loadPageData;
+
     var addBtn = document.getElementById('addCourseItemBtn');
     if (addBtn) {
         addBtn.addEventListener('click', function() {

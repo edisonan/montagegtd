@@ -807,26 +807,63 @@
                 $('#course_structure_box').html('<div class="no-structure"><i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i><h4 class="text-gray-600 mb-2">暂无课程内容</h4><p class="text-gray-400 text-sm">课程管理员尚未添加章节内容</p></div>');
                 return;
             }
-            var html = '<div class="structure-list">';
-            structure.forEach(function(item) {
-                var lessons = Array.isArray(item.children) ? item.children : [];
-                html += '<div class="chapter-item" data-chapter-id="' + Number(item.id) + '"><div class="chapter-header" onclick="toggleChapter(' + Number(item.id) + ')"><div><h4 class="chapter-title"><i class="fas fa-folder text-yellow-500"></i>' + escapeHtml(item.title || '') + '</h4>' + (item.description ? '<p class="text-gray-500 text-sm mt-1">' + escapeHtml(item.description) + '</p>' : '') + '</div><div class="chapter-meta"><span class="text-gray-500 text-sm">' + lessons.length + ' 个课时' + (item.duration ? (' · ' + Number(item.duration) + ' 分钟') : '') + '</span><i class="fas fa-chevron-down text-gray-400 transition-transform" id="icon-' + Number(item.id) + '"></i></div></div>';
-                if (lessons.length) {
-                    html += '<ul class="lesson-list" id="lessons-' + Number(item.id) + '">';
-                    lessons.forEach(function(child) {
-                        var icon = 'fa-file';
-                        if (child.item_type === 'video') icon = 'fa-play';
-                        else if (child.item_type === 'quiz') icon = 'fa-question-circle';
-                        else if (child.item_type === 'assignment') icon = 'fa-file-alt';
-                        else if (child.item_type === 'reading') icon = 'fa-book';
-                        html += '<li class="lesson-item" data-course-item-id="' + Number(child.id) + '"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><div class="lesson-actions"><span class="lesson-type">' + escapeHtml((child.item_type || '').toUpperCase()) + '</span>' + (isJoined ? '<button type="button" class="lesson-complete-btn quiz-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-question-circle mr-1"></i>小测试</button><button type="button" class="lesson-complete-btn complete-course-item-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-check mr-1"></i>标记完成</button>' : '') + '</div></li>';
-                    });
-                    html += '</ul>';
+            $('#course_structure_box').html('<div class="structure-list">' + renderTreeNodes(structure, isJoined) + '</div>');
+        }
+
+        // 递归渲染多层课程结构（章节/模块容器 + 课时叶子）
+        function renderTreeNodes(items, isJoined) {
+            var html = '';
+            items.forEach(function(item) {
+                var children = Array.isArray(item.children) ? item.children : [];
+                var nodeId = Number(item.id || 0);
+                var isContainer = children.length > 0 || item.item_type === 'module' || item.item_type === 'chapter';
+
+                if (isContainer) {
+                    html += '<div class="chapter-item" data-chapter-id="' + nodeId + '"><div class="chapter-header" onclick="toggleChapter(' + nodeId + ')"><div><h4 class="chapter-title"><i class="fas fa-folder text-yellow-500"></i>' + escapeHtml(item.title || '') + '</h4>' + (item.description ? '<p class="text-gray-500 text-sm mt-1">' + escapeHtml(item.description) + '</p>' : '') + '</div><div class="chapter-meta"><span class="text-gray-500 text-sm">' + children.length + ' 个课时' + (item.duration ? (' · ' + Number(item.duration) + ' 分钟') : '') + '</span><i class="fas fa-chevron-down text-gray-400 transition-transform" id="icon-' + nodeId + '"></i></div></div>';
+                    if (children.length) {
+                        html += '<ul class="lesson-list" id="lessons-' + nodeId + '">' + renderTreeNodes(children, isJoined) + '</ul>';
+                    }
+                    html += '</div>';
+                } else {
+                    html += renderLessonItem(item, isJoined);
                 }
-                html += '</div>';
             });
-            html += '</div>';
-            $('#course_structure_box').html(html);
+            return html;
+        }
+
+        function itemIcon(type) {
+            if (type === 'video') return 'fa-play';
+            if (type === 'quiz') return 'fa-question-circle';
+            if (type === 'assignment') return 'fa-file-alt';
+            if (type === 'reading') return 'fa-book';
+            return 'fa-file';
+        }
+
+        function renderLessonItem(child, isJoined) {
+            var icon = itemIcon(child.item_type);
+            var actions = '';
+            if (child.content && String(child.content).trim()) {
+                actions += '<button type="button" class="lesson-complete-btn read-content-btn" data-item-id="' + Number(child.id) + '"><i class="fas fa-book-open mr-1"></i>阅读</button>';
+            }
+            if (child.external_url && String(child.external_url).trim()) {
+                actions += '<a href="' + escapeHtml(child.external_url) + '" target="_blank" rel="noopener" class="lesson-complete-btn" style="text-decoration:none"><i class="fas fa-external-link-alt mr-1"></i>打开链接</a>';
+            }
+            if (isJoined) {
+                actions += '<button type="button" class="lesson-complete-btn quiz-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-question-circle mr-1"></i>小测试</button>';
+                actions += '<button type="button" class="lesson-complete-btn complete-course-item-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-check mr-1"></i>标记完成</button>';
+            }
+            return '<li class="lesson-item" data-course-item-id="' + Number(child.id) + '"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><div class="lesson-actions"><span class="lesson-type">' + escapeHtml(String(child.item_type || '').toUpperCase()) + '</span>' + actions + '</div></li>';
+        }
+
+        function findItemInTree(items, id) {
+            for (var i = 0; i < items.length; i++) {
+                if (Number(items[i].id) === id) return items[i];
+                if (Array.isArray(items[i].children)) {
+                    var found = findItemInTree(items[i].children, id);
+                    if (found) return found;
+                }
+            }
+            return null;
         }
 
         function loadCourseDetail() {
@@ -963,6 +1000,24 @@
                 openQuiz(Number($(this).data('course-item-id') || 0), $(this).closest('.lesson-item').find('.lesson-name').text());
             });
             $('#quizForm').on('submit', function(e) { e.preventDefault(); submitQuiz(); });
+
+            // 阅读章节正文
+            $(document).on('click', '.read-content-btn', function(e) {
+                e.preventDefault();
+                var itemId = Number($(this).data('item-id') || 0);
+                if (!itemId || !COURSE_DETAIL_DATA || !Array.isArray(COURSE_DETAIL_DATA.structure)) return;
+                var found = findItemInTree(COURSE_DETAIL_DATA.structure, itemId);
+                if (found && String(found.content || '').trim()) {
+                    Swal.fire({
+                        title: found.title || '章节内容',
+                        html: '<div style="text-align:left;white-space:pre-wrap;max-height:60vh;overflow-y:auto;line-height:1.7;color:#334155">' + escapeHtml(found.content) + '</div>',
+                        width: 760,
+                        confirmButtonText: '关闭'
+                    });
+                } else {
+                    Swal.fire('提示', '该章节暂无可阅读的正文内容', 'info');
+                }
+            });
         });
 
         function closeQuiz() {

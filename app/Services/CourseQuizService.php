@@ -16,10 +16,14 @@ use Illuminate\Support\Facades\DB;
 class CourseQuizService
 {
     protected $courseEnrollmentRepository;
+    protected $courseService;
 
-    public function __construct(CourseEnrollmentRepository $courseEnrollmentRepository)
-    {
+    public function __construct(
+        CourseEnrollmentRepository $courseEnrollmentRepository,
+        CourseService $courseService
+    ) {
         $this->courseEnrollmentRepository = $courseEnrollmentRepository;
+        $this->courseService = $courseService;
     }
 
     public function getQuizForItem($itemId)
@@ -130,6 +134,18 @@ class CourseQuizService
         ));
 
         $this->updateProgress($userId, $enrollment->id, $itemId, $score, $passed);
+
+        // 测验通过视为完成该课时，并聚合学习进度
+        if ($passed) {
+            try {
+                $this->courseService->recomputeEnrollmentProgress($enrollment->id);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('recompute enrollment progress after quiz failed', array(
+                    'user_course_id' => $enrollment->id,
+                    'error' => $e->getMessage(),
+                ));
+            }
+        }
 
         return array('attempt' => $attempt, 'score' => $score, 'passed' => $passed, 'results' => $results);
     }

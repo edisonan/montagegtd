@@ -138,7 +138,7 @@
 
                     <!-- 我创建的课程标签页 -->
                     @auth
-                        <div class="tab-pane active hidden"
+                        <div class="tab-pane active"
                              id="my-courses"
                              role="tabpanel">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="my-courses-grid">
@@ -266,16 +266,57 @@
             var cover = course.cover_image_url
                 ? '<img src="' + escapeHtml(course.cover_image_url) + '" alt="' + title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">'
                 : '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><i class="fas fa-user-edit text-green-400 text-4xl mb-2"></i><p class="text-sm text-gray-500">' + title + '</p></div></div>';
+            var st = Number(course.public_status || 2);
+            var statusActions = '';
+            if (st === 1) {
+                statusActions = '<button type="button" class="btn btn-outline btn-sm" title="提交公开审核" onclick="submitCourseReview(' + Number(course.id) + ', \'request-public\')"><i class="fas fa-eye"></i></button>';
+            } else if (st === 2) {
+                statusActions = '<button type="button" class="btn btn-outline btn-sm text-green-600 border-green-200 hover:bg-green-50" title="审核通过并公开" onclick="submitCourseReview(' + Number(course.id) + ', \'approve\')"><i class="fas fa-check-circle"></i></button>';
+            } else if (st === 3) {
+                statusActions = '<button type="button" class="btn btn-outline btn-sm text-yellow-600 border-yellow-200 hover:bg-yellow-50" title="撤回公开（转为待审核）" onclick="submitCourseReview(' + Number(course.id) + ', \'unapprove\')"><i class="fas fa-eye-slash"></i></button>';
+            }
             return '<div class="course-card group" data-difficulty="' + escapeHtml(course.difficulty || '') + '" data-platform="' + escapeHtml(course.platform || '') + '" data-hours="' + Number(course.estimated_hours || 0) + '" data-created="' + escapeHtml(course.created_at || '') + '" data-enrollment="' + Number(course.enrollment_count || 0) + '">' +
                 '<div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-green-300 hover:shadow-lg transition-all duration-200">' +
                 '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-green-50 to-green-100">' + cover + '</div>' +
                 '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
-                '<div class="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i>学习人数: ' + Number(course.enrollment_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span>' + getPublicStatusBadge(course) + '</div>' +
+                '<div class="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i>学习人数: ' + Number(course.enrollment_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>' + Number(course.chapters_count || 0) + '章</span>' + getPublicStatusBadge(course) + '</div>' +
                 '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a>' +
                 '<div class="flex items-center gap-2">' +
+                statusActions +
+                '<a href="/courses/' + Number(course.id) + '/edit" class="btn btn-outline btn-sm" title="编辑课程"><i class="fas fa-edit"></i></a>' +
                 '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-outline btn-sm" title="管理章节"><i class="fas fa-cog"></i></a>' +
                 '<button onclick="deleteCreatedCourse(' + Number(course.id) + ', \'' + title.replace(/'/g, "\\'") + '\')" class="btn btn-outline btn-sm text-red-600 border-red-200 hover:bg-red-50" title="删除课程"><i class="fas fa-trash-alt"></i></button>' +
                 '</div></div></div></div></div>';
+        }
+
+        // 课程公开状态操作：request-public(提交审核) / approve(审核通过) / unapprove(撤回公开)
+        function submitCourseReview(courseId, action) {
+            if (!apiRequest) {
+                showNotification('API客户端未初始化', 'error');
+                return;
+            }
+            var method = 'POST';
+            var url = '/courses/' + Number(courseId) + '/' + action;
+            var tip = '确认执行此操作吗？';
+            var successMsg = action === 'approve' ? '课程已公开' : (action === 'unapprove' ? '已撤回公开' : '已提交公开审核');
+            if (action === 'approve') {
+                tip = '确认将该课程审核通过并公开吗？';
+            } else if (action === 'unapprove') {
+                tip = '确认撤回公开吗？撤回后课程转为待审核状态。';
+            } else {
+                tip = '确认提交公开审核吗？审核通过后所有用户可见。';
+            }
+            if (!confirm(tip)) return;
+            apiRequest(method, url, {}).then(function(resp) {
+                if (resp && resp.code === 9999) {
+                    showNotification(successMsg, 'success');
+                    loadCourseManagementData();
+                    return;
+                }
+                showNotification((resp && resp.msg) ? resp.msg : '操作失败', 'error');
+            }).catch(function() {
+                showNotification('网络错误，请稍后重试', 'error');
+            });
         }
 
         function renderCourseManagement() {
@@ -284,26 +325,73 @@
             $('#badge_public_courses').text(courseMgmtState.publicCourses.length);
             $('#badge_created_courses').text(courseMgmtState.createdCourses.length);
 
+            var publicEmpty = '<div class="col-span-full text-center py-16">'
+                + '<div class="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center"><i class="fas fa-book-open text-gray-400 text-3xl"></i></div>'
+                + '<h3 class="text-lg font-semibold text-gray-900 mb-2">暂无公开课程</h3>'
+                + '<p class="text-gray-600 mb-8 max-w-md mx-auto">公开课程正在陆续上架，您也可以创建课程并提交公开审核！</p>'
+                + '<a href="/courses/create" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>创建课程</a>'
+                + '</div>';
+            var createdEmpty = '<div class="col-span-full text-center py-16">'
+                + '<div class="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center"><i class="fas fa-user-graduate text-gray-400 text-3xl"></i></div>'
+                + '<h3 class="text-lg font-semibold text-gray-900 mb-2">您还没有创建课程</h3>'
+                + '<p class="text-gray-600 mb-8 max-w-md mx-auto">把您的学习资源沉淀成课程，开始创建第一门课吧！</p>'
+                + '<a href="/courses/create" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>创建课程</a>'
+                + '</div>';
             var publicGrid = $('#public-courses-grid');
             if (publicGrid.length) {
-                publicGrid.html(courseMgmtState.publicCourses.length ? courseMgmtState.publicCourses.map(renderPublicCourseCard).join('') : '<div class="col-span-full text-center py-16 text-gray-500">暂无公开课程</div>');
+                publicGrid.html(courseMgmtState.publicCourses.length ? courseMgmtState.publicCourses.map(renderPublicCourseCard).join('') : publicEmpty);
             }
             var createdGrid = $('#my-courses-grid');
             if (createdGrid.length) {
-                createdGrid.html(courseMgmtState.createdCourses.length ? courseMgmtState.createdCourses.map(renderCreatedCourseCard).join('') : '<div class="col-span-full text-center py-16 text-gray-500">您还没有创建课程</div>');
+                createdGrid.html(courseMgmtState.createdCourses.length ? courseMgmtState.createdCourses.map(renderCreatedCourseCard).join('') : createdEmpty);
             }
         }
 
         function loadCourseManagementData() {
-            if (!apiRequest) return;
+            if (!apiRequest) {
+                renderCourseLoadError('API客户端未初始化，请刷新页面重试');
+                return;
+            }
+            showCourseLoading();
             apiRequest('GET', '/courses/management', {}).then(function(resp) {
-                if (!resp || resp.code !== 9999) return;
+                if (!resp || resp.code !== 9999) {
+                    renderCourseLoadError((resp && resp.msg) ? resp.msg : '课程数据加载失败');
+                    return;
+                }
                 var result = getResultData(resp);
                 courseMgmtState.publicCourses = Array.isArray(result.public_courses) ? result.public_courses : [];
                 courseMgmtState.createdCourses = Array.isArray(result.user_created_courses) ? result.user_created_courses : [];
                 courseMgmtState.userCourseIds = Array.isArray(result.user_course_ids) ? result.user_course_ids.map(function(id){ return Number(id); }) : [];
                 renderCourseManagement();
-            }).catch(function() {});
+            }).catch(function(err) {
+                if (err && err.status === 401) {
+                    renderCourseLoadError('登录状态已过期或无访问权限，请刷新页面后重试');
+                } else {
+                    renderCourseLoadError('网络错误，请稍后重试');
+                }
+            });
+        }
+
+        // 展示加载占位
+        function showCourseLoading() {
+            var loadingHtml = '<div class="col-span-full text-center py-16 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>加载课程中...</div>';
+            var publicGrid = $('#public-courses-grid');
+            if (publicGrid.length) publicGrid.html(loadingHtml);
+            var createdGrid = $('#my-courses-grid');
+            if (createdGrid.length) createdGrid.html(loadingHtml);
+        }
+
+        // 加载失败提示（可重试），替代原来的静默失败
+        function renderCourseLoadError(msg) {
+            var html = '<div class="col-span-full text-center py-16">'
+                + '<div class="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">'
+                + '<i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i></div>'
+                + '<p class="text-gray-600 mb-6">' + escapeHtml(msg) + '</p>'
+                + '<button type="button" class="btn btn-primary" onclick="loadCourseManagementData()">'
+                + '<i class="fas fa-sync-alt mr-2"></i>重新加载</button>'
+                + '</div>';
+            $('#public-courses-grid').html(html);
+            $('#my-courses-grid').html(html);
         }
 
         // 删除我创建的课程
@@ -334,11 +422,8 @@
             // 初始化搜索功能
             initSearch();
 
-            // 初始化筛选功能
+            // 初始化筛选与排序
             initFiltering();
-
-            // 初始化排序功能
-            initSorting();
 
             // 加入课程走v2接口
             $(document).on('click', '.join-course-btn', function(e) {
@@ -371,159 +456,104 @@
         });
 
         // 初始化标签页切换
-        function initTabSwitching() {
-            const tabButtons = document.querySelectorAll('[data-tab-target]');
-            const tabPanes = document.querySelectorAll('.tab-pane');
+        var IS_GUEST = {{ auth()->guest() ? 'true' : 'false' }};
 
-            // 设置初始激活状态
-            let initialTab = 'public-courses';
-            if (!{{ auth()->guest() ? 'true' : 'false' }}) {
-                initialTab = 'my-courses';
-                document.getElementById('my-courses').classList.add('active');
-                document.querySelector('[data-tab-target="my-courses"]').classList.add('border-blue-500', 'text-blue-600');
-                document.querySelector('[data-tab-target="my-courses"]').classList.remove('border-transparent', 'text-gray-500');
-            } else {
-                document.getElementById('public-courses').classList.add('active');
-                document.querySelector('[data-tab-target="public-courses"]').classList.add('border-blue-500', 'text-blue-600');
-                document.querySelector('[data-tab-target="public-courses"]').classList.remove('border-transparent', 'text-gray-500');
+        function activatePane(tabId) {
+            var tabButtons = document.querySelectorAll('[data-tab-target]');
+            var tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabButtons.forEach(function(btn) {
+                btn.classList.remove('border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            tabPanes.forEach(function(pane) {
+                pane.classList.add('hidden');
+                pane.classList.remove('active');
+            });
+
+            var button = document.querySelector('[data-tab-target="' + tabId + '"]');
+            if (button) {
+                button.classList.add('border-blue-500', 'text-blue-600');
+                button.classList.remove('border-transparent', 'text-gray-500');
             }
+            var targetPane = document.getElementById(tabId);
+            if (targetPane) {
+                targetPane.classList.remove('hidden');
+                setTimeout(function() {
+                    targetPane.classList.add('active');
+                }, 10);
+            }
+        }
 
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetId = button.getAttribute('data-tab-target');
-
-                    // 更新按钮状态
-                    tabButtons.forEach(btn => {
-                        btn.classList.remove('border-blue-500', 'text-blue-600');
-                        btn.classList.add('border-transparent', 'text-gray-500');
-                    });
-
-                    button.classList.add('border-blue-500', 'text-blue-600');
-                    button.classList.remove('border-transparent', 'text-gray-500');
-
-                    // 更新面板状态
-                    tabPanes.forEach(pane => {
-                        pane.classList.add('hidden');
-                        pane.classList.remove('active');
-                    });
-
-                    const targetPane = document.getElementById(targetId);
-                    targetPane.classList.remove('hidden');
-                    setTimeout(() => {
-                        targetPane.classList.add('active');
-                    }, 10);
+        function initTabSwitching() {
+            document.querySelectorAll('[data-tab-target]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    activatePane(button.getAttribute('data-tab-target'));
                 });
             });
+
+            // 登录默认展示"我创建的课程"，访客默认展示"公开课程"（真实布尔，避免字符串陷阱）
+            activatePane(IS_GUEST ? 'public-courses' : 'my-courses');
         }
 
         // 切换标签页
         function switchTab(tabId) {
-            const button = document.querySelector(`[data-tab-target="${tabId}"]`);
+            var button = document.querySelector('[data-tab-target="' + tabId + '"]');
             if (button) button.click();
         }
 
-        // 初始化搜索功能
+        // 初始化搜索（桌面+移动端都绑定）
         function initSearch() {
-            const searchInput = document.getElementById('courseSearch') || document.getElementById('mobileCourseSearch');
-
-            if (searchInput) {
-                searchInput.addEventListener('input', debounce(function() {
-                    const searchTerm = this.value.toLowerCase();
-                    filterCoursesBySearch(searchTerm);
-                }, 300));
-            }
+            ['courseSearch', 'mobileCourseSearch'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', debounce(function() {
+                        applyViewState();
+                    }, 300));
+                }
+            });
         }
 
-        // 初始化筛选功能
+        // 初始化筛选与排序
         function initFiltering() {
-            const filters = ['difficultyFilter', 'platformFilter'];
-
-            filters.forEach(filterId => {
-                const filter = document.getElementById(filterId);
-                if (filter) {
-                    filter.addEventListener('change', applyFilters);
-                }
+            ['difficultyFilter', 'platformFilter', 'sortFilter'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('change', applyViewState);
             });
         }
 
-        // 初始化排序功能
-        function initSorting() {
-            const sortFilter = document.getElementById('sortFilter');
-            if (sortFilter) {
-                sortFilter.addEventListener('change', applySorting);
-            }
-        }
-
-        // 应用筛选
-        function applyFilters() {
-            const difficulty = document.getElementById('difficultyFilter').value;
-            const platform = document.getElementById('platformFilter').value;
-            const currentTab = getActiveTab();
-
-            filterCourses(currentTab, { difficulty, platform });
-        }
-
-        // 应用排序
-        function applySorting() {
-            const sortBy = document.getElementById('sortFilter').value;
-            const currentTab = getActiveTab();
-
-            sortCourses(currentTab, sortBy);
-        }
-
-        // 根据搜索筛选课程
-        function filterCoursesBySearch(searchTerm) {
-            const currentTab = getActiveTab();
-            const courseCards = document.querySelectorAll(`#${currentTab} .course-card`);
-
-            courseCards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
-
-                if (title.includes(searchTerm) || description.includes(searchTerm) || searchTerm === '') {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+        // 统一应用"搜索 + 难度 + 平台 + 排序"（叠加而非互相覆盖）
+        function applyViewState() {
+            var term = '';
+            ['courseSearch', 'mobileCourseSearch'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && el.value) term = el.value;
             });
-        }
+            term = (term || '').toLowerCase().trim();
 
-        // 综合筛选课程
-        function filterCourses(tabId, filters) {
-            const courseCards = document.querySelectorAll(`#${tabId} .course-card`);
+            var difficulty = document.getElementById('difficultyFilter') ? document.getElementById('difficultyFilter').value : '';
+            var platform = document.getElementById('platformFilter') ? document.getElementById('platformFilter').value : '';
+            var sortBy = document.getElementById('sortFilter') ? document.getElementById('sortFilter').value : '';
 
-            courseCards.forEach(card => {
-                let shouldShow = true;
-
-                // 难度筛选
-                if (filters.difficulty) {
-                    const difficulty = (card.getAttribute('data-difficulty') || '').toLowerCase();
-                    if (difficulty !== filters.difficulty) {
-                        shouldShow = false;
-                    }
-                }
-
-                // 平台筛选
-                if (filters.platform) {
-                    const platform = card.getAttribute('data-platform') || '';
-                    if (platform !== filters.platform) {
-                        shouldShow = false;
-                    }
-                }
-
-                card.style.display = shouldShow ? 'block' : 'none';
-            });
-        }
-
-        // 排序课程
-        function sortCourses(tabId, sortBy) {
-            const pane = document.getElementById(tabId);
+            var tabId = getActiveTab();
+            var pane = document.getElementById(tabId);
             if (!pane) return;
-            const grid = pane.querySelector('.grid');
+            var grid = pane.querySelector('.grid');
             if (!grid) return;
-            const courseCards = Array.from(grid.querySelectorAll('.course-card'));
+            var courseCards = Array.from(grid.querySelectorAll('.course-card'));
 
-            courseCards.sort((a, b) => {
+            courseCards.forEach(function(card) {
+                var titleEl = card.querySelector('h3');
+                var descEl = card.querySelector('p');
+                var title = titleEl ? titleEl.textContent : '';
+                var desc = descEl ? descEl.textContent : '';
+                var matchSearch = !term || title.toLowerCase().indexOf(term) >= 0 || desc.toLowerCase().indexOf(term) >= 0;
+                var matchDifficulty = !difficulty || (card.getAttribute('data-difficulty') || '') === difficulty;
+                var matchPlatform = !platform || (card.getAttribute('data-platform') || '') === platform;
+                card.style.display = (matchSearch && matchDifficulty && matchPlatform) ? 'block' : 'none';
+            });
+
+            courseCards.sort(function(a, b) {
                 switch(sortBy) {
                     case 'newest':
                         return new Date(b.getAttribute('data-created')) - new Date(a.getAttribute('data-created'));
@@ -538,16 +568,15 @@
                 }
             });
 
-            // 重新排序DOM
-            courseCards.forEach(card => {
+            courseCards.forEach(function(card) {
                 grid.appendChild(card);
             });
         }
 
         // 获取当前激活的标签页
         function getActiveTab() {
-            const activeButton = document.querySelector('[data-tab-target].border-blue-500');
-            return activeButton ? activeButton.getAttribute('data-tab-target') : 'public-courses';
+            var activeButton = document.querySelector('[data-tab-target].border-blue-500');
+            return activeButton ? activeButton.getAttribute('data-tab-target') : (IS_GUEST ? 'public-courses' : 'my-courses');
         }
 
         // 防抖函数

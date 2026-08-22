@@ -302,6 +302,16 @@ class CourseItemController extends Controller
             ));
         }
 
+        // 聚合学习进度（progress_percent / last_activity_at / status）
+        try {
+            $this->courseService->recomputeEnrollmentProgress($userCourse->id);
+        } catch (\Throwable $e) {
+            Log::warning('recompute enrollment progress failed', array(
+                'user_course_id' => $userCourse->id,
+                'error' => $e->getMessage(),
+            ));
+        }
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'user_progress' => $progress,
             'msg' => '课程课时已标记为完成',

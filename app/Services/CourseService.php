@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Repositories\CourseRepository;
 use App\Repositories\CourseEnrollmentRepository;
 use App\Repositories\CourseItemRepository;
+use App\Models\CourseItem;
+use App\Models\UserProgress;
 
 class CourseService
 {
@@ -157,24 +159,85 @@ class CourseService
 
     /**
      * 获取课程的完整层级结构
+     * 一次拉取全量节点并在内存中建树，避免逐节点查库（N+1）
      */
     public function getCourseStructure($courseId)
     {
-        $rootItems = $this->courseItemRepository->getCourseItems($courseId, null);
+        $items = CourseItem::where('course_id', $courseId)
+            ->orderBy('order_index', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-        foreach ($rootItems as $item) {
-            $this->loadChildren($item, $courseId);
-        }
+        $byParent = $items->groupBy(function ($item) {
+            return (int)$item->parent_id;
+        });
 
-        return $rootItems;
+        $build = function ($parentId) use (&$build, $byParent) {
+            $children = collect();
+            foreach ($byParent->get($parentId, collect()) as $item) {
+                $item->children = $build((int)$item->id);
+                $children->push($item);
+            }
+            return $children;
+        };
+
+        // parent_id 为 NULL 的节点归入 key 0（(int)null === 0）
+        return $build(0);
     }
 
-    protected function loadChildren($item, $courseId)
+    /**
+     * 根据ID获取用户课程学习记录
+     */
+    public function getCourseEnrollmentById($id)
     {
-        $item->children = $this->courseItemRepository->getCourseItems($courseId, $item->id);
-        foreach ($item->children as $child) {
-            $this->loadChildren($child, $courseId);
+        return $this->courseEnrollmentRepository->getCourseEnrollmentById($id);
+    }
+
+    /**
+     * 更新用户课程学习记录
+     */
+    public function updateCourseEnrollment($id, array $data)
+    {
+        $enrollment = $this->courseEnrollmentRepository->getCourseEnrollmentById($id);
+        if (!$enrollment) {
+            throw new \Exception('学习记录不存在');
         }
+        return $this->courseEnrollmentRepository->updateCourseEnrollment($id, $data);
+    }
+
+    /**
+     * 聚合某条学习记录的进度并回写（标记完成/测验提交后调用）
+     * 规则：已完成课时数 / 课程总课时数 = progress_percent；更新 last_activity_at；
+     * 首次完成置为 active，全部完成置为 completed。
+     */
+    public function recomputeEnrollmentProgress($userCourseId)
+    {
+        $enrollment = $this->courseEnrollmentRepository->getCourseEnrollmentById($userCourseId);
+        if (!$enrollment) {
+            return null;
+        }
+
+        $total = CourseItem::where('course_id', $enrollment->course_id)->count();
+        $completed = UserProgress::where('user_id', $enrollment->user_id)
+            ->where('user_course_id', $enrollment->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $percent = $total > 0 ? (int)round($completed * 100 / $total) : 0;
+
+        $enrollment->progress_percent = $percent;
+        $enrollment->last_activity_at = now();
+
+        if ($enrollment->status === 'planned' && $completed > 0) {
+            $enrollment->status = 'active';
+        }
+        if ($total > 0 && $completed >= $total) {
+            $enrollment->status = 'completed';
+            $enrollment->completed_date = now();
+        }
+
+        $enrollment->save();
+        return $enrollment;
     }
 
     /**

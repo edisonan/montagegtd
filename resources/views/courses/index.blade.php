@@ -235,6 +235,7 @@
                     + '<div class="flex flex-wrap gap-4 text-sm text-gray-500"><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>章节: ' + Number(course.chapters_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>时长: ' + hours + '</span><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-xs"></i>最后学习: ' + lastStudied + '</span></div>'
                     + '</div>'
                     + '<div class="lg:w-1/4 flex flex-col gap-3"><a href="' + detailUrl + '" class="btn btn-primary w-full justify-center"><i class="fas fa-play-circle mr-2"></i>' + (item.status === 'completed' ? '复习课程' : '继续学习') + '</a>'
+                    + '<button type="button" class="btn btn-outline w-full justify-center update-status-btn" data-id="' + Number(item.id || 0) + '" data-status="' + escapeHtml(item.status || 'planned') + '"><i class="fas fa-exchange-alt mr-2"></i>更新状态</button>'
                     + '</div></div></div>';
             }).join(''));
         }
@@ -265,6 +266,50 @@
                 renderCourseList();
             });
             loadCourses();
+
+            // 更新学习状态（暂停/完成/放弃/恢复）
+            $(document).on('click', '.update-status-btn', function() {
+                var id = Number($(this).data('id') || 0);
+                if (!id || !apiRequest) {
+                    Swal.fire('提示', '操作不可用，请刷新页面重试', 'info');
+                    return;
+                }
+                var current = String($(this).data('status') || 'planned');
+                var statusMap = {
+                    planned: '计划中',
+                    active: '学习中',
+                    completed: '已完成',
+                    paused: '暂停',
+                    dropped: '已放弃'
+                };
+                var optsHtml = Object.keys(statusMap).map(function(k) {
+                    return '<option value="' + k + '"' + (k === current ? ' selected' : '') + '>' + statusMap[k] + '</option>';
+                }).join('');
+
+                Swal.fire({
+                    title: '更新学习状态',
+                    html: '<select id="enrollmentStatusSelect" class="swal2-select" style="width:100%">' + optsHtml + '</select>',
+                    showCancelButton: true,
+                    confirmButtonText: '保存',
+                    cancelButtonText: '取消',
+                    preConfirm: function() {
+                        return document.getElementById('enrollmentStatusSelect').value;
+                    }
+                }).then(function(result) {
+                    if (!result.value) return;
+                    apiRequest('PUT', '/course-enrollments/' + id, { status: result.value }).then(function(resp) {
+                        if (resp && resp.code === 9999) {
+                            Swal.fire('已更新', resp.msg || '学习状态已更新', 'success').then(function() {
+                                loadCourses();
+                            });
+                            return;
+                        }
+                        Swal.fire('操作失败', (resp && resp.msg) ? resp.msg : '请稍后重试', 'error');
+                    }).catch(function() {
+                        Swal.fire('网络错误', '请稍后重试', 'error');
+                    });
+                });
+            });
         });
     </script>
 

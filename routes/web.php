@@ -273,6 +273,7 @@ Route::group([
     })->middleware('auth');
     
     // 课程管理相关路由
+    Route::get('/courses/{id}/edit', 'CourseController@edit');
     Route::resource('courses', 'CourseController')->except(['edit', 'update', 'destroy']);
     Route::post('/courses/{id}/join', 'CourseController@joinCourse');
     Route::get('/course-enrollments', 'CourseController@getUserCourses');

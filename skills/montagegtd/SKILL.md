@@ -117,7 +117,14 @@ $CLI mind-list
 $CLI achievement-list
 $CLI points
 $CLI course-list
+$CLI course-management
+$CLI course-create --title "Laravel 入门" --description "..." --difficulty beginner --estimated-hours 6 --tags "laravel,php" --public-status 3
+$CLI course-item-create 4 --title "模块一" --item-type module --order-index 0
+$CLI course-item-create 4 --title "1.1 环境搭建" --item-type reading --parent-id 9 --content-file ./ch1.md
+$CLI quiz-create 12 --data '{"questions":[...]}'
 ```
+
+> 课程结构要点：`module` 做分组容器，**正文章节用 `reading`（不要用 `chapter`，前端把 chapter 当容器、不显示正文）**；建完课程如需直接可学，用 `--public-status 3` 并 `course-enroll` 加入。
 
 使用 `--output table` 做人工查看；默认 JSON 适合 Codex 和脚本解析。
 
@@ -134,6 +141,9 @@ $CLI course-list
 | 订阅源发现 | `https://task.congcong.us/articles/explorer` |
 | 专注 | `https://task.congcong.us/focuss` |
 | 学习计划/打卡 | `https://task.congcong.us/study` |
+| 课程列表 | `https://task.congcong.us/courses` |
+| 我创建的课程 | `https://task.congcong.us/course/management` |
+| 单个课程 | `https://task.congcong.us/courses/{id}`（如 `/courses/4`） |
 | 手账 | `https://task.congcong.us/journals` |
 | 思维导图 | `https://task.congcong.us/minds` |
 | 计划 | `https://task.congcong.us/plans` |
@@ -148,6 +158,7 @@ $CLI course-list
 - 处理笔记时读 `references/notes.md`。
 - 处理文章或订阅时读 `references/articles.md`。
 - 处理学习打卡/计划时读 `references/study.md`。
+- 处理课程的创建/章节/测验、以及“根据文档/网页建课程”时读 `references/courses.md`。
 - 处理鉴权、PAT、专注、计划、日报、Digest、手账、思维导图、成就、积分或通用请求时读 `references/platform.md`。
 - 遇到复合/端到端请求（复盘、阅读分析、订阅整理、知识沉淀、学习打卡）时优先读 `references/scenarios.md`。
 - 遇到"最近几小时文章热点/关注点/建议阅读""收藏/稍后读盘点"这类**聚合分析**请求时，读 `references/scenarios.md` 的场景 6/7。

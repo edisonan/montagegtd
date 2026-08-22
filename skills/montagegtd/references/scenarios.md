@@ -12,6 +12,7 @@
 - 最近几小时文章热点/关注点/建议阅读 → 场景 6
 - 近期收藏/稍后读的个性化盘点 → 场景 7
 - 发布/保存一条笔记并要可查看地址 → 场景 8
+- 根据文档/网页建课程、补全课程 → 场景 9
 
 ---
 
@@ -250,7 +251,70 @@ $CLI note show <id>
 
 ---
 
+## 场景 9：根据文档 / 网页创建课程（含补全）
+
+**触发**：用户说"拿这个文档/网页建一门课程""把这篇文章/系列文章做成课程""帮我补全这门课程""从这份教程整理成章节"。
+
+**目标**：把资料整理成**结构化、完整、可学习**的课程：模块分组 + 章节 + 元数据 + 测验，并给出网页端入口。避免只建平铺章节、只抓首页、正文带杂质、漏掉元数据。
+
+**流程**：
+
+```bash
+# 1. 先读全资料（不要只做首页）：
+#    抓取来源 URL 整棵树——首页 + 子页 + 正文里的「下一步/相关」链接指向的页面。
+#    记录每页：URL、标题、所属分组（导航/侧边栏的分组名）。
+#    手动检查：来源站点还有哪些同层级页面；「下一步」链是否被截断。
+
+# 2. 设计结构：按分组建 module；有正文的章节用 reading（不要用 chapter 当叶子！）
+$CLI course-create --title "课程标题" --description "简介，注明来源 URL" \
+    --difficulty beginner --estimated-hours 3 --tags "tag1,tag2" --public-status 3
+
+$CLI course-item-create 4 --title "模块一：基础" --item-type module --order-index 0
+$CLI course-item-create 4 --title "模块二：进阶" --item-type module --order-index 1
+
+# 章节挂到模块下，同一父级内 order-index 从 0 递增，正文用 --content-file 传清洗后的 markdown
+# ✓ 文字正文用 item-type=reading（前端才会渲染「阅读」按钮）
+# ✗ 不要用 chapter 当叶子：chapter 是容器，前端不显示正文
+$CLI course-item-create 4 --title "1.1 第 X 节" --item-type reading \
+    --parent-id <module_id> --order-index 0 --content-file ./01.md
+
+# 3. 内容清洗（必须）：把抓下来的 HTML 转 markdown 时
+#    - 去掉零宽空格 \u200b 和 []( #锚点 ) 目录残留
+#    - 代码语言标签放回围栏 ```ts，不能掉成正文里的孤立一行 "ts"
+#    - 删掉导航/页脚噪音，保留正文与链接
+
+# 4. 补元数据：estimated_hours（按页数估）、cover_image_url（如有）、source_type
+$CLI course-update 4 --estimated-hours 8 --difficulty intermediate
+
+# 5. 每个实质性章节配 3~5 题测验（挂在 reading 叶子下即可）
+$CLI quiz-create <item_id> --data '{"questions":[{"question_type":"single","question":"...","explanation":"...","options":[{"option_key":"A","content":"...","is_correct":true},{"option_key":"B","content":"...","is_correct":false}]}]}'
+
+# 6. 校验：结构、测验、无杂质
+$CLI course-structure 4
+$CLI course-show 4
+```
+
+**补全已有课程时**：
+
+- 先 `course-structure <course_id>` 看现有结构，找出缺失分组和页面。
+- 缺失页面按「下一步」链关系补 `module`/`reading`；已有章节的 `order_index` 乱序时用 `course-item-update` 修正。
+- **若旧章节用 `chapter` 承载了正文**：前端把它当容器，详情页看不到内容、学不了 → 需 `course-item-update <id> --item-type reading`（后端 PUT 是整行更新，CLI 会自动合并现有字段，不会丢正文）。
+- 原有章节正文有杂质（零宽空格、语言标签落正文）时，`course-item-update` 重写 `content`。
+- 元数据缺失（estimated_hours/cover/difficulty）用 `course-update` 补齐。
+- **用户学了没反应（无小测试/标记完成按钮）**：先确认 `public_status`（要 3）和是否 join（`course-enroll <id>`）。
+
+**要点**：
+
+- **网页端入口**（收尾必给）：课程列表 `https://task.congcong.us/courses`、我创建的 `https://task.congcong.us/course/management`、单个课程 `https://task.congcong.us/courses/{id}`。
+- **结构是 module 容器 + reading 叶子**：前端课程页靠 module + order_index 渲染分组；**正文只能放 `reading`/`video`/`assignment`/`quiz` 叶子，`chapter` 也是容器**。只建 module/chapter 不建叶子，页面会显示「暂无课程内容」。
+- **学不了先查 public_status 和 join**：`public_status` 非 3 时详情页非创建者不可见、join 报错、无小测试/完成按钮 → `course-update <id> --public-status 3` 后 `course-enroll <id>`。
+- **完整性靠「下一步」链**：教程类来源常见「下一步 →」指到下一节页面，只抓首页等于只建了第 1 章。抓取时把「下一步/目录」链走完再决定哪些纳入课程。
+- **测验题目必须出自对应章节内容**，每题至少 2 个选项且标注 is_correct；拿不准的判断题也可用。
+- 来源是站点根 URL 时，先看导航分组数再定 module 数量；页面多但内容浅时可按主题合并章节，避免碎成一地。
+
+---
+
 ## 兜底
 
-- 单域请求直接看对应的 `references/{tasks,notes,articles,study,platform}.md`。
+- 单域请求直接看对应的 `references/{tasks,notes,articles,study,courses,platform}.md`。
 - 领域命令未覆盖的字段/动作，用 `$CLI request METHOD /path --data '...'` 兜底。

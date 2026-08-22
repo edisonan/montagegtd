@@ -159,7 +159,7 @@
                     </a>
                 @endif
             </div>
-            <div class="footer">公开分享自 <a href="{{ url('/notes') }}">蒙太奇 · 记录想法</a></div>
+            <div class="footer">公开分享自 <a href="{{ url('/notes') }}">蒙太奇 · 记录笔记</a></div>
         @endif
     </div>
 

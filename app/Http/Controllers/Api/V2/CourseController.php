@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V2;
 use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
+use App\Models\CourseEnrollment;
+use App\Models\CourseItem;
 use App\Services\CourseService;
 use App\Services\PointGrantService;
 use Illuminate\Http\Request;
@@ -46,8 +48,8 @@ class CourseController extends Controller
         }
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'user_created_courses' => $userCreatedCourses,
-            'public_courses' => $publicCourses,
+            'user_created_courses' => $this->serializeCourseList($userCreatedCourses),
+            'public_courses' => $this->serializeCourseList($publicCourses),
             'user_course_ids' => $userCourseIds,
             'user_courses' => $this->serializeUserCourses($userCourses),
         )));
@@ -68,15 +70,24 @@ class CourseController extends Controller
         $courseStructure = $this->courseService->getCourseStructure($id);
 
         $isJoined = false;
+        $userCourse = null;
         if ($userId) {
             $userCourse = $this->courseService->getUserCourseByUserIdAndCourseId($userId, $id);
             $isJoined = $userCourse !== null;
         }
 
+        $course = $this->withCourseCounts($course);
+        $course->is_owner = $userId && (int)$course->created_by === (int)$userId;
+
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'course' => $course,
             'structure' => $courseStructure,
             'is_joined' => $isJoined,
+            'user_course' => $userCourse ? array(
+                'id' => (int)$userCourse->id,
+                'status' => (string)$userCourse->status,
+                'progress_percent' => (int)round((float)$userCourse->progress_percent),
+            ) : null,
         )));
     }
 
@@ -222,6 +233,91 @@ class CourseController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('course' => $course->fresh())));
     }
 
+    /**
+     * 提交公开审核（public_status: 1/2 -> 2）
+     */
+    public function requestPublic(Request $request, $id)
+    {
+        $course = $this->ownedCourseOrFail($id, $request);
+        $course->public_status = 2;
+        $course->save();
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'course' => $this->withCourseCounts($course->fresh()),
+            'msg' => '已提交公开审核，审核通过后对所有用户可见',
+        )));
+    }
+
+    /**
+     * 审核通过（public_status: 2 -> 3）
+     */
+    public function approve(Request $request, $id)
+    {
+        $course = $this->ownedCourseOrFail($id, $request);
+        $course = $this->courseService->approveCourse($id);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'course' => $this->withCourseCounts($course),
+            'msg' => '课程已审核通过并公开',
+        )));
+    }
+
+    /**
+     * 撤回公开（public_status: 3 -> 2）
+     */
+    public function unapprove(Request $request, $id)
+    {
+        $course = $this->ownedCourseOrFail($id, $request);
+        $course = $this->courseService->unapproveCourse($id);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'course' => $this->withCourseCounts($course),
+            'msg' => '课程已撤回公开，转为待审核状态',
+        )));
+    }
+
+    protected function ownedCourseOrFail($id, Request $request)
+    {
+        $course = $this->courseService->getCourseById($id);
+        if (!$course) {
+            throw new CustomException('课程不存在');
+        }
+        $userId = $this->getAuthUserId($request);
+        if (!$userId || (int)$course->created_by !== (int)$userId) {
+            throw new CustomException('您没有权限管理此课程');
+        }
+        return $course;
+    }
+
+    /**
+     * 统一补齐前端展示用计数字段
+     */
+    protected function withCourseCounts($course)
+    {
+        if (!$course) {
+            return $course;
+        }
+        if (!isset($course->course_items_count)) {
+            $course->course_items_count = CourseItem::where('course_id', $course->id)->count();
+        }
+        if (!isset($course->course_enrollments_count)) {
+            $course->course_enrollments_count = CourseEnrollment::where('course_id', $course->id)->count();
+        }
+        $course->chapters_count = (int)$course->course_items_count;
+        $course->enrollment_count = (int)$course->course_enrollments_count;
+        return $course;
+    }
+
+    /**
+     * 列表序列化（补章节数与学习人数）
+     */
+    protected function serializeCourseList($courses)
+    {
+        if ($courses instanceof \Illuminate\Support\Collection) {
+            foreach ($courses as $course) {
+                $this->withCourseCounts($course);
+            }
+        }
+        return $courses;
+    }
+
     public function automation(Request $request, $id)
     {
         $course = $this->courseService->getCourseById($id);
@@ -281,6 +377,49 @@ class CourseController extends Controller
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'user_courses' => $this->serializeUserCourses($userCourses),
+        )));
+    }
+
+    /**
+     * 更新本人学习记录状态（暂停/完成/放弃/恢复等）
+     */
+    public function updateEnrollment(Request $request, $id)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        if (!$userId) {
+            throw new CustomException('用户未认证');
+        }
+
+        $enrollment = $this->courseService->getCourseEnrollmentById($id);
+        if (!$enrollment || (int)$enrollment->user_id !== $userId) {
+            throw new CustomException('您没有权限操作此学习记录');
+        }
+
+        $this->validate($request, array(
+            'status' => 'nullable|in:planned,active,completed,paused,dropped',
+            'goal' => 'nullable|string|max:255',
+            'target_end_date' => 'nullable|date',
+            'show_progress' => 'nullable|boolean',
+            'show_notes' => 'nullable|boolean',
+            'show_study_time' => 'nullable|boolean',
+        ));
+
+        $data = array();
+        foreach (array('status', 'goal', 'target_end_date', 'show_progress', 'show_notes', 'show_study_time') as $field) {
+            if ($request->has($field)) {
+                $data[$field] = $request->input($field);
+            }
+        }
+
+        if (isset($data['status']) && $data['status'] === 'completed') {
+            $data['completed_date'] = now();
+        }
+
+        $updated = $this->courseService->updateCourseEnrollment($id, $data);
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'user_course' => $updated->fresh(),
+            'msg' => '学习状态已更新',
         )));
     }
 

@@ -159,6 +159,19 @@
                         <span class="text-xs text-gray-500" id="description-counter">0/500</span>
                     </div>
                 </div>
+
+                <!-- 章节正文 -->
+                <div>
+                    <label for="content_modal" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-file-alt text-gray-400 mr-2"></i>章节正文
+                    </label>
+                    <textarea class="input w-full min-h-[160px] resize-none"
+                              id="content_modal"
+                              name="content"
+                              rows="6"
+                              placeholder="填写章节的学习正文（支持换行，学员可在课程详情页阅读）；外部链接可填写视频/文档地址"></textarea>
+                    <p class="text-sm text-gray-500 mt-2">正文将在课程详情页提供给学员阅读，可配合外部链接使用</p>
+                </div>
             </form>
         </div>
 
@@ -219,6 +232,7 @@
             document.getElementById('duration_modal').value = itemData.duration || 0;
             document.getElementById('external_url_modal').value = itemData.external_url || '';
             document.getElementById('description_modal').value = itemData.description || '';
+            document.getElementById('content_modal').value = itemData.content || '';
             document.getElementById('order_index_modal').value = itemData.order_index || 0;
 
             currentExcludeItemId = itemId;
@@ -489,6 +503,7 @@
             duration: document.getElementById('duration_modal').value,
             external_url: document.getElementById('external_url_modal').value,
             description: document.getElementById('description_modal').value,
+            content: document.getElementById('content_modal').value,
             order_index: document.getElementById('order_index_modal').value
         };
 

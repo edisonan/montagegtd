@@ -5,6 +5,7 @@
 
 @section('content')
     <div class="max-w-7xl mx-auto">
+        @php $editCourseId = isset($editCourseId) ? (int)$editCourseId : 0; @endphp
         <!-- 页面标题和导航 -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-6">
@@ -14,35 +15,37 @@
                             <i class="fas fa-home mr-1"></i>首页
                         </a>
                         <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
-                        <a href="{{ url('/courses') }}" class="text-primary-color hover:text-blue-700 transition-colors duration-200">
-                            我的课程
+                        <a href="{{ url('/course/management') }}" class="text-primary-color hover:text-blue-700 transition-colors duration-200">
+                            课程中心
                         </a>
                         <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
-                        <span class="text-gray-900 font-medium">创建课程</span>
+                        <span class="text-gray-900 font-medium">{{ $editCourseId ? '编辑课程' : '创建课程' }}</span>
                     </nav>
 
-                    @php $createType = (string)request('type', ''); @endphp
-                    @if(in_array($createType, ['video', 'document', 'external'], true))
-                        <div class="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-blue-50 text-blue-700 border border-blue-200">
-                            <i class="fas {{ $createType === 'video' ? 'fa-video' : ($createType === 'document' ? 'fa-file-alt' : 'fa-link') }}"></i>
-                            正在创建：{{ $createType === 'video' ? '视频课程' : ($createType === 'document' ? '文档课程' : '外部课程') }}
-                        </div>
+                    @if(!$editCourseId)
+                        @php $createType = (string)request('type', ''); @endphp
+                        @if(in_array($createType, ['video', 'document', 'external'], true))
+                            <div class="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-blue-50 text-blue-700 border border-blue-200">
+                                <i class="fas {{ $createType === 'video' ? 'fa-video' : ($createType === 'document' ? 'fa-file-alt' : 'fa-link') }}"></i>
+                                正在创建：{{ $createType === 'video' ? '视频课程' : ($createType === 'document' ? '文档课程' : '外部课程') }}
+                            </div>
+                        @endif
+                        <input type="hidden" id="courseSourceType" value="{{ $createType }}" />
                     @endif
-                    <input type="hidden" id="courseSourceType" value="{{ $createType }}" />
 
                     <h1 class="text-2xl font-bold text-gray-900 flex items-center">
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mr-4 shadow-sm">
-                            <i class="fas fa-plus-circle text-blue-600 text-xl"></i>
+                            <i class="fas {{ $editCourseId ? 'fa-edit' : 'fa-plus-circle' }} text-blue-600 text-xl"></i>
                         </div>
-                        创建新课程
+                        {{ $editCourseId ? '编辑课程' : '创建新课程' }}
                     </h1>
-                    <p class="text-gray-600 mt-2">记录您的学习资源，开启新的学习旅程</p>
+                    <p class="text-gray-600 mt-2">{{ $editCourseId ? '修改课程信息，保存后即时生效' : '记录您的学习资源，开启新的学习旅程' }}</p>
                 </div>
 
                 <!-- 返回按钮 -->
-                <a href="{{ url('/courses') }}" class="btn btn-outline flex items-center">
+                <a href="{{ url($editCourseId ? '/course/management' : '/courses') }}" class="btn btn-outline flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i>
-                    返回列表
+                    返回{{ $editCourseId ? '课程中心' : '列表' }}
                 </a>
             </div>
         </div>
@@ -52,7 +55,7 @@
             <div class="p-6 border-b border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-800 flex items-center">
                     <i class="fas fa-graduation-cap text-primary-color mr-2"></i>
-                    课程基本信息
+                    {{ $editCourseId ? '课程基本信息' : '创建课程基本信息' }}
                 </h2>
                 <p class="text-sm text-gray-600 mt-1">填写课程的核心信息，带 <span class="text-red-500">*</span> 为必填项</p>
             </div>
@@ -452,20 +455,22 @@
                     <!-- 表单操作按钮 -->
                     <div class="flex items-center justify-between pt-8 border-t border-gray-200">
                         <div>
-                            <a href="{{ url('/courses') }}" class="btn btn-secondary flex items-center">
+                            <a href="{{ url($editCourseId ? '/course/management' : '/courses') }}" class="btn btn-secondary flex items-center">
                                 <i class="fas fa-times mr-2"></i>
                                 取消
                             </a>
                         </div>
 
                         <div class="flex space-x-3">
-                            <button type="button" onclick="resetForm()" class="btn btn-outline flex items-center">
-                                <i class="fas fa-redo mr-2"></i>
-                                重置
-                            </button>
+                            @if(!$editCourseId)
+                                <button type="button" onclick="resetForm()" class="btn btn-outline flex items-center">
+                                    <i class="fas fa-redo mr-2"></i>
+                                    重置
+                                </button>
+                            @endif
                             <button type="submit" class="btn btn-primary flex items-center" id="submitBtn">
-                                <i class="fas fa-plus-circle mr-2"></i>
-                                创建课程
+                                <i class="fas {{ $editCourseId ? 'fa-save' : 'fa-plus-circle' }} mr-2"></i>
+                                {{ $editCourseId ? '保存修改' : '创建课程' }}
                             </button>
                         </div>
                     </div>
@@ -512,6 +517,7 @@
                 var apiRequest = window.TaskApiBridge && typeof window.TaskApiBridge.requestWithFallback === 'function'
                     ? window.TaskApiBridge.requestWithFallback
                     : null;
+                var EDIT_COURSE_ID = {{ $editCourseId }};
                 const titleInput = document.getElementById('title');
                 const tagsInput = document.getElementById('tags');
                 const descInput = document.getElementById('description');
@@ -544,6 +550,11 @@
                 // 自动聚焦到标题输入框
                 titleInput.focus();
 
+                // 编辑模式：加载课程数据回填表单
+                if (EDIT_COURSE_ID > 0) {
+                    loadEditCourseData();
+                }
+
                 // 表单提交处理
                 document.getElementById('createCourseForm').addEventListener('submit', function(e) {
                     const title = titleInput.value.trim();
@@ -567,14 +578,16 @@
                     const originalText = submitBtn.innerHTML;
                     submitBtn.innerHTML = `
                 <i class="fas fa-spinner fa-spin mr-2"></i>
-                创建中...
+                ${EDIT_COURSE_ID > 0 ? '保存中...' : '创建中...'}
                     `;
                     submitBtn.disabled = true;
 
                     var selectedDifficulty = document.querySelector('input[name="difficulty"]:checked');
                     var selectedPublicStatus = document.querySelector('input[name="public_status"]:checked');
 
-                    apiRequest('POST', '/courses', {
+                    var apiMethod = EDIT_COURSE_ID > 0 ? 'PUT' : 'POST';
+                    var apiPath = EDIT_COURSE_ID > 0 ? ('/courses/' + EDIT_COURSE_ID) : '/courses';
+                    var payload = {
                         title: document.getElementById('title') ? document.getElementById('title').value.trim() : '',
                         instructor: document.getElementById('instructor') ? document.getElementById('instructor').value.trim() : '',
                         platform: document.getElementById('platform') ? document.getElementById('platform').value : '',
@@ -584,17 +597,22 @@
                         cover_image_url: document.getElementById('cover_image_url') ? document.getElementById('cover_image_url').value.trim() : '',
                         description: document.getElementById('description') ? document.getElementById('description').value.trim() : '',
                         public_status: selectedPublicStatus ? Number(selectedPublicStatus.value) : 2,
-                        source_type: document.getElementById('courseSourceType') ? (document.getElementById('courseSourceType').value || 'manual') : 'manual',
                         tags: document.getElementById('tags') ? document.getElementById('tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean) : []
-                    }).then(function(response) {
+                    };
+                    // 仅在创建时下发生成来源，编辑时保留课程原有 source_type
+                    if (EDIT_COURSE_ID <= 0) {
+                        payload.source_type = document.getElementById('courseSourceType') ? (document.getElementById('courseSourceType').value || 'manual') : 'manual';
+                    }
+
+                    apiRequest(apiMethod, apiPath, payload).then(function(response) {
                         if (response && response.code === 9999) {
-                            showToast('success', response.msg || '课程创建成功');
+                            showToast('success', response.msg || (EDIT_COURSE_ID > 0 ? '课程已保存' : '课程创建成功'));
                             setTimeout(function() {
-                                window.location.href = "{{ url('/courses') }}";
+                                window.location.href = "{{ url('/course/management') }}";
                             }, 300);
                             return;
                         }
-                        showToast('error', (response && response.msg) ? response.msg : '课程创建失败');
+                        showToast('error', (response && response.msg) ? response.msg : (EDIT_COURSE_ID > 0 ? '课程保存失败' : '课程创建失败'));
                     }).catch(function() {
                         showToast('error', '网络错误，请稍后重试');
                     }).finally(function() {
@@ -603,6 +621,46 @@
                     });
                 });
             });
+
+            // 编辑模式：加载并回填课程数据
+            function loadEditCourseData() {
+                if (!apiRequest) {
+                    showToast('error', 'API客户端未初始化');
+                    return;
+                }
+                apiRequest('GET', '/courses/' + EDIT_COURSE_ID, {}).then(function(response) {
+                    if (!response || response.code !== 9999 || !response.result || !response.result.course) {
+                        showToast('error', (response && response.msg) ? response.msg : '课程加载失败');
+                        return;
+                    }
+                    var c = response.result.course;
+                    if (!c) return;
+                    document.getElementById('title').value = c.title || '';
+                    updateCharCount(document.getElementById('title'), 'titleCharCount', 100);
+                    document.getElementById('instructor').value = c.instructor || '';
+                    document.getElementById('platform').value = c.platform || '';
+                    document.getElementById('estimated_hours').value = (c.estimated_hours !== null && c.estimated_hours !== undefined) ? c.estimated_hours : '';
+                    document.getElementById('public_url').value = c.public_url || '';
+                    document.getElementById('cover_image_url').value = c.cover_image_url || '';
+                    document.getElementById('tags').value = Array.isArray(c.tags) ? c.tags.join(', ') : (c.tags || '');
+                    updateCharCount(document.getElementById('tags'), 'tagsCharCount', 100);
+                    document.getElementById('description').value = c.description || '';
+                    updateCharCount(document.getElementById('description'), 'descCharCount', 500);
+
+                    var diff = document.querySelector('input[name="difficulty"][value="' + (c.difficulty || 'beginner') + '"]');
+                    if (diff) diff.checked = true;
+                    var pub = document.querySelector('input[name="public_status"][value="' + Number(c.public_status || 2) + '"]');
+                    if (pub) pub.checked = true;
+
+                    var coverUrl = (c.cover_image_url || '').trim();
+                    if (coverUrl && isValidImageUrl(coverUrl)) {
+                        document.getElementById('previewImage').src = coverUrl;
+                        document.getElementById('imagePreview').classList.remove('hidden');
+                    }
+                }).catch(function() {
+                    showToast('error', '课程加载失败，请稍后重试');
+                });
+            }
 
             // 更新字符计数
             function updateCharCount(input, counterId, maxLength) {

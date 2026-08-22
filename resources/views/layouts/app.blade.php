@@ -76,16 +76,15 @@
                                     ['url'=>'/', 'label'=>'开始专注', 'icon'=>'fas fa-play'],
 //                                    ['url'=>'/focuss', 'label'=>'专注列表', 'icon'=>'fas fa-list'],
                                     ['url'=>'/tasks', 'label'=>'待办列表', 'icon'=>'fas fa-tasks'],
-                                    ['url'=>'/journals', 'label'=>'手账列表', 'icon'=>'fas fa-check-circle'],
-                                    ['url'=>'/journals/daily', 'label'=>'每日手账', 'icon'=>'fas fa-calendar-day']
+                                    ['url'=>'/journals', 'label'=>'手账列表', 'icon'=>'fas fa-check-circle']
                                 ]
                             ],
                             [
                                 'url'=>'/notes',
-                                'label'=>'想法',
+                                'label'=>'笔记',
                                 'icon'=>'fas fa-lightbulb',
                                 'submenu' => [
-                                    ['url'=>'/notes', 'label'=>'新的想法', 'icon'=>'fas fa-plus'],
+                                    ['url'=>'/notes', 'label'=>'新建笔记', 'icon'=>'fas fa-plus'],
                                     ['url'=>'/notes/manage', 'label'=>'笔记管理', 'icon'=>'fas fa-book'],
                                     ['url'=>'/minds', 'label'=>'思维导图', 'icon'=>'fas fa-sitemap'],
                                 ]
@@ -95,7 +94,7 @@
                                 'label'=>'阅读',
                                 'icon'=>'fas fa-book-reader',
                                 'submenu' => [
-                                    ['url'=>'/articles', 'label'=>'最新文章', 'icon'=>'fas fa-newspaper'],
+                                    ['url'=>'/articles', 'label'=>'全部文章', 'icon'=>'fas fa-newspaper'],
                                     ['url'=>'/articles/explorer', 'label'=>'探索阅读', 'icon'=>'fas fa-columns'],
                                     ['url'=>'/articles/workbench', 'label'=>'文章总览', 'icon'=>'fas fa-sliders-h'],
                                     ['url'=>'/articles?status=read_later', 'label'=>'稍后阅读', 'icon'=>'fas fa-bookmark'],
@@ -111,9 +110,7 @@
                                 'icon'=>'fas fa-graduation-cap',
                                 'submenu' => [
                                     ['url'=>'/study', 'label'=>'学习计划', 'icon'=>'fas fa-calendar-alt'],
-                                    ['url'=>'/study/checkins', 'label'=>'学习打卡', 'icon'=>'fas fa-calendar-check'],
-                                    ['url'=>'/courses', 'label'=>'我的课程', 'icon'=>'fas fa-book'],
-                                    ['url'=>'/course/management', 'label'=>'课程中心', 'icon'=>'fas fa-compass']
+                                    ['url'=>'/courses', 'label'=>'我的课程', 'icon'=>'fas fa-book']
                                 ]
                             ],
                             [
@@ -122,9 +119,9 @@
                                 'icon'=>'fas fa-comments',
                                 'submenu' => [
                                     ['url'=>'/llm/index', 'label'=>'智能助手', 'icon'=>'fas fa-comments'],
-                                    ['url'=>'/artifacts', 'label'=>'制品库管理', 'icon'=>'fas fa-box-archive'],
                                     ['url'=>'/llm/llmmanagement', 'label'=>'模型管理', 'icon'=>'fas fa-cogs'],
                                     ['url'=>'/llm/agentmanagement', 'label'=>'智能体管理', 'icon'=>'fas fa-robot'],
+                                    ['url'=>'/artifacts', 'label'=>'制品库管理', 'icon'=>'fas fa-box-archive'],
                                 ]
                             ],
                         ];
