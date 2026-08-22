@@ -402,7 +402,7 @@
                     '<td>' + typeHtml + '</td>' +
                     '<td><div class="text-gray-800 font-medium break-words" title="' + name + '">' + name + '</div></td>' +
                     '<td><div class="flex items-center justify-end space-x-3">' +
-                    '<a href="/notes?source_type=4&source_id=' + journal.id + '" class="text-gray-400 hover:text-blue-600 transition-colors" title="记录更多当时的想法"><i class="fas fa-sticky-note"></i></a>' +
+                    '<a href="/notes?source_type=4&source_id=' + journal.id + '" class="text-gray-400 hover:text-blue-600 transition-colors" title="记录更多笔记"><i class="fas fa-sticky-note"></i></a>' +
                     '<a href="/journal/' + journal.id + '" class="text-gray-400 hover:text-green-600 transition-colors" title="编辑手账"><i class="fas fa-edit"></i></a>' +
                     '<button type="button" class="delete_journal text-gray-400 hover:text-red-600 transition-colors" data-journal-id="' + journal.id + '" title="删除手账"><i class="fas fa-trash"></i></button>' +
                     '</div></td>' +
@@ -419,7 +419,7 @@
                     '<div class="mb-3">' + typeHtml + '</div>' +
                     '<div class="text-gray-800 font-medium mb-3 break-words">' + name + '</div>' +
                     '<div class="flex items-center justify-end space-x-3 pt-3 border-t border-gray-100">' +
-                    '<a href="/notes?source_type=4&source_id=' + journal.id + '" class="text-sm text-blue-600 hover:text-blue-700"><i class="fas fa-sticky-note mr-1"></i>想法</a>' +
+                    '<a href="/notes?source_type=4&source_id=' + journal.id + '" class="text-sm text-blue-600 hover:text-blue-700"><i class="fas fa-sticky-note mr-1"></i>笔记</a>' +
                     '<a href="/journal/' + journal.id + '" class="text-sm text-green-600 hover:text-green-700"><i class="fas fa-edit mr-1"></i>编辑</a>' +
                     '<button type="button" class="delete_journal text-sm text-red-600 hover:text-red-700" data-journal-id="' + journal.id + '"><i class="fas fa-trash mr-1"></i>删除</button>' +
                     '</div>' +

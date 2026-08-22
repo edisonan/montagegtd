@@ -217,7 +217,7 @@
                             <i class="fas fa-lightbulb"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500">记录想法</p>
+                            <p class="text-sm text-gray-500">记录笔记</p>
                             <p id="totalNotesValue" class="text-2xl font-bold text-gray-900">{{ $total_notes ?? 0 }}</p>
                         </div>
                     </div>

@@ -698,7 +698,7 @@
                         <div class="feature-icon-wrapper">
                             <i class="fas fa-lightbulb"></i>
                         </div>
-                        <h3 class="feature-title">想法记录</h3>
+                        <h3 class="feature-title">笔记记录</h3>
                     </div>
                     <p class="feature-description">
                         支持文字、图片、语音多种记录方式，提供标签分类、公开/私密发布选项，浏览器插件一键保存网页内容。
@@ -737,7 +737,7 @@
                         <h3 class="feature-title">数据统计分析</h3>
                     </div>
                     <p class="feature-description">
-                        提供阅读、番茄钟、想法等维度的饼图与柱状图统计，帮助您清晰了解时间分配和使用习惯。
+                        提供阅读、番茄钟、笔记等维度的饼图与柱状图统计，帮助您清晰了解时间分配和使用习惯。
                     </p>
                 </div>
             </div>

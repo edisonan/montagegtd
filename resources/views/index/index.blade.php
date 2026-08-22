@@ -1363,7 +1363,7 @@
                 <a href="/notes?source_type=1&source_id=${focusData.id}"
                    class="action-button text-gray-400 hover:text-blue-500"
                    target="_blank"
-                   title="记录想法">
+                   title="记录笔记">
                     <i class="fas fa-sticky-note"></i>
                 </a>
             </div>
@@ -1437,7 +1437,7 @@
                 <a href="/notes?source_type=4&source_id=${Number(journal.id)}"
                    class="action-button text-gray-400 hover:text-blue-500"
                    target="_blank"
-                   title="记录更多想法">
+                   title="记录更多笔记">
                     <i class="fas fa-sticky-note"></i>
                 </a>
                 <a href="/journals"
@@ -1575,7 +1575,7 @@
             <a href="/notes?source_type=3&source_id=${data.id}"
                class="action-button text-gray-400 hover:text-purple-500"
                target="_blank"
-               title="记录想法">
+               title="记录笔记">
                 <i class="fas fa-lightbulb"></i>
             </a>
         </div>

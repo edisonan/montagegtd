@@ -556,7 +556,7 @@
                     <div class="feature-icon">
                         <i class="fas fa-lightbulb"></i>
                     </div>
-                    <h3 class="feature-title">记想法</h3>
+                    <h3 class="feature-title">记笔记</h3>
                     <p class="feature-description">
                         快速捕捉灵感，支持文字、图片、语音录入，浏览器插件一键保存网页内容。
                     </p>

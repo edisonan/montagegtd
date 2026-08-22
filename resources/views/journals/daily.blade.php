@@ -681,7 +681,7 @@
                         '</div>' +
                     '</div>' +
                     '<div class="flex items-center gap-2 text-gray-400 flex-none">' +
-                        '<a href="/notes?source_type=4&source_id=' + j.id + '" class="hover:text-blue-600" title="记录想法"><i class="fas fa-sticky-note"></i></a>' +
+                        '<a href="/notes?source_type=4&source_id=' + j.id + '" class="hover:text-blue-600" title="记录笔记"><i class="fas fa-sticky-note"></i></a>' +
                         '<a href="/journal/' + j.id + '" class="hover:text-green-600" title="编辑"><i class="fas fa-edit"></i></a>' +
                     '</div>';
                 list.appendChild(item);

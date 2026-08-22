@@ -796,7 +796,7 @@
                 <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-lightbulb text-purple-600 text-xl"></i>
                 </div>
-                <h3 class="font-semibold text-gray-800 mb-2">记想法</h3>
+                <h3 class="font-semibold text-gray-800 mb-2">记笔记</h3>
                 <p class="text-gray-600 text-sm">记录灵感碎片，整理思考素材，为导图提供内容</p>
             </a>
 

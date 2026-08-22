@@ -289,8 +289,8 @@
                                     <i class="fas fa-lightbulb text-red-600"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium text-gray-900 mb-1">记录想法</h4>
-                                    <p class="text-sm text-gray-600">每次记录想法可获得3积分</p>
+                                    <h4 class="font-medium text-gray-900 mb-1">记录笔记</h4>
+                                    <p class="text-sm text-gray-600">每次记录笔记可获得3积分</p>
                                 </div>
                             </div>
                             <div class="flex items-start gap-3">

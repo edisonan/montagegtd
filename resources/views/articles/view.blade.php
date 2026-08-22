@@ -533,7 +533,7 @@
                                            data-url=""
                                            data-id="">
                                             <i class="fas fa-heart"></i>
-                                            <span>记录想法</span>
+                                            <span>记录笔记</span>
                                         </a>
                                         <!-- 其他分享选项 -->
                                     </div>
@@ -1102,7 +1102,7 @@
                 });
             });
 
-            // 记录想法
+            // 记录笔记
             $(".icon-heart").click(function() {
                 var title = $(this).data('title');
                 var url = $(this).data('url');

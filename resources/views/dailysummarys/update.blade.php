@@ -405,7 +405,7 @@
                 '番茄钟': 'fas fa-clock',
                 '任务': 'fas fa-tasks',
                 '阅读': 'fas fa-book',
-                '想法': 'fas fa-lightbulb',
+                '笔记': 'fas fa-lightbulb',
                 '课程': 'fas fa-graduation-cap',
                 '会议': 'fas fa-users',
                 '项目': 'fas fa-project-diagram',
