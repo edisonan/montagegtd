@@ -229,6 +229,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/study/plans/{plan}/generate', 'Api\\V2\\StudyController@generateByPlan');
         Route::delete('/study/plans/{plan}', 'Api\\V2\\StudyController@destroyPlan');
         Route::post('/study/tasks/{task}/checkin', 'Api\\V2\\StudyController@checkin');
+        Route::post('/study/tasks/{task}/focus-sessions', 'Api\\V2\\StudyController@createFocusSession');
 
         Route::post('/focuss/start', 'Api\\V2\\FocusController@start');
         Route::post('/focuss/discard', 'Api\\V2\\FocusController@discardCurrent');

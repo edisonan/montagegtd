@@ -111,8 +111,9 @@
                                 'icon'=>'fas fa-graduation-cap',
                                 'submenu' => [
                                     ['url'=>'/study', 'label'=>'学习计划', 'icon'=>'fas fa-calendar-alt'],
-                                    ['url'=>'/courses', 'label'=>'我的学习', 'icon'=>'fas fa-book'],
-                                    ['url'=>'/course/management', 'label'=>'课程管理', 'icon'=>'fas fa-cog']
+                                    ['url'=>'/study/checkins', 'label'=>'学习打卡', 'icon'=>'fas fa-calendar-check'],
+                                    ['url'=>'/courses', 'label'=>'我的课程', 'icon'=>'fas fa-book'],
+                                    ['url'=>'/course/management', 'label'=>'课程中心', 'icon'=>'fas fa-compass']
                                 ]
                             ],
                             [

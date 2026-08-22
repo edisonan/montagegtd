@@ -132,6 +132,34 @@ class StudyController extends Controller
         )));
     }
 
+    public function createFocusSession(Request $request, Task $task)
+    {
+        $this->validate($request, array(
+            'started_at' => 'nullable|date_format:Y-m-d H:i:s',
+            'ended_at' => 'nullable|date_format:Y-m-d H:i:s',
+            'duration_seconds' => 'required|integer|min:1|max:86400',
+            'completed' => 'nullable|boolean',
+        ));
+
+        $userId = (int)$this->getAuthUserId($request);
+        if ((int)$task->user_id !== $userId || (int)$task->mode !== 3) {
+            abort(403);
+        }
+
+        $result = $this->studyService->recordFocusSession(
+            $userId,
+            (int)$task->id,
+            array(
+                'started_at' => (string)$request->input('started_at', ''),
+                'ended_at' => (string)$request->input('ended_at', ''),
+                'duration_seconds' => (int)$request->input('duration_seconds'),
+                'completed' => (int)$request->input('completed', 0),
+            )
+        );
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
     public function generate(Request $request)
     {
         $this->validate($request, array(

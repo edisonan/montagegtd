@@ -623,16 +623,16 @@
             </div>
 
             <div class="course-actions" id="course_actions_box">
-                <a href="{{ url('/courses') }}" class="btn btn-course btn-course-secondary">
+                <a href="{{ url('/course/management') }}" class="btn btn-course btn-course-secondary">
                     <i class="fas fa-arrow-left mr-2"></i>
-                    返回课程列表
+                    返回课程中心
                 </a>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- 主内容区域 -->
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-3">
                 <!-- 课程封面 -->
                 <div id="course_cover_box">
                     <div class="no-cover">
@@ -703,27 +703,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 侧边栏 -->
-            <div class="lg:col-span-1">
-                <div class="discussion-sidebar">
-                    <div class="discussion-card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-comments"></i>
-                                课程讨论
-                            </h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="coming-soon">
-                                <i class="fas fa-tools coming-soon-icon"></i>
-                                <h4 class="text-gray-600 mb-2">功能即将上线</h4>
-                                <p class="text-gray-400 text-sm">课程讨论功能正在开发中，敬请期待</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -780,16 +759,15 @@
             if (!box.length) return;
             var html = '';
             if (CURRENT_USER_ID > 0 && Number(course.created_by || 0) === CURRENT_USER_ID) {
-                html += '<a href="/admin/courses/' + Number(course.id) + '/edit" class="btn btn-course btn-course-primary"><i class="fas fa-edit mr-2"></i>编辑课程</a>';
                 html += '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-course btn-course-primary"><i class="fas fa-cog mr-2"></i>管理章节</a>';
-                html += '<a href="/courses" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程列表</a>';
+                html += '<a href="/course/management" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程中心</a>';
             } else if (CURRENT_USER_ID > 0 && !isJoined) {
                 html += '<button type="button" class="btn btn-course btn-course-success join-course-btn" data-course-id="' + Number(course.id) + '"><i class="fas fa-user-plus mr-2"></i>加入课程</button>';
             } else if (CURRENT_USER_ID > 0 && isJoined) {
                 html += '<button class="btn btn-course btn-course-success" disabled><i class="fas fa-check-circle mr-2"></i>已加入课程</button>';
-                html += '<a href="/courses" class="btn btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>返回课程中心</a>';
+                html += '<a href="/courses" class="btn btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>继续学习</a>';
             } else {
-                html += '<a href="/courses" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程列表</a>';
+                html += '<a href="/course/management" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程中心</a>';
             }
             box.html(html);
         }

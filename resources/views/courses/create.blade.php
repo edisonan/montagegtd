@@ -14,16 +14,21 @@
                             <i class="fas fa-home mr-1"></i>首页
                         </a>
                         <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
-                        <a href="{{ url('/mycourse') }}" class="text-primary-color hover:text-blue-700 transition-colors duration-200">
-                            我的课程
-                        </a>
-                        <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
                         <a href="{{ url('/courses') }}" class="text-primary-color hover:text-blue-700 transition-colors duration-200">
-                            课程管理
+                            我的课程
                         </a>
                         <i class="fas fa-chevron-right mx-2 text-gray-400"></i>
                         <span class="text-gray-900 font-medium">创建课程</span>
                     </nav>
+
+                    @php $createType = (string)request('type', ''); @endphp
+                    @if(in_array($createType, ['video', 'document', 'external'], true))
+                        <div class="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-blue-50 text-blue-700 border border-blue-200">
+                            <i class="fas {{ $createType === 'video' ? 'fa-video' : ($createType === 'document' ? 'fa-file-alt' : 'fa-link') }}"></i>
+                            正在创建：{{ $createType === 'video' ? '视频课程' : ($createType === 'document' ? '文档课程' : '外部课程') }}
+                        </div>
+                    @endif
+                    <input type="hidden" id="courseSourceType" value="{{ $createType }}" />
 
                     <h1 class="text-2xl font-bold text-gray-900 flex items-center">
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mr-4 shadow-sm">
@@ -579,6 +584,7 @@
                         cover_image_url: document.getElementById('cover_image_url') ? document.getElementById('cover_image_url').value.trim() : '',
                         description: document.getElementById('description') ? document.getElementById('description').value.trim() : '',
                         public_status: selectedPublicStatus ? Number(selectedPublicStatus.value) : 2,
+                        source_type: document.getElementById('courseSourceType') ? (document.getElementById('courseSourceType').value || 'manual') : 'manual',
                         tags: document.getElementById('tags') ? document.getElementById('tags').value.split(',').map(function(t){ return t.trim(); }).filter(Boolean) : []
                     }).then(function(response) {
                         if (response && response.code === 9999) {

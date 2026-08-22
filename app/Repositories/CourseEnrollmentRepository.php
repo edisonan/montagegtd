@@ -11,7 +11,9 @@ class CourseEnrollmentRepository
      */
     public function getCourseEnrollments($userId, $status = null)
     {
-        $query = CourseEnrollment::where('user_id', $userId);
+        $query = CourseEnrollment::with(array('course' => function ($q) {
+            $q->withCount('courseItems');
+        }))->where('user_id', $userId);
         
         if ($status) {
             $query->where('status', $status);

@@ -27,7 +27,7 @@ class CourseController extends Controller
         $userCourses = $this->courseService->getUserCourses($userId);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'user_courses' => $userCourses,
+            'user_courses' => $this->serializeUserCourses($userCourses),
         )));
     }
 
@@ -39,6 +39,7 @@ class CourseController extends Controller
         $publicCourses = $this->courseService->getPublicCourses(false, false);
 
         $userCourseIds = array();
+        $userCourses = collect();
         if ($userId) {
             $userCourses = $this->courseService->getUserCourses($userId);
             $userCourseIds = $userCourses->pluck('course_id')->toArray();
@@ -48,6 +49,7 @@ class CourseController extends Controller
             'user_created_courses' => $userCreatedCourses,
             'public_courses' => $publicCourses,
             'user_course_ids' => $userCourseIds,
+            'user_courses' => $this->serializeUserCourses($userCourses),
         )));
     }
 
@@ -278,7 +280,40 @@ class CourseController extends Controller
         $userCourses = $this->courseService->getUserCourses($userId, $status);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
-            'user_courses' => $userCourses,
+            'user_courses' => $this->serializeUserCourses($userCourses),
         )));
+    }
+
+    /**
+     * 序列化用户课程（报名记录）为前端可直接使用的结构，附带课程冗余字段
+     */
+    protected function serializeUserCourses($enrollments)
+    {
+        $items = array();
+        if ($enrollments instanceof \Illuminate\Support\Collection && !$enrollments->isEmpty()) {
+            foreach ($enrollments as $e) {
+                $course = $e->course;
+                $items[] = array(
+                    'id' => (int)$e->id,
+                    'course_id' => (int)$e->course_id,
+                    'title' => (string)($e->title ?: ($course ? $course->title : '')),
+                    'status' => (string)($e->status ?: 'planned'),
+                    'progress_percent' => (int)round((float)$e->progress_percent),
+                    'last_studied_at' => !empty($e->last_activity_at) ? (string)$e->last_activity_at : '',
+                    'order_index' => (int)$e->order_index,
+                    'course' => $course ? array(
+                        'id' => (int)$course->id,
+                        'title' => (string)$course->title,
+                        'description' => (string)($course->description ?: ''),
+                        'cover_image_url' => (string)($course->cover_image_url ?: ''),
+                        'instructor' => (string)($course->instructor ?: ''),
+                        'estimated_hours' => (int)($course->estimated_hours ?: 0),
+                        'chapters_count' => (int)($course->course_items_count ?: 0),
+                    ) : null,
+                );
+            }
+        }
+
+        return $items;
     }
 }

@@ -69,6 +69,7 @@ Route::group([
     Route::get('/tasks', 'TaskController@index');
     Route::get('/study', 'StudyController@index');
     Route::get('/study/checkins', 'StudyController@checkins');
+    Route::get('/study/media/{path}', 'StudyController@media')->where('path', '.*');
     Route::get('/studyfocus/{task}', 'StudyController@focus');
     Route::get('/tasksall', 'TaskController@getAllList');
     Route::post('/task', 'TaskController@store');

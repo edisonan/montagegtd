@@ -69,17 +69,13 @@
                         </button>
                         <div id="studySummaryCard" class="study-summary-card hidden">
                             <div class="p-4">
-                                <div class="flex items-start gap-3">
+                                <div class="flex items-center gap-3">
                                     <div class="study-mascot">
-                                        <i class="fas fa-paw"></i>
+                                        <i class="fas fa-chart-line"></i>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <div class="text-sm text-gray-500">宠物商店吉祥物</div>
-                                        <div class="text-base font-semibold text-gray-900 mt-1">默认形象，点击可前往领取</div>
-                                        <div class="text-sm text-gray-600 mt-2">Lv.6</div>
-                                        <div class="study-level-line mt-2">
-                                            <div class="study-level-progress"></div>
-                                        </div>
+                                        <div class="text-sm text-gray-500">学习概览</div>
+                                        <div class="text-base font-semibold text-gray-900 mt-1">今日统计</div>
                                     </div>
                                 </div>
                                 <div class="study-reward-row">
@@ -89,7 +85,7 @@
                             </div>
                             <div class="grid grid-cols-2 gap-2 p-4 pt-0">
                                 <div class="study-stat-item">
-                                    <div class="study-stat-name">学习总时长</div>
+                                    <div class="study-stat-name">今日专注时长</div>
                                     <div class="study-stat-value"><span id="todayLearnedMinutes">0</span> 分钟</div>
                                 </div>
                                 <div class="study-stat-item">
@@ -371,6 +367,40 @@
             return resp && (resp.result || resp.data) ? (resp.result || resp.data) : {};
         }
 
+        function toast(message, type) {
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    timer: 2500,
+                    timerProgressBar: true,
+                    icon: type || 'info',
+                    title: message,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            alert(message);
+        }
+
+        function confirmAction(message, onConfirm) {
+            if (window.Swal) {
+                Swal.fire({
+                    title: '确认操作',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '确认',
+                    cancelButtonText: '取消',
+                    confirmButtonColor: '#dc2626'
+                }).then(function(r) {
+                    if (r.isConfirmed && onConfirm) onConfirm();
+                });
+                return;
+            }
+            if (confirm(message) && onConfirm) onConfirm();
+        }
+
         function getGreetingByHour() {
             const hour = new Date().getHours();
             if (hour < 6) return '凌晨好';
@@ -551,7 +581,7 @@
         async function loadOverview(date) {
             const resp = await requestApi('/study/overview?date=' + encodeURIComponent(date || ''));
             if (!resp || Number(resp.code) !== 9999) {
-                alert(resp && resp.msg ? resp.msg : '加载失败');
+                toast(resp && resp.msg ? resp.msg : '加载失败', 'error');
                 return;
             }
             const data = getResult(resp);
@@ -584,7 +614,7 @@
             node.innerHTML = '<div class="text-sm text-gray-500">加载中...</div>';
             const resp = await requestApi('/study/plans');
             if (!resp || Number(resp.code) !== 9999) {
-                alert(resp && resp.msg ? resp.msg : '计划列表加载失败');
+                toast(resp && resp.msg ? resp.msg : '计划列表加载失败', 'error');
                 return;
             }
             const data = getResult(resp);
@@ -604,7 +634,7 @@
             selectedPlanId = Number(planId || 0);
             const resp = await requestApi('/study/plans/' + selectedPlanId);
             if (!resp || Number(resp.code) !== 9999) {
-                alert(resp && resp.msg ? resp.msg : '计划详情加载失败');
+                toast(resp && resp.msg ? resp.msg : '计划详情加载失败', 'error');
                 return;
             }
             renderPlanDetail(getResult(resp));
@@ -633,7 +663,7 @@
                 body: JSON.stringify({ status: target })
             });
             if (!resp || Number(resp.code) !== 9999) {
-                alert(resp && resp.msg ? resp.msg : '状态更新失败');
+                toast(resp && resp.msg ? resp.msg : '状态更新失败', 'error');
                 return;
             }
             await loadPlanList(false);
@@ -655,11 +685,11 @@
                 })
             });
             if (!resp || Number(resp.code) !== 9999) {
-                alert(resp && resp.msg ? resp.msg : '生成失败');
+                toast(resp && resp.msg ? resp.msg : '生成失败', 'error');
                 return;
             }
             const data = getResult(resp);
-            alert('已生成任务：' + Number(data.generated || 0));
+            toast('已生成任务：' + Number(data.generated || 0), 'success');
             await loadOverview(selectedDate);
             await loadPlanList(false);
             if (selectedPlanId === Number(planId)) {
@@ -668,20 +698,20 @@
         }
 
         async function deletePlan(planId) {
-            if (!confirm('确认删除该计划吗？将以软删除方式隐藏计划。')) {
-                return;
-            }
-            const resp = await requestApi('/study/plans/' + Number(planId), {
-                method: 'DELETE'
+            confirmAction('确认删除该计划吗？删除后将不再生成新任务。', async function() {
+                const resp = await requestApi('/study/plans/' + Number(planId), {
+                    method: 'DELETE'
+                });
+                if (!resp || Number(resp.code) !== 9999) {
+                    toast(resp && resp.msg ? resp.msg : '删除失败', 'error');
+                    return;
+                }
+                selectedPlanId = 0;
+                renderPlanDetail(null);
+                await loadOverview(selectedDate);
+                await loadPlanList(true);
+                toast('计划已删除', 'success');
             });
-            if (!resp || Number(resp.code) !== 9999) {
-                alert(resp && resp.msg ? resp.msg : '删除失败');
-                return;
-            }
-            selectedPlanId = 0;
-            renderPlanDetail(null);
-            await loadOverview(selectedDate);
-            await loadPlanList(true);
         }
 
         function openPlanModal() {
@@ -735,7 +765,7 @@
             const fd = new FormData(this);
             const name = String(fd.get('name') || '').trim();
             if (!name) {
-                alert('请填写计划名称');
+                toast('请填写计划名称', 'warning');
                 return;
             }
             const preset = document.querySelector('.quick-plan-preset.is-active');
@@ -768,10 +798,10 @@
                     closeQuickPlanModal();
                     this.reset();
                     await loadOverview(selectedDate);
-                    alert(`已创建计划「${name}」，并为你生成了任务！`);
+                    toast(`已创建计划「${name}」，并为你生成了任务！`, 'success');
                     return;
                 }
-                alert(resp && resp.msg ? resp.msg : '创建失败');
+                toast(resp && resp.msg ? resp.msg : '创建失败', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = original;
@@ -895,7 +925,7 @@
 
         async function startRecording() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
-                alert('当前浏览器不支持录音功能，请直接上传音频文件。');
+                toast('当前浏览器不支持录音功能，请直接上传音频文件。', 'warning');
                 return;
             }
             try {
@@ -927,7 +957,7 @@
                 document.getElementById('recordStartBtn').disabled = true;
                 document.getElementById('recordStopBtn').disabled = false;
             } catch (e) {
-                alert('无法启动录音，请检查麦克风权限。');
+                toast('无法启动录音，请检查麦克风权限。', 'error');
             }
         }
 
@@ -960,18 +990,20 @@
         }
 
         async function generateUpcoming() {
-            const resp = await requestApi('/study/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+            confirmAction('将为未来 14 天内的所有启用学习计划生成任务，确认继续吗？', async function() {
+                const resp = await requestApi('/study/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                if (resp && Number(resp.code) === 9999) {
+                    const data = getResult(resp);
+                    toast('已生成任务：' + Number(data.total_generated || 0), 'success');
+                    await loadOverview(selectedDate);
+                    return;
+                }
+                toast(resp && resp.msg ? resp.msg : '生成失败', 'error');
             });
-            if (resp && Number(resp.code) === 9999) {
-                const data = getResult(resp);
-                alert('已生成任务：' + Number(data.total_generated || 0));
-                await loadOverview(selectedDate);
-                return;
-            }
-            alert(resp && resp.msg ? resp.msg : '生成失败');
         }
 
         function closeCheckinModal(e) {
@@ -1027,7 +1059,7 @@
                 }
                 return;
             }
-            alert(resp && resp.msg ? resp.msg : '保存失败');
+            toast(resp && resp.msg ? resp.msg : '保存失败', 'error');
         });
 
         document.getElementById('checkinForm').addEventListener('submit', async function(e) {
@@ -1057,7 +1089,7 @@
                 await loadOverview(selectedDate);
                 return;
             }
-            alert(resp && resp.msg ? resp.msg : '打卡失败');
+            toast(resp && resp.msg ? resp.msg : '打卡失败', 'error');
         });
 
         document.addEventListener('keydown', function(e) {

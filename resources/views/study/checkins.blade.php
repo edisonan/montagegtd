@@ -51,7 +51,7 @@
     <div id="checkinPopover" class="hidden fixed"></div>
 
     <style>
-        .checkin-row { cursor: default; transition: background-color .12s; }
+        .checkin-row { cursor: pointer; transition: background-color .12s; }
         .checkin-row:hover { background: #f8fafc; }
         #checkinPopover { z-index: 1000; }
         #checkinPopover.show { display: block; }
@@ -80,6 +80,22 @@
             return resp && (resp.result || resp.data) ? (resp.result || resp.data) : {};
         }
 
+        function toast(message, type) {
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    timer: 2500,
+                    timerProgressBar: true,
+                    icon: type || 'info',
+                    title: message,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            alert(message);
+        }
+
         function escapeHtml(raw) {
             return String(raw || '').replace(/[&<>"']/g, function(m) {
                 return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
@@ -88,7 +104,23 @@
 
         let checkinData = [];
         let popoverHideTimer = null;
+        let pinnedIdx = -1;
         const popover = document.getElementById('checkinPopover');
+
+        function toggleCheckinCard(rowEl, idx) {
+            if (pinnedIdx === idx) {
+                closeCheckinCard();
+                return;
+            }
+            pinnedIdx = idx;
+            clearTimeout(popoverHideTimer);
+            showCheckinCard(rowEl, idx);
+        }
+
+        function closeCheckinCard() {
+            pinnedIdx = -1;
+            popover.classList.remove('show');
+        }
 
         function mediaIcons(it) {
             let icons = '';
@@ -111,8 +143,10 @@
                 return `
                     <div class="checkin-row flex items-center justify-between gap-3 px-3 py-2.5"
                          data-idx="${i}"
+                         title="点击查看打卡详情"
                          onmouseenter="showCheckinCard(this, ${i})"
-                         onmouseleave="scheduleHideCheckinCard()">
+                         onmouseleave="scheduleHideCheckinCard()"
+                         onclick="toggleCheckinCard(this, ${i})">
                         <div class="flex items-center gap-2 min-w-0">
                             <span class="text-xs font-medium text-gray-900 truncate">${escapeHtml(it.task_name || '学习任务')}</span>
                             <span class="text-[11px] text-gray-400 whitespace-nowrap shrink-0">${escapeHtml(it.checkin_date || '')}</span>
@@ -127,15 +161,33 @@
             }).join('');
         }
 
+        function buildMediaHtml(it) {
+            var html = '';
+            if (it.image_path) {
+                html += '<img src="/study/media/' + encodeURIComponent(it.image_path) + '" alt="打卡图片" class="w-full max-h-64 object-contain rounded-lg border border-gray-100 bg-gray-50 mt-3">';
+            }
+            if (it.audio_path) {
+                html += '<audio controls preload="metadata" class="w-full mt-3" src="/study/media/' + encodeURIComponent(it.audio_path) + '"></audio>';
+            }
+            if (it.video_path) {
+                html += '<video controls preload="metadata" class="w-full max-h-72 rounded-lg border border-gray-100 bg-black mt-3" src="/study/media/' + encodeURIComponent(it.video_path) + '"></video>';
+            }
+            return html;
+        }
+
         function buildCheckinCardHtml(it) {
             return `
-                <div class="w-80 max-w-[85vw] rounded-xl border border-gray-200 bg-white shadow-xl p-4">
+                <div class="w-96 max-w-[92vw] rounded-xl border border-gray-200 bg-white shadow-xl p-4">
                     <div class="flex items-start justify-between gap-3">
                         <div class="font-semibold text-gray-900 min-w-0">${escapeHtml(it.task_name || '学习任务')}</div>
-                        <div class="text-xs text-gray-500 whitespace-nowrap shrink-0">${escapeHtml(it.checkin_date || '')}</div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="text-xs text-gray-500 whitespace-nowrap">${escapeHtml(it.checkin_date || '')}</span>
+                            <button class="text-gray-300 hover:text-gray-500" onclick="closeCheckinCard()"><i class="fas fa-times"></i></button>
+                        </div>
                     </div>
                     <div class="text-xs text-gray-500 mt-1">计划时间：${escapeHtml(it.planned_start_time || '-')}</div>
                     <div class="text-sm text-gray-700 mt-3 whitespace-pre-wrap max-h-64 overflow-y-auto">${escapeHtml(it.content || '（无文字打卡内容）')}</div>
+                    ${buildMediaHtml(it)}
                     <div class="text-xs text-gray-500 mt-3 pt-2 border-t border-gray-100 flex items-center gap-3">
                         <span class="flex items-center gap-1"><i class="fas fa-microphone text-emerald-600"></i>音频：${it.audio_path ? '有' : '无'}</span>
                         <span class="flex items-center gap-1"><i class="fas fa-image text-blue-600"></i>图片：${it.image_path ? '有' : '无'}</span>
@@ -164,6 +216,7 @@
         }
 
         function scheduleHideCheckinCard() {
+            if (pinnedIdx >= 0) return;
             clearTimeout(popoverHideTimer);
             popoverHideTimer = setTimeout(function() {
                 popover.classList.remove('show');
@@ -172,8 +225,8 @@
 
         popover.addEventListener('mouseenter', function() { clearTimeout(popoverHideTimer); });
         popover.addEventListener('mouseleave', scheduleHideCheckinCard);
-        window.addEventListener('scroll', function() { popover.classList.remove('show'); }, true);
-        window.addEventListener('resize', function() { popover.classList.remove('show'); });
+        window.addEventListener('scroll', function() { if (pinnedIdx < 0) popover.classList.remove('show'); }, true);
+        window.addEventListener('resize', function() { if (pinnedIdx < 0) popover.classList.remove('show'); });
 
         function updatePager() {
             document.getElementById('pageInfo').textContent = `第 ${pageState.current} / ${pageState.last} 页，共 ${pageState.total} 条`;
@@ -193,7 +246,7 @@
 
             const resp = await requestApi('/study/checkins?' + params.toString());
             if (!resp || Number(resp.code) !== 9999) {
-                alert(resp && resp.msg ? resp.msg : '加载失败');
+                toast(resp && resp.msg ? resp.msg : '加载失败', 'error');
                 return;
             }
 

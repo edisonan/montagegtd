@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '课程列表 - 蒙太奇')
+@section('title', '课程中心 - 蒙太奇')
 @section('description', '浏览公开课程和您创建的课程，加入学习之旅')
 
 @section('content')
@@ -14,7 +14,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">课程中心</h1>
-                        <p class="text-gray-600 mt-1">探索优质课程，开启学习之旅</p>
+                        <p class="text-gray-600 mt-1">探索优质课程，管理您创建的课程</p>
                     </div>
                 </div>
 
@@ -61,10 +61,6 @@
                                 <span>我创建的: <span class="font-medium" id="count_created_courses">0</span></span>
                             </div>
                         @endauth
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
-                            <span>已加入: <span class="font-medium" id="count_joined_courses">0</span></span>
-                        </div>
                     </div>
 
                     <!-- 筛选选项 -->
@@ -78,10 +74,14 @@
 
                         <select class="input text-sm py-2 px-3" id="platformFilter">
                             <option value="">所有平台</option>
-                            <option value="mooc">MOOC平台</option>
-                            <option value="udemy">Udemy</option>
-                            <option value="coursera">Coursera</option>
-                            <option value="self">自建课程</option>
+                            <option value="Coursera">Coursera</option>
+                            <option value="Udemy">Udemy</option>
+                            <option value="edX">edX</option>
+                            <option value="B站">Bilibili</option>
+                            <option value="YouTube">YouTube</option>
+                            <option value="慕课网">慕课网</option>
+                            <option value="极客时间">极客时间</option>
+                            <option value="其他">其他平台</option>
                         </select>
 
                         <select class="input text-sm py-2 px-3" id="sortFilter">
@@ -122,19 +122,6 @@
                             <span id="badge_public_courses">0</span>
                         </span>
                         </button>
-
-                        @auth
-                            <button class="px-6 py-4 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap"
-                                    id="joined-courses-tab"
-                                    data-tab-target="joined-courses"
-                                    role="tab">
-                                <i class="fas fa-bookmark mr-2"></i>
-                                已加入课程
-                                <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
-                            <span id="badge_joined_courses">0</span>
-                        </span>
-                            </button>
-                        @endauth
                     </nav>
                 </div>
 
@@ -155,15 +142,6 @@
                              id="my-courses"
                              role="tabpanel">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="my-courses-grid">
-                                <div class="col-span-full text-center py-16 text-gray-500">加载课程中...</div>
-                            </div>
-                        </div>
-
-                        <!-- 已加入课程标签页 -->
-                        <div class="tab-pane hidden"
-                             id="joined-courses"
-                             role="tabpanel">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="joined-courses-grid">
                                 <div class="col-span-full text-center py-16 text-gray-500">加载课程中...</div>
                             </div>
                         </div>
@@ -251,6 +229,13 @@
             return $('<div>').text(str || '').html();
         }
 
+        function getPublicStatusBadge(course) {
+            var status = Number(course.public_status || 2);
+            if (status === 3) return '<span class="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">已公开</span>';
+            if (status === 1) return '<span class="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">私有</span>';
+            return '<span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">待审核</span>';
+        }
+
         function renderPublicCourseCard(course) {
             var title = escapeHtml(course.title || '');
             var description = escapeHtml(course.description || '暂无描述');
@@ -285,29 +270,19 @@
                 '<div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-green-300 hover:shadow-lg transition-all duration-200">' +
                 '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-green-50 to-green-100">' + cover + '</div>' +
                 '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
-                '<div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i>学习人数: ' + Number(course.enrollment_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span></div>' +
-                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a><div class="flex items-center gap-2"><button onclick="showCourseStats(' + Number(course.id) + ')" class="btn btn-outline btn-sm"><i class="fas fa-chart-bar"></i></button><button onclick="manageCourse(' + Number(course.id) + ')" class="btn btn-outline btn-sm"><i class="fas fa-cog"></i></button></div></div></div></div></div>';
-        }
-
-        function renderJoinedCourseCard(course) {
-            var title = escapeHtml(course.title || '');
-            var progress = Number(course.user_progress || 0);
-            var cover = course.cover_image_url
-                ? '<img src="' + escapeHtml(course.cover_image_url) + '" alt="' + title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">'
-                : '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><i class="fas fa-bookmark text-purple-400 text-4xl mb-2"></i><p class="text-sm text-gray-500">' + title + '</p></div></div>';
-            return '<div class="course-card group" data-difficulty="' + escapeHtml(course.difficulty || '') + '" data-platform="' + escapeHtml(course.platform || '') + '" data-hours="' + Number(course.estimated_hours || 0) + '" data-created="' + escapeHtml(course.created_at || '') + '" data-enrollment="' + Number(course.enrollment_count || 0) + '">' +
-                '<div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-purple-300 hover:shadow-lg transition-all duration-200"><div class="relative h-48 overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100">' + cover + '</div>' +
-                '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><div class="mb-4"><div class="flex items-center justify-between text-sm mb-1"><span class="text-gray-600">学习进度</span><span class="font-medium text-gray-900">' + progress + '%</span></div><div class="progress h-2"><div class="progress-bar bg-gradient-to-r from-purple-500 to-purple-600" style="width:' + progress + '%"></div></div></div>' +
-                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">' + (progress >= 100 ? '复习课程' : '继续学习') + '</a><button onclick="showCourseProgress(' + Number(course.id) + ')" class="btn btn-outline btn-sm"><i class="fas fa-chart-line"></i></button></div></div></div></div>';
+                '<div class="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i>学习人数: ' + Number(course.enrollment_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span>' + getPublicStatusBadge(course) + '</div>' +
+                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a>' +
+                '<div class="flex items-center gap-2">' +
+                '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-outline btn-sm" title="管理章节"><i class="fas fa-cog"></i></a>' +
+                '<button onclick="deleteCreatedCourse(' + Number(course.id) + ', \'' + title.replace(/'/g, "\\'") + '\')" class="btn btn-outline btn-sm text-red-600 border-red-200 hover:bg-red-50" title="删除课程"><i class="fas fa-trash-alt"></i></button>' +
+                '</div></div></div></div></div>';
         }
 
         function renderCourseManagement() {
             $('#count_public_courses').text(courseMgmtState.publicCourses.length);
             $('#count_created_courses').text(courseMgmtState.createdCourses.length);
-            $('#count_joined_courses').text(courseMgmtState.userCourseIds.length);
             $('#badge_public_courses').text(courseMgmtState.publicCourses.length);
             $('#badge_created_courses').text(courseMgmtState.createdCourses.length);
-            $('#badge_joined_courses').text(courseMgmtState.userCourseIds.length);
 
             var publicGrid = $('#public-courses-grid');
             if (publicGrid.length) {
@@ -316,11 +291,6 @@
             var createdGrid = $('#my-courses-grid');
             if (createdGrid.length) {
                 createdGrid.html(courseMgmtState.createdCourses.length ? courseMgmtState.createdCourses.map(renderCreatedCourseCard).join('') : '<div class="col-span-full text-center py-16 text-gray-500">您还没有创建课程</div>');
-            }
-            var joined = courseMgmtState.publicCourses.filter(function(c) { return courseMgmtState.userCourseIds.indexOf(Number(c.id)) >= 0; });
-            var joinedGrid = $('#joined-courses-grid');
-            if (joinedGrid.length) {
-                joinedGrid.html(joined.length ? joined.map(renderJoinedCourseCard).join('') : '<div class="col-span-full text-center py-16 text-gray-500">您还没有加入课程</div>');
             }
         }
 
@@ -334,6 +304,25 @@
                 courseMgmtState.userCourseIds = Array.isArray(result.user_course_ids) ? result.user_course_ids.map(function(id){ return Number(id); }) : [];
                 renderCourseManagement();
             }).catch(function() {});
+        }
+
+        // 删除我创建的课程
+        function deleteCreatedCourse(courseId, title) {
+            if (!apiRequest) {
+                showNotification('API客户端未初始化', 'error');
+                return;
+            }
+            if (!confirm('确认删除课程「' + title + '」吗？删除后不可恢复。')) return;
+            apiRequest('DELETE', '/courses/' + Number(courseId), {}).then(function(resp) {
+                if (resp && resp.code === 9999) {
+                    showNotification('课程已删除', 'success');
+                    loadCourseManagementData();
+                    return;
+                }
+                showNotification((resp && resp.msg) ? resp.msg : '删除失败', 'error');
+            }).catch(function() {
+                showNotification('网络错误，请稍后重试', 'error');
+            });
         }
 
         $(document).ready(function() {
@@ -516,8 +505,6 @@
 
                 // 平台筛选
                 if (filters.platform) {
-                    // 这里需要根据实际的数据结构调整
-                    // 假设有data-platform属性
                     const platform = card.getAttribute('data-platform') || '';
                     if (platform !== filters.platform) {
                         shouldShow = false;
@@ -574,21 +561,6 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
-        }
-
-        // 显示课程统计
-        function showCourseStats(courseId) {
-            showNotification('课程统计功能开发中', 'info');
-        }
-
-        // 管理课程
-        function manageCourse(courseId) {
-            showNotification('课程管理功能开发中', 'info');
-        }
-
-        // 显示课程进度
-        function showCourseProgress(courseId) {
-            showNotification('课程进度详情功能开发中', 'info');
         }
 
         // 显示通知
@@ -719,8 +691,16 @@
             background: linear-gradient(135deg, #f0fdf4, #dcfce7);
         }
 
-        .bg-gradient-to-br.from-purple-50.to-purple-100 {
-            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
-        }
+        /* 状态徽章颜色 */
+        .bg-blue-100 { background-color: rgba(59, 130, 246, 0.1); }
+        .text-blue-800 { color: #1e40af; }
+        .bg-green-100 { background-color: rgba(16, 185, 129, 0.1); }
+        .text-green-800 { color: #065f46; }
+        .bg-yellow-100 { background-color: rgba(245, 158, 11, 0.1); }
+        .text-yellow-800 { color: #92400e; }
+        .bg-red-100 { background-color: rgba(239, 68, 68, 0.1); }
+        .text-red-800 { color: #991b1b; }
+        .bg-gray-100 { background-color: rgba(209, 213, 219, 0.1); }
+        .text-gray-600 { color: #475467; }
     </style>
 @endsection

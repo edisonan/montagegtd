@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\PointAccount;
 use App\Models\StudyCheckin;
+use App\Models\StudyFocusSession;
 use App\Models\Plan;
 use App\Models\Task;
 use Carbon\Carbon;
@@ -58,9 +59,18 @@ class StudyService
             ->get()
             ->keyBy('task_id');
 
+        // 真实专注时长：取当日该批任务的专注会话合计
+        $learnedMinutesTotal = 0;
+        if (!empty($taskIds)) {
+            $focusSeconds = StudyFocusSession::where('user_id', $userId)
+                ->whereIn('task_id', $taskIds)
+                ->whereDate('started_at', $currentDate->format('Y-m-d'))
+                ->sum('duration_seconds');
+            $learnedMinutesTotal = (int)floor((float)$focusSeconds / 60);
+        }
+
         $taskList = array();
         $estimatedMinutesTotal = 0;
-        $learnedMinutesTotal = 0;
         $goldRewardTotal = 0;
         $energyRewardTotal = 0;
         foreach ($tasks as $task) {
@@ -99,7 +109,6 @@ class StudyService
             );
             $estimatedMinutesTotal += $estimatedMinutes;
             if ($checkin) {
-                $learnedMinutesTotal += $estimatedMinutes;
                 $goldRewardTotal += (int)($task->study_sp_points ?: 0);
                 $energyRewardTotal += 1;
             }
@@ -125,6 +134,39 @@ class StudyService
             ->where('user_id', $userId)
             ->where('mode', self::STUDY_MODE)
             ->firstOrFail();
+    }
+
+    /**
+     * 记录一次专注会话（番茄/正计时），用于统计真实学习时长
+     */
+    public function recordFocusSession(int $userId, int $taskId, array $data): array
+    {
+        $task = $this->getFocusTask($userId, $taskId);
+
+        $startedAt = !empty($data['started_at']) ? $this->resolveDateTime($data['started_at']) : null;
+        $endedAt = !empty($data['ended_at']) ? $this->resolveDateTime($data['ended_at']) : null;
+        if (!$startedAt) {
+            $startedAt = Carbon::now();
+        }
+        if (!$endedAt) {
+            $endedAt = $startedAt->copy()->addSeconds(max(1, (int)($data['duration_seconds'] ?? 0)));
+        }
+        $duration = min(86400, max(1, (int)($data['duration_seconds'] ?? 0)));
+        $completed = ((int)($data['completed'] ?? 0) === 1) ? 1 : 0;
+
+        $session = StudyFocusSession::create(array(
+            'user_id' => $userId,
+            'task_id' => $taskId,
+            'started_at' => $startedAt->format('Y-m-d H:i:s'),
+            'ended_at' => $endedAt->format('Y-m-d H:i:s'),
+            'duration_seconds' => $duration,
+            'completed' => $completed,
+        ));
+
+        return array(
+            'session' => $session->fresh(),
+            'task' => $task->fresh(),
+        );
     }
 
     public function listPlans(int $userId): array
@@ -494,6 +536,18 @@ class StudyService
             return Carbon::parse($date);
         } catch (\Throwable $e) {
             return Carbon::today();
+        }
+    }
+
+    protected function resolveDateTime(string $datetime = ''): ?Carbon
+    {
+        if (empty($datetime)) {
+            return null;
+        }
+        try {
+            return Carbon::parse($datetime);
+        } catch (\Throwable $e) {
+            return null;
         }
     }
 
