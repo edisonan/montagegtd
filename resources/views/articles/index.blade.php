@@ -1236,6 +1236,497 @@
         }
     </style>
 
+    <!-- ============ V2 头部工具区样式 ============ -->
+    <style>
+        .v2-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: linear-gradient(135deg, #eff6ff, #fdf4ff);
+            border: 1px solid #dbeafe;
+            color: #1e40af;
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .v2-banner-tag {
+            background: #4a90e2;
+            color: #fff;
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+        .v2-banner a { color: #2563eb; font-weight: 600; text-decoration: none; }
+        .v2-banner a:hover { text-decoration: underline; }
+        .v2-banner-muted { color: #64748b; font-weight: 400; }
+
+        .v2-tool-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 4px;
+        }
+        .v2-pref-toggle,
+        .v2-tool-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-family: inherit;
+            line-height: 1.2;
+        }
+        .v2-pref-toggle:hover,
+        .v2-tool-btn:hover {
+            background: #fff;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+        .v2-pref-toggle.active {
+            background: #fff;
+            color: #4a90e2;
+            border-color: #bfdbfe;
+            box-shadow: 0 1px 4px rgba(74, 144, 226, 0.25);
+            font-weight: 600;
+        }
+        .v2-pref-check { display: none; color: #16a34a; font-size: 0.72rem; }
+        .v2-pref-toggle.active .v2-pref-check { display: inline-flex; }
+        .v2-tool-btn {
+            background: #fff;
+            border-color: #cbd5e1;
+        }
+        .v2-tool-btn.has-filter {
+            border-color: #4a90e2;
+            color: #4a90e2;
+            background: #eff6ff;
+        }
+        .v2-filter-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .v2-tool-divider {
+            width: 1px;
+            height: 26px;
+            background: #e2e8f0;
+            margin: 0 2px;
+        }
+        .v2-more-wrap { position: relative; }
+        .v2-more-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 220px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            padding: 8px;
+            z-index: 130;
+            animation: fadeIn 0.2s ease;
+        }
+        .v2-more-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 12px;
+            border: 0;
+            border-radius: 8px;
+            background: none;
+            color: #475569;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+        .v2-more-item:hover { background: #f1f5f9; color: #4a90e2; }
+        .v2-more-item i { width: 18px; text-align: center; color: #94a3b8; }
+        .v2-more-item:hover i { color: #4a90e2; }
+        .v2-badge-new {
+            margin-left: auto;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 999px;
+        }
+        @media (max-width: 768px) {
+            .v2-pref-label { display: none; }
+            .v2-pref-toggle, .v2-tool-btn { padding: 8px 10px; }
+            .v2-tool-group { gap: 2px; }
+            .v2-tool-divider { margin: 0; }
+        }
+
+        /* ============ V2 模式栏 + 订阅目录按钮 ============ */
+        .v2-modebar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .v2-dir-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #fff;
+            color: #334155;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .v2-dir-toggle i { color: #4a90e2; }
+        .v2-dir-toggle:hover {
+            border-color: #4a90e2;
+            color: #4a90e2;
+            background: #f8fbff;
+        }
+        .v2-dir-toggle.is-collapsed {
+            background: #eff6ff;
+            border-color: #4a90e2;
+            color: #4a90e2;
+            box-shadow: 0 1px 4px rgba(74, 144, 226, 0.2);
+        }
+        .v2-mode-tabs {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .v2-mode-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 9px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #64748b;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .v2-mode-tab:hover { color: #334155; background: rgba(255,255,255,0.6); }
+        .v2-mode-tab.active {
+            background: #fff;
+            color: #4a90e2;
+            border-color: #bfdbfe;
+            box-shadow: 0 1px 4px rgba(74, 144, 226, 0.25);
+        }
+        .v2-mode-tab i { font-size: 0.95rem; }
+        .v2-mode-ext { font-size: 0.7rem; color: #94a3b8; }
+        .v2-dir-toggle .v2-dir-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #ef4444;
+        }
+
+        /* ============ V2 探索模式（按订阅源分组） ============ */
+        .v2-explore-hint {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 10px 14px;
+            border: 1px dashed #c7d2fe;
+            border-radius: 10px;
+            background: #f8faff;
+            color: #4f46e5;
+            font-size: 0.83rem;
+            font-weight: 500;
+        }
+        .v2-explore-hint a { color: #4f46e5; font-weight: 600; text-decoration: none; }
+        .v2-explore-hint a:hover { text-decoration: underline; }
+        .v2-explore-group {
+            margin-bottom: 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .v2-explore-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #f4f7fb, #eef2ff);
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .v2-explore-head i { color: #4a90e2; }
+        .v2-explore-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .v2-explore-count {
+            margin-left: auto;
+            background: #cbd5e1;
+            color: #475569;
+            padding: 2px 9px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .v2-explore-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s ease;
+        }
+        .v2-explore-row:last-child { border-bottom: 0; }
+        .v2-explore-row:hover { background: #f8fafc; }
+        .v2-explore-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .v2-explore-title {
+            color: #1e293b;
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.45;
+            text-decoration: none;
+        }
+        .v2-explore-title:hover { color: #4a90e2; }
+        .v2-explore-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #94a3b8;
+            font-size: 0.76rem;
+        }
+        .v2-explore-acts {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 0 0 auto;
+        }
+        .v2-explore-act {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .v2-explore-act:hover {
+            border-color: #4a90e2;
+            color: #4a90e2;
+            background: #f8fbff;
+        }
+        .v2-explore-act.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #4a90e2;
+            color: #4a90e2;
+        }
+        .v2-explore-act.set_read_later.active,
+        .v2-explore-act.set_star.active { background: #fef3c7; border-color: #f59e0b; color: #d97706; }
+        @media (max-width: 768px) {
+            .v2-explore-row { flex-wrap: wrap; }
+            .v2-explore-acts { margin-left: auto; }
+        }
+
+        /* ============ V2 一体化头部（上排分组栏 + 下排工具栏） ============ */
+        .v2-head-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .v2-head-sep {
+            width: 1px;
+            height: 22px;
+            background: #e2e8f0;
+            flex: 0 0 auto;
+        }
+        /* 紧凑化：模式 tab / 状态 tab */
+        .v2-head-row .v2-mode-tab { padding: 7px 12px; font-size: 0.85rem; gap: 6px; }
+        .v2-head-row .status-tabs { padding: 3px; }
+        .v2-head-row .status-tab { padding: 7px 11px; font-size: 0.85rem; }
+        /* 视图方式下拉（全部 ▾） */
+        .v2-view-select {
+            position: relative;
+            margin-left: auto;
+        }
+        .v2-view-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            background: #fff;
+            color: #334155;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .v2-view-btn:hover {
+            border-color: #4a90e2;
+            color: #4a90e2;
+            background: #f8fbff;
+        }
+        .v2-view-btn i { color: #4a90e2; }
+        .v2-view-caret { font-size: 0.7rem; color: #94a3b8; }
+        .v2-view-menu {
+            position: absolute;
+            top: 100%;
+            right: auto;
+            left: 0;
+            min-width: 190px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            padding: 8px;
+            z-index: 130;
+            animation: fadeIn 0.2s ease;
+        }
+        .v2-view-item {
+            display: flex !important;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 12px !important;
+            border-radius: 8px;
+            background: none;
+            color: #475569;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+        .v2-view-item:hover { background: #f1f5f9; color: #4a90e2; }
+        .v2-view-item.active {
+            background: #eff6ff;
+            color: #4a90e2;
+            font-weight: 600;
+            border-color: #dbeafe;
+        }
+        .v2-view-item i { width: 18px; text-align: center; color: #94a3b8; }
+        /* 下排工具栏：右对齐、与上排分隔 */
+        .v2-head-tools {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+        @media (max-width: 768px) {
+            .v2-head-tools { justify-content: flex-start; }
+            .v2-view-select { margin-left: 0; }
+        }
+
+        /* ============ V2 下排：偏好▾ / 筛选▾ 下拉 ============ */
+        .v2-pref-wrap,
+        .v2-filter-wrap { position: relative; }
+        .v2-menu-sep { height: 1px; background: #eef2f7; margin: 6px 4px; }
+        .v2-filter-pop {
+            position: absolute;
+            top: 100%;
+            right: auto;
+            left: 0;
+            width: 360px;
+            max-width: 90vw;
+            padding: 14px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14);
+            z-index: 140;
+            animation: fadeIn 0.2s ease;
+        }
+        .v2-filter-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 0;
+        }
+        .v2-filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .v2-filter-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .v2-custom-dates {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        /* 上排：偏好开关紧凑 + 订阅目录纯图标 */
+        .v2-head-row .v2-pref-toggle { padding: 7px 10px; }
+        .v2-dir-toggle { padding: 9px 12px; }
+        @media (max-width: 768px) {
+            .v2-filter-pop { right: auto; left: 0; width: 86vw; }
+        }
+    </style>
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reading-page">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 articles-layout{{ request()->cookie('articles_sidebar_collapsed') === 'true' ? ' sidebar-collapsed' : '' }}" id="articlesLayout">
             <!-- 侧边栏导航 -->
@@ -1273,127 +1764,145 @@
                 <div class="reading-content">
                     <!-- 内容头部 -->
                     <div class="content-header">
-                        <div>
-                            <div class="status-tabs">
-                                <button type="button" class="sidebar-toggle-tab" id="toggleSidebarBtn" title="折叠订阅目录" aria-label="折叠订阅目录" aria-controls="sidebarColumn" aria-expanded="true">
-                                    <i class="fas fa-folder-tree"></i>
+                        <div class="v2-header-main flex-1 min-w-0">
+                            <!-- V2 一体化头部：上排分组栏（订阅目录 | 模式 | 状态 | 视图方式） -->
+                            <div class="v2-head-row">
+                                <button type="button" class="v2-dir-toggle" id="toggleSidebarBtn" title="折叠订阅目录" aria-label="折叠订阅目录" aria-controls="sidebarColumn" aria-expanded="true">
+                                    <i class="fas fa-bars"></i>
                                 </button>
-                                <a href="#" class="status-tab" data-status="unread">
-                                    未读
-                                </a>
-                                <a href="#" class="status-tab" data-status="read">
-                                    已读
-                                </a>
-                                <a href="#" class="status-tab" data-status="star">
-                                    收藏
-                                </a>
-                                <a href="#" class="status-tab" data-status="read_later">
-                                    稍后阅读
-                                </a>
-                            </div>
-                            <div class="view-mode-tabs" id="viewModeTabs">
-                                <a href="#" class="view-mode-tab" data-view-mode="all"><i class="fas fa-layer-group"></i>全部</a>
-                                <a href="#" class="view-mode-tab" data-view-mode="personalized"><i class="fas fa-bolt"></i>为我优先</a>
-                                <a href="#" class="view-mode-tab" data-view-mode="tech"><i class="fas fa-code"></i>技术</a>
-                                <a href="#" class="view-mode-tab" data-view-mode="product"><i class="fas fa-cube"></i>产品</a>
-                                <a href="#" class="view-mode-tab" data-view-mode="read_later_suggest"><i class="far fa-clock"></i>稍后读建议</a>
-                                <a href="#" class="view-mode-tab" data-view-mode="low_priority"><i class="fas fa-filter"></i>低优先级</a>
-                                <button type="button" class="view-mode-tab" id="readingPreferenceBtnInline"><i class="fas fa-sliders-h"></i>偏好设置</button>
-                            </div>
-                        </div>
 
-                        <div class="content-tools">
-                            <div class="tool-item">
-                                <span class="tool-label">一目十行</span>
-                                <input type="checkbox" id="unable_desc" class="hidden">
-                                <button type="button" id="unable_desc_btn" class="tool-icon-btn" title="一目十行">
-                                    <i class="fas fa-align-left"></i>
-                                </button>
-                            </div>
+                                <div class="v2-head-sep" aria-hidden="true"></div>
 
-                            <div class="tool-item">
-                                <span class="tool-label">屏蔽图片</span>
-                                <input type="checkbox" id="unable_img" class="hidden">
-                                <button type="button" id="unable_img_btn" class="tool-icon-btn" title="屏蔽图片">
-                                    <i class="fas fa-image"></i>
-                                </button>
+                                <div class="v2-mode-tabs" role="tablist" aria-label="阅读模式">
+                                    <button type="button" class="v2-mode-tab active" id="v2ModeGeneral" data-view="general" aria-selected="true" role="tab">通用</button>
+                                    <button type="button" class="v2-mode-tab" id="v2ModeExplore" data-view="explore" aria-selected="false" role="tab">探索</button>
+                                    <a href="{{ url('articles/stream') }}" class="v2-mode-tab" id="v2ModeStream" role="tab">沉浸</a>
+                                </div>
+
+                                <div class="v2-head-sep" aria-hidden="true"></div>
+
+                                <!-- V2：阅读偏好开关（已上移） -->
+                                <div class="v2-tool-group" role="group" aria-label="阅读偏好">
+                                    <input type="checkbox" id="unable_desc" class="hidden">
+                                    <button type="button" id="unable_desc_btn" class="v2-pref-toggle" aria-pressed="false" title="一目十行：正文折叠为摘要，只扫重点">
+                                        <i class="fas fa-bolt"></i>
+                                        <span class="v2-pref-label">一目十行</span>
+                                        <i class="fas fa-check v2-pref-check"></i>
+                                    </button>
+                                    <input type="checkbox" id="unable_img" class="hidden">
+                                    <button type="button" id="unable_img_btn" class="v2-pref-toggle" aria-pressed="false" title="屏蔽图片：正文图片换为占位图，点图可恢复">
+                                        <i class="fas fa-image"></i>
+                                        <span class="v2-pref-label">屏蔽图片</span>
+                                        <i class="fas fa-check v2-pref-check"></i>
+                                    </button>
+                                </div>
+
+                                <div class="v2-head-sep" aria-hidden="true"></div>
+
+                                <div class="status-tabs">
+                                    <a href="#" class="status-tab" data-status="unread">未读</a>
+                                    <a href="#" class="status-tab" data-status="read">已读</a>
+                                    <a href="#" class="status-tab" data-status="star">收藏</a>
+                                    <a href="#" class="status-tab" data-status="read_later">稍后阅读</a>
+                                </div>
                             </div>
 
-                            <button type="button" class="tool-btn" id="toggleArticleFiltersBtn">
-                                <i class="fas fa-filter"></i>
-                                筛选项
-                            </button>
-
-                            <div class="tool-actions">
-                                <a href="{{ url('articles/stream') }}" class="tool-btn" id="streamModeBtn">
-                                    <i class="fas fa-mobile-screen-button"></i>
-                                    沉浸刷文
-                                </a>
-                                <a href="{{ url('feeds/explorer') }}" class="tool-btn" id="discoverBtn" style="display: none;">
+                            <!-- V2 下排工具栏（右对齐）：发现 | 添加订阅 | 偏好▾ | 筛选▾ -->
+                            <div class="v2-head-tools">
+                                <a href="{{ url('feeds/explorer') }}" class="v2-tool-btn" id="discoverBtn">
                                     <i class="fas fa-compass"></i>
-                                    发现
-                                    <sup style="color: #ef4444; margin-left: 2px;">推荐</sup>
+                                    <span class="v2-pref-label">发现</span>
+                                    <span class="v2-badge-new">新</span>
                                 </a>
-                                <a href="{{ url('feeds') }}" class="tool-btn">
+                                <a href="{{ url('feeds') }}" class="v2-tool-btn">
                                     <i class="fas fa-plus"></i>
-                                    添加订阅
+                                    <span class="v2-pref-label">添加订阅</span>
                                 </a>
-                                <button type="button" class="tool-btn mobile-only" id="toggleCategoryBtn">
-                                    <i class="fas fa-folder-tree"></i>
-                                    订阅目录
-                                </button>
+
+                                <!-- 偏好 ▾：携带视图方式选择（默认全部），底部可打开偏好设置弹窗 -->
+                                <div class="v2-pref-wrap">
+                                    <button type="button" class="v2-tool-btn" id="v2PrefBtn" aria-expanded="false" aria-haspopup="true">
+                                        <i class="fas fa-cog"></i>
+                                        <span id="v2PrefCurrent">全部</span>
+                                        <i class="fas fa-chevron-down v2-view-caret"></i>
+                                    </button>
+                                    <div class="v2-view-menu" id="v2PrefMenu" style="display:none;">
+                                        <a href="#" class="view-mode-tab v2-view-item" data-view-mode="all"><i class="fas fa-layer-group"></i>全部</a>
+                                        <a href="#" class="view-mode-tab v2-view-item" data-view-mode="personalized"><i class="fas fa-bolt"></i>为我优先</a>
+                                        <a href="#" class="view-mode-tab v2-view-item" data-view-mode="tech"><i class="fas fa-code"></i>技术</a>
+                                        <a href="#" class="view-mode-tab v2-view-item" data-view-mode="product"><i class="fas fa-cube"></i>产品</a>
+                                        <a href="#" class="view-mode-tab v2-view-item" data-view-mode="read_later_suggest"><i class="far fa-clock"></i>稍后读建议</a>
+                                        <a href="#" class="view-mode-tab v2-view-item" data-view-mode="low_priority"><i class="fas fa-filter"></i>低优先级</a>
+                                        <div class="v2-menu-sep" aria-hidden="true"></div>
+                                        <button type="button" class="v2-more-item" id="readingPreferenceBtnInline">
+                                            <i class="fas fa-sliders-h"></i>
+                                            偏好设置
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 筛选 ▾：下拉弹层（时间/订阅/时长/数量/关键词，无订阅名搜索项） -->
+                                <div class="v2-filter-wrap">
+                                    <button type="button" class="v2-tool-btn" id="toggleArticleFiltersBtn" aria-expanded="false" aria-haspopup="true">
+                                        <i class="fas fa-search"></i>
+                                        <span class="v2-pref-label">筛选</span>
+                                        <span class="v2-filter-count" id="v2FilterCount" style="display:none;"></span>
+                                        <i class="fas fa-chevron-down v2-view-caret"></i>
+                                    </button>
+                                    <div id="articleFilterShell" class="article-filter-shell v2-filter-pop">
+                                        <form id="articleFilters" class="v2-filter-form">
+                                            <div class="v2-filter-field">
+                                                <label class="article-filter-label" for="articleTimeRange">时间</label>
+                                                <select class="article-filter-control" id="articleTimeRange" name="time_range">
+                                                    <option value="">不选择</option>
+                                                    <option value="3h">最近 3 小时</option>
+                                                    <option value="6h">最近 6 小时</option>
+                                                    <option value="1d">最近 1 天</option>
+                                                    <option value="custom">自定义日期</option>
+                                                </select>
+                                                <div class="v2-custom-dates" id="v2CustomDates" style="display:none;">
+                                                    <input type="date" class="article-filter-control" id="v2DateStart" aria-label="开始日期">
+                                                    <input type="date" class="article-filter-control" id="v2DateEnd" aria-label="结束日期">
+                                                </div>
+                                            </div>
+                                            <div class="v2-filter-field">
+                                                <label class="article-filter-label" for="articleFeedFilter">订阅</label>
+                                                <select class="article-filter-control" id="articleFeedFilter" name="feed_id">
+                                                    <option value="">全部订阅</option>
+                                                </select>
+                                            </div>
+                                            <div class="v2-filter-row">
+                                                <div class="v2-filter-field">
+                                                    <label class="article-filter-label" for="articleReadDuration">时长</label>
+                                                    <select class="article-filter-control" id="articleReadDuration" name="read_duration">
+                                                        <option value="all">不限</option>
+                                                        <option value="short">5 分钟以内</option>
+                                                        <option value="medium">6-15 分钟</option>
+                                                        <option value="long">16 分钟以上</option>
+                                                    </select>
+                                                </div>
+                                                <div class="v2-filter-field">
+                                                    <label class="article-filter-label" for="articlePageCount">数量</label>
+                                                    <input class="article-filter-control" id="articlePageCount" name="page_count" type="number" min="1" max="100" step="1">
+                                                </div>
+                                            </div>
+                                            <div class="v2-filter-field">
+                                                <label class="article-filter-label" for="articleKeyword">关键词</label>
+                                                <input class="article-filter-control" id="articleKeyword" name="keyword" type="text" placeholder="标题关键词">
+                                            </div>
+                                            <div class="v2-filter-actions">
+                                                <button type="button" class="btn btn-outline px-3 py-2 rounded-lg" id="v2ClearFiltersBtn"><i class="fas fa-times mr-1"></i>清除</button>
+                                                <button type="submit" class="btn btn-primary px-3 py-2 rounded-lg"><i class="fas fa-filter mr-1"></i>筛选</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- 文章列表 -->
                     <div class="p-6">
-                        <div id="articleFilterShell" class="article-filter-shell">
-                            <form id="articleFilters" class="article-filter-bar">
-                                <div class="article-filter-group">
-                                    <label class="article-filter-label" for="articleTimeRange">时间</label>
-                                    <select class="article-filter-control" id="articleTimeRange" name="time_range">
-                                        <option value="all">全部时间</option>
-                                        <option value="3h">最近 3 小时</option>
-                                        <option value="6h">最近 6 小时</option>
-                                        <option value="1d">最近 1 天</option>
-                                        <option value="3d">最近 3 天</option>
-                                        <option value="7d">最近 7 天</option>
-                                    </select>
-                                </div>
-                                <div class="article-filter-group">
-                                    <label class="article-filter-label" for="articleFeedFilter">订阅</label>
-                                    <div class="article-filter-stack">
-                                        <input class="article-filter-control" id="articleFeedSearch" type="text" placeholder="输入订阅名筛选">
-                                        <select class="article-filter-control" id="articleFeedFilter" name="feed_id">
-                                            <option value="">全部订阅</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="article-filter-group">
-                                    <label class="article-filter-label" for="articleReadDuration">时长</label>
-                                    <select class="article-filter-control" id="articleReadDuration" name="read_duration">
-                                        <option value="all">不限</option>
-                                        <option value="short">5 分钟以内</option>
-                                        <option value="medium">6-15 分钟</option>
-                                        <option value="long">16 分钟以上</option>
-                                    </select>
-                                </div>
-                                <div class="article-filter-group">
-                                    <label class="article-filter-label" for="articlePageCount">数量</label>
-                                    <input class="article-filter-control" id="articlePageCount" name="page_count" type="number" min="1" max="100" step="1">
-                                </div>
-                                <div class="article-filter-group article-filter-group-wide">
-                                    <label class="article-filter-label" for="articleKeyword">关键词</label>
-                                    <input class="article-filter-control" id="articleKeyword" name="keyword" type="text" placeholder="标题关键词">
-                                </div>
-                                <div class="article-filter-actions">
-                                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-lg">
-                                        <i class="fas fa-filter mr-1"></i>筛选
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
                         <div id="articleLoading" class="text-center py-12 text-gray-500">
                             <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
                         </div>
@@ -1661,11 +2170,13 @@
                     selectedFeedId = currentFeedId;
                 }
                 return {
-                    time_range: $('#articleTimeRange').val() || timeRange || 'all',
+                    time_range: $('#articleTimeRange').val() || 'all',
                     feed_id: selectedFeedId || '',
-                    read_duration: $('#articleReadDuration').val() || readDuration || 'all',
-                    keyword: $('#articleKeyword').val() || keyword || '',
-                    page_count: normalizePageCount($('#articlePageCount').val() || pageCount || 30)
+                    read_duration: $('#articleReadDuration').val() || 'all',
+                    keyword: $('#articleKeyword').val() || '',
+                    page_count: normalizePageCount($('#articlePageCount').val() || '30'),
+                    start_date: $('#v2DateStart').val() || '',
+                    end_date: $('#v2DateEnd').val() || ''
                 };
             }
 
@@ -1779,7 +2290,7 @@
                     params.set('status', status);
                     params.set('view_mode', 'personalized');
                     params.set('page', '1');
-                    window.location.href = '/articles?' + params.toString();
+                    window.location.href = window.location.pathname + '?' + params.toString();
                 }).catch(function(error) {
                     $('#readingPreferenceError').removeClass('hidden').text((error && error.message) ? error.message : '保存偏好失败');
                     showNotification('保存偏好失败', 'error');
@@ -2067,7 +2578,7 @@
                 var filters = collectArticleFilters();
                 $('.status-tab').each(function() {
                     var tabStatus = $(this).data('status');
-                    var url = '/articles?status=' + encodeURIComponent(tabStatus);
+                    var url = window.location.pathname + '?status=' + encodeURIComponent(tabStatus);
                     if (currentFeedId) {
                         url += '&feed_id=' + encodeURIComponent(currentFeedId);
                     }
@@ -2083,6 +2594,12 @@
                     if (filters.keyword) {
                         url += '&keyword=' + encodeURIComponent(filters.keyword);
                     }
+                    if (filters.start_date) {
+                        url += '&start_date=' + encodeURIComponent(filters.start_date);
+                    }
+                    if (filters.end_date) {
+                        url += '&end_date=' + encodeURIComponent(filters.end_date);
+                    }
                     if (articleMode && articleMode !== 'simple') {
                         url += '&mode=' + encodeURIComponent(articleMode);
                     }
@@ -2095,7 +2612,7 @@
 
                 $('.view-mode-tab').each(function() {
                     var tabMode = $(this).data('view-mode');
-                    var url = '/articles?status=' + encodeURIComponent(status);
+                    var url = window.location.pathname + '?status=' + encodeURIComponent(status);
                     if (currentFeedId) {
                         url += '&feed_id=' + encodeURIComponent(currentFeedId);
                     }
@@ -2110,6 +2627,12 @@
                     }
                     if (filters.keyword) {
                         url += '&keyword=' + encodeURIComponent(filters.keyword);
+                    }
+                    if (filters.start_date) {
+                        url += '&start_date=' + encodeURIComponent(filters.start_date);
+                    }
+                    if (filters.end_date) {
+                        url += '&end_date=' + encodeURIComponent(filters.end_date);
                     }
                     if (articleMode && articleMode !== 'simple') {
                         url += '&mode=' + encodeURIComponent(articleMode);
@@ -2146,7 +2669,6 @@
                 if (currentPage && currentPage !== 1) {
                     streamUrl += '&page=' + encodeURIComponent(String(currentPage));
                 }
-                $('#streamModeBtn').attr('href', streamUrl);
             }
 
             function buildPageUrl(page) {
@@ -2175,6 +2697,12 @@
                 }
                 if (filters.keyword) {
                     params.set('keyword', filters.keyword);
+                }
+                if (filters.start_date) {
+                    params.set('start_date', filters.start_date);
+                }
+                if (filters.end_date) {
+                    params.set('end_date', filters.end_date);
                 } else {
                     params.delete('keyword');
                 }
@@ -2190,7 +2718,7 @@
                     params.delete('view_mode');
                 }
                 params.set('page', String(page));
-                return '/articles?' + params.toString();
+                return window.location.pathname + '?' + params.toString();
             }
 
             // 存储的键名
@@ -2245,6 +2773,15 @@
                 if (timeRange && timeRange !== 'all') {
                     params.time_range = timeRange;
                 }
+                if (timeRange === 'custom') {
+                    var filtersWithDates = collectArticleFilters();
+                    if (filtersWithDates.start_date) {
+                        params.start_date = filtersWithDates.start_date;
+                    }
+                    if (filtersWithDates.end_date) {
+                        params.end_date = filtersWithDates.end_date;
+                    }
+                }
 
                 apiRequest('GET', '/articles', params).then(function(result_arr) {
                     if (!result_arr || result_arr.code !== 9999 || !result_arr.result) {
@@ -2278,6 +2815,8 @@
             }
 
             function renderArticleList(articleSubs) {
+                // V2: 缓存最近一次数据，供探索模式（按订阅源分组）复用，保持条件栏一致
+                window.__v2_articles_cache = articleSubs;
                 if (!Array.isArray(articleSubs) || articleSubs.length === 0) {
                     $('#articleEmptyState').show();
                     return;
@@ -3076,7 +3615,7 @@
                     .attr('aria-label', label)
                     .attr('aria-expanded', isCollapsed ? 'false' : 'true')
                     .find('i')
-                    .attr('class', isCollapsed ? 'fas fa-folder-open' : 'fas fa-folder-tree');
+                    .attr('class', 'fas fa-bars');
             }
 
             function setSidebarCollapsed(isCollapsed, persist) {
@@ -3442,7 +3981,18 @@
                     params.delete('view_mode');
                 }
                 params.set('page', String(currentPage));
-                window.history.replaceState(null, '', '/articles?' + params.toString());
+                var filtersWithSubmitDates = collectArticleFilters();
+                if (filtersWithSubmitDates.start_date) {
+                    params.set('start_date', filtersWithSubmitDates.start_date);
+                } else {
+                    params.delete('start_date');
+                }
+                if (filtersWithSubmitDates.end_date) {
+                    params.set('end_date', filtersWithSubmitDates.end_date);
+                } else {
+                    params.delete('end_date');
+                }
+                window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
                 renderStatusTabs();
                 loadArticleListByApi();
             });
@@ -3502,5 +4052,339 @@
                 }
             });
         })();
+    </script>
+
+    <script type="text/javascript">
+        // ============ V2 头部工具区增强 ============
+        $(document).ready(function () {
+            // 1) 偏好开关：同步 aria-pressed（原逻辑只切 .active class，这里补齐语义态）
+            function v2SyncToggleState() {
+                $('#unable_desc_btn').attr('aria-pressed', $('#unable_desc').is(':checked') ? 'true' : 'false');
+                $('#unable_img_btn').attr('aria-pressed', $('#unable_img').is(':checked') ? 'true' : 'false');
+            }
+            v2SyncToggleState();
+            $('#unable_desc_btn, #unable_img_btn').on('click.v2', function () {
+                setTimeout(v2SyncToggleState, 0);
+            });
+
+            // 2) 筛选：激活条件数角标 + 展开状态记忆 + 提交后刷新角标
+            function v2IsActiveFilter(name) {
+                var v = new URLSearchParams(window.location.search).get(name);
+                if (!v) return false;
+                if (name === 'time_range' && v !== 'all') return true;
+                if (name === 'read_duration' && v !== 'all') return true;
+                if (name === 'keyword' && v) return true;
+                if (name === 'page_count' && v !== '30') return true;
+                if (name === 'feed_id' && v) return true;
+                return false;
+            }
+            function v2ActiveFilterCount() {
+                return ['time_range', 'read_duration', 'keyword', 'page_count', 'feed_id']
+                    .filter(v2IsActiveFilter).length;
+            }
+            function v2RenderFilterBadge() {
+                var n = v2ActiveFilterCount();
+                var has = n > 0;
+                $('#toggleArticleFiltersBtn').toggleClass('has-filter', has);
+                var $badge = $('#v2FilterCount');
+                if (has) {
+                    $badge.text(n).css('display', 'inline-flex');
+                } else {
+                    $badge.text('').css('display', 'none');
+                }
+                $('#toggleArticleFiltersBtn').attr('aria-expanded', $('#articleFilterShell').hasClass('active') ? 'true' : 'false');
+            }
+            // 初始：有筛选条件或上次展开过 → 自动展开（原脚本初始总是收起，这里在 ready 后纠正）
+            var v2FiltersOpen = $.cookie('articles_filters_open') === 'true' || v2ActiveFilterCount() > 0;
+            setTimeout(function () {
+                if (v2FiltersOpen) {
+                    $('#articleFilterShell').addClass('active');
+                }
+                v2RenderFilterBadge();
+            }, 0);
+
+            $('#toggleArticleFiltersBtn').on('click.v2', function () {
+                var isOpen = $('#articleFilterShell').hasClass('active');
+                $.cookie('articles_filters_open', isOpen ? 'true' : 'false', { expires: 365, path: '/' });
+                v2RenderFilterBadge();
+            });
+            $('#articleFilters').on('submit.v2', function () {
+                setTimeout(v2RenderFilterBadge, 0);
+            });
+            v2RenderFilterBadge();
+
+            // 3) 清除筛选：重置表单并触发原筛选逻辑
+            $('#v2ClearFiltersBtn').on('click', function () {
+                $('#articleTimeRange').val('');
+                $('#v2CustomDates').hide();
+                $('#v2DateStart').val('');
+                $('#v2DateEnd').val('');
+                $('#articleFeedFilter').val('');
+                $('#articleFeedSearch').val('');
+                $('#articleReadDuration').val('all');
+                $('#articleKeyword').val('');
+                $('#articlePageCount').val('30');
+                $('#articleFilters').trigger('submit');
+            });
+
+            // ============ V2 偏好▾ / 筛选▾ 下拉：悬停展开 + 点击切换 + 移出延迟关闭 ============
+            function v2SyncPrefLabel() {
+                var $active = $('.v2-view-item.active').first();
+                if ($active.length) {
+                    $('#v2PrefCurrent').text($active.text().trim());
+                }
+            }
+            var v2PrefTimer = null;
+            $('.v2-pref-wrap').on('mouseenter', function () {
+                clearTimeout(v2PrefTimer);
+                $('#v2PrefMenu').show();
+                $('#v2PrefBtn').attr('aria-expanded', 'true');
+            }).on('mouseleave', function () {
+                clearTimeout(v2PrefTimer);
+                v2PrefTimer = setTimeout(function () {
+                    $('#v2PrefMenu').hide();
+                    $('#v2PrefBtn').attr('aria-expanded', 'false');
+                }, 220);
+            });
+            var v2FilterTimer = null;
+            $('.v2-filter-wrap').on('mouseenter', function () {
+                clearTimeout(v2FilterTimer);
+                $('#articleFilterShell').addClass('active');
+                $('#toggleArticleFiltersBtn').attr('aria-expanded', 'true');
+            }).on('mouseleave', function () {
+                clearTimeout(v2FilterTimer);
+                v2FilterTimer = setTimeout(function () {
+                    $('#articleFilterShell').removeClass('active');
+                    $('#toggleArticleFiltersBtn').attr('aria-expanded', 'false');
+                }, 220);
+            });
+            $('#v2PrefBtn').on('click', function (e) {
+                e.stopPropagation();
+                var isOpen = $('#v2PrefMenu').is(':visible');
+                if (isOpen) {
+                    $('#v2PrefMenu').hide();
+                    $('#v2PrefBtn').attr('aria-expanded', 'false');
+                } else {
+                    $('#v2PrefMenu').show();
+                    $('#v2PrefBtn').attr('aria-expanded', 'true');
+                }
+            });
+            $(document).on('click.v2pref', function (e) {
+                if (!$(e.target).closest('.v2-pref-wrap').length) {
+                    $('#v2PrefMenu').hide();
+                    $('#v2PrefBtn').attr('aria-expanded', 'false');
+                }
+            });
+            $(document).on('click.v2filter', function (e) {
+                if (!$(e.target).closest('.v2-filter-wrap').length) {
+                    $('#articleFilterShell').removeClass('active');
+                }
+            });
+            $(document).on('keydown.v2menu', function (e) {
+                if (e.key === 'Escape') {
+                    $('#v2PrefMenu').hide();
+                    $('#v2PrefBtn').attr('aria-expanded', 'false');
+                    $('#articleFilterShell').removeClass('active');
+                }
+            });
+            // 自定义日期：切换显示 + 从 URL 恢复
+            function v2SyncCustomDates() {
+                var qs = v2QsOf();
+                var tr = qs.get('time_range') || '';
+                var $sel = $('#articleTimeRange');
+                var validOpts = [];
+                $sel.find('option').each(function () { validOpts.push(this.value); });
+                if (tr === 'custom') {
+                    $sel.val('custom');
+                    if (qs.get('start_date')) { $('#v2DateStart').val(qs.get('start_date')); }
+                    if (qs.get('end_date')) { $('#v2DateEnd').val(qs.get('end_date')); }
+                } else if (validOpts.indexOf(tr) !== -1) {
+                    $sel.val(tr);
+                } else {
+                    $sel.val('');
+                }
+                $('#v2CustomDates').toggle($sel.val() === 'custom');
+            }
+            $('#articleTimeRange').on('change.v2dates', function () {
+                $('#v2CustomDates').toggle($(this).val() === 'custom');
+            });
+            v2SyncCustomDates();
+
+            // ============ V2 模式切换（通用模式 / 探索模式 共用条件栏） ============
+            function v2Escape(text) {
+                return String(text || '').replace(/[&<>"']/g, function (c) {
+                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
+                });
+            }
+            function v2QsOf() {
+                return new URLSearchParams(window.location.search);
+            }
+            function v2StatusOf() {
+                return v2QsOf().get('status') || 'unread';
+            }
+            var v2View = v2QsOf().get('view') === 'explore' ? 'explore' : 'general';
+            var v2Stash = null; // 切换回通用模式时还原上一次的列表 DOM
+
+            function v2SyncModeTabs() {
+                $('#v2ModeGeneral').toggleClass('active', v2View === 'general').attr('aria-selected', v2View === 'general');
+                $('#v2ModeExplore').toggleClass('active', v2View === 'explore').attr('aria-selected', v2View === 'explore');
+            }
+
+            // 探索模式：把当前条件的文章按订阅源分组渲染（与通用模式共用同一份数据/条件栏）
+            function v2RenderExploreView(articleSubs) {
+                var data = Array.isArray(articleSubs) ? articleSubs : [];
+                var groups = {};
+                data.forEach(function (sub) {
+                    if (!sub || !sub.article || !sub.article.feed) return;
+                    var fid = Number(sub.article.feed.id || 0);
+                    if (!groups[fid]) {
+                        groups[fid] = { name: String(sub.article.feed.feed_name || '未命名订阅'), items: [] };
+                    }
+                    groups[fid].items.push(sub);
+                });
+                var keys = Object.keys(groups);
+                if (keys.length === 0) {
+                    // 数据未到位或确实为空：加载中时保持主脚本的 loading 状态，不闪空态
+                    if (!$('#articleLoading').is(':visible')) {
+                        $('#articleEmptyState').show();
+                    }
+                    return;
+                }
+                $('#articleEmptyState').hide();
+                var html = '<div class="v2-explore-hint"><span><i class="fas fa-compass mr-1"></i>探索模式：将当前筛选条件下的文章按订阅源分组，可点击左侧「订阅目录」定位到具体 Feed。</span><a href="/articles/explorer' + v2CleanQs() + '" target="_blank">打开完整探索页（三栏阅读）→</a></div>';
+                keys.forEach(function (fid) {
+                    var g = groups[fid];
+                    html += '<div class="v2-explore-group">'
+                        + '<div class="v2-explore-head"><i class="fas fa-rss"></i><span class="v2-explore-name">' + v2Escape(g.name) + '</span><span class="v2-explore-count">' + g.items.length + ' 篇</span></div>';
+                    g.items.forEach(function (sub) {
+                        var art = sub.article;
+                        var subId = Number(sub.id || 0);
+                        var articleId = Number(art.id || 0);
+                        html += '<div class="v2-explore-row">'
+                            + '<div class="v2-explore-main">'
+                            + '<a class="v2-explore-title" href="/article/view/' + articleId + '">' + v2Escape(art.subject || '无标题') + '</a>'
+                            + '<div class="v2-explore-meta"><span><i class="far fa-clock mr-1"></i>' + v2Escape(art.published || '') + '</span><span>' + Number(art.word_count || 0) + ' 字</span></div>'
+                            + '</div>'
+                            + '<div class="v2-explore-acts">'
+                            + '<button type="button" class="v2-explore-act set_read ' + (sub.status === 'read' ? 'active' : '') + '" data-article-id="' + subId + '" title="标记已读"><i class="fas fa-check"></i></button>'
+                            + '<button type="button" class="v2-explore-act set_read_later ' + (sub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '" title="稍后阅读"><i class="far fa-clock"></i></button>'
+                            + '<button type="button" class="v2-explore-act set_star ' + (sub.status === 'star' ? 'active' : '') + '" data-article-id="' + subId + '" title="收藏"><i class="far fa-star"></i></button>'
+                            + '<a class="v2-explore-act" href="/articles/stream?status=' + encodeURIComponent(v2StatusOf()) + '&article_sub_id=' + subId + '" title="沉浸阅读这篇"><i class="fas fa-mobile-screen-button"></i></a>'
+                            + '</div></div>';
+                    });
+                    html += '</div>';
+                });
+                v2RenderGuard = true;
+                $('#articleList').html('' + html);
+                setTimeout(function () { v2RenderGuard = false; }, 60);
+            }
+
+            function v2CleanQs() {
+                var search = window.location.search.replace(/[?&]view=explore/g, '');
+                if (search === '') return '';
+                return search.charAt(0) === '?' ? search : '?' + search;
+            }
+
+            function v2ApplyView() {
+                if (v2View === 'explore') {
+                    if (!v2Stash) {
+                        v2Stash = {
+                            list: $('#articleList').html(),
+                            pagination: $('#articlePagination').prop('outerHTML'),
+                            markAll: $('#markAllWrap').prop('outerHTML'),
+                            markAllVisible: $('#markAllWrap').is(':visible')
+                        };
+                    }
+                    $('#markAllWrap').hide();
+                    $('#articlePagination').hide();
+                    var v2Data = window.__v2_articles_cache;
+                    if (Array.isArray(v2Data) && v2Data.length) {
+                        v2RenderExploreView(v2Data);
+                    }
+                } else {
+                    if (v2Stash) {
+                        $('#articleList').html(v2Stash.list);
+                        if (v2Stash.pagination) {
+                            $('#articlePagination').replaceWith(v2Stash.pagination);
+                        }
+                        if (v2Stash.markAll) {
+                            $('#markAllWrap').replaceWith(v2Stash.markAll);
+                        }
+                        if (v2Stash.markAllVisible) {
+                            $('#markAllWrap').show();
+                        } else {
+                            $('#markAllWrap').hide();
+                        }
+                    }
+                }
+            }
+
+            // 模式切换（页内切换，不重新请求数据）
+            $('#v2ModeGeneral, #v2ModeExplore').on('click', function () {
+                var next = $(this).data('view');
+                if (next === v2View) return;
+                v2View = next;
+                var params = v2QsOf();
+                if (v2View === 'explore') {
+                    params.set('view', 'explore');
+                } else {
+                    params.delete('view');
+                }
+                window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
+                v2SyncModeTabs();
+                v2ApplyView();
+            });
+
+            // 主脚本异步渲染（首次加载/筛选提交）完成后，若处于探索模式则自动同步分组视图
+            var v2Rendering = false;
+            var v2RenderGuard = false;
+            var v2ListObserver = new MutationObserver(function () {
+                if (v2RenderGuard || v2Rendering || v2View !== 'explore') return;
+                v2Rendering = true;
+                v2Stash = null; // 重新缓存最新一次通用渲染
+                v2ApplyView();
+                v2Rendering = false;
+            });
+            var v2ListEl = document.getElementById('articleList');
+            if (v2ListEl) {
+                v2ListObserver.observe(v2ListEl, { childList: true });
+            }
+
+            // 沉浸刷文模式入口：携带当前全部条件（从当前 URL 拼接）
+            function v2SyncStreamLink() {
+                $('#v2ModeStream').attr('href', '/articles/stream' + v2CleanQs());
+            }
+            $('#articleFilters').on('submit.v2view', function () {
+                setTimeout(function () {
+                    v2SyncStreamLink();
+                    v2SyncPrefLabel();
+                    v2RenderFilterBadge();
+                    $('#articleFilterShell').removeClass('active');
+                    $('#toggleArticleFiltersBtn').attr('aria-expanded', 'false');
+                }, 0);
+            });
+            v2SyncStreamLink();
+            v2SyncPrefLabel();
+
+            // 探索模式下点击侧边栏 Feed：保留 view=explore，避免跳回通用模式
+            $(document).on('click.v2feed', '.feed-link', function (e) {
+                if (v2View !== 'explore') return;
+                e.preventDefault();
+                var href = $(this).attr('href') || '';
+                var sep = href.indexOf('?') === -1 ? '?' : '&';
+                window.location.href = href + sep + 'view=explore';
+            });
+
+            // 订阅目录按钮为纯图标（☰），主脚本的图标替换逻辑在此覆盖
+            $('body').on('click.v2dir', '#toggleSidebarBtn', function () {
+                setTimeout(function () {
+                    $('#toggleSidebarBtn').find('i').attr('class', 'fas fa-bars');
+                }, 0);
+            });
+
+            // 初始化：进入页面时按 URL 的 view 参数应用模式
+            v2SyncModeTabs();
+            v2ApplyView();
+        });
     </script>
 @endsection

@@ -396,23 +396,91 @@
         .explorer-filter-field-wide, .explorer-custom-dates { grid-column: span 1; }
         .explorer-custom-dates { flex-direction: column; }
     }
+
+    /* ===== 探索页模式栏（与阅读页同套） ===== */
+    .explorer-modebar {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 5px 18px rgba(15, 23, 42, .05);
+    }
+    .explorer-dir-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border: 1px solid #cbd5e1;
+        border-radius: 9px;
+        background: #fff;
+        color: #334155;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+    .explorer-dir-btn:hover { border-color: #6366f1; color: #4338ca; }
+    .explorer-mode-tabs {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 4px;
+    }
+    .explorer-mode-tab {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 14px;
+        border-radius: 7px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: #64748b;
+        font-size: .86rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+    .explorer-mode-tab:hover { color: #334155; }
+    .explorer-mode-tab.active {
+        background: #fff;
+        color: #4338ca;
+        border-color: #c7d2fe;
+        box-shadow: 0 1px 4px rgba(99, 102, 241, .2);
+    }
+    .explorer-mode-hint { margin-left: auto; color: #94a3b8; font-size: 12px; }
+    @media (max-width: 760px) { .explorer-mode-hint { display: none; } }
 </style>
 
 <main class="article-explorer">
+    <div class="explorer-modebar">
+        <button type="button" class="explorer-dir-btn" id="explorerSidebarToggle" title="折叠/展开订阅目录" aria-label="折叠/展开订阅目录">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="explorer-mode-tabs">
+            <a href="{{ url('articles') }}" class="explorer-mode-tab">通用</a>
+            <a href="{{ url('articles/explorer') }}" class="explorer-mode-tab active">探索</a>
+            <a href="{{ url('articles/stream') }}" class="explorer-mode-tab">沉浸</a>
+        </div>
+        <span class="explorer-mode-hint">3 栏探索阅读：分类 → 订阅源 → 文章正文</span>
+    </div>
     <section class="explorer-filter-card" aria-label="文章筛选">
         <form id="explorerFilters" class="explorer-filters">
             <div class="explorer-filter-field">
                 <label class="explorer-filter-label" for="explorerTimeRange">时间范围</label>
                 <select class="explorer-filter-control" id="explorerTimeRange" name="time_range">
-                    <option value="all">全部时间</option><option value="3h">最近 3 小时</option><option value="6h">最近 6 小时</option><option value="1d">最近 1 天</option><option value="7d">最近 7 天</option><option value="custom">自定义日期</option>
+                    <option value="all">全部时间</option><option value="3h">最近 3 小时</option><option value="6h">最近 6 小时</option><option value="1d">最近 1 天</option><option value="custom">自定义日期</option>
                 </select>
             </div>
             <div class="explorer-filter-field">
-                <label class="explorer-filter-label" for="explorerFeedFilter">订阅列表</label>
-                <div class="explorer-filter-stack">
-                    <input class="explorer-filter-control" id="explorerFeedSearch" type="text" placeholder="输入订阅名筛选">
-                    <select class="explorer-filter-control" id="explorerFeedFilter" name="feed_id"><option value="all">全部订阅</option></select>
-                </div>
+                <label class="explorer-filter-label" for="explorerFeedFilter">订阅</label>
+                <select class="explorer-filter-control" id="explorerFeedFilter" name="feed_id"><option value="all">全部订阅</option></select>
             </div>
             <div class="explorer-filter-field">
                 <label class="explorer-filter-label" for="explorerStatusFilter">文章状态</label>
@@ -1052,5 +1120,19 @@
         loadFeeds();
         loadArticles('all', state.feedName, 1, false);
     })(jQuery);
+</script>
+
+<script type="text/javascript">
+    // 模式栏 ☰：折叠/展开订阅目录（与目录面板按钮联动）
+    $(document).ready(function () {
+        $('#explorerSidebarToggle').on('click', function () {
+            var collapsed = $('.explorer-shell').hasClass('directory-collapsed');
+            if (collapsed) {
+                $('#directoryReopen').trigger('click');
+            } else {
+                $('#directoryToggle').trigger('click');
+            }
+        });
+    });
 </script>
 @endsection

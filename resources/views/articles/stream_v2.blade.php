@@ -636,6 +636,69 @@
         .v2-summary { min-height: 90px; }
         .v2-tags { display: none; }
     }
+
+    /* ============= 沉浸页浅色主题 ============= */
+    body { overflow: hidden; background: #eef1f6; }
+    .v2-stream { color: #1e293b; background: #eef1f6; }
+    .v2-bg {
+        background:
+            radial-gradient(circle at 22% 18%, rgba(255, 107, 74, .16), transparent 33%),
+            radial-gradient(circle at 78% 76%, rgba(74, 119, 255, .14), transparent 36%),
+            #eef1f6;
+    }
+    .v2-bg.has-image img { opacity: .22; }
+    .v2-bg::after {
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, .06) 34%, rgba(255, 255, 255, .74) 100%),
+            radial-gradient(circle at center, transparent 0%, rgba(255, 255, 255, .12) 70%, rgba(255, 255, 255, .46) 100%);
+    }
+    .v2-icon-btn,
+    .v2-filter-chip {
+        border: 1px solid rgba(15, 23, 42, .12);
+        color: #334155;
+        background: rgba(255, 255, 255, .78);
+        box-shadow: 0 8px 26px rgba(15, 23, 42, .08);
+    }
+    .v2-card {
+        border: 1px solid rgba(148, 163, 184, .28);
+        background: rgba(255, 255, 255, .94);
+        box-shadow: 0 30px 80px rgba(15, 23, 42, .14);
+    }
+    .v2-meta { color: rgba(15, 23, 42, .6); }
+    .v2-feed { color: #1e293b; }
+    .v2-dot::before { background: rgba(15, 23, 42, .4); }
+    .v2-title { text-shadow: 0 6px 24px rgba(255, 255, 255, .45); }
+    .v2-summary { color: rgba(15, 23, 42, .74); }
+    .v2-tag { color: #475569; background: rgba(148, 163, 184, .2); }
+    .v2-reading-meta { color: rgba(15, 23, 42, .52); }
+    .v2-primary-btn { color: #fff; background: #1e293b; box-shadow: 0 8px 22px rgba(15, 23, 42, .18); }
+    .v2-action { color: #334155; }
+    .v2-action .v2-action-icon {
+        border: 1px solid rgba(148, 163, 184, .35);
+        color: #334155;
+        background: rgba(255, 255, 255, .72);
+        box-shadow: 0 10px 26px rgba(15, 23, 42, .12);
+    }
+    .v2-action.active .v2-action-icon { color: #fff; }
+    .v2-swipe-hint { color: rgba(15, 23, 42, .5); }
+    .v2-state { color: rgba(15, 23, 42, .72); background: rgba(255, 255, 255, .82); }
+    .v2-sheet-backdrop { background: rgba(15, 23, 42, .32); }
+    .v2-sheet {
+        border: 1px solid rgba(148, 163, 184, .3);
+        color: #1e293b;
+        background: #fff;
+        box-shadow: 0 30px 90px rgba(15, 23, 42, .2);
+    }
+    .v2-label { color: #64748b; }
+    .v2-sheet select,
+    .v2-sheet input {
+        border: 1px solid #cbd5e1;
+        color: #1e293b;
+        background: #fff;
+    }
+    .v2-sheet select option { color: #1e293b; }
+    .v2-sheet-action { border: 1px solid #cbd5e1; color: #334155; background: #fff; }
+    .v2-sheet-action.primary { border-color: var(--v2-accent); background: var(--v2-accent); color: #fff; }
 </style>
 
 <section class="v2-stream" id="v2Stream">
@@ -646,7 +709,7 @@
         <div class="v2-top-left">
             <button type="button" class="v2-icon-btn" id="v2BackBtn" title="返回文章列表"><i class="fas fa-chevron-left"></i></button>
             <button type="button" class="v2-filter-chip" id="v2StatusChip"><i class="fas fa-circle text-[7px] text-orange-400"></i><span>未读</span></button>
-            <button type="button" class="v2-filter-chip" id="v2TimeChip"><i class="far fa-clock"></i><span>最近6小时</span></button>
+            <button type="button" class="v2-filter-chip" id="v2TimeChip"><i class="far fa-clock"></i><span>全部时间</span></button>
         </div>
         <div class="v2-top-right">
             <span class="v2-filter-chip"><span id="v2Position">0 / 0</span><span class="v2-chip-extra"> 篇</span></span>
@@ -713,7 +776,7 @@
         </div>
         <div class="v2-sheet-grid">
             <label><span class="v2-label">阅读状态</span><select id="v2StatusFilter"><option value="unread">未读</option><option value="all">全部</option><option value="read">已读</option><option value="read_later">稍后阅读</option><option value="star">收藏</option></select></label>
-            <label><span class="v2-label">时间范围</span><select id="v2TimeFilter"><option value="3h">最近3小时</option><option value="6h">最近6小时</option><option value="1d">最近1天</option><option value="3d">最近3天</option><option value="7d">最近7天</option><option value="all">全部时间</option></select></label>
+            <label><span class="v2-label">时间范围</span><select id="v2TimeFilter"><option value="all">全部时间</option><option value="3h">最近3小时</option><option value="6h">最近6小时</option><option value="1d">最近1天</option><option value="3d">最近3天</option><option value="7d">最近7天</option></select></label>
             <label class="v2-field-full"><span class="v2-label">订阅</span><select id="v2FeedFilter"><option value="">全部订阅</option></select></label>
             <label class="v2-field-full"><span class="v2-label">关键词</span><input type="search" id="v2KeywordFilter" placeholder="搜索标题、订阅或关键词"></label>
         </div>
