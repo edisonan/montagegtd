@@ -1774,9 +1774,9 @@
                                 <div class="v2-head-sep" aria-hidden="true"></div>
 
                                 <div class="v2-mode-tabs" role="tablist" aria-label="阅读模式">
-                                    <button type="button" class="v2-mode-tab active" id="v2ModeGeneral" data-view="general" aria-selected="true" role="tab">通用</button>
-                                    <button type="button" class="v2-mode-tab" id="v2ModeExplore" data-view="explore" aria-selected="false" role="tab">探索</button>
-                                    <a href="{{ url('articles/stream') }}" class="v2-mode-tab" id="v2ModeStream" role="tab">沉浸</a>
+                                    <a href="{{ url('articles') }}" class="v2-mode-tab active">通用</a>
+                                    <a href="{{ url('articles/explorer') }}" class="v2-mode-tab">探索</a>
+                                    <a href="{{ url('articles/stream') }}" class="v2-mode-tab" id="v2ModeStream">沉浸</a>
                                 </div>
 
                                 <div class="v2-head-sep" aria-hidden="true"></div>
@@ -1817,6 +1817,10 @@
                                 <a href="{{ url('feeds') }}" class="v2-tool-btn">
                                     <i class="fas fa-plus"></i>
                                     <span class="v2-pref-label">添加订阅</span>
+                                </a>
+                                <a href="{{ url('briefings') }}" class="v2-tool-btn">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span class="v2-pref-label">文章简报</span>
                                 </a>
 
                                 <!-- 偏好 ▾：携带视图方式选择（默认全部），底部可打开偏好设置弹窗 -->
@@ -2815,8 +2819,6 @@
             }
 
             function renderArticleList(articleSubs) {
-                // V2: 缓存最近一次数据，供探索模式（按订阅源分组）复用，保持条件栏一致
-                window.__v2_articles_cache = articleSubs;
                 if (!Array.isArray(articleSubs) || articleSubs.length === 0) {
                     $('#articleEmptyState').show();
                     return;
@@ -4210,147 +4212,17 @@
             });
             v2SyncCustomDates();
 
-            // ============ V2 模式切换（通用模式 / 探索模式 共用条件栏） ============
-            function v2Escape(text) {
-                return String(text || '').replace(/[&<>"']/g, function (c) {
-                    return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[c];
-                });
-            }
+            // ============ V2 模式入口（通用/探索/沉浸均为页面链接） ============
             function v2QsOf() {
                 return new URLSearchParams(window.location.search);
             }
-            function v2StatusOf() {
-                return v2QsOf().get('status') || 'unread';
-            }
-            var v2View = v2QsOf().get('view') === 'explore' ? 'explore' : 'general';
-            var v2Stash = null; // 切换回通用模式时还原上一次的列表 DOM
-
-            function v2SyncModeTabs() {
-                $('#v2ModeGeneral').toggleClass('active', v2View === 'general').attr('aria-selected', v2View === 'general');
-                $('#v2ModeExplore').toggleClass('active', v2View === 'explore').attr('aria-selected', v2View === 'explore');
-            }
-
-            // 探索模式：把当前条件的文章按订阅源分组渲染（与通用模式共用同一份数据/条件栏）
-            function v2RenderExploreView(articleSubs) {
-                var data = Array.isArray(articleSubs) ? articleSubs : [];
-                var groups = {};
-                data.forEach(function (sub) {
-                    if (!sub || !sub.article || !sub.article.feed) return;
-                    var fid = Number(sub.article.feed.id || 0);
-                    if (!groups[fid]) {
-                        groups[fid] = { name: String(sub.article.feed.feed_name || '未命名订阅'), items: [] };
-                    }
-                    groups[fid].items.push(sub);
-                });
-                var keys = Object.keys(groups);
-                if (keys.length === 0) {
-                    // 数据未到位或确实为空：加载中时保持主脚本的 loading 状态，不闪空态
-                    if (!$('#articleLoading').is(':visible')) {
-                        $('#articleEmptyState').show();
-                    }
-                    return;
-                }
-                $('#articleEmptyState').hide();
-                var html = '<div class="v2-explore-hint"><span><i class="fas fa-compass mr-1"></i>探索模式：将当前筛选条件下的文章按订阅源分组，可点击左侧「订阅目录」定位到具体 Feed。</span><a href="/articles/explorer' + v2CleanQs() + '" target="_blank">打开完整探索页（三栏阅读）→</a></div>';
-                keys.forEach(function (fid) {
-                    var g = groups[fid];
-                    html += '<div class="v2-explore-group">'
-                        + '<div class="v2-explore-head"><i class="fas fa-rss"></i><span class="v2-explore-name">' + v2Escape(g.name) + '</span><span class="v2-explore-count">' + g.items.length + ' 篇</span></div>';
-                    g.items.forEach(function (sub) {
-                        var art = sub.article;
-                        var subId = Number(sub.id || 0);
-                        var articleId = Number(art.id || 0);
-                        html += '<div class="v2-explore-row">'
-                            + '<div class="v2-explore-main">'
-                            + '<a class="v2-explore-title" href="/article/view/' + articleId + '">' + v2Escape(art.subject || '无标题') + '</a>'
-                            + '<div class="v2-explore-meta"><span><i class="far fa-clock mr-1"></i>' + v2Escape(art.published || '') + '</span><span>' + Number(art.word_count || 0) + ' 字</span></div>'
-                            + '</div>'
-                            + '<div class="v2-explore-acts">'
-                            + '<button type="button" class="v2-explore-act set_read ' + (sub.status === 'read' ? 'active' : '') + '" data-article-id="' + subId + '" title="标记已读"><i class="fas fa-check"></i></button>'
-                            + '<button type="button" class="v2-explore-act set_read_later ' + (sub.status === 'read_later' ? 'active' : '') + '" data-article-id="' + subId + '" title="稍后阅读"><i class="far fa-clock"></i></button>'
-                            + '<button type="button" class="v2-explore-act set_star ' + (sub.status === 'star' ? 'active' : '') + '" data-article-id="' + subId + '" title="收藏"><i class="far fa-star"></i></button>'
-                            + '<a class="v2-explore-act" href="/articles/stream?status=' + encodeURIComponent(v2StatusOf()) + '&article_sub_id=' + subId + '" title="沉浸阅读这篇"><i class="fas fa-mobile-screen-button"></i></a>'
-                            + '</div></div>';
-                    });
-                    html += '</div>';
-                });
-                v2RenderGuard = true;
-                $('#articleList').html('' + html);
-                setTimeout(function () { v2RenderGuard = false; }, 60);
-            }
-
             function v2CleanQs() {
                 var search = window.location.search.replace(/[?&]view=explore/g, '');
                 if (search === '') return '';
                 return search.charAt(0) === '?' ? search : '?' + search;
             }
 
-            function v2ApplyView() {
-                if (v2View === 'explore') {
-                    if (!v2Stash) {
-                        v2Stash = {
-                            list: $('#articleList').html(),
-                            pagination: $('#articlePagination').prop('outerHTML'),
-                            markAll: $('#markAllWrap').prop('outerHTML'),
-                            markAllVisible: $('#markAllWrap').is(':visible')
-                        };
-                    }
-                    $('#markAllWrap').hide();
-                    $('#articlePagination').hide();
-                    var v2Data = window.__v2_articles_cache;
-                    if (Array.isArray(v2Data) && v2Data.length) {
-                        v2RenderExploreView(v2Data);
-                    }
-                } else {
-                    if (v2Stash) {
-                        $('#articleList').html(v2Stash.list);
-                        if (v2Stash.pagination) {
-                            $('#articlePagination').replaceWith(v2Stash.pagination);
-                        }
-                        if (v2Stash.markAll) {
-                            $('#markAllWrap').replaceWith(v2Stash.markAll);
-                        }
-                        if (v2Stash.markAllVisible) {
-                            $('#markAllWrap').show();
-                        } else {
-                            $('#markAllWrap').hide();
-                        }
-                    }
-                }
-            }
-
-            // 模式切换（页内切换，不重新请求数据）
-            $('#v2ModeGeneral, #v2ModeExplore').on('click', function () {
-                var next = $(this).data('view');
-                if (next === v2View) return;
-                v2View = next;
-                var params = v2QsOf();
-                if (v2View === 'explore') {
-                    params.set('view', 'explore');
-                } else {
-                    params.delete('view');
-                }
-                window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
-                v2SyncModeTabs();
-                v2ApplyView();
-            });
-
-            // 主脚本异步渲染（首次加载/筛选提交）完成后，若处于探索模式则自动同步分组视图
-            var v2Rendering = false;
-            var v2RenderGuard = false;
-            var v2ListObserver = new MutationObserver(function () {
-                if (v2RenderGuard || v2Rendering || v2View !== 'explore') return;
-                v2Rendering = true;
-                v2Stash = null; // 重新缓存最新一次通用渲染
-                v2ApplyView();
-                v2Rendering = false;
-            });
-            var v2ListEl = document.getElementById('articleList');
-            if (v2ListEl) {
-                v2ListObserver.observe(v2ListEl, { childList: true });
-            }
-
-            // 沉浸刷文模式入口：携带当前全部条件（从当前 URL 拼接）
+            // 沉浸模式入口：携带当前全部条件（从当前 URL 拼接）
             function v2SyncStreamLink() {
                 $('#v2ModeStream').attr('href', '/articles/stream' + v2CleanQs());
             }
@@ -4366,25 +4238,12 @@
             v2SyncStreamLink();
             v2SyncPrefLabel();
 
-            // 探索模式下点击侧边栏 Feed：保留 view=explore，避免跳回通用模式
-            $(document).on('click.v2feed', '.feed-link', function (e) {
-                if (v2View !== 'explore') return;
-                e.preventDefault();
-                var href = $(this).attr('href') || '';
-                var sep = href.indexOf('?') === -1 ? '?' : '&';
-                window.location.href = href + sep + 'view=explore';
-            });
-
             // 订阅目录按钮为纯图标（☰），主脚本的图标替换逻辑在此覆盖
             $('body').on('click.v2dir', '#toggleSidebarBtn', function () {
                 setTimeout(function () {
                     $('#toggleSidebarBtn').find('i').attr('class', 'fas fa-bars');
                 }, 0);
             });
-
-            // 初始化：进入页面时按 URL 的 view 参数应用模式
-            v2SyncModeTabs();
-            v2ApplyView();
         });
     </script>
 @endsection

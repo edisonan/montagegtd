@@ -12,7 +12,7 @@
 
     <!-- PWA -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#00b894">
+    <meta name="theme-color" content="#cbd5e1">
     <link rel="apple-touch-icon" href="{{ asset('pwa/apple-touch-icon.png') }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -95,8 +95,6 @@
                                 'icon'=>'fas fa-book-reader',
                                 'submenu' => [
                                     ['url'=>'/articles', 'label'=>'全部文章', 'icon'=>'fas fa-newspaper'],
-                                    ['url'=>'/articles/explorer', 'label'=>'探索阅读', 'icon'=>'fas fa-columns'],
-                                    ['url'=>'/articles/workbench', 'label'=>'文章总览', 'icon'=>'fas fa-sliders-h'],
                                     ['url'=>'/articles?status=read_later', 'label'=>'稍后阅读', 'icon'=>'fas fa-bookmark'],
                                     ['url'=>'/articles?status=star', 'label'=>'收藏文章', 'icon'=>'fas fa-star'],
                                     ['url'=>'/briefings', 'label'=>'文章简报', 'icon'=>'fas fa-file-alt'],
