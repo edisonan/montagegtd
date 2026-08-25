@@ -83,7 +83,18 @@ class ArtifactController extends Controller
             }
         }
 
-        return view('artifacts.view', compact('artifact', 'nodeTree'));
+        // 课程章节制品：补关联课程信息，用于视图返回链接
+        $courseItemCourseId = null;
+        $courseItemTitle = null;
+        if ($artifact->related_type === 'course_item') {
+            $courseItem = \App\Models\CourseItem::select('id', 'course_id', 'title')->find($artifact->related_id);
+            if ($courseItem) {
+                $courseItemCourseId = (int)$courseItem->course_id;
+                $courseItemTitle = $courseItem->title;
+            }
+        }
+
+        return view('artifacts.view', compact('artifact', 'nodeTree', 'courseItemCourseId', 'courseItemTitle'));
     }
 
     /**

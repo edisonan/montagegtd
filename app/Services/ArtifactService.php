@@ -24,6 +24,9 @@ class ArtifactService
         'note:key_points' => 'generateNoteKeyPoints',
         'note:mind_map' => 'generateNoteMindMap',
         'note:visual_reading' => 'generateNoteVisualReading',
+        'course_item:visual_reading' => 'generateCourseItemVisualReading',
+        'course_item:mind_map' => 'generateCourseItemMindMap',
+        'course_item:key_points' => 'generateCourseItemKeyPoints',
     );
 
     public function __construct(
@@ -101,6 +104,12 @@ class ArtifactService
             if ($mind) {
                 $entity['related_title'] = $mind->name;
                 $entity['related_url'] = '/mind/' . $mind->id;
+            }
+        } elseif ($entity['related_type'] === 'course_item') {
+            $item = \App\Models\CourseItem::select('id', 'course_id', 'title')->find($entity['related_id']);
+            if ($item) {
+                $entity['related_title'] = $item->title ?: ('课程章节 #' . $item->id);
+                $entity['related_url'] = $item->course_id ? ('/courses/' . (int)$item->course_id . '?item=' . (int)$item->id) : ('/courses?item=' . (int)$item->id);
             }
         }
 
@@ -745,7 +754,7 @@ class ArtifactService
         $nodeTree = $this->normalizeNodeTree($parsed['data'] ?? ($parsed ?? array()));
         if (is_array($parsed) && !empty($nodeTree['topic'])) {
             return array(
-                'name' => ($sourceType === 'note' ? '笔记' : '文章') . '思维导图',
+                'name' => $this->artifactSourceLabel($sourceType) . '思维导图',
                 'file_type' => Artifact::FILE_JSON,
                 'content' => json_encode(array('format' => 'node_tree', 'data' => $nodeTree), JSON_UNESCAPED_UNICODE),
                 'status' => Artifact::STATUS_SUCCESS,
@@ -762,7 +771,7 @@ class ArtifactService
         $fallback['children'] = array(array('id' => 'f1', 'topic' => '核心观点'), array('id' => 'f2', 'topic' => '关键细节'));
 
         return array(
-            'name' => ($sourceType === 'note' ? '笔记' : '文章') . '思维导图',
+            'name' => $this->artifactSourceLabel($sourceType) . '思维导图',
             'file_type' => Artifact::FILE_JSON,
             'content' => json_encode(array('format' => 'node_tree', 'data' => $fallback), JSON_UNESCAPED_UNICODE),
             'status' => Artifact::STATUS_FAILED,
@@ -771,6 +780,21 @@ class ArtifactService
             'generated_at' => date('Y-m-d H:i:s'),
             'error_message' => $errorMessage,
         );
+    }
+
+    /**
+     * 制品名称里的来源标签：note=笔记 / course_item=课程章节 / 其他=文章
+     */
+    protected function artifactSourceLabel($sourceType)
+    {
+        if ($sourceType === 'note') {
+            return '笔记';
+        }
+        if ($sourceType === 'course_item') {
+            return '课程章节';
+        }
+
+        return '文章';
     }
 
     /**
@@ -837,7 +861,7 @@ class ArtifactService
 
         if (is_array($parsed) && !empty($parsed['html'])) {
             return array(
-                'name' => ($sourceType === 'note' ? '笔记' : '文章') . '可视化阅读',
+                'name' => $this->artifactSourceLabel($sourceType) . '可视化阅读',
                 'file_type' => Artifact::FILE_HTML,
                 'content' => $this->sanitizeArtifactHtml($parsed['html']),
                 'status' => Artifact::STATUS_SUCCESS,
@@ -849,7 +873,7 @@ class ArtifactService
         }
 
         return array(
-            'name' => ($sourceType === 'note' ? '笔记' : '文章') . '可视化阅读',
+            'name' => $this->artifactSourceLabel($sourceType) . '可视化阅读',
             'file_type' => Artifact::FILE_HTML,
             'content' => null,
             'status' => Artifact::STATUS_FAILED,
@@ -858,6 +882,78 @@ class ArtifactService
             'generated_at' => date('Y-m-d H:i:s'),
             'error_message' => !empty($llmResult['error']) ? $llmResult['error'] : 'LLM 返回内容无法解析为包含 html 字段的 JSON',
         );
+    }
+
+    /**
+     * 生成器：课程章节 AI 关键信息（markdown list）
+     */
+    protected function generateCourseItemKeyPoints($relatedId, array $options = array())
+    {
+        $item = \App\Models\CourseItem::with('course')->find($relatedId);
+        if (empty($item)) {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节不存在');
+        }
+        $text = $this->buildCourseItemText($item);
+        if (trim($text) === '') {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节内容为空');
+        }
+
+        return $this->runKeyPointsLlm('course_item', $text, $options);
+    }
+
+    /**
+     * 生成器：课程章节思维导图（node_tree）
+     */
+    protected function generateCourseItemMindMap($relatedId, array $options = array())
+    {
+        $item = \App\Models\CourseItem::with('course')->find($relatedId);
+        if (empty($item)) {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节不存在');
+        }
+        $text = $this->buildCourseItemText($item);
+        if (trim($text) === '') {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节内容为空');
+        }
+
+        return $this->runMindMapLlm($text, 'course_item', $item->title, $options);
+    }
+
+    /**
+     * 生成器：课程章节可视化阅读（HTML）
+     */
+    protected function generateCourseItemVisualReading($relatedId, array $options = array())
+    {
+        $item = \App\Models\CourseItem::with('course')->find($relatedId);
+        if (empty($item)) {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节不存在');
+        }
+        $text = $this->buildCourseItemText($item);
+        if (trim($text) === '') {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节内容为空');
+        }
+
+        return $this->runVisualReadingLlm($text, 'course_item', $item->title, $options);
+    }
+
+    /**
+     * 组装课程章节文本（标题 + 所属课程 + 简介 + 正文）
+     */
+    protected function buildCourseItemText(\App\Models\CourseItem $item)
+    {
+        $title = trim((string)$item->title);
+        $courseTitle = !empty($item->course) ? trim((string)$item->course->title) : '';
+        $description = trim((string)$item->description);
+        $content = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$item->content)));
+        $content = mb_substr($content, 0, 5000);
+
+        $parts = array_filter(array(
+            $title !== '' ? '标题：' . $title : '',
+            $courseTitle !== '' ? '所属课程：' . $courseTitle : '',
+            $description !== '' ? '简介：' . $description : '',
+            $content !== '' ? '正文：' . $content : '',
+        ));
+
+        return trim(implode("\n", $parts));
     }
 
     /**

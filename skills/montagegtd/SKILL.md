@@ -137,8 +137,8 @@ $CLI quiz-create 12 --data '{"questions":[...]}'
 | 待办/任务/首页 | `https://task.congcong.us/index`（或 `/home`） |
 | 笔记列表 | `https://task.congcong.us/notes` |
 | 笔记分享（免登录） | 分享接口返回的 `url`，见 `references/notes.md` |
-| 文章阅读队列 | `https://task.congcong.us/articles`（工作台 `/articles/workbench`） |
-| 订阅源发现 | `https://task.congcong.us/articles/explorer` |
+| 文章阅读队列 | `https://task.congcong.us/articles`（探索阅读 `/articles/explorer`） |
+| 订阅源发现 | `https://task.congcong.us/feeds/explorer` |
 | 专注 | `https://task.congcong.us/focuss` |
 | 学习计划/打卡 | `https://task.congcong.us/study` |
 | 课程列表 | `https://task.congcong.us/courses` |

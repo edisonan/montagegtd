@@ -68,6 +68,11 @@
                         @if($artifact->related_type === 'article')
                             <a href="{{ url('/article/'.$artifact->related_id.'/artifacts') }}" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:text-sky-600 hover:border-sky-400 transition">返回制品库</a>
                             <a href="{{ url('/article/view/'.$artifact->related_id) }}" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:text-sky-600 hover:border-sky-400 transition">原文详情</a>
+                        @elseif($artifact->related_type === 'course_item' && !empty($courseItemCourseId))
+                            <a href="{{ url('/artifacts') }}" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:text-sky-600 hover:border-sky-400 transition">返回制品库</a>
+                            <a href="{{ url('/courses/'.$courseItemCourseId.'?item='.$artifact->related_id) }}" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:text-sky-600 hover:border-sky-400 transition">
+                                <i class="fas fa-book-open mr-1"></i>关联章节{{ $courseItemTitle ? '：' . \Illuminate\Support\Str::limit($courseItemTitle, 12) : '' }}
+                            </a>
                         @endif
                     </div>
                 </div>
@@ -80,6 +85,8 @@
                         <p>{{ $artifact->error_message ?: '制品内容为空' }}</p>
                         @if($artifact->related_type === 'article')
                             <a href="{{ url('/article/'.$artifact->related_id.'/artifacts') }}" class="mt-3 inline-block px-4 py-2 rounded-lg bg-sky-600 text-white text-sm hover:bg-sky-700 transition">返回重新生成</a>
+                        @elseif($artifact->related_type === 'course_item' && !empty($courseItemCourseId))
+                            <a href="{{ url('/courses/'.$courseItemCourseId.'?item='.$artifact->related_id) }}" class="mt-3 inline-block px-4 py-2 rounded-lg bg-sky-600 text-white text-sm hover:bg-sky-700 transition">返回课程重新生成</a>
                         @endif
                     </div>
                 @elseif($artifact->file_type === 'html')

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天界面测试</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .chat-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 左侧会话列表 */
+        .session-list {
+            width: 256px;
+            border-right: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .session-header {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .session-content {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .session-items {
+            height: 100%;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        /* 右侧聊天区域 */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 12px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow: hidden;
+            background: white;
+        }
+
+        #messages-list {
+            height: 100%;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-area {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-container {
+            max-width: 48rem;
+            margin: 0 auto;
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+            background: transparent;
+        }
+
+        .input-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px 12px;
+        }
+
+        /* 消息样式 */
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+
+        .message.user {
+            justify-content: flex-start;
+        }
+
+        .message.ai {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 48rem;
+            width: 100%;
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .user .bubble {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
+
+        .ai .bubble {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 4px;
+            border-radius: 6px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .action-btn.like:hover {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* 测试按钮 */
+        .test-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-buttons">
+        <button class="btn btn-primary" onclick="addUserMessage()">添加用户消息</button>
+        <button class="btn btn-primary" onclick="addAiMessage()">添加AI消息</button>
+    </div>
+
+    <div class="chat-container">
+        <!-- 左侧会话列表 -->
+        <div class="session-list">
+            <div class="session-header">
+                <h2>对话</h2>
+            </div>
+            <div class="session-content">
+                <div class="session-items">
+                    <div>会话列表</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧聊天区域 -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3>聊天标题</h3>
+            </div>
+            
+            <div class="messages-container">
+                <div id="messages-list">
+                    <!-- 消息会动态插入到这里 -->
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea placeholder="输入消息..." rows="2"></textarea>
+                    <div class="input-footer">
+                        <div class="actions">
+                            <button class="action-btn">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 发送
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 格式化时间
+        function formatTime(date) {
+            return new Date(date).toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // 转义HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 添加用户消息
+        function addUserMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = '这是一条用户发送的测试消息，用来验证左侧气泡的显示效果。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message user">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="whitespace-pre-wrap break-words">${escapeHtml(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 50);
+        }
+
+        // 添加AI消息
+        function addAiMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = '这是AI助手的回复消息，显示在右侧气泡中。支持**Markdown**格式，比如*斜体*和`代码`。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message ai">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="markdown-content whitespace-pre-wrap break-words">${marked.parse(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="copyMessage('${messageId}')" title="复制消息">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-btn like" onclick="likeMessage('${messageId}')" title="点赞">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 50);
+        }
+
+        // 复制消息
+        function copyMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            const contentElement = messageElement.querySelector('.markdown-content') || 
+                                 messageElement.querySelector('.whitespace-pre-wrap');
+            
+            if (contentElement) {
+                const text = contentElement.innerText || contentElement.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('已复制到剪贴板');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败');
+                });
+            }
+        }
+
+        // 点赞消息
+        function likeMessage(messageId) {
+            const button = event.currentTarget;
+            const icon = button.querySelector('i');
+            
+            if (icon.classList.contains('fas')) {
+                // 取消点赞
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far');
+                button.title = '点赞';
+                alert('已取消点赞');
+            } else {
+                // 点赞
+                icon.classList.remove('far');
+                icon.classList.add('fas', 'text-red-500');
+                button.title = '取消点赞';
+                alert('已点赞');
+            }
+        }
+
+        // 页面加载完成后添加一些测试消息
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加几条测试消息
+            setTimeout(addUserMessage, 500);
+            setTimeout(addAiMessage, 1000);
+            setTimeout(addUserMessage, 1500);
+            setTimeout(addAiMessage, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -11,7 +11,7 @@
    ============================================================ */
 'use strict';
 
-var VERSION = 'pwa-v1.2.0';
+var VERSION = 'pwa-v1.2.2';
 var STATIC_CACHE = 'montage-static-' + VERSION;
 var PAGES_CACHE = 'montage-pages-' + VERSION;
 var API_CACHE = 'montage-api-' + VERSION;

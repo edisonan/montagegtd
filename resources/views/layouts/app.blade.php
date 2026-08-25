@@ -19,7 +19,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="蒙太奇">
 
-    @if(strpos($_SERVER['REQUEST_URI'],'article') !== false)
+    @if(!empty($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'],'article') !== false)
         <meta name="referrer" content="never">
     @endif
 

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最终对齐验证</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .validation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 24px;
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .validation-content {
+            padding: 24px;
+        }
+
+        /* 对齐验证区域 */
+        .alignment-validation {
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        /* 参考标尺 */
+        .reference-overlay {
+            position: relative;
+            background: #fffbeb;
+            border-bottom: 2px dashed #fbbf24;
+            padding: 16px;
+            text-align: center;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        /* 聊天区域 */
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        #messages-list {
+            height: 100%;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* 输入框参考 - 完全匹配实际布局 */
+        .input-reference-container {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-wrapper {
+            max-width: 48rem; /* max-w-3xl */
+            margin: 0 auto;
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #00b894;
+            padding: 16px;
+            text-align: center;
+            font-weight: 600;
+            color: #00b894;
+        }
+
+        /* 消息样式 - 精确对齐 */
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 48rem; /* max-w-3xl */
+        }
+
+        .user .message-content {
+            width: 80%;
+        }
+
+        .ai .message-content {
+            width: 100%;
+        }
+
+        /* 确保居中对齐 */
+        .user .message-content,
+        .ai .message-content {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .user .message-content {
+            margin-right: 0; /* 用户消息右侧对齐时取消右边距 */
+        }
+
+        .ai .message-content {
+            margin-left: 0; /* AI消息左侧对齐时取消左边距 */
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .user .bubble {
+            background: #00b894;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai .bubble {
+            background: white;
+            border: 2px solid #00b894;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .user .timestamp {
+            text-align: right;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 4px;
+            border-radius: 6px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f1f5f9;
+            color: #00b894;
+        }
+
+        /* 对齐辅助线 */
+        .alignment-guide {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            opacity: 0.7;
+            z-index: 1000;
+        }
+
+        .left-guide {
+            left: calc(50% - 24rem);
+        }
+
+        .right-guide {
+            right: calc(50% - 24rem);
+        }
+
+        /* 控制面板 */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            padding: 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .control-group {
+            text-align: center;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 184, 148, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .specifications {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #00b894;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .specifications h3 {
+            color: #00b894;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spec-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .spec-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #00b894;
+        }
+
+        .spec-item h4 {
+            color: #00b894;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .spec-item p {
+            color: #065f46;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* 滚动条美化 */
+        #messages-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #messages-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        #messages-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            border-radius: 4px;
+        }
+
+        #messages-list::-webkit-scrollbar-thumb:hover {
+            background: #00a085;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .spec-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="validation-container">
+        <div class="header">
+            <h1>🎯 最终对齐验证</h1>
+            <p>确保消息气泡与底部输入区完美对齐</p>
+        </div>
+
+        <div class="specifications">
+            <h3><i class="fas fa-clipboard-list"></i> 对齐规范验证</h3>
+            <div class="spec-list">
+                <div class="spec-item">
+                    <h4>📏 基准尺寸</h4>
+                    <p>所有元素基于 max-w-3xl (48rem = 768px) 容器对齐，确保统一的宽度标准。</p>
+                </div>
+                <div class="spec-item">
+                    <h4>👤 用户消息</h4>
+                    <p>80%宽度 (614px) 靠右显示，右侧与输入框精确对齐，使用品牌主色背景。</p>
+                </div>
+                <div class="spec-item">
+                    <h4>🤖 助手消息</h4>
+                    <p>100%宽度 (768px) 靠左显示，左右边缘都与输入框完全对齐，白色背景配边框。</p>
+                </div>
+                <div class="spec-item">
+                    <h4>⌨️ 输入框</h4>
+                    <p>max-w-3xl 容器，居中显示，作为所有消息对齐的绝对基准线。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="validation-content">
+            <div class="alignment-validation">
+                <!-- 参考标尺 -->
+                <div class="reference-overlay">
+                    <i class="fas fa-ruler-horizontal mr-2"></i>
+                    对齐参考标尺 - max-w-3xl (768px)
+                </div>
+
+                <!-- 对齐辅助线容器 -->
+                <div style="position: relative;">
+                    <div class="alignment-guide left-guide"></div>
+                    <div class="alignment-guide right-guide"></div>
+                    
+                    <div class="chat-area">
+                        <div class="messages-container">
+                            <div id="messages-list">
+                                <!-- 消息将在这里动态添加 -->
+                            </div>
+                        </div>
+
+                        <div class="input-reference-container">
+                            <div class="input-wrapper">
+                                <i class="fas fa-keyboard mr-2"></i>
+                                底部输入区对齐基准线
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button class="btn btn-primary" onclick="addUserMessage()">
+                    <i class="fas fa-user"></i>
+                    添加用户消息
+                </button>
+                <div class="text-xs text-gray-600">80%宽度 • 右侧对齐</div>
+            </div>
+            
+            <div class="control-group">
+                <button class="btn btn-primary" onclick="addAiMessage()">
+                    <i class="fas fa-robot"></i>
+                    添加AI消息
+                </button>
+                <div class="text-xs text-gray-600">100%宽度 • 完全对齐</div>
+            </div>
+            
+            <div class="control-group">
+                <button class="btn btn-success" onclick="addBothMessages()">
+                    <i class="fas fa-exchange-alt"></i>
+                    对话测试
+                </button>
+                <div class="text-xs text-gray-600">连续添加对话</div>
+            </div>
+            
+            <div class="control-group">
+                <button class="btn btn-secondary" onclick="clearAll()">
+                    <i class="fas fa-trash"></i>
+                    清空重置
+                </button>
+                <div class="text-xs text-gray-600">重置测试环境</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 格式化时间
+        function formatTime(date) {
+            return new Date(date).toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // 转义HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 添加用户消息
+        function addUserMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = '用户消息已添加！宽度为聊天区域的80%，靠右侧显示并与输入框右侧精确对齐。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message user">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="whitespace-pre-wrap break-words">${escapeHtml(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 100);
+        }
+
+        // 添加AI消息
+        function addAiMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = 'AI助手消息已添加！宽度与输入框完全一致（100%），左右边缘都与输入框精确对齐。支持**Markdown**格式显示。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message ai">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="markdown-content whitespace-pre-wrap break-words">${marked.parse(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="copyMessage('${messageId}')" title="复制消息">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-btn" onclick="likeMessage('${messageId}')" title="点赞">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 100);
+        }
+
+        // 添加对话测试
+        function addBothMessages() {
+            addUserMessage();
+            setTimeout(() => {
+                addAiMessage();
+            }, 800);
+        }
+
+        // 清空所有内容
+        function clearAll() {
+            document.getElementById('messages-list').innerHTML = '';
+        }
+
+        // 复制消息
+        function copyMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            const contentElement = messageElement.querySelector('.markdown-content') || 
+                                 messageElement.querySelector('.whitespace-pre-wrap');
+            
+            if (contentElement) {
+                const text = contentElement.innerText || contentElement.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    showMessage('✅ 已复制到剪贴板', 'success');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showMessage('❌ 复制失败', 'error');
+                });
+            }
+        }
+
+        // 点赞消息
+        function likeMessage(messageId) {
+            const button = event.currentTarget;
+            const icon = button.querySelector('i');
+            
+            if (icon.classList.contains('fas')) {
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far');
+                button.title = '点赞';
+                showMessage('💔 已取消点赞', 'info');
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas', 'text-red-500');
+                button.title = '取消点赞';
+                showMessage('❤️ 已点赞', 'success');
+            }
+        }
+
+        // 显示消息提示
+        function showMessage(text, type = 'info') {
+            const messageEl = document.createElement('div');
+            messageEl.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 text-white font-medium animate-fade-in`;
+            messageEl.textContent = text;
+            
+            // 根据类型设置颜色
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            messageEl.classList.add(colors[type] || colors.info);
+            
+            document.body.appendChild(messageEl);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                messageEl.classList.add('animate-fade-out');
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // 页面加载初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加初始消息
+            setTimeout(() => {
+                addUserMessage();
+            }, 500);
+            
+            setTimeout(() => {
+                addAiMessage();
+            }, 1200);
+        });
+    </script>
+</body>
+</html>

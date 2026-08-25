@@ -202,8 +202,8 @@
     let currentCourseId = null;
     let currentExcludeItemId = null;
 
-    // 打开课程章节弹窗
-    function openCourseItemModal(courseId, itemData = null) {
+    // 打开课程章节弹窗；presetParentId 用于「添加子章节」时预选父级
+    function openCourseItemModal(courseId, itemData = null, presetParentId = null) {
         currentCourseId = courseId;
 
         // 清除错误信息
@@ -253,7 +253,7 @@
             document.getElementById('duration_modal').value = 0;
 
             currentExcludeItemId = null;
-            loadCourseStructure(courseId);
+            loadCourseStructure(courseId, null, presetParentId ? String(presetParentId) : null);
 
             // 设置提交按钮文本
             document.getElementById('submitCourseItemBtn').innerHTML = '<i class="fas fa-plus mr-2"></i>添加章节';

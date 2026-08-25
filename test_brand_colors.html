@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>品牌配色聊天界面测试</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f1f5f9;
+            padding: 20px;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            background: #00b894; /* 品牌主色 */
+            color: white;
+            text-align: center;
+        }
+
+        .chat-interface {
+            display: flex;
+            flex-direction: column;
+            height: 600px; /* 固定高度便于测试 */
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 会话标题栏 */
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        /* 消息列表区域 - 可滚动 */
+        .messages-area {
+            flex: 1;
+            overflow: hidden;
+            background: white;
+        }
+
+        #messages-list {
+            height: 100%;
+            overflow-y: auto;
+            padding: 16px;
+            scroll-behavior: smooth;
+        }
+
+        /* 底部输入区 - 固定在底部 */
+        .input-area {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .input-container {
+            max-width: 48rem; /* max-w-3xl */
+            margin: 0 auto;
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #00b894; /* 品牌主色 */
+            box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.1);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.5;
+            background: transparent;
+        }
+
+        /* 消息样式 */
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+
+        .message.user {
+            justify-content: flex-end; /* 用户消息靠右 */
+        }
+
+        .message.ai {
+            justify-content: flex-start; /* 助手消息靠左 */
+        }
+
+        .message-content {
+            max-width: 48rem; /* max-w-3xl */
+        }
+
+        .user .message-content {
+            width: 80%; /* 用户消息宽度80% */
+        }
+
+        .ai .message-content {
+            width: 100%; /* 助手消息宽度100% */
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .user .bubble {
+            background: #00b894; /* 品牌主色 */
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai .bubble {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .user .timestamp {
+            text-align: right;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 4px;
+            border-radius: 6px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #f1f5f9;
+            color: #00b894; /* 品牌主色 */
+        }
+
+        .action-btn.like:hover {
+            color: #ef4444;
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #00b894; /* 品牌主色 */
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #00a085; /* 品牌辅色 */
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .specs {
+            background: #ecfdf5;
+            border: 1px solid #00b894;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px;
+            font-size: 14px;
+        }
+
+        .specs h3 {
+            color: #00b894;
+            margin-bottom: 12px;
+        }
+
+        .specs ul {
+            padding-left: 20px;
+            color: #065f46;
+        }
+
+        .specs li {
+            margin-bottom: 8px;
+        }
+
+        /* 滚动条样式 */
+        #messages-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #messages-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        #messages-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        #messages-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>品牌配色聊天界面</h1>
+            <p>使用 #00b894 主色 • #00a085 辅色 • 底部输入区固定布局</p>
+        </div>
+
+        <div class="specs">
+            <h3>布局规范：</h3>
+            <ul>
+                <li>🎨 <strong>品牌配色</strong>：主色 #00b894 | 辅色 #00a085</li>
+                <li>💬 <strong>用户消息</strong>：80%宽度靠右，使用主色背景</li>
+                <li>🤖 <strong>助手消息</strong>：100%宽度靠左，白色背景</li>
+                <li>📱 <strong>布局结构</strong>：Flex布局，底部输入区固定，消息区可滚动</li>
+                <li>📐 <strong>对齐基准</strong>：所有消息基于max-w-3xl容器对齐</li>
+            </ul>
+        </div>
+        
+        <div class="chat-interface">
+            <div class="chat-header">
+                <h3>AI助手对话</h3>
+            </div>
+            
+            <div class="messages-area">
+                <div id="messages-list">
+                    <!-- 消息将在这里动态添加 -->
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea placeholder="输入消息...（Shift+Enter 换行，Enter 发送）" rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="addUserMessage()">
+                <i class="fas fa-user mr-2"></i>添加用户消息
+            </button>
+            <button class="btn btn-success" onclick="addAiMessage()">
+                <i class="fas fa-robot mr-2"></i>添加AI消息
+            </button>
+            <button class="btn btn-secondary" onclick="addManyMessages()">
+                <i class="fas fa-plus mr-2"></i>批量添加消息
+            </button>
+            <button class="btn btn-secondary" onclick="clearMessages()">
+                <i class="fas fa-trash mr-2"></i>清空消息
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 格式化时间
+        function formatTime(date) {
+            return new Date(date).toLocaleTimeString('zh-CN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        // 转义HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 添加用户消息
+        function addUserMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = '这是用户发送的消息，使用品牌主色 #00b894 作为背景色，宽度为聊天区域的80%，靠右侧显示并与输入框右侧对齐。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message user">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="whitespace-pre-wrap break-words">${escapeHtml(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 50);
+        }
+
+        // 添加AI消息
+        function addAiMessage() {
+            const messagesList = document.getElementById('messages-list');
+            const messageId = 'msg-' + Date.now();
+            const content = '这是AI助手的回复消息，宽度与输入框完全一致（100%），靠左侧显示，左右边缘都与输入框对齐。支持**Markdown**格式，包括*斜体*、`代码`等元素。';
+
+            const messageHTML = `
+                <div id="${messageId}" class="message ai">
+                    <div class="message-content">
+                        <div class="bubble">
+                            <div class="markdown-content whitespace-pre-wrap break-words">${marked.parse(content)}</div>
+                        </div>
+                        <div class="message-footer">
+                            <div class="timestamp">
+                                ${formatTime(new Date())}
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="copyMessage('${messageId}')" title="复制消息">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-btn like" onclick="likeMessage('${messageId}')" title="点赞">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            messagesList.insertAdjacentHTML('beforeend', messageHTML);
+            
+            // 滚动到底部
+            setTimeout(() => {
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }, 50);
+        }
+
+        // 批量添加消息测试滚动效果
+        function addManyMessages() {
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    if (i % 2 === 0) {
+                        addUserMessage();
+                    } else {
+                        addAiMessage();
+                    }
+                }, i * 300);
+            }
+        }
+
+        // 清空消息
+        function clearMessages() {
+            document.getElementById('messages-list').innerHTML = '';
+        }
+
+        // 复制消息
+        function copyMessage(messageId) {
+            const messageElement = document.getElementById(messageId);
+            const contentElement = messageElement.querySelector('.markdown-content') || 
+                                 messageElement.querySelector('.whitespace-pre-wrap');
+            
+            if (contentElement) {
+                const text = contentElement.innerText || contentElement.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('已复制到剪贴板');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败');
+                });
+            }
+        }
+
+        // 点赞消息
+        function likeMessage(messageId) {
+            const button = event.currentTarget;
+            const icon = button.querySelector('i');
+            
+            if (icon.classList.contains('fas')) {
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far');
+                button.title = '点赞';
+                alert('已取消点赞');
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas', 'text-red-500');
+                button.title = '取消点赞';
+                alert('已点赞');
+            }
+        }
+
+        // 页面加载完成后添加一些测试消息
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加几条测试消息
+            setTimeout(addUserMessage, 500);
+            setTimeout(addAiMessage, 1000);
+            setTimeout(addUserMessage, 1500);
+        });
+    </script>
+</body>
+</html>

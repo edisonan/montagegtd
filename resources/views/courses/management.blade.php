@@ -257,7 +257,7 @@
                 '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">' + cover + '</div>' +
                 '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
                 '<div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-user text-xs"></i>' + escapeHtml(course.instructor || '未知讲师') + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>' + Number(course.chapters_count || 0) + '章</span></div>' +
-                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a><div class="flex items-center gap-2">' + joinAction + '</div></div></div></div></div>';
+                '<div class="flex items-center justify-between"><div class="flex items-center gap-2"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a>' + (isOwner ? '<a href="/courses/' + Number(course.id) + '" class="btn btn-outline btn-sm" title="添加/修改章节"><i class="fas fa-cog mr-1"></i>管理章节</a>' : '') + '</div><div class="flex items-center gap-2">' + joinAction + '</div></div></div></div></div>';
         }
 
         function renderCreatedCourseCard(course) {
@@ -280,11 +280,11 @@
                 '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-green-50 to-green-100">' + cover + '</div>' +
                 '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
                 '<div class="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i>学习人数: ' + Number(course.enrollment_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>' + Number(course.chapters_count || 0) + '章</span>' + getPublicStatusBadge(course) + '</div>' +
-                '<div class="flex items-center justify-between"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a>' +
+                '<div class="flex items-center justify-between"><div class="flex items-center gap-2"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a><a href="/courses/' + Number(course.id) + '" class="btn btn-outline btn-sm" title="添加/修改章节"><i class="fas fa-cog mr-1"></i>管理章节</a></div>' +
                 '<div class="flex items-center gap-2">' +
                 statusActions +
                 '<a href="/courses/' + Number(course.id) + '/edit" class="btn btn-outline btn-sm" title="编辑课程"><i class="fas fa-edit"></i></a>' +
-                '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-outline btn-sm" title="管理章节"><i class="fas fa-cog"></i></a>' +
+                '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-outline btn-sm" title="完整章节管理（含测验编辑）"><i class="fas fa-list-alt"></i></a>' +
                 '<button onclick="deleteCreatedCourse(' + Number(course.id) + ', \'' + title.replace(/'/g, "\\'") + '\')" class="btn btn-outline btn-sm text-red-600 border-red-200 hover:bg-red-50" title="删除课程"><i class="fas fa-trash-alt"></i></button>' +
                 '</div></div></div></div></div>';
         }

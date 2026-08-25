@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>纯净模式测试</title>
+    <style>
+        body {
+            font-family: 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+            color: #4a4a4a;
+            background-color: #fdfdfd;
+        }
+        
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 10px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #6ba07d, #528c65);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #7bb08d, #639c76);
+            text-decoration: none;
+        }
+        
+        .recent-list {
+            list-style: none;
+            font-size: .9em;
+            line-height: 1.5em;
+            margin-left: -30px;
+        }
+        
+        .time {
+            float: left;
+            padding-right: .8em;
+            color: #999;
+        }
+        
+        .number {
+            font-size: .9em;
+            color: #666;
+            float: right;
+        }
+        
+        .head {
+            padding-bottom: 25px;
+        }
+        
+        /* ========== 纯净模式样式 ========== */
+        .pure-mode .col-md-6:nth-child(2) { /* 隐藏第二个col-md-6（待办事项列）*/
+            display: none !important;
+        }
+        
+        .pure-mode .head:not(.card-header), /* 隐藏非卡片头部的head元素 */
+        .pure-mode #tasks, /* 隐藏任务列表 */
+        .pure-mode .form-group:not(:first-child), /* 隐藏除第一个外的表单组 */
+        .pure-mode hr, /* 隐藏分割线 */
+        .pure-mode .bootstro[data-bootstro-step], /* 隐藏引导元素 */
+        .pure-mode .new_user_guide, /* 隐藏新手引导 */
+        .pure-mode .change_mode, /* 隐藏切换模式 */
+        .pure-mode .mode_name, /* 隐藏模式名称 */
+        .pure-mode #task_name, /* 隐藏任务输入框 */
+        .pure-mode .number, /* 隐藏数字统计 */
+        .pure-mode ul.recent-list ~ .head, /* 藏番茄列表后的头部 */
+        .pure-mode .card:nth-of-type(2) { /* 隐藏第二个卡片（待办事项卡片）*/
+            display: none !important;
+        }
+        
+        /* 额外确保纯净模式样式生效 */
+        .container.pure-mode .col-md-6:nth-child(2) {
+            display: none !important;
+        }
+        
+        .container.pure-mode .card:nth-of-type(2) {
+            display: none !important;
+        }
+        
+        .container.pure-mode .card-header a:not(#togglePureMode) {
+            display: none !important;
+        }
+        
+        /* 确保核心元素在纯净模式下可见 */
+        .pure-mode #pomoBtn {
+            display: block !important;
+            visibility: visible !important;
+        }
+        
+        .pure-mode #recordPomo {
+            display: block !important;
+            visibility: visible !important;
+        }
+        
+        .pure-mode .card-body {
+            padding: 1.25rem !important;
+        }
+        
+        .pure-mode .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .pure-mode .card {
+            margin-top: 20vh;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+        
+        .pure-mode .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .pure-mode #pomoBtn,
+        .pure-mode #recordPomo {
+            display: block !important;
+            text-align: center;
+            width: 100%;
+        }
+        
+        /* 只隐藏记录输入框，保留时间与关闭按钮 */
+        .pure-mode #recordPomo input {
+            display: none !important;
+        }
+        
+        .pure-mode .col-md-6:first-child {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 100% !important;
+            padding: 0 20px;
+        }
+        
+        .pure-mode-body {
+            background: #f8f9fa;
+        }
+        
+        .pure-mode .card {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            margin-top: 20vh;
+        }
+        
+        .pure-mode #pomoBtn,
+        .pure-mode #recordPomo {
+            font-size: 1.4em;
+            padding: 15px;
+        }
+        
+        /* 确保纯净模式下卡片头部内容正确显示 */
+        .pure-mode .card-header div {
+            display: flex;
+            align-items: center;
+        }
+        .pure-mode .card-header a:not(#togglePureMode) {
+            display: none !important;
+        }
+        .pure-mode .card-header a#togglePureMode {
+            display: inline !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-default">
+                    <div class="card-header">
+                        开蕃走起
+                        <div style="float: right">
+                            <!-- ========== 纯净模式按钮 ========== -->
+                            <a href="#" class="btn">[番茄历史]</a>
+                            <a href="javascript:void(0)" id="togglePureMode" class="btn">[纯净模式]</a>
+                            <a href="#" class="btn">[记录事情]</a>
+                            <a href="#" class="btn">[?]</a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <a class="btn btn-outline-info btn-shadow btn-block" href="javascript:void(0)" id="pomoBtn">开始一个新的番茄吧!</a>
+
+                        <div class="form-group" id="recordPomo" style="display: none;">
+                            <div class="col-md-12">
+                                <div style="float:left;">
+                                    <span id="pomo_start_time_show">10:30</span> - <span id="pomo_end_time_show">10:55</span>&nbsp;
+                                </div>
+                                <div style="float:right;">
+                                    <a href="javascript:void(0)">x</a>
+                                </div>
+                                <input type="text" name="name" id="pomo_name"
+                                       class="form-control" value="" placeholder="记录刚完成的番茄内容？点击任务名快速添加">
+                            </div>
+                        </div>
+
+                        <input type="hidden" value="1" id="pomo_id">
+
+                        <hr width="100%" size="1" color="#bbbcbc">
+
+                        <div class="head">
+                            <datetime class="time">1月25日</datetime>
+                            <div class="number">完成了 <span id="pomoCount">3</span> 个番茄</div>
+                        </div>
+
+                        <ul id="pomos" class="recent-list">
+                            <li class="pomo_li">
+                                <span class="time">10:00 - 10:25</span>
+                                <p>完成工作任务</p>
+                            </li>
+                            <li class="pomo_li">
+                                <span class="time">09:30 - 09:55</span>
+                                <p>学习新技术</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card card-default">
+                    <div class="card-header">
+                        新的待办事项
+                        <div style="float: right">
+                            <a href="#" class="btn">[待办列表]</a>
+                            <a href="#" class="btn">[待办四象限]</a>
+                            <a href="#" class="btn">[?]</a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="form-group">
+                            <input type="text" name="name" id="task_name" class="form-control"
+                                   value="" style="" placeholder="添加新任务">
+                        </div>
+
+                        <hr width="100%" size="1" color="#bbbcbc">
+
+                        <div class="head">
+                            <datetime class="time"><span class="mode_name">工作</span><span class="change_mode btn">[切换]</span></datetime>
+                            <div class="number">共 <span id="taskCount">5</span> 待办任务</div>
+                        </div>
+
+                        <ul id="tasks" class="recent-list">
+                            <li class="task_li">
+                                <p class="task_content">
+                                    <input type="checkbox" class="finish_task">
+                                    完成项目报告
+                                </p>
+                            </li>
+                            <li class="task_li">
+                                <p class="task_content">
+                                    <input type="checkbox" class="finish_task">
+                                    准备明天会议材料
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 纯净模式功能
+        let isPureMode = false;
+
+        function togglePureMode() {
+            isPureMode = !isPureMode;
+            const container = document.getElementById('mainContainer');
+            
+            if (isPureMode) {
+                container.classList.add('pure-mode');
+                document.getElementById('togglePureMode').textContent = '[返回]';
+                document.body.classList.add('pure-mode-body');
+                
+                // 强制重排以确保样式应用
+                container.offsetHeight;
+            } else {
+                container.classList.remove('pure-mode');
+                document.getElementById('togglePureMode').textContent = '[纯净模式]';
+                document.body.classList.remove('pure-mode-body');
+                
+                // 强制重排以确保样式恢复
+                container.offsetHeight;
+            }
+        }
+
+        // 绑定事件
+        document.getElementById('togglePureMode').addEventListener('click', function(e) {
+            e.preventDefault();
+            togglePureMode();
+        });
+    </script>
+</body>
+</html>

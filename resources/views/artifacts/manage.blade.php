@@ -74,7 +74,7 @@
                                 <div class="px-4 py-3 flex-1">
                                     <div class="text-sm font-semibold text-slate-800 break-all leading-6">{{ \Illuminate\Support\Str::limit($entity['related_title'], 40) }}</div>
                                     <div class="mt-3 flex flex-wrap gap-1.5">
-                                        @foreach(['visual_reading' => '可视化阅读', 'mind_map' => '思维导图'] as $type => $label)
+                                        @foreach(['visual_reading' => '可视化阅读', 'mind_map' => '思维导图', 'key_points' => '关键信息'] as $type => $label)
                                             @if(!empty($entity['success_types'][$type]))
                                                 <span class="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700"><i class="fas fa-check mr-0.5"></i>{{ $label }}</span>
                                             @elseif(!empty($entity['failed_types'][$type]))
@@ -94,6 +94,10 @@
                                             data-related-type="{{ $entity['related_type'] }}" data-related-id="{{ $entity['related_id'] }}" data-artifact-type="mind_map">
                                         <i class="fas fa-diagram-project mr-1"></i>思维导图
                                     </button>
+                                    <button type="button" class="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs hover:bg-amber-700 transition js-artifact-action"
+                                            data-related-type="{{ $entity['related_type'] }}" data-related-id="{{ $entity['related_id'] }}" data-artifact-type="key_points">
+                                        <i class="fas fa-lightbulb mr-1"></i>关键信息
+                                    </button>
                                     @if(!empty($entity['related_url']))
                                         <a href="{{ url($entity['related_url']) }}" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-600 hover:border-sky-400 hover:text-sky-600 transition">
                                             <i class="fas fa-external-link-alt mr-1"></i>原文
@@ -104,7 +108,7 @@
                                     <div class="px-4 py-2 border-t border-slate-100 bg-slate-50/60">
                                         @foreach($entity['artifacts'] as $artifact)
                                             <div class="flex items-center justify-between gap-2 py-1 text-xs">
-                                                <span class="text-slate-600">{{ $artifact->artifact_type === 'mind_map' ? '思维导图' : '可视化阅读' }}
+                                                <span class="text-slate-600">{{ $artifact->artifact_type === 'mind_map' ? '思维导图' : ($artifact->artifact_type === 'key_points' ? '关键信息' : '可视化阅读') }}
                                                     <span class="text-slate-400">· {{ $artifact->generated_at ? $artifact->generated_at->format('m-d H:i') : '-' }}</span>
                                                 </span>
                                                 @if($artifact->status === 'success')

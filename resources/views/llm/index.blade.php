@@ -13,7 +13,7 @@
             </div>
             <button class="ai-icon-btn ai-mobile-close" id="closeSidebar" title="关闭会话列表"><i class="fas fa-times"></i></button>
         </div>
-        <button class="ai-new-btn" id="newChatBtn"><i class="fas fa-plus"></i><span>开始新对话</span><kbd>⌘ K</kbd></button>
+        <button class="ai-new-btn" id="newChatBtn"><i class="fas fa-plus"></i><span>新对话</span><kbd>⌘K</kbd></button>
         <div class="ai-sidebar-tools">
             <label class="ai-search"><i class="fas fa-search"></i><input id="sessionSearch" type="search" placeholder="搜索会话"><kbd>/</kbd></label>
             <div class="ai-filter-row">
@@ -34,7 +34,7 @@
             <div class="ai-topbar-context"><span class="ai-live-dot"></span><span id="topbarContext">准备开始</span></div>
             <div class="ai-topbar-actions">
                 <button class="ai-icon-btn" id="exportBtn" title="导出当前会话"><i class="fas fa-arrow-up-right-from-square"></i></button>
-                <button class="ai-avatar" title="当前账户">{{ mb_substr(Auth::user()->name, 0, 1) }}</button>
+                <span class="ai-avatar" title="当前账户">{{ mb_substr(Auth::user()->name, 0, 1) }}</span>
             </div>
         </header>
 
@@ -43,7 +43,7 @@
                 <div class="ai-orbit"><span></span><i class="fas fa-sparkles"></i></div>
                 <p class="ai-overline">YOUR SECOND BRAIN</p>
                 <h1>今天想一起<br><em>想清楚什么？</em></h1>
-                <p class="ai-empty-copy">选择一个智能体，开始一段专注的思考。<br class="desktop-only">答案会留在这里，也可以随时沉淀为笔记或思维导图。</p>
+                <p class="ai-empty-copy">选择一个智能体，开始一段专注的思考。答案会留在这里，也可以随时沉淀为笔记或思维导图。</p>
                 <div class="ai-start-row"><select id="agentSelect" aria-label="选择智能体"><option value="">加载智能体中…</option></select><button class="ai-start-btn" id="startEmptyBtn"><i class="fas fa-arrow-right"></i></button></div>
                 <div class="ai-suggestions"><button data-prompt="帮我梳理今天最重要的三件事"><i class="far fa-compass"></i> 梳理今天</button><button data-prompt="帮我把一个模糊想法变成清晰计划"><i class="far fa-lightbulb"></i> 发展想法</button><button data-prompt="帮我分析这段内容，并提炼关键结论"><i class="far fa-file-lines"></i> 提炼内容</button></div>
             </div>
@@ -59,11 +59,17 @@
 
         <footer class="ai-composer-area">
             <div class="ai-composer" id="composer">
-                <select id="composerAgent" aria-label="当前智能体"><option value="">选择智能体</option></select>
+                <div class="ai-composer-top"><select id="composerAgent" aria-label="当前智能体"><option value="">选择智能体</option></select><span class="ai-composer-title">向智能体提问</span></div>
                 <div class="ai-attachment-tray" id="attachmentTray" hidden></div>
-                <textarea id="messageInput" rows="1" maxlength="8000" placeholder="向你的智能体提问…"></textarea>
+                <textarea id="messageInput" rows="1" maxlength="8000" placeholder="和智能体聊聊你的想法…"></textarea>
                 <input id="attachmentInput" type="file" multiple hidden accept=".txt,.md,.markdown,.csv,.json,.xml,.html,.htm,.log,.yaml,.yml,.php,.js,.jsx,.ts,.tsx,.css,.scss,.less,.py,.java,.go,.rs,.sql,.sh,.bash,.zsh,.ini,.conf,.vue,.blade,.env,.docx,.pdf">
-                <div class="ai-composer-bottom"><div class="ai-composer-tools"><button type="button" class="ai-attach-btn" id="attachBtn" title="添加文本、代码、DOCX 或 PDF 文件" aria-label="添加附件"><i class="fas fa-paperclip"></i></button><span><span id="charCount">0</span>/8000 · Enter 发送，Shift+Enter 换行</span></div><button class="ai-send" id="sendBtn" title="发送"><i class="fas fa-arrow-up"></i></button></div>
+                <div class="ai-composer-bottom">
+                    <div class="ai-composer-tools">
+                        <button type="button" class="ai-attach-btn" id="attachBtn" title="添加文本、代码、DOCX 或 PDF 文件" aria-label="添加附件"><i class="fas fa-paperclip"></i></button>
+                        <span class="ai-hint"><span id="charCount">0</span>/8000 · Enter 发送，Shift+Enter 换行</span>
+                    </div>
+                    <button class="ai-send" id="sendBtn" title="发送"><i class="fas fa-arrow-up"></i></button>
+                </div>
             </div>
             <p class="ai-disclaimer">AI 可能会犯错，请对重要信息进行核实。</p>
         </footer>
@@ -73,135 +79,258 @@
 <script src="/js/marked.min.js"></script>
 <script src="/plugins/purify/purify.min.js"></script>
 <style>
-    .ai-workbench{--ink:#162033;--muted:#8490a5;--line:#e7ebf2;--soft:#f6f8fb;--teal:#087f76;--teal-soft:#e8f7f4;display:flex;height:calc(100vh - 64px);min-height:600px;background:#fff;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif;overflow:hidden}
-    .ai-sidebar{width:286px;flex:0 0 286px;background:#fbfcfe;border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:20}.ai-sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:24px 20px 16px}.ai-brand{display:flex;align-items:center;gap:10px}.ai-brand-mark{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#149a8e,#075f5a);box-shadow:0 7px 16px #087f7630}.ai-brand strong{display:block;font-size:14px;letter-spacing:.01em}.ai-brand span{display:block;margin-top:2px;color:#a3adbc;font-size:9px;letter-spacing:.12em;text-transform:uppercase}.ai-new-btn{display:flex;align-items:center;gap:9px;margin:4px 16px 18px;width:calc(100% - 32px);padding:11px 13px;border:0;border-radius:10px;background:var(--teal);color:#fff;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 8px 18px #087f7626}.ai-new-btn i{font-size:11px}.ai-new-btn kbd{margin-left:auto;padding:2px 5px;border-radius:4px;background:#ffffff22;color:#d3fbf4;font-size:10px;font-weight:400}.ai-sidebar-tools{padding:0 16px 14px;border-bottom:1px solid var(--line)}.ai-search{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#a4adba}.ai-search:focus-within{border-color:#91d5ce;box-shadow:0 0 0 3px #e8f7f4}.ai-search input{min-width:0;flex:1;border:0;outline:0;color:var(--ink);font-size:12px;background:transparent}.ai-search kbd{padding:2px 5px;border-radius:4px;background:#f1f3f6;font-size:10px}.ai-filter-row{display:flex;gap:4px;margin:11px 0 10px}.ai-filter{padding:5px 9px;border:0;border-radius:6px;background:transparent;color:#98a2b2;cursor:pointer;font-size:11px}.ai-filter.active{background:var(--teal-soft);color:var(--teal);font-weight:600}.ai-agent-filter,.ai-start-row select,.ai-composer>select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#657187;outline:0;font-size:12px}.ai-session-scroll{flex:1;overflow-y:auto;padding:9px 9px}.ai-list-loading{padding:40px 10px;text-align:center;color:#a0a9b8;font-size:12px}.ai-list-loading i{margin-right:5px}.ai-session-group{margin:11px 8px 6px;color:#a3adbc;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}.ai-session-item{position:relative;display:flex;align-items:center;gap:9px;width:100%;padding:10px 9px;border:0;border-radius:9px;background:transparent;text-align:left;color:#68758a;cursor:pointer}.ai-session-item:hover{background:#f0f4f8}.ai-session-item.active{background:#eaf7f5;color:#176d66}.ai-session-item i{color:#a8b1c0;font-size:11px}.ai-session-item.active i{color:#0f8e83}.ai-session-text{min-width:0;flex:1}.ai-session-text strong{display:block;overflow:hidden;color:inherit;font-size:12px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.ai-session-text span{display:block;margin-top:3px;overflow:hidden;color:#a4adba;font-size:10px;text-overflow:ellipsis;white-space:nowrap}.ai-pin{color:#e3a63a!important}.ai-session-more{display:none;padding:3px;border:0;background:transparent;color:#9aa5b5;cursor:pointer}.ai-session-item:hover .ai-session-more{display:block}.ai-sidebar-foot{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-top:1px solid var(--line);color:#a2acba;font-size:10px}.ai-sidebar-foot b{color:#657187}.ai-sidebar-foot button{border:0;background:transparent;color:#a2acba;cursor:pointer;font-size:10px}.ai-sidebar-foot button:hover{color:#d15f5f}.ai-main{display:flex;flex:1;min-width:0;flex-direction:column;background:#fff}.ai-topbar{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;border-bottom:1px solid var(--line);flex:0 0 58px}.ai-topbar-context{display:flex;align-items:center;gap:8px;color:#9aa5b5;font-size:11px}.ai-live-dot{width:6px;height:6px;border-radius:50%;background:#2eb7a8;box-shadow:0 0 0 4px #e9f8f5}.ai-topbar-actions{display:flex;align-items:center;gap:11px}.ai-icon-btn{width:30px;height:30px;padding:0;border:0;border-radius:8px;background:transparent;color:#8f9bad;cursor:pointer}.ai-icon-btn:hover{background:#f2f5f8;color:var(--teal)}.ai-avatar{width:28px;height:28px;border:0;border-radius:50%;background:#d9f0ec;color:#087f76;font-size:12px;font-weight:700}.ai-menu-btn,.ai-mobile-close{display:none}.ai-conversation{position:relative;flex:1;min-height:0;overflow:hidden}.ai-empty{display:flex;align-items:center;flex-direction:column;justify-content:center;height:100%;padding:30px;text-align:center}.ai-orbit{position:relative;width:68px;height:68px;display:grid;place-items:center;margin-bottom:22px;border:1px solid #bfe5df;border-radius:22px;color:var(--teal);background:linear-gradient(145deg,#f6fffd,#e8f7f4);box-shadow:0 16px 28px #087f761a}.ai-orbit:before,.ai-orbit:after{content:"";position:absolute;border:1px solid #9fd9d1;border-radius:50%;transform:rotate(35deg)}.ai-orbit:before{inset:-9px 10px}.ai-orbit:after{inset:10px -9px}.ai-orbit span{position:absolute;width:5px;height:5px;border-radius:50%;background:#eeae55;top:5px;right:8px}.ai-orbit i{font-size:22px}.ai-overline{margin:0 0 12px;color:#aab3c0;font-size:10px;font-weight:700;letter-spacing:.2em}.ai-empty h1{margin:0;color:#192338;font-size:clamp(30px,4vw,48px);font-weight:700;letter-spacing:-.055em;line-height:1.12}.ai-empty h1 em{color:var(--teal);font-style:normal}.ai-empty-copy{margin:17px 0 24px;color:#9aa5b5;font-size:13px;line-height:1.8}.ai-start-row{display:flex;align-items:center;gap:7px;width:min(310px,100%)}.ai-start-row select{flex:1;height:38px}.ai-start-btn{width:38px;height:38px;border:0;border-radius:9px;background:var(--teal);color:#fff;cursor:pointer}.ai-suggestions{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:22px}.ai-suggestions button{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#7e899b;cursor:pointer;font-size:11px}.ai-suggestions button:hover{border-color:#a7dcd5;color:var(--teal);background:#f8fffe}.ai-suggestions i{margin-right:4px;color:#77bcb4}.ai-chat{height:100%;display:flex;flex-direction:column}.ai-chat-head{display:flex;align-items:center;justify-content:space-between;padding:18px max(24px,calc((100% - 920px)/2));border-bottom:1px solid #f0f2f6;background:#fff}.ai-chat-agent{display:flex;align-items:center;gap:10px}.ai-agent-orb{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--teal-soft);color:var(--teal);font-size:13px}.ai-chat-title-row{display:flex;align-items:center;gap:6px}.ai-chat-title-row h2{max-width:420px;margin:0;overflow:hidden;color:#273247;font-size:14px;font-weight:650;text-overflow:ellipsis;white-space:nowrap}.ai-chat-title-row button{padding:3px;border:0;background:transparent;color:#a1aab8;cursor:pointer;font-size:10px}.ai-chat-agent p{margin:4px 0 0;color:#a1aab8;font-size:10px}.ai-chat-actions{position:relative;display:flex;gap:2px}.ai-chat-actions .ai-icon-btn.is-pinned{color:#e3a63a}.ai-menu{position:absolute;z-index:10;top:35px;right:0;display:none;width:130px;padding:5px;border:1px solid var(--line);border-radius:9px;background:#fff;box-shadow:0 12px 28px #1d2d4520}.ai-menu.open{display:block}.ai-menu button{display:block;width:100%;padding:8px;border:0;border-radius:6px;background:transparent;color:#68758a;text-align:left;cursor:pointer;font-size:11px}.ai-menu button:hover{background:#f4f7fa}.ai-menu button.danger{color:#c65d64}.ai-messages{flex:1;overflow-y:auto;padding:30px max(24px,calc((100% - 920px)/2)) 48px}.ai-message{display:flex;gap:10px;margin-bottom:24px;animation:ai-in .2s ease-out}.ai-message.user{justify-content:flex-end}.ai-message-avatar{width:28px;height:28px;display:grid;place-items:center;flex:0 0 28px;border-radius:9px;background:#edf1f5;color:#78869a;font-size:10px}.ai-message.ai .ai-message-avatar{background:var(--teal-soft);color:var(--teal)}.ai-message-body{max-width:min(760px,85%)}.ai-message.user .ai-message-body{display:flex;flex-direction:column;align-items:flex-end}.ai-message-meta{margin-bottom:5px;color:#a0a9b7;font-size:10px}.ai-message.user .ai-message-meta{display:none}.ai-bubble{padding:12px 15px;border-radius:14px;background:#f5f7fa;color:#3d4a5d;font-size:13px;line-height:1.75}.ai-message.user .ai-bubble{border-bottom-right-radius:4px;background:var(--teal);color:#fff}.ai-message.ai .ai-bubble{border-bottom-left-radius:4px;border:1px solid #eef1f5;background:#fff}.ai-bubble p:first-child{margin-top:0}.ai-bubble p:last-child{margin-bottom:0}.ai-bubble pre{overflow:auto;padding:11px;border-radius:8px;background:#172033;color:#e7f0f6}.ai-bubble code{font-size:.9em}.ai-bubble:not(pre)>code{padding:2px 4px;border-radius:4px;background:#eef2f5}.ai-message-actions{display:flex;gap:10px;margin:7px 2px 0;opacity:0;transition:.15s}.ai-message:hover .ai-message-actions{opacity:1}.ai-message-actions button{padding:0;border:0;background:transparent;color:#a2adbb;cursor:pointer;font-size:10px}.ai-message-actions button:hover{color:var(--teal)}.ai-thinking{display:inline-flex;align-items:center;gap:4px;padding:11px 14px;border:1px solid #eef1f5;border-radius:13px;color:#a0a9b7;background:#fff;font-size:11px}.ai-thinking i{color:var(--teal)}.ai-composer-area{padding:10px max(24px,calc((100% - 920px)/2)) 13px;border-top:1px solid #f0f2f6;background:#fff}.ai-composer{position:relative;padding:10px 12px 8px;border:1px solid #dfe5ec;border-radius:14px;background:#fff;box-shadow:0 8px 28px #1d2d450b}.ai-composer:focus-within{border-color:#8acfc7;box-shadow:0 8px 28px #087f7614,0 0 0 3px #eaf8f5}.ai-composer>select{position:absolute;top:11px;left:12px;width:auto;max-width:150px;border:0;padding:2px 20px 2px 0;color:var(--teal);font-size:10px;font-weight:600}.ai-composer textarea{display:block;width:100%;min-height:48px;padding:25px 4px 5px;border:0;outline:0;resize:none;color:#273247;font:13px/1.6 inherit}.ai-composer textarea::placeholder{color:#b1bac7}.ai-composer-bottom{display:flex;align-items:center;justify-content:space-between;color:#adb5c1;font-size:10px}.ai-send{width:29px;height:29px;border:0;border-radius:8px;background:var(--teal);color:#fff;cursor:pointer}.ai-send:disabled{opacity:.4;cursor:default}.ai-disclaimer{margin:8px 0 0;color:#b7bec9;text-align:center;font-size:9px}.ai-backdrop{display:none}
-    @keyframes ai-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-    @media(max-width:760px){.ai-workbench{height:calc(100vh - 56px);min-height:520px}.ai-sidebar{position:absolute;top:0;bottom:0;left:0;width:min(88vw,310px);transform:translateX(-105%);transition:transform .22s ease;box-shadow:14px 0 35px #17203322}.ai-sidebar.open{transform:none}.ai-backdrop{position:absolute;z-index:15;inset:0;background:#17203355}.ai-backdrop.open{display:block}.ai-menu-btn,.ai-mobile-close{display:block}.ai-topbar{padding:0 14px}.ai-topbar-context{margin-right:auto;margin-left:8px}.ai-topbar-actions{gap:4px}.ai-empty{padding:18px}.ai-empty h1{font-size:36px}.desktop-only{display:none}.ai-empty-copy{font-size:12px}.ai-suggestions{max-width:330px}.ai-suggestions button{font-size:10px}.ai-chat-head{padding:13px 14px}.ai-chat-title-row h2{max-width:190px;font-size:13px}.ai-messages{padding:22px 14px 35px}.ai-message-body{max-width:88%}.ai-bubble{font-size:12px;padding:10px 12px}.ai-message-actions{opacity:1}.ai-composer-area{padding:8px 12px 10px}.ai-composer>select{max-width:130px}.ai-disclaimer{font-size:8px}.ai-chat-actions .ai-icon-btn{width:28px}}
-</style>
+    /* 全屏工作面：脱离 max-w-7xl / py-8 容器束缚，隐藏站点 footer，让聊天区占满视口 */
+    body > main.max-w-7xl{max-width:100%!important;padding:0!important}
+    body > footer.mt-16{display:none!important}
 
-<script src="/js/llm-chat-workbench.js?v=20260717-3"></script>
-<script>
-(function(){
-    'use strict';
-    if(window.__LLM_CHAT_ENHANCED__)return;
-    var state={sessions:[],agents:[],session:null,agentId:'',filter:'all',streaming:false,controller:null};
-    var $=function(id){return document.getElementById(id);};
-    var api=function(url,options){options=options||{};options.headers=Object.assign({'X-Requested-With':'XMLHttpRequest','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content||''},options.headers||{});return window.taskApiFetch(url,options);};
-    var esc=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});};
-    var payload=function(r){return r&&((r.data!==undefined?r.data:null)||(r.result!==undefined?r.result:null)||{});};
-    var agentsFrom=function(r){var p=payload(r);return Array.isArray(p)?p:(p.agents||[]);};
-    var textFrom=function(v){return String(v==null?'':v);};
-    function markdown(text){var raw=esc(text);try{if(window.marked){raw=window.marked.parse(textFrom(text));}if(window.DOMPurify){return window.DOMPurify.sanitize(raw);}}catch(e){}return raw.replace(/\n/g,'<br>');}
-    function formatTime(v){if(!v)return '';var d=new Date(String(v).replace(' ','T'));if(isNaN(d.getTime()))return '';var now=new Date();if(d.toDateString()===now.toDateString())return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});return (d.getMonth()+1)+'/'+d.getDate();}
-    function agentById(id){return state.agents.find(function(a){return String(a.id)===String(id);})||null;}
-    function agentName(id){var a=agentById(id);return a?a.name:'通用助手';}
-    function syncAgentSelects(){var opts='<option value="">选择智能体</option>'+state.agents.map(function(a){return '<option value="'+esc(a.id)+'">'+esc(a.name)+'</option>';}).join('');['agentSelect','composerAgent'].forEach(function(id){var el=$(id);if(!el)return;el.innerHTML=opts;el.value=state.agentId||'';});var filter='<option value="">所有智能体</option>'+state.agents.map(function(a){return '<option value="'+esc(a.id)+'">'+esc(a.name)+'</option>';}).join('');$('sessionAgentFilter').innerHTML=filter;}
-    function defaultAgentId(){var preferred=state.agents.find(function(a){return a.builtin_slug==='builtin_common';})||state.agents[0];return preferred?String(preferred.id):'builtin_common';}
-    async function loadAgents(){try{var r=await api('/api/v2/llm/agents');var j=await r.json();state.agents=agentsFrom(j);if(!state.agents.length){state.agents=[{id:'builtin_common',name:'通用助手'}];}if(!state.agentId)state.agentId=defaultAgentId();syncAgentSelects();}catch(e){console.error(e);state.agents=[{id:'builtin_common',name:'通用助手'}];if(!state.agentId)state.agentId='builtin_common';syncAgentSelects();}}
-    async function loadSessions(){try{var r=await api('/api/v2/llm/sessions');var j=await r.json();state.sessions=Array.isArray(j.data)?j.data:(Array.isArray(j.result)?j.result:[]);renderSessions();}catch(e){$('sessionList').innerHTML='<div class="ai-list-loading">会话加载失败，请刷新重试</div>';}}
-    function visibleSessions(){var q=($('sessionSearch').value||'').trim().toLowerCase(), aid=$('sessionAgentFilter').value;return state.sessions.filter(function(s){var title=(s.title||'未命名会话').toLowerCase();if(q&&title.indexOf(q)<0)return false;if(aid&&String(s.agent_id)!==String(aid))return false;if(state.filter==='pinned'&&!s.is_pinned)return false;if(state.filter==='active'){var d=new Date(String(s.updated_at||s.last_message_at||'').replace(' ','T'));if(!d.getTime()||Date.now()-d.getTime()>259200000)return false;}return true;});}
-    function renderSessions(){var list=visibleSessions(), html='';$('sessionCount').textContent=state.sessions.length;if(!list.length){$('sessionList').innerHTML='<div class="ai-list-loading">还没有匹配的会话</div>';return;}var last='';list.forEach(function(s){var day=(s.last_message_at||s.updated_at||'').slice(0,10);if(day!==last){html+='<div class="ai-session-group">'+(day||'最近')+'</div>';last=day;}html+='<button class="ai-session-item '+(state.session&&String(state.session.id)===String(s.id)?'active':'')+'" data-session-id="'+esc(s.id)+'"><i class="'+(s.is_pinned?'fas fa-bookmark ai-pin':'far fa-comment')+'"></i><span class="ai-session-text"><strong>'+esc(s.title||'未命名会话')+'</strong><span>'+esc(s.agent_name||agentName(s.agent_id))+' · '+formatTime(s.last_message_at||s.updated_at)+'</span></span><span class="ai-session-more" data-session-menu="'+esc(s.id)+'"><i class="fas fa-ellipsis"></i></span></button>';});$('sessionList').innerHTML=html;}
-    function setMode(chat){$('emptyState').hidden=chat;$('chatView').hidden=!chat;$('topbarContext').textContent=chat?(state.session?agentName(state.session.agent_id):'对话中'):'准备开始';}
-    function fillSessionHeader(){if(!state.session)return;$('chatTitle').textContent=state.session.title||'未命名会话';$('chatAgentName').textContent='智能体 · '+agentName(state.session.agent_id);state.agentId=String(state.session.agent_id||'');$('composerAgent').value=state.agentId;$('composerAgent').disabled=true;$('pinBtn').classList.toggle('is-pinned',!!state.session.is_pinned);$('pinBtn').innerHTML='<i class="'+(state.session.is_pinned?'fas':'far')+' fa-bookmark"></i>';renderSessions();}
-    function renderMessages(messages){$('messages').innerHTML='';(messages||[]).forEach(function(m){appendMessage(m.role,m.content,false);});$('messages').scrollTop=$('messages').scrollHeight;}
-    function appendMessage(role,content,scroll){var id='msg-'+Date.now()+'-'+Math.random().toString(16).slice(2), row=document.createElement('div');row.className='ai-message '+(role==='user'?'user':'ai');row.dataset.messageId=id;row.dataset.content=content;row.innerHTML='<div class="ai-message-avatar">'+(role==='user'?'{{ mb_substr(Auth::user()->name, 0, 1) }}':'✦')+'</div><div class="ai-message-body"><div class="ai-message-meta">'+(role==='user'?'你':esc(agentName(state.session&&state.session.agent_id)))+'</div><div class="ai-bubble '+(role==='user'?'plain':'markdown-content')+'">'+(role==='user'?esc(content).replace(/\n/g,'<br>'):markdown(content))+'</div>'+(role==='assistant'?'<div class="ai-message-actions"><button data-message-action="copy"><i class="far fa-copy"></i> 复制</button><button data-message-action="note"><i class="far fa-note-sticky"></i> 笔记</button><button data-message-action="mind"><i class="fas fa-sitemap"></i> 导图</button><button data-message-action="quote"><i class="fas fa-quote-left"></i> 引用</button></div>':'')+'</div>';$('messages').appendChild(row);if(scroll)$('messages').scrollTop=$('messages').scrollHeight;return row;}
-    function showThinking(){var el=document.createElement('div');el.className='ai-message ai';el.id='thinking';el.innerHTML='<div class="ai-message-avatar">✦</div><div class="ai-thinking"><i class="fas fa-circle-notch fa-spin"></i> 正在思考…</div>';$('messages').appendChild(el);$('messages').scrollTop=$('messages').scrollHeight;}
-    function removeThinking(){var el=$('thinking');if(el)el.remove();}
-    async function openSession(id){try{var r=await api('/api/v2/llm/sessions/'+id);var j=await r.json();var data=payload(j);state.session=data;state.agentId=String(data.agent_id||'');setMode(true);fillSessionHeader();renderMessages(data.messages||[]);closeSidebar();}catch(e){toast('打开会话失败','error');}}
-    async function createSession(prompt){var id=$('agentSelect').value||$('composerAgent').value||state.agentId||defaultAgentId();if(!id){toast('暂无可用智能体，请先完成智能体配置','error');return;}var title=prompt?prompt.slice(0,30):agentName(id)+' 对话';try{var r=await api('/api/v2/llm/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({agent_id:id,title:title})});var j=await r.json();if(!r.ok||!j.success)throw Error(j.message||j.msg||'创建失败');state.session=payload(j);state.agentId=String(id);setMode(true);fillSessionHeader();renderMessages([]);await loadSessions();if(prompt)sendMessage(prompt);}catch(e){toast('创建会话失败：'+e.message,'error');}}
-    async function sendMessage(value){
-        var input=$('messageInput'),text=textFrom(value||input.value).trim();
-        if(!text)return;
-        if(!state.session){await createSession(text);return;}
-        if(state.streaming)return;
-
-        input.value='';resizeInput();updateCount();appendMessage('user',text,true);
-        state.streaming=true;state.controller=new AbortController();
-        $('sendBtn').disabled=false;$('sendBtn').innerHTML='<i class="fas fa-stop"></i>';$('sendBtn').title='停止生成';
-        showThinking();
-
-        var responseRow=null,answer='',streamError='';
-        function updateAnswer(){
-            if(!responseRow){removeThinking();responseRow=appendMessage('assistant','',true);}
-            responseRow.querySelector('.ai-bubble').innerHTML=markdown(answer||streamError||'正在生成…');
-            responseRow.dataset.content=answer||streamError;
-            $('messages').scrollTop=$('messages').scrollHeight;
-        }
-        function consumeEvent(eventText){
-            eventText.split(/\n/).forEach(function(line){
-                if(line.indexOf('data:')!==0)return;
-                var raw=line.replace(/^data:\s?/,'').trim();
-                if(!raw||raw==='[DONE]')return;
-                try{
-                    var item=JSON.parse(raw),delta=item.choices&&item.choices[0]&&item.choices[0].delta;
-                    if(item.type==='error'){streamError=item.message||'模型请求失败';return;}
-                    var piece=delta&&delta.content!==undefined?delta.content:(item.content||'');
-                    if(Array.isArray(piece)){piece=piece.map(function(part){return part&&part.text?part.text:'';}).join('');}
-                    answer+=textFrom(piece);
-                }catch(parseError){
-                    if(raw.charAt(0)!=='{'&&raw.charAt(0)!=='['){streamError+=raw;}
-                }
-            });
-            if(answer||streamError)updateAnswer();
-        }
-
-        try{
-            var r=await api('/api/v2/llm/chat',{method:'POST',signal:state.controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({query:text,session_id:state.session.id,agent_id:state.agentId})});
-            if(!r.ok){var errorBody='',errorMessage='';try{errorBody=await r.text();var errorJson=JSON.parse(errorBody);errorMessage=errorJson.message||errorJson.msg||errorJson.error||'';if(typeof errorMessage==='object')errorMessage=JSON.stringify(errorMessage);}catch(ignore){}throw Error(errorMessage||errorBody||('HTTP '+r.status));}
-            if(r.body&&r.body.getReader){
-                var reader=r.body.getReader(),decoder=new TextDecoder(),buffer='';
-                while(true){
-                    var part=await reader.read();
-                    buffer=(buffer+decoder.decode(part.value||new Uint8Array(),{stream:!part.done})).replace(/\r\n/g,'\n');
-                    var chunks=buffer.split(/\n\n/);buffer=chunks.pop();chunks.forEach(consumeEvent);
-                    if(part.done)break;
-                }
-                if(buffer.trim())consumeEvent(buffer);
-            }else{
-                var j=await r.json(),data=payload(j);answer=data.content||data.answer||'';updateAnswer();
-            }
-            if(!answer&&streamError)throw Error(streamError);
-            if(!answer&&!streamError)throw Error('模型没有返回可显示的内容');
-            await loadSessions();
-        }catch(e){
-            removeThinking();
-            if(e.name==='AbortError'){if(responseRow&&!answer){responseRow.remove();}toast('已停止生成','info');}
-            else{if(responseRow&&!answer){responseRow.remove();}toast('发送失败：'+e.message,'error');}
-        }finally{
-            state.streaming=false;state.controller=null;$('sendBtn').innerHTML='<i class="fas fa-arrow-up"></i>';$('sendBtn').title='发送';
-        }
+    .ai-workbench{
+        --ink:#0F1115;--muted:#81858C;--caption:#ADB2B8;--line:#E1E5EE;--line-soft:#EEF0F4;
+        --soft:#F6F7F9;--hover:#F1F3F5;--brand:#4176E6;--brand-soft:#EDF3FE;--brand-soft-2:#E4EDFD;
+        --ok:#22c55e;--warn:#e0a54b;--danger:#ef4444;
+        --shadow-lv2:0 4px 12px rgba(0,0,0,.02),0 2px 8px rgba(0,0,0,.04);
+        --chat-width:748px;--composer-width:calc(var(--chat-width) + 32px);--clearance:16px;
+        display:flex;height:calc(100vh - 64px);min-height:560px;background:#fff;color:var(--ink);
+        font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB',sans-serif;overflow:hidden
     }
-    async function togglePin(){if(!state.session)return;try{var r=await api('/api/v2/llm/sessions/'+state.session.id+'/toggle-pin',{method:'POST'}),j=await r.json();if(j.success){state.session.is_pinned=payload(j).is_pinned;fillSessionHeader();await loadSessions();}}catch(e){toast('固定操作失败','error');}}
-    async function clearSession(){if(!state.session||!confirm('确定清空当前会话吗？'))return;try{var r=await api('/api/v2/llm/sessions/'+state.session.id+'/clear',{method:'POST'}),j=await r.json();if(j.success)renderMessages([]);}catch(e){toast('清空失败','error');}}
-    async function deleteSession(){if(!state.session||!confirm('确定删除当前会话吗？'))return;try{var r=await api('/api/v2/llm/sessions/'+state.session.id,{method:'DELETE'});if(!r.ok)throw Error('删除请求失败');state.session=null;$('composerAgent').disabled=false;if(!state.agentId)state.agentId=defaultAgentId();syncAgentSelects();setMode(false);await loadSessions();}catch(e){toast('删除失败：'+e.message,'error');}}
-    async function renameSession(){if(!state.session)return;var name=prompt('请输入新的会话标题',state.session.title||'未命名会话');if(!name)return;try{var r=await api('/api/v2/llm/sessions/'+state.session.id+'/title',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:name})}),j=await r.json();if(j.success){state.session.title=name;fillSessionHeader();await loadSessions();}}catch(e){toast('重命名失败','error');}}
-    async function regenerate(){if(!state.session||state.streaming)return;try{var r=await api('/api/v2/llm/sessions/'+state.session.id+'/regenerate',{method:'POST'}),j=await r.json(),d=payload(j);if(!j.success)throw Error(j.message||'无法重新生成');await openSession(state.session.id);sendMessage(d.query);}catch(e){toast('重新生成失败：'+e.message,'error');}}
-    function exportSession(){if(!state.session)return;var lines=['# '+(state.session.title||'未命名会话'),'','- 智能体：'+agentName(state.session.agent_id),''];Array.from(document.querySelectorAll('.ai-message')).forEach(function(row){lines.push(row.classList.contains('user')?'## 用户':'## AI');lines.push(row.dataset.content||row.querySelector('.ai-bubble').innerText);lines.push('');});var blob=new Blob([lines.join('\n')],{type:'text/markdown;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(state.session.title||'ai-session')+'.md';a.click();URL.revokeObjectURL(a.href);}
-    async function saveArtifact(row,type){var content=row.dataset.content||row.querySelector('.ai-bubble').innerText;if(!content)return;var title=(state.session.title||'AI会话')+' - '+content.split('\n').find(function(x){return x.trim();});try{var url=type==='note'?'/api/v2/notes':'/api/v2/minds',body=type==='note'?{name:'[AI] '+title.slice(0,240),content:content,tags:'AI会话',status:1}:{name:'[AI导图] '+title.slice(0,230),content:content,source_type:'llm',source_id:state.session.id};var r=await api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),j=await r.json();if(!r.ok)throw Error(j.message||j.msg||'保存失败');var d=payload(j),id=d.id||(d.mind&&d.mind.id);toast(type==='note'?'已保存为笔记':'已创建思维导图','success');if(type==='mind'&&id)window.open('/mind/'+id,'_blank');}catch(e){toast('保存失败：'+e.message,'error');}}
-    function toast(msg,type){var old=document.querySelector('.ai-toast');if(old)old.remove();var el=document.createElement('div');el.className='ai-toast '+(type||'');el.textContent=msg;document.body.appendChild(el);setTimeout(function(){el.remove();},2800);}
-    function closeSidebar(){$('aiSidebar').classList.remove('open');$('sidebarBackdrop').classList.remove('open');}
-    function resizeInput(){$('messageInput').style.height='auto';$('messageInput').style.height=Math.min($('messageInput').scrollHeight,140)+'px';}
-    function updateCount(){$('charCount').textContent=$('messageInput').value.length;}
-    function bind(){document.addEventListener('click',function(e){var session=e.target.closest('.ai-session-item');if(session&&!e.target.closest('.ai-session-more'))openSession(session.dataset.sessionId);var action=e.target.closest('[data-message-action]');if(action){var row=action.closest('.ai-message'),a=action.dataset.messageAction;if(a==='copy')navigator.clipboard.writeText(row.dataset.content||'').then(function(){toast('已复制','success');});if(a==='note')saveArtifact(row,'note');if(a==='mind')saveArtifact(row,'mind');if(a==='quote'){$('messageInput').value='> '+(row.dataset.content||'').replace(/\n/g,'\n> ')+'\n\n';resizeInput();updateCount();$('messageInput').focus();}}if(!e.target.closest('#chatMenuBtn')&&!e.target.closest('#chatMenu'))$('chatMenu').classList.remove('open');});$('newChatBtn').onclick=function(){if(state.streaming&&state.controller)state.controller.abort();state.session=null;state.agentId='';$('composerAgent').disabled=false;syncAgentSelects();setMode(false);closeSidebar();};$('startEmptyBtn').onclick=function(){createSession('');};$('sendBtn').onclick=function(){if(state.streaming&&state.controller){state.controller.abort();return;}sendMessage();};$('messageInput').addEventListener('input',function(){resizeInput();updateCount();});$('messageInput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});$('agentSelect').onchange=function(){state.agentId=this.value;$('composerAgent').value=this.value;};$('composerAgent').onchange=function(){state.agentId=this.value;};$('sessionSearch').oninput=renderSessions;$('sessionAgentFilter').onchange=renderSessions;document.querySelectorAll('.ai-filter').forEach(function(b){b.onclick=function(){document.querySelectorAll('.ai-filter').forEach(function(x){x.classList.remove('active');});b.classList.add('active');state.filter=b.dataset.filter;renderSessions();};});document.querySelectorAll('.ai-suggestions button').forEach(function(b){b.onclick=function(){var p=b.dataset.prompt;if(state.session)sendMessage(p);else{state.agentId=$('agentSelect').value;createSession(p);}};});$('openSidebar').onclick=function(){$('aiSidebar').classList.add('open');$('sidebarBackdrop').classList.add('open');};$('closeSidebar').onclick=closeSidebar;$('sidebarBackdrop').onclick=closeSidebar;$('pinBtn').onclick=togglePin;$('renameBtn').onclick=renameSession;$('chatMenuBtn').onclick=function(){$('chatMenu').classList.toggle('open');};$('clearBtn').onclick=clearSession;$('deleteBtn').onclick=deleteSession;$('exportBtn').onclick=exportSession;$('clearUnpinnedBtn').onclick=async function(){var removable=state.sessions.filter(function(s){return !s.is_pinned;});if(!removable.length){toast('没有可清理的会话','info');return;}if(!confirm('确定删除 '+removable.length+' 个未固定会话吗？'))return;for(var i=0;i<removable.length;i++){await api('/api/v2/llm/sessions/'+removable[i].id,{method:'DELETE'});}await loadSessions();};document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('newChatBtn').click();}if(e.key==='/'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA'){e.preventDefault();$('sessionSearch').focus();}});}
-    document.addEventListener('DOMContentLoaded',function(){bind();$('newChatBtn').addEventListener('click',function(){state.agentId=defaultAgentId();syncAgentSelects();$('messageInput').focus();});$('regenerateBtn').addEventListener('click',regenerate);loadAgents();loadSessions();});
-}());
-</script>
-<style>
-    .ai-workbench{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","PingFang SC",sans-serif}.ai-workbench,.ai-workbench *{box-sizing:border-box}.ai-empty[hidden],.ai-chat[hidden]{display:none!important}
-    .ai-message-body{min-width:0}.ai-bubble{max-width:100%;overflow-wrap:anywhere;font-size:15px}.ai-bubble pre,.ai-bubble table{max-width:100%}.ai-composer textarea{font-size:14px}
-    .ai-message-actions button.active{color:var(--teal)}
-    .ai-chat-subline{display:flex;align-items:center;gap:8px}.ai-chat-subline p{margin:4px 0 0}.ai-branch-nav{display:flex;align-items:center;gap:3px;margin-top:4px;padding-left:7px;border-left:1px solid #dfe5ec;color:#7f8b9d;font-size:9px}.ai-branch-nav[hidden]{display:none}.ai-branch-nav button{width:18px;height:18px;padding:0;border:0;border-radius:5px;background:transparent;color:#778397;cursor:pointer;font-size:9px}.ai-branch-nav button:hover:not(:disabled){background:#edf7f5;color:var(--teal)}.ai-branch-nav button:disabled{opacity:.25;cursor:default}
-    .ai-jump-bottom{position:absolute;z-index:8;left:50%;bottom:18px;width:34px;height:34px;transform:translateX(-50%);border:1px solid #dfe5ec;border-radius:50%;background:#fff;color:#68758a;box-shadow:0 7px 22px #17203322;cursor:pointer}.ai-jump-bottom:hover{color:var(--teal);border-color:#a7dcd5}.ai-jump-bottom[hidden]{display:none}
-    .ai-bubble pre{position:relative;padding-top:42px}.ai-code-copy{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid #ffffff26;border-radius:6px;background:#ffffff12;color:#cbd5e1;cursor:pointer;font-size:10px}.ai-code-copy:hover{background:#ffffff20;color:#fff}
-    .ai-message.user .ai-message-actions{justify-content:flex-end}.ai-message-editor{display:block;width:min(560px,70vw);min-height:100px;padding:10px;border:1px solid #cad4df;border-radius:9px;outline:0;resize:vertical;color:#273247;background:#fff;font:14px/1.6 inherit}.ai-message-editor:focus{border-color:#79c5bc;box-shadow:0 0 0 3px #e8f7f4}.ai-message-editor-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}.ai-message-editor-actions button{padding:6px 10px;border:1px solid #dfe5ec;border-radius:7px;background:#fff;color:#68758a;cursor:pointer;font-size:11px}.ai-message-editor-actions button.primary{border-color:var(--teal);background:var(--teal);color:#fff}
-    .ai-inline-error{display:flex;align-items:center;gap:9px;max-width:760px;margin:0 auto 22px;padding:11px 13px;border:1px solid #f0ced1;border-radius:10px;background:#fff7f7;color:#a14d55;font-size:12px}.ai-inline-error span{flex:1}.ai-inline-error button{padding:5px 9px;border:1px solid #ddb2b6;border-radius:6px;background:#fff;color:#a14d55;cursor:pointer;font-size:11px}
-    .ai-thinking{gap:5px}.ai-thinking span{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:ai-thinking 1.15s infinite ease-in-out}.ai-thinking span:nth-child(2){animation-delay:.15s}.ai-thinking span:nth-child(3){animation-delay:.3s}.ai-thinking b{margin-left:3px;font-weight:500}.ai-workbench.is-generating .ai-live-dot{animation:ai-pulse 1.4s infinite}.ai-workbench.is-stopping .ai-live-dot{background:#e0a54b;box-shadow:0 0 0 4px #fff4df}
-    .ai-composer.streaming{border-color:#91d5ce}.ai-composer.streaming textarea{opacity:.72}.ai-session-more{display:block!important;opacity:0;transition:opacity .15s}.ai-session-item:hover .ai-session-more,.ai-session-item.active .ai-session-more{opacity:1}
-    .ai-composer-tools{display:flex;align-items:center;min-width:0;gap:8px}.ai-attach-btn{width:27px;height:27px;flex:0 0 27px;padding:0;border:0;border-radius:7px;background:transparent;color:#95a1b2;cursor:pointer}.ai-attach-btn:hover{background:#eef6f4;color:var(--teal)}.ai-attach-btn:disabled{opacity:.4;cursor:default}.ai-attachment-tray{display:flex;gap:7px;overflow-x:auto;padding:24px 2px 4px}.ai-attachment-tray[hidden]{display:none}.ai-attachment-chip{display:flex;align-items:center;min-width:0;max-width:230px;gap:8px;padding:7px 8px;border:1px solid #dfe7ed;border-radius:9px;background:#f8fafc;color:#526074}.ai-attachment-chip.uploading{opacity:.65}.ai-attachment-icon{width:27px;height:27px;display:grid;place-items:center;flex:0 0 27px;border-radius:7px;background:#e8f7f4;color:var(--teal);font-size:10px;font-weight:700;text-transform:uppercase}.ai-attachment-copy{min-width:0;flex:1}.ai-attachment-copy strong{display:block;overflow:hidden;font-size:11px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.ai-attachment-copy span{display:block;margin-top:2px;color:#9aa5b5;font-size:9px}.ai-attachment-remove{width:20px;height:20px;padding:0;border:0;border-radius:5px;background:transparent;color:#a4adba;cursor:pointer}.ai-attachment-remove:hover{background:#edf1f4;color:#c55b64}.ai-message-attachments{display:flex;max-width:100%;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-bottom:6px}.ai-message-attachment{display:flex;align-items:center;min-width:0;max-width:100%;gap:6px;padding:6px 9px;border:1px solid #dfe7ed;border-radius:8px;background:#fff;color:#68758a;font-size:11px}.ai-message-attachment span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ai-composer.dragging{border-color:#44afa3;box-shadow:0 0 0 4px #e8f7f4}.ai-composer.dragging:after{content:"松开即可添加文件";position:absolute;z-index:5;inset:5px;display:grid;place-items:center;border:1px dashed #58b8ad;border-radius:10px;background:#f5fffded;color:var(--teal);font-size:13px;font-weight:600}
-    .ai-icon-btn:focus-visible,.ai-send:focus-visible,.ai-new-btn:focus-visible,.ai-session-item:focus-visible,.ai-suggestions button:focus-visible{outline:2px solid #58b8ad;outline-offset:2px}
-    @keyframes ai-thinking{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}@keyframes ai-pulse{50%{box-shadow:0 0 0 7px #e9f8f500}}
-    .ai-toast{position:fixed;z-index:100;right:22px;bottom:24px;padding:10px 14px;border-radius:9px;background:#172033;color:#fff;box-shadow:0 10px 25px #17203330;font-size:12px}.ai-toast.success{background:#087f76}.ai-toast.error{background:#c85f67}
-    @media(max-width:760px){.ai-message-body{max-width:90%}.ai-bubble{font-size:14px}.ai-composer-area{padding-bottom:calc(10px + env(safe-area-inset-bottom))}.ai-message-editor{width:72vw}.ai-message-actions{flex-wrap:wrap}.ai-inline-error{margin-right:14px;margin-left:14px}.ai-jump-bottom{bottom:12px}.ai-composer-bottom>span{font-size:8px}.ai-attachment-chip{max-width:190px}}
+    .ai-workbench,.ai-workbench *{box-sizing:border-box}
+    .ai-empty[hidden],.ai-chat[hidden]{display:none!important}
+
+    /* ===== 会话侧栏（DSH sidebar 填充/节奏） ===== */
+    .ai-sidebar{width:280px;flex:0 0 280px;background:#F9FAFB;border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:20}
+    .ai-sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:16px 12px 10px}
+    .ai-brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .ai-brand-mark{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex:0 0 28px;color:#fff;background:linear-gradient(135deg,#5688f4,#3159c9);box-shadow:0 6px 14px rgba(65,118,230,.28)}
+    .ai-brand strong{display:block;font-size:13px;letter-spacing:.01em;white-space:nowrap}
+    .ai-brand span{display:block;margin-top:2px;color:var(--caption);font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+    .ai-new-btn{display:flex;align-items:center;gap:8px;margin:2px 12px 12px;width:calc(100% - 24px);padding:9px 12px;border:0;border-radius:10px;background:var(--brand);color:#fff;cursor:pointer;font-size:13px;font-weight:500;box-shadow:0 6px 16px rgba(65,118,230,.24);transition:background .15s}
+    .ai-new-btn:hover{background:#3568d0}
+    .ai-new-btn i{font-size:11px}
+    .ai-new-btn kbd{margin-left:auto;padding:2px 6px;border-radius:5px;background:rgba(255,255,255,.18);color:#dbe8ff;font-size:10px;font-weight:400}
+    .ai-sidebar-tools{padding:0 12px 12px;border-bottom:1px solid var(--line-soft)}
+    .ai-search{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--caption)}
+    .ai-search:focus-within{border-color:#a9c3f5;box-shadow:0 0 0 3px var(--brand-soft)}
+    .ai-search input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:var(--ink);font-size:12px}
+    .ai-search kbd{padding:1px 5px;border-radius:4px;background:var(--soft);font-size:10px;color:var(--caption)}
+    .ai-filter-row{display:flex;gap:2px;margin:10px 0 9px}
+    .ai-filter{padding:4px 9px;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;font-size:11px}
+    .ai-filter.active{background:var(--brand-soft);color:var(--brand);font-weight:600}
+    .ai-agent-filter{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--muted);outline:0;font-size:12px}
+    .ai-agent-filter:focus{border-color:#a9c3f5;box-shadow:0 0 0 3px var(--brand-soft)}
+    .ai-session-scroll{flex:1;overflow-y:auto;padding:6px 8px}
+    .ai-list-loading{padding:36px 10px;text-align:center;color:var(--caption);font-size:12px}
+    .ai-list-loading i{margin-right:5px}
+    .ai-session-group{margin:12px 8px 6px;color:var(--caption);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+    .ai-session-item{position:relative;display:flex;align-items:center;gap:9px;width:100%;padding:8px 9px;border:0;border-radius:9px;background:transparent;text-align:left;color:var(--muted);cursor:pointer;transition:background .12s}
+    .ai-session-item:hover{background:var(--hover)}
+    .ai-session-item.active{background:var(--brand-soft);color:var(--brand)}
+    .ai-session-item i{color:var(--caption);font-size:11px}
+    .ai-session-item.active i{color:var(--brand)}
+    .ai-session-text{min-width:0;flex:1}
+    .ai-session-text strong{display:block;overflow:hidden;color:inherit;font-size:12px;font-weight:500;text-overflow:ellipsis;white-space:nowrap}
+    .ai-session-text span{display:block;margin-top:2px;overflow:hidden;color:var(--caption);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+    .ai-pin{color:#e3a63a!important}
+    .ai-session-more{opacity:0;padding:3px;border:0;background:transparent;color:var(--caption);cursor:pointer;transition:opacity .12s}
+    .ai-session-item:hover .ai-session-more,.ai-session-item.active .ai-session-more{opacity:1}
+    .ai-sidebar-foot{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-top:1px solid var(--line-soft);color:var(--caption);font-size:10px}
+    .ai-sidebar-foot b{color:var(--muted)}
+    .ai-sidebar-foot button{border:0;background:transparent;color:var(--caption);cursor:pointer;font-size:10px}
+    .ai-sidebar-foot button:hover{color:var(--danger)}
+
+    /* ===== 主列 ===== */
+    .ai-main{display:flex;flex:1;min-width:0;flex-direction:column;background:#fff;position:relative}
+    .ai-topbar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line-soft);flex:0 0 48px}
+    .ai-topbar-context{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px}
+    .ai-live-dot{width:6px;height:6px;border-radius:50%;background:#3aa9ef;box-shadow:0 0 0 4px rgba(58,169,239,.14)}
+    .ai-topbar-actions{display:flex;align-items:center;gap:8px}
+    .ai-icon-btn{width:30px;height:30px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;transition:background .12s,color .12s}
+    .ai-icon-btn:hover{background:var(--hover);color:var(--ink)}
+    .ai-avatar{width:26px;height:26px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--brand-soft-2);color:var(--brand);font-size:11px;font-weight:600}
+    .ai-menu-btn,.ai-mobile-close{display:none}
+
+    .ai-conversation{position:relative;flex:1;min-height:0;overflow:hidden}
+
+    /* ===== 空状态 hero（DSH hero：紧凑标题栈，输入卡上浮到版面中部） ===== */
+    .ai-empty{display:flex;align-items:center;flex-direction:column;justify-content:flex-start;height:100%;padding:6vh 30px 0;text-align:center;overflow-y:auto}
+    .ai-orbit{position:relative;width:40px;height:40px;display:grid;place-items:center;margin-bottom:18px;border-radius:12px;color:#fff;background:linear-gradient(135deg,#5688f4,#3159c9);box-shadow:0 10px 22px rgba(65,118,230,.30)}
+    .ai-orbit i{font-size:16px}
+    .ai-orbit span{position:absolute;width:5px;height:5px;border-radius:50%;background:#f5b24a;top:-2px;right:-2px;border:2px solid #fff}
+    .ai-overline{margin:0 0 10px;color:var(--caption);font-size:10px;font-weight:600;letter-spacing:.18em}
+    .ai-empty h1{margin:0;color:var(--ink);font-size:clamp(24px,3vw,28px);font-weight:500;letter-spacing:-.02em;line-height:1.25}
+    .ai-empty h1 em{color:var(--brand);font-style:normal}
+    .ai-empty-copy{margin:12px 0 22px;color:var(--muted);font-size:13px;line-height:1.7}
+    .ai-start-row{display:flex;align-items:center;gap:6px;width:min(320px,100%)}
+    .ai-start-row select{flex:1;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);outline:0;font-size:12px}
+    .ai-start-row select:focus{border-color:#a9c3f5;box-shadow:0 0 0 3px var(--brand-soft)}
+    .ai-start-btn{width:36px;height:36px;border:0;border-radius:9px;background:var(--brand);color:#fff;cursor:pointer}
+    .ai-start-btn:hover{background:#3568d0}
+    .ai-suggestions{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+    .ai-suggestions button{padding:6px 11px;border:1px solid var(--line);border-radius:16px;background:#fff;color:var(--muted);cursor:pointer;font-size:11px;transition:border-color .12s,color .12s,background .12s}
+    .ai-suggestions button:hover{border-color:#a9c3f5;color:var(--brand);background:var(--brand-soft)}
+    .ai-suggestions i{margin-right:4px;color:var(--brand)}
+
+    /* ===== 聊天视图 ===== */
+    .ai-chat{height:100%;display:flex;flex-direction:column}
+    .ai-chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;border-bottom:1px solid var(--line-soft);background:#fff}
+    .ai-chat-agent{display:flex;align-items:center;gap:10px;min-width:0}
+    .ai-agent-orb{width:30px;height:30px;display:grid;place-items:center;flex:0 0 30px;border-radius:9px;background:var(--brand-soft);color:var(--brand);font-size:12px}
+    .ai-chat-title-row{display:flex;align-items:center;gap:6px;min-width:0}
+    .ai-chat-title-row h2{max-width:400px;margin:0;overflow:hidden;color:var(--ink);font-size:14px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+    .ai-chat-title-row button{padding:3px;border:0;background:transparent;color:var(--caption);cursor:pointer;font-size:10px}
+    .ai-chat-title-row button:hover{color:var(--brand)}
+    .ai-chat-agent p{margin:3px 0 0;color:var(--caption);font-size:10px}
+    .ai-chat-subline{display:flex;align-items:center;gap:8px}
+    .ai-branch-nav{display:flex;align-items:center;gap:3px;padding-left:7px;border-left:1px solid var(--line);color:var(--muted);font-size:9px}
+    .ai-branch-nav[hidden]{display:none}
+    .ai-branch-nav button{width:18px;height:18px;padding:0;border:0;border-radius:5px;background:transparent;color:var(--muted);cursor:pointer;font-size:9px}
+    .ai-branch-nav button:hover:not(:disabled){background:var(--brand-soft);color:var(--brand)}
+    .ai-branch-nav button:disabled{opacity:.25;cursor:default}
+    .ai-chat-actions{position:relative;display:flex;gap:2px;flex:0 0 auto}
+    .ai-chat-actions .ai-icon-btn.is-pinned{color:#e3a63a}
+    .ai-menu{position:absolute;z-index:30;top:36px;right:0;display:none;min-width:132px;padding:5px;border:1px solid var(--line);border-radius:10px;background:#fff;box-shadow:0 12px 28px rgba(15,17,21,.12)}
+    .ai-menu.open{display:block}
+    .ai-menu button{display:flex;align-items:center;gap:7px;width:100%;padding:7px 9px;border:0;border-radius:7px;background:transparent;color:var(--muted);text-align:left;cursor:pointer;font-size:11px}
+    .ai-menu button:hover{background:var(--hover)}
+    .ai-menu button.danger{color:var(--danger)}
+
+    /* ===== 消息流（DSH：748px 居中列、user 右蓝气泡、AI 全宽） ===== */
+    .ai-messages{flex:1;overflow-y:auto;padding:24px var(--clearance) 36px}
+    .ai-messages > *{max-width:var(--chat-width);margin-left:auto;margin-right:auto}
+    .ai-message{display:flex;gap:10px;margin-bottom:16px;animation:ai-in .2s ease-out}
+    .ai-message.user{flex-direction:column;align-items:flex-end}
+    .ai-message-avatar{width:24px;height:24px;display:grid;place-items:center;flex:0 0 24px;border-radius:8px;background:var(--soft);color:var(--muted);font-size:9px}
+    .ai-message.ai .ai-message-avatar{background:var(--brand-soft);color:var(--brand)}
+    .ai-message.user .ai-message-avatar{display:none}
+    .ai-message-body{min-width:0;max-width:100%}
+    .ai-message.user .ai-message-body{display:flex;flex-direction:column;align-items:flex-end;max-width:min(525px,82%)}
+    .ai-message-meta{margin-bottom:4px;color:var(--caption);font-size:11px}
+    .ai-message.user .ai-message-meta{display:none}
+    .ai-bubble{font-size:16px;line-height:24px;color:var(--ink);overflow-wrap:anywhere}
+    .ai-message.user .ai-bubble{padding:10px 16px;border-radius:22px;background:var(--brand-soft);color:var(--ink);white-space:pre-wrap}
+    .ai-message.ai .ai-bubble{width:100%}
+    .ai-bubble p:first-child{margin-top:0}
+    .ai-bubble p:last-child{margin-bottom:0}
+    .ai-bubble pre{position:relative;overflow:auto;padding:38px 12px 12px;border-radius:10px;background:#0F1115;color:#e6ecf4;font-size:13px;line-height:1.65}
+    .ai-bubble code{font-size:.92em}
+    .ai-bubble:not(pre)>code{padding:2px 5px;border-radius:5px;background:var(--soft);font-size:.88em}
+    .ai-bubble table{border-collapse:collapse;max-width:100%;font-size:14px}
+    .ai-bubble th,.ai-bubble td{padding:6px 10px;border:1px solid var(--line)}
+    .ai-bubble blockquote{margin:8px 0;padding:4px 12px;border-left:3px solid var(--brand-200,#d3e2ff);color:var(--muted)}
+    .ai-code-copy{position:absolute;top:7px;right:7px;display:flex;align-items:center;gap:5px;padding:4px 8px;border:1px solid rgba(255,255,255,.14);border-radius:6px;background:rgba(255,255,255,.08);color:#cbd5e1;cursor:pointer;font-size:10px}
+    .ai-code-copy:hover{background:rgba(255,255,255,.16);color:#fff}
+    .ai-message-actions{display:flex;flex-wrap:wrap;gap:10px;margin:6px 2px 0;opacity:0;transition:opacity .15s}
+    .ai-message:hover .ai-message-actions{opacity:1}
+    .ai-message.user .ai-message-actions{justify-content:flex-end}
+    .ai-message-actions button{padding:0;border:0;background:transparent;color:var(--caption);cursor:pointer;font-size:10px}
+    .ai-message-actions button:hover{color:var(--brand)}
+    .ai-message-actions button.active{color:var(--brand)}
+    .ai-message-attachments{display:flex;max-width:100%;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+    .ai-message-attachment{display:flex;align-items:center;min-width:0;max-width:100%;gap:6px;padding:5px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--muted);font-size:11px}
+    .ai-message-attachment span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ai-message-editor{display:block;width:min(560px,70vw);min-height:100px;padding:10px;border:1px solid var(--line);border-radius:10px;outline:0;resize:vertical;color:var(--ink);background:#fff;font:14px/1.6 inherit}
+    .ai-message-editor:focus{border-color:#a9c3f5;box-shadow:0 0 0 3px var(--brand-soft)}
+    .ai-message-editor-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}
+    .ai-message-editor-actions button{padding:6px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--muted);cursor:pointer;font-size:11px}
+    .ai-message-editor-actions button.primary{border-color:var(--brand);background:var(--brand);color:#fff}
+    .ai-inline-error{display:flex;align-items:center;gap:9px;max-width:min(560px,90%);margin:12px auto 20px;padding:10px 13px;border:1px solid #f3cdd0;border-radius:10px;background:#fff7f7;color:var(--danger);font-size:12px}
+    .ai-inline-error span{flex:1}
+    .ai-inline-error button{padding:5px 9px;border:1px solid #e5b6b9;border-radius:6px;background:#fff;color:var(--danger);cursor:pointer;font-size:11px}
+
+    /* 思考态：DSH turnStatus 品牌蓝 shimmer 文字 */
+    .ai-message#thinking{margin-bottom:10px}
+    .ai-thinking{display:inline-flex;align-items:center;gap:7px;color:var(--brand);font-size:13px;font-weight:500}
+    .ai-thinking b{font-weight:500}
+    .ai-thinking span{width:5px;height:5px;border-radius:50%;background:var(--brand);animation:ai-thinking 1.15s infinite ease-in-out}
+    .ai-thinking span:nth-child(2){animation-delay:.15s}
+    .ai-thinking span:nth-child(3){animation-delay:.3s}
+    .ai-workbench.is-generating .ai-live-dot{animation:ai-pulse 1.4s infinite}
+    .ai-workbench.is-stopping .ai-live-dot{background:var(--warn);box-shadow:0 0 0 4px rgba(224,165,75,.18)}
+
+    .ai-jump-bottom{position:absolute;z-index:8;left:50%;bottom:18px;width:32px;height:32px;transform:translateX(-50%);border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--muted);box-shadow:var(--shadow-lv2);cursor:pointer}
+    .ai-jump-bottom:hover{color:var(--brand);border-color:#a9c3f5}
+    .ai-jump-bottom[hidden]{display:none}
+
+    /* ===== 输入区（DSH 悬浮胶囊卡） ===== */
+    .ai-composer-area{padding:6px var(--clearance) 10px}
+    .ai-composer{position:relative;display:flex;flex-direction:column;gap:8px;width:100%;max-width:var(--composer-width);margin:0 auto;padding:10px 12px 8px;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:var(--shadow-lv2);transition:border-color .15s,box-shadow .15s}
+    .ai-composer:focus-within{border-color:#9dbdf2;box-shadow:0 4px 14px rgba(15,17,21,.04),0 0 0 3px var(--brand-soft)}
+    .ai-composer.streaming{border-color:#9dbdf2}
+    .ai-composer.streaming textarea{opacity:.75}
+    .ai-composer.dragging{border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft)}
+    .ai-composer.dragging:after{content:"松开即可添加文件";position:absolute;z-index:5;inset:5px;display:grid;place-items:center;border:1px dashed var(--brand);border-radius:17px;background:rgba(237,243,254,.96);color:var(--brand);font-size:13px;font-weight:500;pointer-events:none}
+    .ai-composer-top{display:flex;align-items:center;gap:8px;min-height:26px}
+    .ai-composer-top select{max-width:180px;padding:3px 8px;border:1px solid var(--line);border-radius:14px;background:var(--brand-soft);color:var(--brand);font-size:11px;font-weight:500;outline:0;cursor:pointer}
+    .ai-composer-top select:focus{border-color:#a9c3f5}
+    .ai-composer-title{color:var(--caption);font-size:10px}
+    .ai-composer textarea{display:block;width:100%;min-height:52px;padding:2px 4px;border:0;outline:0;resize:none;color:var(--ink);font:16px/24px inherit}
+    .ai-composer textarea::placeholder{color:var(--caption)}
+    .ai-composer-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .ai-composer-tools{display:flex;align-items:center;min-width:0;gap:10px}
+    .ai-attach-btn{width:26px;height:26px;flex:0 0 26px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--caption);cursor:pointer}
+    .ai-attach-btn:hover{background:var(--brand-soft);color:var(--brand)}
+    .ai-attach-btn:disabled{opacity:.4;cursor:default}
+    .ai-hint{color:var(--caption);font-size:10px;white-space:nowrap}
+    .ai-send{width:30px;height:30px;flex:0 0 30px;border:0;border-radius:50%;background:var(--brand);color:#fff;cursor:pointer;box-shadow:0 4px 10px rgba(65,118,230,.26);transition:background .15s}
+    .ai-send:hover{background:#3568d0}
+    .ai-send:disabled{opacity:.45;cursor:default;box-shadow:none}
+    .ai-disclaimer{margin:6px 0 0;color:#B7BEC9;text-align:center;font-size:10px}
+    .ai-attachment-tray{display:flex;gap:7px;overflow-x:auto;padding:0 2px}
+    .ai-attachment-tray[hidden]{display:none}
+    .ai-attachment-chip{display:flex;align-items:center;min-width:0;max-width:230px;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted)}
+    .ai-attachment-chip.uploading{opacity:.65}
+    .ai-attachment-icon{width:25px;height:25px;display:grid;place-items:center;flex:0 0 25px;border-radius:7px;background:var(--brand-soft);color:var(--brand);font-size:9px;font-weight:600;text-transform:uppercase}
+    .ai-attachment-copy{min-width:0;flex:1}
+    .ai-attachment-copy strong{display:block;overflow:hidden;font-size:11px;font-weight:500;text-overflow:ellipsis;white-space:nowrap}
+    .ai-attachment-copy span{display:block;margin-top:2px;color:var(--caption);font-size:9px}
+    .ai-attachment-remove{width:20px;height:20px;padding:0;border:0;border-radius:5px;background:transparent;color:var(--caption);cursor:pointer}
+    .ai-attachment-remove:hover{background:var(--hover);color:var(--danger)}
+
+    .ai-backdrop{display:none}
+    .ai-toast{position:fixed;z-index:100;right:22px;bottom:24px;padding:9px 14px;border-radius:10px;background:#1F2937;color:#fff;box-shadow:0 10px 25px rgba(15,17,21,.24);font-size:12px}
+    .ai-toast.success{background:#16a34a}
+    .ai-toast.error{background:var(--danger)}
+
+    /* 空状态时输入卡上浮到版面中部（DSH hero 相位）；快捷入口隐藏，智能体选择由输入卡顶部 select 承担 */
+    .ai-workbench:has(.ai-empty:not([hidden])) .ai-composer-area{position:absolute;left:0;right:0;bottom:auto;top:56%;transform:translateY(0);z-index:6}
+    .ai-workbench:has(.ai-empty:not([hidden])) .ai-start-row,
+    .ai-workbench:has(.ai-empty:not([hidden])) .ai-suggestions{display:none}
+    .ai-workbench:has(.ai-empty:not([hidden])) .ai-conversation{padding-bottom:0}
+
+    @keyframes ai-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+    @keyframes ai-thinking{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+    @keyframes ai-pulse{50%{box-shadow:0 0 0 7px rgba(65,118,230,0)}}
+
+    .ai-icon-btn:focus-visible,.ai-send:focus-visible,.ai-new-btn:focus-visible,.ai-session-item:focus-visible,.ai-suggestions button:focus-visible,.ai-start-btn:focus-visible{outline:2px solid #7ea6ef;outline-offset:2px}
+
+    @media(max-width:760px){
+        .ai-workbench{height:calc(100vh - 56px);min-height:520px}
+        .ai-sidebar{position:absolute;top:0;bottom:0;left:0;width:min(88vw,310px);transform:translateX(-105%);transition:transform .22s ease;box-shadow:14px 0 35px rgba(15,17,21,.14)}
+        .ai-sidebar.open{transform:none}
+        .ai-backdrop{position:absolute;z-index:15;inset:0;background:rgba(15,17,21,.4)}
+        .ai-backdrop.open{display:block}
+        .ai-menu-btn,.ai-mobile-close{display:block}
+        .ai-topbar{padding:0 12px}
+        .ai-topbar-context{margin-right:auto;margin-left:6px}
+        .ai-topbar-actions{gap:4px}
+        .ai-empty{padding:10vh 18px 0}
+        .ai-empty h1{font-size:24px}
+        .desktop-only{display:none}
+        .ai-empty-copy{font-size:12px}
+        .ai-suggestions{max-width:320px}
+        .ai-suggestions button{font-size:10px}
+        .ai-chat-head{padding:11px 14px}
+        .ai-chat-title-row h2{max-width:180px;font-size:13px}
+        .ai-messages{padding:18px 12px 30px}
+        .ai-message{font-size:15px}
+        .ai-message.user .ai-message-body{max-width:90%}
+        .ai-message-actions{opacity:1}
+        .ai-composer-area{padding:6px 10px 10px}
+        .ai-hint{font-size:8px}
+        .ai-composer-top select{max-width:130px}
+        .ai-disclaimer{font-size:8px}
+        .ai-workbench:has(.ai-empty:not([hidden])) .ai-composer-area{top:auto;bottom:0;position:absolute}
+    }
     @media(prefers-reduced-motion:reduce){.ai-message,.ai-thinking span,.ai-live-dot{animation:none!important}.ai-sidebar{transition:none!important}}
 </style>
+
+<script src="/js/llm-chat-workbench.js?v=20260717-4"></script>
 @endsection

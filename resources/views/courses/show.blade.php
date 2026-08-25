@@ -14,12 +14,13 @@
             margin: 0 auto;
         }
 
-        /* 课程头部 */
+        /* 顶部信息面板：封面 + 标题 + 描述 + 信息合并 */
         .course-header {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(59, 130, 246, 0.12);
             border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 32px;
+            padding: 32px;
+            margin-bottom: 24px;
             position: relative;
             overflow: hidden;
         }
@@ -34,32 +35,69 @@
             background: linear-gradient(90deg, #3b82f6, #8b5cf6);
         }
 
-        .course-title-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
         .course-title {
-            font-size: 2.25rem;
+            font-size: 2rem;
             font-weight: 700;
             color: #1e293b;
             margin: 0;
             line-height: 1.3;
-            flex: 1;
-            min-width: 300px;
         }
 
-        .course-status {
+        .course-desc {
+            color: #475569;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* 封面 */
+        .course-cover {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-cover {
+            height: 240px;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border-radius: 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 1.125rem;
         }
 
+        /* 信息chip */
+        .course-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .course-chip i {
+            color: #8b5cf6;
+            font-size: 12px;
+        }
+
+        .tag-item {
+            padding: 4px 12px;
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* 状态徽章 */
         .status-badge {
             padding: 8px 20px;
             border-radius: 20px;
@@ -86,131 +124,6 @@
             background: rgba(34, 197, 94, 0.1);
             color: #047857;
             border: 1px solid rgba(34, 197, 94, 0.2);
-        }
-
-        .course-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-
-        /* 课程封面 */
-        .course-cover {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            margin-bottom: 32px;
-            transition: transform 0.3s ease;
-        }
-
-        .course-cover:hover {
-            transform: scale(1.01);
-        }
-
-        .no-cover {
-            height: 200px;
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #94a3b8;
-            font-size: 1.125rem;
-        }
-
-        /* 课程信息卡片 */
-        .course-info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-
-        .info-card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .info-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            background: #f8fafc;
-            padding: 20px 24px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toggle-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: white;
-            border: 1px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #64748b;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-btn:hover {
-            background: #f1f5f9;
-            color: #3b82f6;
-            border-color: #3b82f6;
-        }
-
-        .card-body {
-            padding: 24px;
-        }
-
-        /* 课程详情表格 */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .info-row {
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            padding: 12px 0;
-            font-weight: 600;
-            color: #334155;
-            width: 120px;
-            vertical-align: top;
-        }
-
-        .info-value {
-            padding: 12px 0;
-            color: #475569;
         }
 
         /* 难度徽章 */
@@ -240,242 +153,7 @@
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
-        /* 标签样式 */
-        .tag-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .tag-item {
-            padding: 4px 12px;
-            background: rgba(139, 92, 246, 0.1);
-            color: #8b5cf6;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        /* 课程结构 */
-        .course-structure-card {
-            margin-bottom: 40px;
-        }
-
-        .structure-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .chapter-item {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            margin-bottom: 16px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .chapter-item:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.1);
-        }
-
-        .chapter-header {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .chapter-header:hover {
-            background: #f1f5f9;
-        }
-
-        .chapter-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .chapter-meta {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .lesson-list {
-            padding: 0;
-            margin: 0;
-            list-style: none;
-            display: none;
-        }
-
-        .lesson-list.expanded {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .lesson-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background 0.3s ease;
-        }
-
-        .lesson-item:last-child {
-            border-bottom: none;
-        }
-
-        .lesson-item:hover {
-            background: #f8fafc;
-        }
-
-        .lesson-item.completed {
-            background: #ecfdf5;
-        }
-
-        .lesson-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .lesson-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .lesson-icon.video {
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-        }
-
-        .lesson-icon.quiz {
-            background: linear-gradient(135deg, #10b981, #34d399);
-        }
-
-        .lesson-icon.assignment {
-            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-        }
-
-        .lesson-icon.reading {
-            background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        }
-
-        .lesson-icon.folder {
-            background: linear-gradient(135deg, #64748b, #94a3b8);
-        }
-
-        .lesson-text {
-            flex: 1;
-        }
-
-        .lesson-name {
-            font-weight: 500;
-            color: #334155;
-            margin-bottom: 4px;
-        }
-
-        .lesson-duration {
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-
-        .lesson-type {
-            padding: 4px 12px;
-            background: #f1f5f9;
-            color: #64748b;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .lesson-actions {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: 12px;
-        }
-
-        .lesson-complete-btn {
-            padding: 4px 10px;
-            border: 1px solid #10b981;
-            border-radius: 999px;
-            background: #ffffff;
-            color: #047857;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .lesson-complete-btn:hover {
-            background: #ecfdf5;
-        }
-
-        .lesson-complete-btn.done {
-            border-color: #bbf7d0;
-            background: #10b981;
-            color: #ffffff;
-            cursor: default;
-        }
-
-        .no-structure {
-            text-align: center;
-            padding: 40px 20px;
-            color: #94a3b8;
-        }
-
-        /* 讨论区侧边栏 */
-        .discussion-sidebar {
-            position: sticky;
-            top: 100px;
-        }
-
-        .discussion-card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .discussion-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .coming-soon {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .coming-soon-icon {
-            font-size: 3rem;
-            color: #cbd5e1;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        /* 按钮样式优化 */
+        /* 按钮样式 */
         .btn-course {
             display: inline-flex;
             align-items: center;
@@ -485,6 +163,13 @@
             border-radius: 10px;
             gap: 8px;
             transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-course-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 8px;
         }
 
         .btn-course-primary {
@@ -494,7 +179,7 @@
         }
 
         .btn-course-primary:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
             color: white;
         }
@@ -506,7 +191,7 @@
         }
 
         .btn-course-success:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
             color: white;
         }
@@ -521,7 +206,19 @@
             background: #f8fafc;
             color: #3b82f6;
             border-color: #3b82f6;
-            transform: translateY(-3px);
+            transform: translateY(-2px);
+        }
+
+        .btn-course-danger {
+            background: white;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .btn-course-danger:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+            transform: translateY(-2px);
         }
 
         .btn-course:disabled {
@@ -530,6 +227,84 @@
             transform: none !important;
         }
 
+        .btn-course a { text-decoration: none; }
+
+        /* 左侧课程结构树 */
+        .tree-box { max-height: calc(100vh - 160px); overflow-y: auto; }
+        .tree-list { list-style: none; margin: 0; padding: 0; }
+        .tree-list ul { list-style: none; }
+        .tree-children {
+            display: none;
+            margin-left: 12px;
+            padding-left: 10px;
+            border-left: 1px dashed #e2e8f0;
+        }
+        .tree-children.open { display: block; }
+
+        .tree-node {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #475569;
+            font-size: 14px;
+            transition: background 0.15s ease;
+            user-select: none;
+        }
+        .tree-node:hover { background: #f1f5f9; }
+        .tree-node.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+        .tree-node.active .tree-label { color: #1d4ed8; }
+        .tree-caret {
+            width: 14px;
+            display: inline-flex;
+            justify-content: center;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+        .tree-caret i { transition: transform 0.2s ease; font-size: 11px; }
+        .tree-container.open > .tree-caret i { transform: rotate(90deg); }
+        .tree-node-icon { flex-shrink: 0; font-size: 13px; width: 16px; text-align: center; }
+        .tree-label {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .tree-count {
+            flex-shrink: 0;
+            font-size: 11px;
+            color: #94a3b8;
+            background: #f1f5f9;
+            border-radius: 999px;
+            padding: 1px 8px;
+        }
+        .tree-duration {
+            flex-shrink: 0;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* 右侧章节详情 */
+        .detail-card { overflow: hidden; }
+        .detail-header {
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f1f5f9;
+            color: #64748b;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        /* 测验弹窗 */
         .quiz-modal { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(15, 23, 42, .55); padding: 20px; }
         .quiz-modal.show { display: flex; }
         .quiz-modal-card { width: min(720px, 100%); max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 16px; padding: 24px; }
@@ -537,168 +312,136 @@
         .quiz-option { display: block; padding: 8px 10px; border-radius: 8px; margin-top: 6px; background: #f8fafc; }
         .quiz-result { border-radius: 10px; padding: 14px; margin-top: 16px; background: #eff6ff; }
 
-        /* 动画效果 */
+        /* 动画 */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .animate-fadeIn {
             animation: fadeIn 0.3s ease-out;
         }
 
-        /* 响应式调整 */
+        /* 章节类型小标记 */
+        .type-label {
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .type-label.module { background: rgba(100, 116, 139, 0.12); color: #475569; }
+        .type-label.chapter { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+        .type-label.video { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
+        .type-label.quiz { background: rgba(16, 185, 129, 0.12); color: #059669; }
+        .type-label.assignment { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+        .type-label.reading { background: rgba(245, 158, 11, 0.12); color: #b45309; }
+
+        /* Markdown 正文渲染 */
+        .md-content { line-height: 1.8; color: #334155; overflow-wrap: break-word; }
+        .md-content h1, .md-content h2, .md-content h3, .md-content h4 { font-weight: 700; color: #1e293b; margin: 14px 0 8px; }
+        .md-content h1 { font-size: 1.25rem; }
+        .md-content h2 { font-size: 1.125rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .md-content h3 { font-size: 1rem; }
+        .md-content h4 { font-size: 0.95rem; }
+        .md-content p { margin: 8px 0; }
+        .md-content ul, .md-content ol { padding-left: 22px; margin: 8px 0; }
+        .md-content li { margin: 4px 0; }
+        .md-content a { color: #2563eb; text-decoration: underline; }
+        .md-content strong { font-weight: 700; color: #1e293b; }
+        .md-content blockquote { border-left: 3px solid #cbd5e1; padding-left: 12px; color: #64748b; margin: 10px 0; }
+        .md-content code { background: #e2e8f0; padding: 1px 6px; border-radius: 5px; font-size: 13px; color: #dc2626; }
+        .md-content pre { background: #0f172a; color: #e2e8f0; padding: 12px 16px; border-radius: 10px; overflow-x: auto; margin: 10px 0; }
+        .md-content pre code { background: transparent; color: inherit; padding: 0; font-size: 13px; }
+        .md-content table { border-collapse: collapse; margin: 10px 0; width: 100%; }
+        .md-content th, .md-content td { border: 1px solid #e2e8f0; padding: 6px 10px; font-size: 13px; }
+        .md-content th { background: #f8fafc; font-weight: 600; }
+        .md-content img { max-width: 100%; border-radius: 8px; }
+        .md-content hr { border: 0; border-top: 1px solid #e2e8f0; margin: 16px 0; }
+
+        /* 响应式 */
         @media (max-width: 768px) {
-            .course-detail-page {
-                padding: 0 16px;
-            }
-
-            .course-header {
-                padding: 24px;
-                border-radius: 16px;
-            }
-
-            .course-title {
-                font-size: 1.75rem;
-            }
-
-            .course-title-section {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .course-actions {
-                flex-direction: column;
-            }
-
-            .btn-course {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .course-info-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .info-card {
-                margin-bottom: 20px;
-            }
-
-            .chapter-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-
-            .chapter-meta {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .lesson-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-
-            .lesson-type {
-                align-self: flex-start;
-            }
+            .course-detail-page { padding: 0 16px; }
+            .course-header { padding: 20px; border-radius: 16px; }
+            .course-title { font-size: 1.5rem; }
+            .course-actions .btn-course { width: auto; }
+            .tree-box { max-height: 320px; }
         }
     </style>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 course-detail-page">
-        <!-- 课程头部 -->
-        <div class="course-header animate-fadeIn">
-            <div class="course-title-section">
-                <h1 class="course-title" id="course_title_text">课程详情</h1>
-                <div class="course-status" id="course_status_box">
-                </div>
-            </div>
+    @include('components.course-item-modal')
+    @include('artifacts._dialog')
 
-            <div class="course-actions" id="course_actions_box">
-                <a href="{{ url('/course/management') }}" class="btn btn-course btn-course-secondary">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    返回课程中心
-                </a>
+    <script src="{{ asset('js/marked.min.js') }}"></script>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 course-detail-page">
+        <!-- 顶部信息面板：封面 + 标题 + 描述 + 信息合并 -->
+        <div class="course-header animate-fadeIn">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- 封面 -->
+                <div class="shrink-0 w-full lg:w-80" id="course_cover_box">
+                    <div class="no-cover">
+                        <i class="fas fa-book-open mr-2"></i>暂无课程封面
+                    </div>
+                </div>
+
+                <!-- 标题/状态/描述/信息/操作 -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <h1 class="course-title" id="course_title_text">课程详情</h1>
+                        <div class="flex items-center gap-2 flex-wrap" id="course_status_box"></div>
+                    </div>
+
+                    <p class="course-desc mt-4" id="course_desc_box"></p>
+
+                    <div class="mt-4 flex flex-wrap gap-2" id="course_chips_box"></div>
+                    <div class="mt-3 flex flex-wrap gap-2" id="course_tags_box"></div>
+
+                    <div class="mt-6 flex flex-wrap gap-3" id="course_actions_box"></div>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- 主内容区域 -->
-            <div class="lg:col-span-3">
-                <!-- 课程封面 -->
-                <div id="course_cover_box">
-                    <div class="no-cover">
-                        <i class="fas fa-book-open mr-2"></i>
-                        暂无课程封面
-                    </div>
-                </div>
-
-                <!-- 课程信息网格 -->
-                <div class="course-info-grid">
-                    <!-- 基本信息卡片 -->
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-info-circle"></i>
-                                课程信息
-                            </h3>
-                            <button class="toggle-btn" data-toggle="infoBasic">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                        <div class="card-body" id="infoBasic">
-                            <table class="info-table" id="course_info_table"></table>
-                        </div>
-                    </div>
-
-                    <!-- 课程描述卡片 -->
-                    <div class="info-card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-file-alt"></i>
-                                课程描述
-                            </h3>
-                            <button class="toggle-btn" data-toggle="infoDescription">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-                        <div class="card-body" id="infoDescription">
-                            <div class="text-gray-600 leading-relaxed" id="course_description_box">
-                                <div class="text-center text-gray-400 py-8">
-                                    <i class="fas fa-file-alt text-3xl mb-4"></i>
-                                    <p>暂无课程描述</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 课程结构卡片 -->
-                <div class="info-card course-structure-card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-sitemap"></i>
+        <!-- 课程结构：左2（章节树） + 右8（章节详情） -->
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+            <!-- 左：课程结构树 -->
+            <div class="lg:col-span-2">
+                <div class="card p-4 lg:sticky lg:top-24">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-sitemap text-blue-500"></i>
                             课程结构
                         </h3>
-                        <button class="toggle-btn" data-toggle="courseStructure">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <a href="javascript:void(0)" id="fullManageLink" class="hidden text-gray-400 hover:text-blue-600 transition" title="完整章节管理（含测验编辑）" style="display:none">
+                                <i class="fas fa-cog"></i>
+                            </a>
+                            <button type="button" id="btnAddTopItem" class="hidden btn-course btn-course-primary btn-course-sm" style="display:none">
+                                <i class="fas fa-plus mr-1"></i>添加章节
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body" id="courseStructure">
-                        <div id="course_structure_box">
-                            <div class="no-structure">
-                                <i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i>
-                                <h4 class="text-gray-600 mb-2">暂无课程内容</h4>
-                                <p class="text-gray-400 text-sm">课程管理员尚未添加章节内容</p>
-                            </div>
+                    <div class="tree-box" id="course_structure_box">
+                        <div class="text-center text-gray-400 py-8 text-sm">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>加载中...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右：章节详情 -->
+            <div class="lg:col-span-8">
+                <div class="card detail-card">
+                    <div class="detail-header px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <h3 class="font-semibold text-gray-900 text-lg truncate" id="item_detail_title">课程概览</h3>
+                            <div class="text-xs text-gray-500 mt-1 flex items-center gap-2 flex-wrap" id="item_detail_subtitle"></div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2" id="item_action_box"></div>
+                    </div>
+                    <div class="p-5" id="item_detail_body">
+                        <div class="text-center text-gray-400 py-10">
+                            <i class="fas fa-book-open text-4xl mb-4 text-gray-300"></i>
+                            <p>点击左侧章节查看详情</p>
                         </div>
                     </div>
                 </div>
@@ -730,6 +473,14 @@
             return Number.isFinite(parsed) ? parsed : 0;
         })();
         var COURSE_DETAIL_DATA = null;
+        var IS_OWNER = false;
+        var SELECTED_ITEM_ID = (function() {
+            var m = (window.location.search || '').match(/[?&]item=(\d+)/);
+            return m ? Number(m[1]) : null;
+        })();
+
+        // 保存后刷新整棵树（供 course-item-modal 组件调用）
+        window.refreshCourseStructure = function() { loadCourseDetail(); };
 
         function escapeHtml(str) {
             return $('<div>').text(str || '').html();
@@ -743,7 +494,7 @@
         function getStatusBadgeHtml(publicStatus) {
             if (Number(publicStatus) === 1) return '<span class="status-badge private"><i class="fas fa-lock"></i> 私有</span>';
             if (Number(publicStatus) === 2) return '<span class="status-badge pending"><i class="fas fa-clock"></i> 待审核</span>';
-            if (Number(publicStatus) === 3) return '<span class="status-badge public"><i class="fas fa-check-circle"></i> 已审核</span>';
+            if (Number(publicStatus) === 3) return '<span class="status-badge public"><i class="fas fa-check-circle"></i> 已公开</span>';
             return '<span class="status-badge"><i class="fas fa-question-circle"></i> 未知状态</span>';
         }
 
@@ -751,84 +502,7 @@
             if (difficulty === 'beginner') return '<span class="difficulty-badge difficulty-beginner"><i class="fas fa-seedling mr-1"></i> 初级</span>';
             if (difficulty === 'intermediate') return '<span class="difficulty-badge difficulty-intermediate"><i class="fas fa-tree mr-1"></i> 中级</span>';
             if (difficulty === 'advanced') return '<span class="difficulty-badge difficulty-advanced"><i class="fas fa-mountain mr-1"></i> 高级</span>';
-            return '<span class="difficulty-badge"><i class="fas fa-question-circle mr-1"></i> 未知</span>';
-        }
-
-        function renderCourseActions(course, isJoined) {
-            var box = $('#course_actions_box');
-            if (!box.length) return;
-            var html = '';
-            if (CURRENT_USER_ID > 0 && Number(course.created_by || 0) === CURRENT_USER_ID) {
-                html += '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-course btn-course-primary"><i class="fas fa-cog mr-2"></i>管理章节</a>';
-                html += '<a href="/course/management" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程中心</a>';
-            } else if (CURRENT_USER_ID > 0 && !isJoined) {
-                html += '<button type="button" class="btn btn-course btn-course-success join-course-btn" data-course-id="' + Number(course.id) + '"><i class="fas fa-user-plus mr-2"></i>加入课程</button>';
-            } else if (CURRENT_USER_ID > 0 && isJoined) {
-                html += '<button class="btn btn-course btn-course-success" disabled><i class="fas fa-check-circle mr-2"></i>已加入课程</button>';
-                html += '<a href="/courses" class="btn btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>继续学习</a>';
-            } else {
-                html += '<a href="/course/management" class="btn btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程中心</a>';
-            }
-            box.html(html);
-        }
-
-        function renderCourseInfo(course) {
-            $('#course_title_text').text(course.title || '课程详情');
-            $('#course_status_box').html(getStatusBadgeHtml(course.public_status));
-            document.title = (course.title || '课程详情') + ' - 蒙太奇课程';
-
-            if (course.cover_image_url) {
-                $('#course_cover_box').html('<img src="' + escapeHtml(course.cover_image_url) + '" class="course-cover" alt="' + escapeHtml(course.title || 'course') + '">');
-            } else {
-                $('#course_cover_box').html('<div class="no-cover"><i class="fas fa-book-open mr-2"></i>暂无课程封面</div>');
-            }
-
-            var tagsHtml = '';
-            if (Array.isArray(course.tags) && course.tags.length) {
-                tagsHtml = '<tr class="info-row"><td class="info-label">标签</td><td class="info-value"><div class="tag-list">' + course.tags.map(function(tag){ return '<span class="tag-item">' + escapeHtml(tag) + '</span>'; }).join('') + '</div></td></tr>';
-            }
-            $('#course_info_table').html(
-                '<tr class="info-row"><td class="info-label">讲师</td><td class="info-value">' + escapeHtml(course.instructor || '未知') + '</td></tr>' +
-                '<tr class="info-row"><td class="info-label">平台</td><td class="info-value">' + escapeHtml(course.platform || '未知') + '</td></tr>' +
-                '<tr class="info-row"><td class="info-label">难度</td><td class="info-value">' + getDifficultyHtml(course.difficulty) + '</td></tr>' +
-                '<tr class="info-row"><td class="info-label">预计时长</td><td class="info-value"><i class="far fa-clock text-gray-400 mr-2"></i>' + Number(course.estimated_hours || 0) + ' 小时</td></tr>' +
-                tagsHtml
-            );
-
-            if (course.description) {
-                $('#course_description_box').html(String(escapeHtml(course.description)).replace(/\n/g, '<br>'));
-            } else {
-                $('#course_description_box').html('<div class="text-center text-gray-400 py-8"><i class="fas fa-file-alt text-3xl mb-4"></i><p>暂无课程描述</p></div>');
-            }
-        }
-
-        function renderCourseStructure(structure, isJoined) {
-            if (!Array.isArray(structure) || !structure.length) {
-                $('#course_structure_box').html('<div class="no-structure"><i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i><h4 class="text-gray-600 mb-2">暂无课程内容</h4><p class="text-gray-400 text-sm">课程管理员尚未添加章节内容</p></div>');
-                return;
-            }
-            $('#course_structure_box').html('<div class="structure-list">' + renderTreeNodes(structure, isJoined) + '</div>');
-        }
-
-        // 递归渲染多层课程结构（章节/模块容器 + 课时叶子）
-        function renderTreeNodes(items, isJoined) {
-            var html = '';
-            items.forEach(function(item) {
-                var children = Array.isArray(item.children) ? item.children : [];
-                var nodeId = Number(item.id || 0);
-                var isContainer = children.length > 0 || item.item_type === 'module' || item.item_type === 'chapter';
-
-                if (isContainer) {
-                    html += '<div class="chapter-item" data-chapter-id="' + nodeId + '"><div class="chapter-header" onclick="toggleChapter(' + nodeId + ')"><div><h4 class="chapter-title"><i class="fas fa-folder text-yellow-500"></i>' + escapeHtml(item.title || '') + '</h4>' + (item.description ? '<p class="text-gray-500 text-sm mt-1">' + escapeHtml(item.description) + '</p>' : '') + '</div><div class="chapter-meta"><span class="text-gray-500 text-sm">' + children.length + ' 个课时' + (item.duration ? (' · ' + Number(item.duration) + ' 分钟') : '') + '</span><i class="fas fa-chevron-down text-gray-400 transition-transform" id="icon-' + nodeId + '"></i></div></div>';
-                    if (children.length) {
-                        html += '<ul class="lesson-list" id="lessons-' + nodeId + '">' + renderTreeNodes(children, isJoined) + '</ul>';
-                    }
-                    html += '</div>';
-                } else {
-                    html += renderLessonItem(item, isJoined);
-                }
-            });
-            return html;
+            return '';
         }
 
         function itemIcon(type) {
@@ -839,25 +513,291 @@
             return 'fa-file';
         }
 
-        function renderLessonItem(child, isJoined) {
-            var icon = itemIcon(child.item_type);
+        function typeLabelHtml(type) {
+            var text = String(type || '');
+            var map = { module: '模块', chapter: '章节', video: '视频', quiz: '测验', assignment: '作业', reading: '阅读' };
+            return '<span class="type-label ' + escapeHtml(text) + '">' + escapeHtml(map[text] || text.toUpperCase()) + '</span>';
+        }
+
+        // ---------- 顶部信息面板 ----------
+        function renderCourseInfo(course) {
+            $('#course_title_text').text(course.title || '课程详情');
+            $('#course_status_box').html(
+                (getStatusBadgeHtml(course.public_status) || '') +
+                getDifficultyHtml(course.difficulty)
+            );
+            document.title = (course.title || '课程详情') + ' - 蒙太奇课程';
+
+            if (course.cover_image_url) {
+                $('#course_cover_box').html('<img src="' + escapeHtml(course.cover_image_url) + '" class="course-cover" alt="' + escapeHtml(course.title || 'course') + '">');
+            } else {
+                $('#course_cover_box').html('<div class="no-cover"><i class="fas fa-book-open mr-2"></i>暂无课程封面</div>');
+            }
+
+            if (course.description) {
+                $('#course_desc_box').html(String(escapeHtml(course.description)).replace(/\n/g, '<br>'));
+            } else {
+                $('#course_desc_box').html('<span class="text-gray-400">暂无课程描述</span>');
+            }
+
+            var chips = '';
+            if (course.instructor) chips += '<span class="course-chip"><i class="fas fa-user-tie"></i>' + escapeHtml(course.instructor) + '</span>';
+            if (course.platform) chips += '<span class="course-chip"><i class="fas fa-globe"></i>' + escapeHtml(course.platform) + '</span>';
+            chips += '<span class="course-chip"><i class="far fa-clock"></i>' + Number(course.estimated_hours || 0) + ' 小时</span>';
+            chips += '<span class="course-chip"><i class="fas fa-layer-group"></i>' + Number(course.chapters_count || 0) + ' 章</span>';
+            chips += '<span class="course-chip"><i class="fas fa-users"></i>' + Number(course.enrollment_count || 0) + ' 人学习</span>';
+            $('#course_chips_box').html(chips);
+
+            var tagsHtml = '';
+            if (Array.isArray(course.tags) && course.tags.length) {
+                tagsHtml = course.tags.map(function(tag){ return '<span class="tag-item">' + escapeHtml(tag) + '</span>'; }).join('');
+            }
+            $('#course_tags_box').html(tagsHtml);
+        }
+
+        // ---------- 顶部操作按钮 ----------
+        function renderCourseActions(course, isJoined, isOwner) {
+            var box = $('#course_actions_box');
+            if (!box.length) return;
+            var html = '';
+            if (isOwner) {
+                html += '<a href="/courses/' + Number(course.id) + '/edit" class="btn-course btn-course-secondary"><i class="fas fa-edit mr-2"></i>编辑课程</a>';
+                var st = Number(course.public_status || 1);
+                if (st === 1) {
+                    html += '<button type="button" onclick="submitCourseReview(' + Number(course.id) + ', \'request-public\')" class="btn-course btn-course-primary"><i class="fas fa-eye mr-2"></i>提交公开审核</button>';
+                } else if (st === 2) {
+                    html += '<button type="button" onclick="submitCourseReview(' + Number(course.id) + ', \'approve\')" class="btn-course btn-course-success"><i class="fas fa-check-circle mr-2"></i>审核通过并公开</button>';
+                } else if (st === 3) {
+                    html += '<button type="button" onclick="submitCourseReview(' + Number(course.id) + ', \'unapprove\')" class="btn-course btn-course-secondary"><i class="fas fa-eye-slash mr-2"></i>撤回公开</button>';
+                }
+            } else if (CURRENT_USER_ID > 0 && !isJoined) {
+                html += '<button type="button" class="btn-course btn-course-success join-course-btn" data-course-id="' + Number(course.id) + '"><i class="fas fa-user-plus mr-2"></i>加入课程</button>';
+            } else if (CURRENT_USER_ID > 0 && isJoined) {
+                html += '<span class="btn-course btn-course-success" disabled><i class="fas fa-check-circle mr-2"></i>已加入</span>';
+                html += '<a href="/courses" class="btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>继续学习</a>';
+            }
+            html += '<a href="/course/management" class="btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程中心</a>';
+            box.html(html);
+
+            // 左侧结构区的管理按钮（仅课程所有者可见）
+            $('#btnAddTopItem').toggle(isOwner).css('display', isOwner ? '' : 'none');
+            var manageLink = $('#fullManageLink');
+            manageLink.toggle(isOwner).css('display', isOwner ? '' : 'none');
+            if (isOwner) {
+                manageLink.attr('href', '/courses/' + Number(course.id) + '/items');
+            }
+        }
+
+        // 课程公开状态操作：request-public / approve / unapprove
+        function submitCourseReview(courseId, action) {
+            if (!apiRequest) {
+                alert('API客户端未初始化');
+                return;
+            }
+            var tip = '确认执行此操作吗？';
+            var successMsg = action === 'approve' ? '课程已公开' : (action === 'unapprove' ? '已撤回公开' : '已提交公开审核');
+            if (action === 'approve') {
+                tip = '确认将该课程审核通过并公开吗？';
+            } else if (action === 'unapprove') {
+                tip = '确认撤回公开吗？撤回后课程转为待审核状态。';
+            } else {
+                tip = '确认提交公开审核吗？审核通过后所有用户可见。';
+            }
+            if (!confirm(tip)) return;
+            apiRequest('POST', '/courses/' + Number(courseId) + '/' + action, {}).then(function(resp) {
+                if (resp && resp.code === 9999) {
+                    alert(successMsg);
+                    loadCourseDetail();
+                    return;
+                }
+                alert((resp && resp.msg) ? resp.msg : '操作失败');
+            }).catch(function() {
+                alert('网络错误，请稍后重试');
+            });
+        }
+
+        // ---------- 左侧课程结构树 ----------
+        function renderCourseStructure(structure) {
+            var box = $('#course_structure_box');
+            if (!Array.isArray(structure) || !structure.length) {
+                box.html('<div class="text-center text-gray-400 py-8 text-sm"><i class="fas fa-inbox text-3xl mb-3 text-gray-300"></i><p>暂无课程内容</p>' + (IS_OWNER ? '<p class="mt-2 text-xs">点击右上角「添加章节」开始构建课程</p>' : '<p class="mt-2 text-xs">课程管理员尚未添加章节内容</p>') + '</div>');
+                return;
+            }
+            box.html('<ul class="tree-list">' + renderTreeNodes(structure) + '</ul>');
+        }
+
+        function renderTreeNodes(items) {
+            var html = '';
+            items.forEach(function(item) {
+                var children = Array.isArray(item.children) ? item.children : [];
+                var isContainer = children.length > 0 || item.item_type === 'module' || item.item_type === 'chapter';
+                var nodeId = Number(item.id || 0);
+                var iconClass = isContainer ? 'fas fa-folder text-yellow-500' : 'fas ' + itemIcon(item.item_type) + ' text-blue-500';
+                if (isContainer) {
+                    html += '<li class="tree-item">'
+                        + '<div class="tree-node tree-container" data-item-id="' + nodeId + '">'
+                        + '<span class="tree-caret"><i class="fas fa-chevron-right"></i></span>'
+                        + '<i class="' + iconClass + ' tree-node-icon"></i>'
+                        + '<span class="tree-label">' + escapeHtml(item.title || '') + '</span>'
+                        + (children.length ? '<span class="tree-count">' + children.length + '</span>' : '')
+                        + '</div>'
+                        + (children.length ? '<ul class="tree-children">' + renderTreeNodes(children) + '</ul>' : '')
+                        + '</li>';
+                } else {
+                    html += '<li class="tree-item">'
+                        + '<div class="tree-node tree-leaf" data-item-id="' + nodeId + '">'
+                        + '<i class="' + iconClass + ' tree-node-icon"></i>'
+                        + '<span class="tree-label">' + escapeHtml(item.title || '') + '</span>'
+                        + (item.duration ? '<span class="tree-duration">' + Number(item.duration) + '′</span>' : '')
+                        + '</div></li>';
+                }
+            });
+            return html;
+        }
+
+        function openTreeNode(treePath) {
+            var $node = $('.tree-node[data-item-id="' + treePath + '"]').first();
+            var $children = $node.next('.tree-children');
+            $children.toggleClass('open');
+            $node.toggleClass('open');
+        }
+
+        function selectCourseItem(id) {
+            if (!COURSE_DETAIL_DATA || !Array.isArray(COURSE_DETAIL_DATA.structure)) return;
+            var item = findItemInTree(COURSE_DETAIL_DATA.structure, id);
+            if (!item) return;
+            SELECTED_ITEM_ID = Number(id);
+            $('.tree-node').removeClass('active');
+            var $node = $('.tree-node[data-item-id="' + Number(id) + '"]').first();
+            if ($node.length) $node.addClass('active');
+            // 展开选中节点的祖先链（重渲染后保持可见）
+            expandAncestorsOf(COURSE_DETAIL_DATA.structure, Number(id));
+            renderItemDetail(item);
+        }
+
+        // 递归展开包含目标节点的祖先容器
+        function expandAncestorsOf(items, id) {
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                if (Number(item.id) === Number(id)) return true;
+                if (Array.isArray(item.children) && item.children.length) {
+                    var found = expandAncestorsOf(item.children, id);
+                    if (found) {
+                        var $node = $('.tree-node[data-item-id="' + Number(item.id) + '"]').first();
+                        $node.addClass('open');
+                        $node.next('.tree-children').addClass('open');
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // ---------- 右侧章节详情 ----------
+        function renderItemOverview() {
+            var course = COURSE_DETAIL_DATA ? COURSE_DETAIL_DATA.course : {};
+            $('#item_detail_title').text(course.title || '课程概览');
+            $('#item_detail_subtitle').html('');
+            $('#item_action_box').html('');
+            var html = '<div class="text-center text-gray-400 py-10">'
+                + '<i class="fas fa-book-open text-4xl mb-4 text-gray-300"></i>'
+                + '<p class="text-gray-500">点击左侧章节树查看章节详情</p>'
+                + '</div>';
+            $('#item_detail_body').html(html);
+        }
+
+        function renderItemDetail(item) {
+            var container = (item.children && item.children.length > 0) || item.item_type === 'module' || item.item_type === 'chapter';
+            $('#item_detail_title').text(item.title || '未命名章节');
+            var subtitle = typeLabelHtml(item.item_type);
+            if (item.duration) subtitle += '<span class="meta-chip"><i class="far fa-clock"></i>' + Number(item.duration) + ' 分钟</span>';
+            if (item.item_type !== 'module') subtitle += '<span class="meta-chip"><i class="fas fa-hashtag"></i>排序 ' + Number(item.order_index || 0) + '</span>';
+            $('#item_detail_subtitle').html(subtitle);
+
+            // 顶部操作按钮
             var actions = '';
-            if (child.content && String(child.content).trim()) {
-                actions += '<button type="button" class="lesson-complete-btn read-content-btn" data-item-id="' + Number(child.id) + '"><i class="fas fa-book-open mr-1"></i>阅读</button>';
+            if (IS_OWNER) {
+                actions += '<button type="button" class="btn-course btn-course-secondary btn-course-sm" onclick="openEditItem(' + Number(item.id) + ')"><i class="fas fa-edit mr-1"></i>编辑</button>';
+                if (container) {
+                    actions += '<button type="button" class="btn-course btn-course-primary btn-course-sm" onclick="openCourseItemModal(COURSE_DETAIL_ID, null, ' + Number(item.id) + ')"><i class="fas fa-plus mr-1"></i>添加子章节</button>';
+                }
+                actions += '<button type="button" class="btn-course btn-course-danger btn-course-sm" onclick="deleteCourseItem(' + Number(item.id) + ', \'' + escapeHtml(item.title || '').replace(/'/g, "\\'") + '\')"><i class="fas fa-trash-alt mr-1"></i>删除</button>';
             }
-            if (child.external_url && String(child.external_url).trim()) {
-                actions += '<a href="' + escapeHtml(child.external_url) + '" target="_blank" rel="noopener" class="lesson-complete-btn" style="text-decoration:none"><i class="fas fa-external-link-alt mr-1"></i>打开链接</a>';
+            if (COURSE_DETAIL_DATA && COURSE_DETAIL_DATA.is_joined && !container) {
+                actions += '<button type="button" class="btn-course btn-course-success btn-course-sm quiz-btn" data-course-item-id="' + Number(item.id) + '"><i class="fas fa-question-circle mr-1"></i>小测试</button>';
+                actions += '<button type="button" class="btn-course btn-course-secondary btn-course-sm complete-course-item-btn" data-course-item-id="' + Number(item.id) + '"><i class="fas fa-check mr-1"></i>标记完成</button>';
             }
-            if (isJoined) {
-                actions += '<button type="button" class="lesson-complete-btn quiz-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-question-circle mr-1"></i>小测试</button>';
-                actions += '<button type="button" class="lesson-complete-btn complete-course-item-btn" data-course-item-id="' + Number(child.id) + '"><i class="fas fa-check mr-1"></i>标记完成</button>';
+            $('#item_action_box').html(actions);
+
+            // 详情正文
+            var html = '';
+            if (item.description) {
+                html += '<div class="mb-5"><h4 class="text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-align-left text-gray-400 mr-2"></i>章节描述</h4>'
+                    + '<p class="text-sm text-gray-600 leading-relaxed">' + String(escapeHtml(item.description)).replace(/\n/g, '<br>') + '</p></div>';
             }
-            return '<li class="lesson-item" data-course-item-id="' + Number(child.id) + '"><div class="lesson-content"><div class="lesson-icon ' + escapeHtml(child.item_type || '') + '"><i class="fas ' + icon + '"></i></div><div class="lesson-text"><div class="lesson-name">' + escapeHtml(child.title || '') + '</div>' + (child.duration ? '<div class="lesson-duration"><i class="far fa-clock mr-1"></i>' + Number(child.duration) + ' 分钟</div>' : '') + '</div></div><div class="lesson-actions"><span class="lesson-type">' + escapeHtml(String(child.item_type || '').toUpperCase()) + '</span>' + actions + '</div></li>';
+            if (item.external_url) {
+                html += '<div class="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-xl flex flex-wrap items-center justify-between gap-3">'
+                    + '<div class="text-sm text-gray-700"><i class="fas fa-link text-blue-500 mr-2"></i>外部学习资源</div>'
+                    + '<a href="' + escapeHtml(item.external_url) + '" target="_blank" rel="noopener" class="btn-course btn-course-primary btn-course-sm"><i class="fas fa-external-link-alt mr-1"></i>打开链接</a>'
+                    + '</div>';
+            }
+            if (item.content && String(item.content).trim()) {
+                html += '<div><h4 class="text-sm font-semibold text-gray-700 mb-2"><i class="fas fa-file-alt text-gray-400 mr-2"></i>章节正文（Markdown）</h4>'
+                    + '<div class="md-content text-sm bg-gray-50 border border-gray-200 rounded-xl p-4">' + escapeHtml(item.content) + '</div></div>';
+            }
+            if (!html) {
+                html = '<div class="text-center text-gray-400 py-10"><i class="fas fa-folder-open text-3xl mb-3 text-gray-300"></i><p>该章节暂无内容</p></div>';
+            }
+
+            // 章节正文 markdown 渲染（marked + 轻量清理）
+            $('#item_detail_body').html(html);
+            renderMarkdownBlocks();
+
+            // AI 制品区（登录用户可见）：把课程文章内容加入制品库，支持可视化界面/思维导图/关键信息
+            if (CURRENT_USER_ID > 0) {
+                var artifactHtml = '<div class="mt-6 border-t border-gray-200 pt-4">'
+                    + '<div class="flex items-center justify-between mb-2"><h4 class="text-sm font-semibold text-gray-700 flex items-center gap-2"><i class="fas fa-wand-magic-sparkles text-purple-500"></i>AI 制品</h4></div>'
+                    + '<p class="text-xs text-gray-500 mb-2">把本章内容加入制品库，生成可视化阅读 / 思维导图 / 关键信息</p>'
+                    + '<div class="flex flex-wrap gap-2">'
+                    + '<button type="button" class="btn-course btn-course-primary btn-course-sm course-artifact-btn" data-artifact-type="visual_reading"><i class="fas fa-book-open mr-1"></i>可视化界面</button>'
+                    + '<button type="button" class="btn-course btn-course-primary btn-course-sm course-artifact-btn" data-artifact-type="mind_map"><i class="fas fa-diagram-project mr-1"></i>思维导图</button>'
+                    + '<button type="button" class="btn-course btn-course-primary btn-course-sm course-artifact-btn" data-artifact-type="key_points"><i class="fas fa-lightbulb mr-1"></i>关键信息</button>'
+                    + '<a href="/artifacts" class="btn-course btn-course-secondary btn-course-sm"><i class="fas fa-box-archive mr-1"></i>制品库</a>'
+                    + '</div></div>';
+                $('#item_detail_body').append(artifactHtml);
+            }
+        }
+
+        // 渲染 markdown（复用 marked，做轻量安全清理）
+        function renderMarkdownBlocks() {
+            var blocks = document.querySelectorAll('#item_detail_body .md-content');
+            blocks.forEach(function (el) {
+                var raw = String(el.textContent || '');
+                if (!raw.trim()) return;
+                var rendered = null;
+                try {
+                    if (window.marked && typeof window.marked.parse === 'function') {
+                        rendered = window.marked.parse(raw, { gfm: true, breaks: true });
+                    } else if (window.marked) {
+                        rendered = window.marked(raw);
+                    }
+                } catch (e) { return; }
+                if (!rendered) return;
+                var tmp = document.createElement('div');
+                tmp.innerHTML = rendered;
+                tmp.querySelectorAll('script, iframe, object, embed, link, meta, style').forEach(function (n) { n.remove(); });
+                tmp.querySelectorAll('*').forEach(function (n) {
+                    Array.prototype.slice.call(n.attributes).forEach(function (attr) {
+                        if (/^on/i.test(attr.name)) n.removeAttribute(attr.name);
+                    });
+                });
+                el.innerHTML = tmp.innerHTML;
+            });
         }
 
         function findItemInTree(items, id) {
             for (var i = 0; i < items.length; i++) {
-                if (Number(items[i].id) === id) return items[i];
+                if (Number(items[i].id) === Number(id)) return items[i];
                 if (Array.isArray(items[i].children)) {
                     var found = findItemInTree(items[i].children, id);
                     if (found) return found;
@@ -866,6 +806,48 @@
             return null;
         }
 
+        // ---------- 所有者操作 ----------
+        function openEditItem(id) {
+            if (!apiRequest) return;
+            apiRequest('GET', '/course-items/' + Number(id), {}).then(function(resp) {
+                if (resp && resp.code === 9999 && resp.result && resp.result.course_item) {
+                    openCourseItemModal(COURSE_DETAIL_ID, resp.result.course_item);
+                    return;
+                }
+                alert((resp && resp.msg) ? resp.msg : '获取章节信息失败');
+            }).catch(function() {
+                alert('网络错误，请稍后重试');
+            });
+        }
+
+        function deleteCourseItem(id, title) {
+            if (!apiRequest) return;
+            Swal.fire({
+                title: '确定要删除这个章节吗？',
+                text: '「' + title + '」删除后不可恢复',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '删除',
+                cancelButtonText: '取消',
+                confirmButtonColor: '#dc2626'
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                apiRequest('DELETE', '/course-items/' + Number(id), {}).then(function(resp) {
+                    if (resp && resp.code === 9999) {
+                        Swal.fire('已删除', resp.msg || '删除成功', 'success').then(function() {
+                            SELECTED_ITEM_ID = null;
+                            loadCourseDetail();
+                        });
+                        return;
+                    }
+                    Swal.fire('删除失败', (resp && resp.msg) ? resp.msg : '未知错误', 'error');
+                }).catch(function() {
+                    Swal.fire('删除失败', '网络错误，请稍后重试', 'error');
+                });
+            });
+        }
+
+        // ---------- 数据加载 ----------
         function loadCourseDetail() {
             if (!apiRequest || !COURSE_DETAIL_ID) return;
             apiRequest('GET', '/courses/' + COURSE_DETAIL_ID, {}).then(function(resp) {
@@ -877,74 +859,69 @@
                 var structure = Array.isArray(result.structure) ? result.structure : [];
                 var isJoined = !!result.is_joined;
                 COURSE_DETAIL_DATA = { course: course, structure: structure, is_joined: isJoined };
+                IS_OWNER = !!course.is_owner;
+
                 renderCourseInfo(course);
-                renderCourseActions(course, isJoined);
-                renderCourseStructure(structure, isJoined);
+                renderCourseActions(course, isJoined, IS_OWNER);
+                renderCourseStructure(structure);
+
+                if (SELECTED_ITEM_ID && findItemInTree(structure, SELECTED_ITEM_ID)) {
+                    selectCourseItem(SELECTED_ITEM_ID);
+                    return;
+                }
+                // 默认选中第一个可展示的节点
+                var first = findFirstSelectable(structure);
+                if (first) {
+                    selectCourseItem(Number(first.id));
+                } else {
+                    renderItemOverview();
+                }
             }).catch(function() {
                 alert('课程加载失败，请稍后重试');
             });
         }
 
+        function findFirstSelectable(items) {
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].item_type === 'module' && Array.isArray(items[i].children) && items[i].children.length) {
+                    var inner = findFirstSelectable(items[i].children);
+                    if (inner) return inner;
+                    continue;
+                }
+                return items[i];
+            }
+            return null;
+        }
+
         $(document).ready(function() {
             loadCourseDetail();
 
-            // 卡片折叠功能
-            $('.toggle-btn').click(function() {
-                var target = $(this).data('toggle');
-                var $target = $('#' + target);
-                var $icon = $(this).find('i');
-
-                $target.slideToggle(300);
-                $icon.toggleClass('fa-chevron-down fa-chevron-up');
-
-                // 卡片悬停效果
-                $(this).closest('.info-card').toggleClass('expanded');
+            // 章节树：点击容器展开/收起并选中；点击叶子直接选中
+            $(document).on('click', '.tree-node', function(e) {
+                e.preventDefault();
+                var id = Number($(this).data('item-id') || 0);
+                if (!id) return;
+                if ($(this).hasClass('tree-container')) {
+                    openTreeNode(id);
+                }
+                if (findItemInTree(COURSE_DETAIL_DATA ? COURSE_DETAIL_DATA.structure : [], id)) {
+                    selectCourseItem(id);
+                }
             });
 
-            // 初始展开课程结构
-            $('#courseStructure').show();
-            $('[data-toggle="courseStructure"]').find('i').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+            // 添加顶级章节
+            $('#btnAddTopItem').on('click', function() {
+                openCourseItemModal(COURSE_DETAIL_ID);
+            });
 
-            // 卡片悬停效果
-            $('.info-card').hover(
-                function() {
-                    $(this).css('transform', 'translateY(-5px)');
-                },
-                function() {
-                    if (!$(this).hasClass('expanded')) {
-                        $(this).css('transform', 'translateY(0)');
-                    }
-                }
-            );
-
-            // 按钮悬停效果
-            $('.btn-course').hover(
-                function() {
-                    if (!$(this).prop('disabled')) {
-                        $(this).css('transform', 'translateY(-3px)');
-                    }
-                },
-                function() {
-                    $(this).css('transform', 'translateY(0)');
-                }
-            );
-
-            // 加入课程走v2接口
+            // 加入课程
             $(document).on('click', '.join-course-btn', function(e) {
                 e.preventDefault();
-                if (!apiRequest) {
-                    alert('API客户端未初始化');
-                    return;
-                }
+                if (!apiRequest) { alert('API客户端未初始化'); return; }
                 var courseId = Number($(this).data('course-id') || 0);
-                if (!courseId) {
-                    alert('课程ID错误');
-                    return;
-                }
                 var $btn = $(this);
                 var original = $btn.html();
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>加入中...');
-
                 apiRequest('POST', '/courses/' + courseId + '/join', {}).then(function(resp) {
                     if (resp && resp.code === 9999) {
                         loadCourseDetail();
@@ -958,31 +935,18 @@
                 });
             });
 
+            // 标记课时完成
             $(document).on('click', '.complete-course-item-btn', function(e) {
                 e.preventDefault();
-                if (!apiRequest) {
-                    alert('API客户端未初始化');
-                    return;
-                }
-
+                if (!apiRequest) { alert('API客户端未初始化'); return; }
                 var $btn = $(this);
-                if ($btn.hasClass('done')) {
-                    return;
-                }
-
+                if ($btn.hasClass('done')) return;
                 var itemId = Number($btn.data('course-item-id') || 0);
-                if (!itemId) {
-                    alert('课时ID错误');
-                    return;
-                }
-
                 var original = $btn.html();
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>处理中');
-
                 apiRequest('POST', '/course-items/' + itemId + '/complete', {}).then(function(resp) {
                     if (resp && resp.code === 9999) {
                         $btn.addClass('done').html('<i class="fas fa-check-circle mr-1"></i>已完成').prop('disabled', true);
-                        $btn.closest('.lesson-item').addClass('completed');
                         return;
                     }
                     alert((resp && resp.msg) ? resp.msg : '标记完成失败');
@@ -993,30 +957,24 @@
                 });
             });
 
+            // 测验弹窗
             $('#closeQuizBtn').on('click', closeQuiz);
             $('#quizModal').on('click', function(e) { if (e.target === this) closeQuiz(); });
             $(document).on('click', '.quiz-btn', function(e) {
                 e.preventDefault();
-                openQuiz(Number($(this).data('course-item-id') || 0), $(this).closest('.lesson-item').find('.lesson-name').text());
+                openQuiz(Number($(this).data('course-item-id') || 0));
             });
             $('#quizForm').on('submit', function(e) { e.preventDefault(); submitQuiz(); });
 
-            // 阅读章节正文
-            $(document).on('click', '.read-content-btn', function(e) {
+            // 生成 AI 制品（把课程章节内容加入制品库）
+            $(document).on('click', '.course-artifact-btn', function(e) {
                 e.preventDefault();
-                var itemId = Number($(this).data('item-id') || 0);
-                if (!itemId || !COURSE_DETAIL_DATA || !Array.isArray(COURSE_DETAIL_DATA.structure)) return;
-                var found = findItemInTree(COURSE_DETAIL_DATA.structure, itemId);
-                if (found && String(found.content || '').trim()) {
-                    Swal.fire({
-                        title: found.title || '章节内容',
-                        html: '<div style="text-align:left;white-space:pre-wrap;max-height:60vh;overflow-y:auto;line-height:1.7;color:#334155">' + escapeHtml(found.content) + '</div>',
-                        width: 760,
-                        confirmButtonText: '关闭'
-                    });
-                } else {
-                    Swal.fire('提示', '该章节暂无可阅读的正文内容', 'info');
-                }
+                if (!SELECTED_ITEM_ID || typeof window.openArtifactDialog !== 'function') return;
+                window.openArtifactDialog({
+                    relatedType: 'course_item',
+                    relatedId: SELECTED_ITEM_ID,
+                    artifactType: String($(this).data('artifact-type') || 'key_points')
+                });
             });
         });
 
@@ -1025,9 +983,9 @@
             $('#quizResult').addClass('hidden').empty();
         }
 
-        function openQuiz(itemId, title) {
+        function openQuiz(itemId) {
             if (!apiRequest || !itemId) return;
-            $('#quizModalTitle').text(title || '章节小测试');
+            $('#quizModalTitle').text('章节小测试');
             $('#quizModal').addClass('show');
             $('#quizLoading').removeClass('hidden').text('加载测试中...');
             $('#quizForm').addClass('hidden').empty();
@@ -1063,38 +1021,15 @@
                 if (!resp || resp.code !== 9999) throw new Error((resp && resp.msg) || '提交失败');
                 var result = resp.result || {};
                 var html = '<div class="quiz-result"><div class="font-semibold ' + (result.passed ? 'text-green-700' : 'text-red-700') + '">' + (result.passed ? '测试通过' : '需要复习') + '：' + Number(result.score || 0) + '%</div>';
-                (result.results || []).forEach(function(row, index) { html += '<div class="text-sm mt-2">第 ' + (index + 1) + ' 题：' + (row.correct ? '<span class="text-green-600">正确</span>' : '<span class="text-red-600">错误，正确答案：' + escapeHtml((row.correct_options || []).join(', ')) + '</span>') + (row.explanation ? '<div class="text-gray-500">解析：' + escapeHtml(row.explanation) + '</div>' : '') + '</div>'; });
+                (result.results || []).forEach(function(row, index) {
+                    html += '<div class="text-sm mt-2">第 ' + (index + 1) + ' 题：' + (row.correct ? '<span class="text-green-600">正确</span>' : '<span class="text-red-600">错误，正确答案：' + escapeHtml((row.correct_options || []).join(', ')) + '</span>') + (row.explanation ? '<div class="text-gray-500">解析：' + escapeHtml(row.explanation) + '</div>' : '') + '</div>';
+                });
                 html += '</div><button type="button" class="btn-course btn-course-secondary mt-4" onclick="closeQuiz()">关闭</button>';
                 $('#quizForm').addClass('hidden');
                 $('#quizResult').html(html).removeClass('hidden');
-            }).catch(function(err) { $('#quizResult').html('<div class="quiz-result text-red-600">' + escapeHtml(err && err.message ? err.message : '提交失败') + '</div>').removeClass('hidden'); });
+            }).catch(function(err) {
+                $('#quizResult').html('<div class="quiz-result text-red-600">' + escapeHtml(err && err.message ? err.message : '提交失败') + '</div>').removeClass('hidden');
+            });
         }
-
-        // 章节展开/收起功能
-        function toggleChapter(chapterId) {
-            var $lessonList = $('#lessons-' + chapterId);
-            var $icon = $('#icon-' + chapterId);
-
-            if ($lessonList.length) {
-                $lessonList.toggleClass('expanded');
-                $icon.toggleClass('fa-chevron-down fa-chevron-up');
-
-                if ($lessonList.hasClass('expanded')) {
-                    $icon.css('transform', 'rotate(180deg)');
-                } else {
-                    $icon.css('transform', 'rotate(0deg)');
-                }
-            }
-        }
-
-        // 初始展开第一个章节
-        $(document).ready(function() {
-            if ($('.chapter-item').length > 0) {
-                var firstChapter = $('.chapter-item').first().data('chapter-id');
-                if (firstChapter) {
-                    toggleChapter(firstChapter);
-                }
-            }
-        });
     </script>
 @endsection

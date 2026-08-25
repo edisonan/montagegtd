@@ -456,6 +456,120 @@
     }
     .explorer-mode-hint { margin-left: auto; color: #94a3b8; font-size: 12px; }
     @media (max-width: 760px) { .explorer-mode-hint { display: none; } }
+
+    /* ===== 正文底部固定操作栏（能力对齐 /articles） ===== */
+    .reader-actions-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 4;
+        margin-top: 30px;
+        padding-top: 18px;
+        background: linear-gradient(to top, rgba(255,255,255,1) 74%, rgba(255,255,255,0));
+    }
+    .reader-actions-bar .action-buttons {
+        padding: 8px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: rgba(255,255,255,.97);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, .10);
+    }
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-left: auto;
+        justify-content: flex-end;
+    }
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: white;
+        border: 1px solid #cbd5e1;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .action-btn:hover {
+        background: #f1f5f9;
+        transform: translateY(-2px);
+    }
+    .action-btn.active {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: #4a90e2;
+        color: #4a90e2;
+    }
+    .action-btn i { font-size: 1.1rem; }
+    .action-label {
+        position: absolute;
+        top: -24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #334155;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 5;
+    }
+    .action-btn:hover .action-label {
+        opacity: 1;
+        visibility: visible;
+        top: -32px;
+    }
+    .playaudio.playing {
+        color: #4a90e2;
+        background: rgba(59, 130, 246, 0.1);
+        border-color: #4a90e2;
+    }
+    .share-container { position: relative; }
+    .share-menu {
+        position: absolute;
+        bottom: 120%;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        padding: 12px;
+        z-index: 100;
+        display: none;
+        min-width: 200px;
+        text-align: left;
+    }
+    .share-menu.active { display: block; animation: fadeIn 0.3s ease; }
+    .share-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        color: #475569;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        width: 100%;
+    }
+    .share-option:hover { background: #f1f5f9; color: #4a90e2; }
+    .share-option i { width: 20px; text-align: center; }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @media (max-width: 600px) {
+        .reader-actions-bar .action-buttons {
+            justify-content: center;
+        }
+    }
 </style>
 
 <main class="article-explorer">
@@ -577,6 +691,9 @@
         </div>
     </div>
 </div>
+
+@include('components.ai-ask-modal')
+@include('artifacts._dialog')
 @endsection
 
 @section('scripts')
@@ -883,10 +1000,29 @@
                     html += '<button type="button" class="reader-action-btn" data-article-status="read_later"><i class="far fa-clock mr-1"></i>稍后阅读</button>';
                     html += '</span>';
                     html += '</div></header>';
-                    html += '<article class="reader-content">' + (article.content || '<p>暂无正文内容</p>') + '</article>';
+                    html += '<article class="reader-content" id="explorerReaderContent">' + (article.content || '<p>暂无正文内容</p>') + '</article>';
+
+                    var currentStatus = result.status || 'unread';
+                    var subIdNum = Number(result.article_sub_id || articleSubId || 0);
+                    var articleIdNum = Number(article.id || 0);
+                    var streamHref = '/articles/stream?status=' + encodeURIComponent(state.status) + '&page_count=30&page=1&article_sub_id=' + subIdNum;
+
+                    // 底部固定操作栏（能力对齐 /articles）
+                    html += '<div class="reader-actions-bar"><div class="action-buttons" style="margin-left:auto;">';
+                    html += '<a class="action-btn" href="' + streamHref + '" title="沉浸刷文"><i class="fas fa-mobile-screen-button"></i><span class="action-label">沉浸</span></a>';
+                    html += '<button type="button" class="action-btn ai-assist-btn" data-content-id="explorerReaderContent" data-title="' + escapeHtml(article.subject || '') + '" title="AI助手"><i class="fas fa-robot"></i><span class="action-label">AI助手</span></button>';
+                    html += '<button type="button" class="action-btn js-artifact-open" data-article-id="' + articleIdNum + '" data-artifact-type="visual_reading" title="AI可视化阅读"><i class="fas fa-wand-magic-sparkles"></i><span class="action-label">AI可视化</span></button>';
+                    html += '<button type="button" class="action-btn js-artifact-open" data-article-id="' + articleIdNum + '" data-artifact-type="mind_map" title="AI思维导图"><i class="fas fa-brain"></i><span class="action-label">思维导图</span></button>';
+                    html += '<div class="share-container"><button type="button" class="action-btn share-btn" title="分享"><i class="fas fa-share-alt"></i><span class="action-label">分享</span></button><div class="share-menu"><a href="javascript:void(0);" class="share-option icon-heart" data-id="' + articleIdNum + '"><i class="fas fa-heart"></i><span>记录笔记</span></a></div></div>';
+                    html += '<button type="button" class="action-btn set_read' + (currentStatus === 'read' ? ' active' : '') + '" data-article-id="' + subIdNum + '" title="标记已读"><i class="fas fa-check"></i><span class="action-label">已读</span></button>';
+                    html += '<button type="button" class="action-btn set_read_later' + (currentStatus === 'read_later' ? ' active' : '') + '" data-article-id="' + subIdNum + '" title="稍后阅读"><i class="far fa-clock"></i><span class="action-label">稍后</span></button>';
+                    html += '<button type="button" class="action-btn set_star' + (currentStatus === 'star' ? ' active' : '') + '" data-article-id="' + subIdNum + '" title="收藏"><i class="far fa-star"></i><span class="action-label">收藏</span></button>';
+                    html += '<button type="button" class="action-btn playaudio" data-article-id="' + subIdNum + '" title="语音播放"><i class="fas fa-volume-up"></i><span class="action-label">语音</span></button>';
+                    html += '</div></div>';
+
                     $('#reader').html(html).scrollTop(0);
-                    syncArticleActions(result.status);
-                    if (result.status === 'unread') {
+                    syncArticleActions(currentStatus);
+                    if (currentStatus === 'unread') {
                         updateArticleStatus('read', true);
                     }
                 })
@@ -900,6 +1036,9 @@
                 var actionStatus = $(this).data('article-status');
                 $(this).toggleClass('active', actionStatus === status);
             });
+            $('#reader .action-btn.set_read').toggleClass('active', status === 'read');
+            $('#reader .action-btn.set_read_later').toggleClass('active', status === 'read_later');
+            $('#reader .action-btn.set_star').toggleClass('active', status === 'star');
         }
 
         function updateArticleStatus(status, silent) {
@@ -1061,6 +1200,106 @@
             updateArticleStatus($(this).data('article-status'), false);
         });
 
+        // ===== 底部固定操作栏（能力对齐 /articles） =====
+        // 状态切换：已读 / 稍后 / 收藏（含取消逻辑，与 /articles 一致）
+        $('#reader').on('click', '.action-btn.set_read, .action-btn.set_read_later, .action-btn.set_star', function () {
+            var $btn = $(this);
+            var active = $btn.hasClass('active');
+            var nextStatus;
+            if ($btn.hasClass('set_star')) {
+                nextStatus = active ? 'read' : 'star';
+            } else if ($btn.hasClass('set_read')) {
+                nextStatus = active ? 'unread' : 'read';
+            } else {
+                nextStatus = active ? 'unread' : 'read_later';
+            }
+            updateArticleStatus(nextStatus, false);
+        });
+
+        // 语音播放（Web Speech API）
+        var explorerSpeech = {
+            currentUtterance: null,
+            currentButton: null,
+            speak: function (text, button) {
+                if (this.currentButton && this.currentButton[0] === button[0]) {
+                    this.stop();
+                    return;
+                }
+                this.stop();
+                var utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 1;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                this.currentUtterance = utterance;
+                this.currentButton = button;
+                var self = this;
+                button.addClass('playing').find('i')
+                    .removeClass('fa-play fa-pause fa-volume-up')
+                    .addClass('fa-stop');
+                utterance.onend = utterance.onerror = function () {
+                    self.reset();
+                };
+                speechSynthesis.speak(utterance);
+            },
+            stop: function () {
+                if (this.currentUtterance) {
+                    speechSynthesis.cancel();
+                    this.reset();
+                }
+            },
+            reset: function () {
+                if (this.currentButton) {
+                    this.currentButton.removeClass('playing').find('i')
+                        .removeClass('fa-stop fa-pause fa-play')
+                        .addClass('fa-volume-up');
+                }
+                this.currentUtterance = null;
+                this.currentButton = null;
+            }
+        };
+        $('#reader').on('click', '.action-btn.playaudio', function () {
+            var $button = $(this);
+            var $content = $('#reader .reader-content');
+            var textToSpeak = ($content.text() || '').trim();
+            if (!textToSpeak) {
+                $('#articleListHint').text('没有内容可朗读');
+                return;
+            }
+            textToSpeak = textToSpeak.substring(0, 10000).replace(/\s+/g, ' ').trim();
+            if (!textToSpeak) {
+                return;
+            }
+            explorerSpeech.speak(textToSpeak, $button);
+        });
+
+        // 分享菜单
+        $('#reader').on('click', '.share-btn', function (e) {
+            e.stopPropagation();
+            var $shareMenu = $(this).siblings('.share-menu');
+            $('.share-menu').not($shareMenu).removeClass('active');
+            $shareMenu.toggleClass('active');
+        });
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.share-container').length) {
+                $('.share-menu').removeClass('active');
+            }
+        });
+
+        // 记录笔记
+        $(document).on('click', '.icon-heart', function () {
+            var id = $(this).data('id');
+            window.open('/notes?&source_type=2&source_id=' + id);
+        });
+
+        // AI 助手（复用全局 AI 对话模态框）
+        $(document).on('click', '.ai-assist-btn', function () {
+            var contentId = $(this).data('content-id');
+            if (typeof openAskAIModal === 'function') {
+                openAskAIModal(contentId);
+            }
+        });
+
         $('#directoryToggle').on('click', function () {
             state.directoryCollapsed = !state.directoryCollapsed;
             localStorage.setItem('articleExplorerDirectoryCollapsed', state.directoryCollapsed ? '1' : '0');
@@ -1134,5 +1373,27 @@
             }
         });
     });
+</script>
+
+<script type="text/javascript">
+    // AI 制品弹窗（AI可视化阅读 / AI思维导图）：先查制品库，有就展示，没有才生成
+    (function () {
+        function openArtifactById(articleId, artifactType) {
+            if (window.openArtifactDialog && articleId) {
+                window.openArtifactDialog({ relatedType: 'article', relatedId: articleId, artifactType: artifactType });
+                return true;
+            }
+            return false;
+        }
+        $(document).on('click.explorerArtifact', '.js-artifact-open', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var articleId = $(this).data('article-id');
+            var artifactType = $(this).data('artifact-type');
+            if (!openArtifactById(articleId, artifactType)) {
+                window.location.href = '/article/' + articleId + '/artifacts';
+            }
+        });
+    })();
 </script>
 @endsection
