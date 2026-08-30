@@ -79,8 +79,8 @@
 <script src="/js/marked.min.js"></script>
 <script src="/plugins/purify/purify.min.js"></script>
 <style>
-    /* 全屏工作面：脱离 max-w-7xl / py-8 容器束缚，隐藏站点 footer，让聊天区占满视口 */
-    body > main.max-w-7xl{max-width:100%!important;padding:0!important}
+    /* 工作面宽度与全站一致（max-w-7xl 1280px 居中 + 左右 padding），仅去掉上下 padding 保持全高 */
+    body > main.max-w-7xl{padding-top:0!important;padding-bottom:0!important}
     body > footer.mt-16{display:none!important}
 
     .ai-workbench{

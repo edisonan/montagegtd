@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'AI制品库 - ' . $article->subject)
-@section('description', '文章 AI 制品库：可视化阅读、思维导图等 AI 二次产出')
+@section('description', '文章 AI 制品库：可视化阅读、思维导图、AIPPT 等 AI 二次产出')
 
 @section('content')
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -39,6 +39,7 @@
                     $definitions = [
                         'visual_reading' => ['可视化阅读', 'html', '适合快速理解全文的可视化 HTML 页面', 'bg-sky-50 border-sky-200', 'text-sky-700', 'fa-book-open'],
                         'mind_map' => ['思维导图', 'json', '文章结构的思维导图节点树，可保存为思维导图', 'bg-indigo-50 border-indigo-200', 'text-indigo-700', 'fa-diagram-project'],
+                        'ai_ppt' => ['AIPPT', 'json', 'AI 生成的演示文稿幻灯片，可在线翻页浏览', 'bg-rose-50 border-rose-200', 'text-rose-700', 'fa-file-powerpoint'],
                     ];
                     $artifactByType = $artifacts->keyBy('artifact_type');
                 @endphp

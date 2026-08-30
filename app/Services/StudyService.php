@@ -281,7 +281,7 @@ class StudyService
     }
 
     /**
-     * 更新学习计划（编辑不重建已生成任务）
+     * 更新学习计划（编辑不重建已生成任务；计划名称变更时同步已生成任务的名称）
      */
     public function updatePlan(Plan $plan, array $data): array
     {
@@ -289,6 +289,7 @@ class StudyService
         if ($name === '') {
             $name = (string)$plan->name;
         }
+        $nameChanged = $name !== (string)$plan->name;
         $content = trim((string)($data['content'] ?? ''));
         $startAt = Carbon::parse((string)($data['start_time'] ?? $plan->start_time));
         $repeatType = $this->normalizeRepeatType((string)($data['repeat_type'] ?? ($plan->repeat_type ?: 'none')));
@@ -316,6 +317,14 @@ class StudyService
         $plan->repeat_meta = json_encode($meta, JSON_UNESCAPED_UNICODE);
         $plan->sp_points = $spPoints;
         $plan->save();
+
+        // 名称变更时，将该计划已生成的所有学习任务名称同步为新名称
+        if ($nameChanged) {
+            Task::where('user_id', (int)$plan->user_id)
+                ->where('mode', self::STUDY_MODE)
+                ->where('study_source_task_id', (int)$plan->id)
+                ->update(array('name' => $name));
+        }
 
         return array(
             'plan' => $plan->fresh(),

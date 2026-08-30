@@ -245,19 +245,20 @@
             var isJoined = courseMgmtState.userCourseIds.indexOf(Number(course.id)) >= 0;
             var isOwner = CURRENT_USER_ID > 0 && Number(course.created_by || 0) === CURRENT_USER_ID;
             var joinAction = '';
-            if (CURRENT_USER_ID > 0 && !isJoined && !isOwner) {
-                joinAction = '<button type="button" class="btn btn-success btn-sm hover:shadow-md transition-shadow join-course-btn" data-course-id="' + Number(course.id) + '">加入课程</button>';
-            } else if (isOwner) {
-                joinAction = '<span class="px-3 py-1.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">创建的课程</span>';
+            if (CURRENT_USER_ID > 0 && !isJoined) {
+                // 未加入：创建者也可加入自己的课程进行学习
+                joinAction = (isOwner ? '<span class="px-3 py-1.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">创建的课程</span>' : '')
+                    + '<button type="button" class="btn btn-success btn-sm hover:shadow-md transition-shadow join-course-btn" data-course-id="' + Number(course.id) + '">加入课程</button>';
             } else if (isJoined) {
-                joinAction = '<span class="px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">已加入</span>';
+                joinAction = '<span class="px-3 py-1.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">已加入</span>'
+                    + '<a href="/courses/' + Number(course.id) + '/study" class="btn btn-success btn-sm" title="沉浸学习"><i class="fas fa-play-circle mr-1"></i>继续学习</a>';
             }
             return '<div class="course-card group" data-difficulty="' + escapeHtml(course.difficulty || '') + '" data-platform="' + escapeHtml(course.platform || '') + '" data-hours="' + Number(course.estimated_hours || 0) + '" data-created="' + escapeHtml(course.created_at || '') + '" data-enrollment="' + Number(course.enrollment_count || 0) + '">' +
                 '<div class="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all duration-200">' +
                 '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">' + cover + '</div>' +
                 '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
                 '<div class="flex flex-wrap gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-user text-xs"></i>' + escapeHtml(course.instructor || '未知讲师') + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>' + Number(course.chapters_count || 0) + '章</span></div>' +
-                '<div class="flex items-center justify-between"><div class="flex items-center gap-2"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a>' + (isOwner ? '<a href="/courses/' + Number(course.id) + '" class="btn btn-outline btn-sm" title="添加/修改章节"><i class="fas fa-cog mr-1"></i>管理章节</a>' : '') + '</div><div class="flex items-center gap-2">' + joinAction + '</div></div></div></div></div>';
+                '<div class="flex items-center justify-between"><div class="flex items-center gap-2"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a></div><div class="flex items-center gap-2">' + joinAction + '</div></div></div></div></div>';
         }
 
         function renderCreatedCourseCard(course) {
@@ -280,7 +281,7 @@
                 '<div class="relative h-48 overflow-hidden bg-gradient-to-br from-green-50 to-green-100">' + cover + '</div>' +
                 '<div class="p-5"><h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-1">' + title + '</h3><p class="text-gray-600 text-sm mb-4 line-clamp-2 h-10">' + description + '</p>' +
                 '<div class="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-4"><span class="flex items-center gap-1"><i class="fas fa-chart-line text-xs"></i>学习人数: ' + Number(course.enrollment_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>' + Number(course.estimated_hours || 0) + '小时</span><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>' + Number(course.chapters_count || 0) + '章</span>' + getPublicStatusBadge(course) + '</div>' +
-                '<div class="flex items-center justify-between"><div class="flex items-center gap-2"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a><a href="/courses/' + Number(course.id) + '" class="btn btn-outline btn-sm" title="添加/修改章节"><i class="fas fa-cog mr-1"></i>管理章节</a></div>' +
+                '<div class="flex items-center justify-between"><div class="flex items-center gap-2"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a></div>' +
                 '<div class="flex items-center gap-2">' +
                 statusActions +
                 '<a href="/courses/' + Number(course.id) + '/edit" class="btn btn-outline btn-sm" title="编辑课程"><i class="fas fa-edit"></i></a>' +

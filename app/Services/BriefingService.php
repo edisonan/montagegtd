@@ -132,6 +132,7 @@ class BriefingService
         }
 
         $payload = array(
+            'id' => isset($data['id']) ? (int)$data['id'] : 0,
             'name' => trim((string)($data['name'] ?? '默认简报')) ?: '默认简报',
             'enabled' => isset($data['enabled']) ? (bool)$data['enabled'] : true,
             'pull_hours' => $pullHours,

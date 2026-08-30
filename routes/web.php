@@ -70,6 +70,9 @@ Route::group([
     Route::get('/study', 'StudyController@index');
     Route::get('/study/checkins', 'StudyController@checkins');
     Route::get('/study/media/{path}', 'StudyController@media')->where('path', '.*');
+    // 学习工具
+    Route::get('/study/tools', 'StudyController@tools');
+    Route::get('/study/tools/tutoring', 'StudyController@tutoring');
     Route::get('/studyfocus/{task}', 'StudyController@focus');
     Route::get('/tasksall', 'TaskController@getAllList');
     Route::post('/task', 'TaskController@store');
@@ -268,6 +271,7 @@ Route::group([
     
     // 课程管理相关路由
     Route::get('/courses/{id}/edit', 'CourseController@edit');
+    Route::get('/courses/{id}/study', 'CourseController@study');
     Route::resource('courses', 'CourseController')->except(['edit', 'update', 'destroy']);
     Route::post('/courses/{id}/join', 'CourseController@joinCourse');
     Route::get('/course-enrollments', 'CourseController@getUserCourses');

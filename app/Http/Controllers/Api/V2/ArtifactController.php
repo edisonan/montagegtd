@@ -6,6 +6,7 @@ use App\Exceptions\CustomException;
 use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Artifact;
+use App\Models\ArtifactVersion;
 use App\Services\ArtifactService;
 use App\Services\PointGrantService;
 use Illuminate\Http\Request;
@@ -116,6 +117,51 @@ class ArtifactController extends Controller
     }
 
     /**
+     * 查询某制品的历史版本（仅元数据，新→旧）
+     * GET /api/v2/artifacts/{artifact}/versions
+     */
+    public function versions(Request $request, Artifact $artifact)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        if ((int)$artifact->user_id !== $userId) {
+            throw new CustomException('制品不存在');
+        }
+
+        $versions = $this->artifactService->listVersions($artifact);
+
+        $result = array();
+        foreach ($versions as $version) {
+            $result[] = $this->serializeVersion($version, false);
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'versions' => $result,
+            'total' => count($result),
+        )));
+    }
+
+    /**
+     * 查询某制品某个历史版本（含 content）
+     * GET /api/v2/artifacts/{artifact}/versions/{version}
+     */
+    public function showVersion(Request $request, Artifact $artifact, $version)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        if ((int)$artifact->user_id !== $userId) {
+            throw new CustomException('制品不存在');
+        }
+
+        $ver = $this->artifactService->findVersion($artifact, (int)$version);
+        if (!$ver) {
+            throw new CustomException('历史版本不存在');
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'version' => $this->serializeVersion($ver, true),
+        )));
+    }
+
+    /**
      * 生成（或复用）制品
      * POST /api/v2/artifacts/generate
      */
@@ -222,12 +268,38 @@ class ArtifactController extends Controller
             'prompt_version' => $artifact->prompt_version,
             'generated_at' => $artifact->generated_at ? $artifact->generated_at->format('Y-m-d H:i:s') : null,
             'error_message' => $artifact->error_message,
+            'custom_prompt' => $artifact->custom_prompt,
+            // 历史版本数（列表接口带 withCount 时直接读；否则按需查询）
+            'version_count' => isset($artifact->versions_count)
+                ? (int)$artifact->versions_count
+                : (int)$artifact->versions()->count(),
         );
 
         if ($withContent) {
             $data['content'] = $artifact->content;
         } else {
             $data['content_length'] = $artifact->content !== null ? mb_strlen($artifact->content) : 0;
+        }
+
+        return $data;
+    }
+
+    protected function serializeVersion(ArtifactVersion $version, $withContent = false)
+    {
+        $data = array(
+            'version' => (int)$version->version,
+            'status' => $version->status,
+            'model_name' => $version->model_name,
+            'prompt_version' => $version->prompt_version,
+            'generated_at' => $version->generated_at ? $version->generated_at->format('Y-m-d H:i:s') : null,
+            'error_message' => $version->error_message,
+            'custom_prompt' => $version->custom_prompt,
+        );
+
+        if ($withContent) {
+            $data['content'] = $version->content;
+        } else {
+            $data['content_length'] = $version->content !== null ? mb_strlen($version->content) : 0;
         }
 
         return $data;

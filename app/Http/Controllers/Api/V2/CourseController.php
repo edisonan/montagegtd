@@ -76,6 +76,11 @@ class CourseController extends Controller
             $isJoined = $userCourse !== null;
         }
 
+        // 已加入课程的学习者：结构树附带逐节完成状态（沉浸学习页/进度展示用）
+        if ($isJoined && $userCourse) {
+            $courseStructure = $this->courseService->attachUserProgressToStructure($courseStructure, $userCourse->id);
+        }
+
         $course = $this->withCourseCounts($course);
         $course->is_owner = $userId && (int)$course->created_by === (int)$userId;
 

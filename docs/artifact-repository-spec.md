@@ -37,13 +37,34 @@ MontageGTD 已有多个「AI 二次产出」能力，但各自孤立：
 | `prompt_version` | string(32) nullable | 提示词版本 |
 | `generated_at` | timestamp nullable | 生成时间 |
 | `error_message` | string(255) nullable | 失败原因 |
+| `custom_prompt` | text nullable | 本次生成时用户补充的信息（重新生成弹窗里填写的额外要求） |
 | `created_at` / `updated_at` | timestamps | |
 
-**唯一约束**：`unique(user_id, related_type, related_id, artifact_type)` —— 同一用户对同一实体的同类型制品只有一条，重新生成 = 覆盖更新（幂等）。
+**唯一约束**：`unique(user_id, related_type, related_id, artifact_type)` —— 同一用户对同一实体的同类型制品只有一条，重新生成 = 覆盖更新（幂等）。覆盖前会把旧状态沉入 `artifact_versions`（见 §2.2）。
 
 **扩展性**：`related_type` + `artifact_type` 组合即「一个产出物」，未来新增场景（文章→简报 HTML、笔记→思维导图/可视化阅读）不建新表，只新增 `artifact_type` 常量与对应的生成器（见 §5）。
 
-### 2.2 与现有 `article_ai_renders` 的关系
+### 2.2 表 `artifact_versions`（历史版本）
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigIncrements | 主键 |
+| `artifact_id` | unsignedBigInteger indexed | 所属制品（`artifacts.id`） |
+| `version` | unsignedInteger | 版本号（从 1 递增；当前制品之外的历史版本） |
+| `content` | longText nullable | 该版本内容（重新生成前的旧内容） |
+| `status` | string(32) | 该版本生成状态 |
+| `model_name` | string(100) nullable | 生成模型 |
+| `prompt_version` | string(32) nullable | 提示词版本 |
+| `generated_at` | timestamp nullable | 生成时间 |
+| `error_message` | string(255) nullable | 失败原因 |
+| `custom_prompt` | text nullable | 生成该版本时用户补充的信息 |
+| `created_at` / `updated_at` | timestamps | |
+
+**唯一约束**：`unique(artifact_id, version)`。
+
+**语义**：`ensure()` 覆盖写入生效前，先把旧制品状态（content/status/model/prompt/generated_at/error/custom_prompt）快照为下一个版本号；制品行永远是「最新版」。首次生成不产生版本，第一次重新生成后原版成为 v1，以此类推。
+
+### 2.3 与现有 `article_ai_renders` 的关系
 
 `article_ai_renders` 保留不动（历史数据、文章阅读页依赖）。制品库作为**新的统一入口**承载新场景；文章「可视化阅读」制品生成时会复用 `ArticleAiRenderService` 的产出并**复制**到 `artifacts.content`，两者并存。后续新场景一律走制品库。
 
@@ -53,6 +74,8 @@ MontageGTD 已有多个「AI 二次产出」能力，但各自孤立：
 | --- | --- | --- | --- | --- |
 | `visual_reading` | `article` | `html` | 可视化阅读 HTML 片段（复用现有 ArticleAiRender 提示词/清理管线） | **本阶段实现** |
 | `mind_map` | `article` | `json` | 思维导图 jsMind 树数据（node_tree JSON） | **本阶段实现** |
+| `key_points` | `article` / `note` / `course_item` | `markdown` | AI 关键信息（Markdown 列表） | **本阶段实现** |
+| `ai_ppt` | `article` / `note` / `course_item` | `json` | AIPPT 演示文稿（`{format:"ppt",data:{title,subtitle,slides[]}}`，前端 ai-ppt.js 翻页渲染） | **本阶段实现** |
 | `briefing_latest` | `article`（feed 聚合） | `html` | 「最新简报」HTML 页面 | 预留 |
 | `briefing_followed` | `article`（关注聚合） | `html` | 「关注简报」HTML 页面 | 预留 |
 | `note_mind_map` / `visual_reading` | `note` | `json` / `html` | 笔记生成思维导图 / 可视化阅读 | 预留 |
@@ -65,7 +88,9 @@ MontageGTD 已有多个「AI 二次产出」能力，但各自孤立：
 | --- | --- | --- | --- | --- |
 | GET | `/artifacts` | read | 双模式：① 管理页全局搜索（未同时提供 related_type+related_id 时）：按实体聚合返回 `entities`，每个实体含已生成类型、原文标题/链接、该实体下制品列表；② 实体维度：返回某实体全部制品 | 管理模式：`keyword`、`related_type`、`related_id`、`artifact_type`（=已生成类型筛选）、`status`、`page`、`per_page`；实体维度：`related_type` + `related_id`、`artifact_type`、`status` |
 | GET | `/artifacts/{id}` | read | 查询单个制品详情（含 content） | 路径 id |
-| POST | `/artifacts/generate` | write | 生成（或复用已有）制品；`force=1` 强制重新生成 | `related_type`、`related_id`、`artifact_type`、`force`、`custom_prompt`（可选） |
+| GET | `/artifacts/{id}/versions` | read | 查询某制品的历史版本列表（仅元数据，新→旧） | 路径 id |
+| GET | `/artifacts/{id}/versions/{version}` | read | 查询某制品某个历史版本（含 content） | 路径 id、version（版本号） |
+| POST | `/artifacts/generate` | write | 生成（或复用已有）制品；`force=1` 强制重新生成，覆盖前旧状态自动沉入历史版本 | `related_type`、`related_id`、`artifact_type`、`force`、`custom_prompt`（可选） |
 | POST | `/artifacts/{id}/to-mind` | write | 把已生成的 mind_map 制品落库为 `minds` 节点树（source_type=article, source_id=related_id），返回导图 id | 路径 id |
 | DELETE | `/artifacts/{id}` | write | 删除制品 | 路径 id |
 
@@ -84,15 +109,32 @@ MontageGTD 已有多个「AI 二次产出」能力，但各自孤立：
   "prompt_version": "article_visual_reading:v1",
   "generated_at": "2026-08-18 12:00:00",
   "error_message": null,
+  "custom_prompt": "更侧重数据分析",
+  "version_count": 2,
   "content": "<main>…</main>"
+}
+```
+
+历史版本（`/versions` 列表）序列化：
+
+```json
+{
+  "version": 1,
+  "status": "success",
+  "model_name": "gpt-4o-mini",
+  "prompt_version": "article_visual_reading:v1",
+  "generated_at": "2026-08-18 12:00:00",
+  "error_message": null,
+  "custom_prompt": null,
+  "content_length": 800
 }
 ```
 
 ### 4.2 generate 语义
 
 - 已存在 `success` 制品且 `force != 1` → 直接返回现有制品（不重复调用 LLM）。
-- 不存在 / 已失败 / `force=1` → 调用对应生成器，覆盖写入同一条记录（upsert）。
-- `custom_prompt` 仅对支持自定义的生成器生效（本阶段：`visual_reading`、`mind_map` 均支持）。
+- 不存在 / 已失败 / `force=1` → 调用对应生成器，覆盖写入同一条记录（upsert）；**覆盖前把旧状态快照为 `artifact_versions` 的一个新版本**（保留历史供弹窗「历史列表」展示与查看）。
+- `custom_prompt` 仅对支持自定义的生成器生效（本阶段：`visual_reading`、`mind_map`、`key_points`、`ai_ppt` 均支持），并随当前制品与历史版本一同记录。
 - 返回值带 `generated: true|false` 标记本次是否真实调用生成。
 
 ## 5. 服务层设计
@@ -105,6 +147,10 @@ MontageGTD 已有多个「AI 二次产出」能力，但各自孤立：
 protected $generators = [
     'article:visual_reading' => 'generateArticleVisualReading',
     'article:mind_map'       => 'generateArticleMindMap',
+    // 新增类型注册即接入：文章/笔记/课程章节 → AIPPT
+    'article:ai_ppt'         => 'generateArticleAiPpt',
+    'note:ai_ppt'            => 'generateNoteAiPpt',
+    'course_item:ai_ppt'     => 'generateCourseItemAiPpt',
 ];
 ```
 
@@ -152,9 +198,13 @@ key = `relatedType:artifactType`，未来新增类型时注册新方法即可，
 
 - 提供全局 `window.openArtifactDialog({relatedType, relatedId, artifactType})`。
 - 打开后先查询该实体该类型制品：
-  - **没有** → 中间提示「当前还没有 XX 制品」+「生成 XX」按钮，点击调用 generate 接口（异步等待，圈 loading）。
-  - **有** → 展示制品列表：每条可点击「查看」进入制品查看页；顶部提供「重新生成」；生成失败展示原因并可重试。
-- 复用于：制品库管理页卡片操作栏、文章信息流（`stream_v2` 右侧「可视化阅读 / 思维导图」按钮）、文章工作台阅读区按钮。
+  - **没有** → 中间提示「当前还没有 XX 制品」+「生成 XX」按钮，点击调用 generate 接口（异步等待，圈 loading）；失败原因会在按钮下方展示并可重试。
+  - **有** → 弹窗分上中下三区：
+    - **上**：已生成行（模型/时间元信息 + 「重新生成」按钮 + 「独立页」跳转）。
+    - **中**：当前制品内容展示（思维导图 jsMind 内嵌 / 关键信息 markdown / 可视化阅读 HTML），与之前一致。
+    - **下（新增）**：**历史版本列表**——每个历史版本显示 `vN`、状态（成功/失败）、模型、生成时间及当时补充的要求；点「查看」在中间区展示该版本内容并可一键「返回当前版本」。
+  - **重新生成 = 二次生成弹补充信息弹窗**：点击「重新生成」不再直接发起，而是弹出小窗让用户填写「补充信息（可选）」，确认后以 `custom_prompt` 随原内容一起重新生成；重新生成前旧版本自动出现在下方历史列表。
+- 复用于：制品库管理页卡片操作栏、文章信息流（`stream_v2` 右侧「可视化阅读 / 思维导图」按钮）、文章工作台阅读区按钮、笔记详情/列表按钮、课程章节操作栏。
 
 ### 6.3 文章制品页 `GET /article/{article}/artifacts`
 
@@ -166,6 +216,7 @@ key = `relatedType:artifactType`，未来新增类型时注册新方法即可，
 - 按 `file_type` 渲染：
   - `html` → 直接嵌入（内容生成时已做 XSS 清理）。
   - `json`(mind_map) → 用 jsMind 渲染（复用 `public/js/jsmind.js` + `css/jsmind.css`，节点树只读）。
+  - `json`(ai_ppt) → 用 `public/js/ai-ppt.js` 渲染可翻页演示稿（封面 + 内容页，支持键盘/按钮翻页、进度条）。
   - `markdown` → marked.js 渲染。
   - `text` → `<pre>`。
 - 顶部显示元信息：名称、类型、状态、模型、生成时间。
@@ -178,7 +229,7 @@ key = `relatedType:artifactType`，未来新增类型时注册新方法即可，
 
 ## 8. 非目标（本期不做）
 
-- 制品版本历史 / 多个同类型制品并存（唯一约束保证单版本，重新生成覆盖）。
+- 多个同类型制品并存（唯一约束保证单版本；重新生成覆盖，但旧版保留在 `artifact_versions` 历史中）。
 - 简报类生成器（`briefing_latest` / `briefing_followed`）本期只预留类型，不实现生成。
 - 笔记制品（`note_mind_map` 等）本期预留，新增生成器即可接入。
 - 向量检索 / RAG。
@@ -186,21 +237,22 @@ key = `relatedType:artifactType`，未来新增类型时注册新方法即可，
 
 ## 9. 文件清单（实现路径）
 
-- 迁移：`database/migrations/2026_08_18_000002_create_artifacts_table.php`
-- 模型：`app/Models/Artifact.php`
+- 迁移：`database/migrations/2026_08_18_000002_create_artifacts_table.php`、`database/migrations/2026_08_24_000001_create_artifact_versions_table.php`、`database/migrations/2026_08_24_000002_add_custom_prompt_to_artifacts_table.php`
+- 模型：`app/Models/Artifact.php`、`app/Models/ArtifactVersion.php`
 - Repository：`app/Repositories/ArtifactRepository.php`
 - Service：`app/Services/ArtifactService.php`
 - API 控制器：`app/Http/Controllers/Api/V2/ArtifactController.php`
 - Web 控制器：`app/Http/Controllers/ArtifactController.php`
-- 视图：`resources/views/artifacts/index.blade.php`（文章制品页）、`resources/views/artifacts/view.blade.php`（制品查看页）
+- 视图：`resources/views/artifacts/index.blade.php`（文章制品页）、`resources/views/artifacts/view.blade.php`（制品查看页）、`resources/views/artifacts/_dialog.blade.php`（弹窗组件，含历史版本与补充信息弹窗）
 - 路由：`routes/api.php`（/api/v2/artifacts*）、`routes/web.php`（/article/{article}/artifacts、/artifacts/{id}）
 - 文档：本文档 + OpenAPI 补充（如需要）
 
 ## 10. 验收标准
 
-1. `php artisan migrate` 成功，`artifacts` 表结构与 §2.1 一致。
-2. 对一篇文章 `POST /api/v2/artifacts/generate`（visual_reading / mind_map）各生成成功制品；再次调用命中复用（`generated=false`）；`force=1` 重新生成。
-3. `GET /api/v2/artifacts?related_type=article&related_id=x` 返回该文章两个制品。
+1. `php artisan migrate` 成功，`artifacts` 表结构与 §2.1 一致，新增 `artifact_versions` 与 `artifacts.custom_prompt`。
+2. 对一篇文章 `POST /api/v2/artifacts/generate`（visual_reading / mind_map）各生成成功制品；再次调用命中复用（`generated=false`）；`force=1` 重新生成（可带 `custom_prompt`），且重新生成前的旧内容可在 `GET /artifacts/{id}/versions` 中查到、`GET /artifacts/{id}/versions/{version}` 可查看。
+3. `GET /api/v2/artifacts?related_type=article&related_id=x` 返回该文章两个制品（含 `version_count`、`custom_prompt` 字段）。
 4. 思维导图制品 `POST /artifacts/{id}/to-mind` 后可在 `/mind/{id}` 正常查看节点树。
-5. 非本人制品查询/删除不可达。
-6. Web 文章制品页可完成「生成 → 查看 → 保存为导图」全流程。
+5. 非本人制品/历史版本查询不可达。
+6. Web 文章制品页可完成「生成 → 重新生成（补充信息弹窗）→ 查看历史版本 → 保存为导图」全流程。
+7. 弹窗交互符合 §6.2：已生成时上（重新生成）/中（当前展示）/下（历史列表）三区布局，未生成时仅空状态 + 生成按钮。

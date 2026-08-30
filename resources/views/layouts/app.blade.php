@@ -6,6 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- 触屏设备识别：iPad 等宽屏触屏设备强制启用移动端汉堡菜单。
+         原因：宽度 ≥768px 会命中 PC 版悬停菜单，而触屏没有 hover，
+         导致子菜单点不开。iPad 接鼠标/触控板时 hover:hover 命中，
+         自动保持桌面菜单（此时悬停可用）。 -->
+    <style>
+        @media (min-width: 768px) {
+            html.touch-device .desktop-nav-wrap { display: none !important; }
+            html.touch-device #mobileMenuButton { display: block !important; }
+        }
+    </style>
+    <script>
+        (function () {
+            var touchDevice = false;
+            try {
+                if (window.matchMedia) {
+                    if (window.matchMedia('(hover: none)').matches) {
+                        touchDevice = true;
+                    } else if (window.matchMedia('(hover: hover)').matches) {
+                        touchDevice = false;
+                    } else {
+                        touchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+                    }
+                } else {
+                    touchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+                }
+            } catch (e) {
+                touchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+            }
+            if (touchDevice) {
+                document.documentElement.classList.add('touch-device');
+            }
+        })();
+    </script>
+
     <title>@yield('title', '蒙太奇 - 专注效率工具')</title>
     <meta name="description" content="@yield('description', '蒙太奇是一个专注于提升个人效率的时间管理工具，提供专注工作法、待办事项、阅读管理等核心功能。')">
     <meta name="keywords" content="蒙太奇,番茄工作法,时间管理,待办事项,GTD,RSS阅读,效率工具">
@@ -52,6 +86,9 @@
 
 <body class="min-h-screen">
 
+@php $hideAppShell = $hideAppShell ?? false; @endphp
+
+@if(!$hideAppShell)
 <!-- 顶部导航 -->
 <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,8 +99,8 @@
                 <h1 class="text-xl font-bold text-gray-900">蒙太奇</h1>
             </a>
 
-            <!-- 桌面端导航 - 现在在右侧 -->
-            <div class="hidden md:flex items-center">
+            <!-- 桌面端导航 - 现在在右侧（触屏宽屏设备上由 JS/CSS 隐藏并改用汉堡菜单） -->
+            <div class="hidden md:flex items-center desktop-nav-wrap">
                 <!-- 将菜单项和用户区域放在同一个容器中 -->
                 <div class="flex items-center space-x-1">
                     @php
@@ -108,7 +145,8 @@
                                 'icon'=>'fas fa-graduation-cap',
                                 'submenu' => [
                                     ['url'=>'/study', 'label'=>'学习计划', 'icon'=>'fas fa-calendar-alt'],
-                                    ['url'=>'/courses', 'label'=>'我的课程', 'icon'=>'fas fa-book']
+                                    ['url'=>'/courses', 'label'=>'我的课程', 'icon'=>'fas fa-book'],
+                                    ['url'=>'/study/tools', 'label'=>'学习工具', 'icon'=>'fas fa-tools']
                                 ]
                             ],
                             [
@@ -299,6 +337,13 @@
         </div>
     </div>
 </nav>
+@endif
+
+<!-- 引入自定义JavaScript（提前到导航之后、页面内联脚本之前：
+     移动端菜单为事件委托，需尽早注册；若放在 body 末尾，重页面
+     （如 /articles 数千行内联脚本）会拖到 DOMContentLoaded 之后才生效，
+     导致"菜单已可见却点不动、要等加载完才恢复" -->
+<script src="{{ asset('js/app.js') }}"></script>
 
 <!-- 主内容区域 -->
 <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -306,6 +351,7 @@
 </main>
 
 <!-- 底部 -->
+@if(!$hideAppShell)
 <footer class="mt-16 border-t border-gray-200 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col md:flex-row justify-between items-center">
@@ -335,9 +381,8 @@
         </div>
     </div>
 </footer>
+@endif
 
-<!-- 引入自定义JavaScript -->
-<script src="{{ asset('js/app.js') }}"></script>
 @if(!Auth::guest())
 <script>
     window.__TASK_ALLOW_LEGACY_FALLBACK__ = false;

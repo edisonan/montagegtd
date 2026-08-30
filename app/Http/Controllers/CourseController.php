@@ -34,6 +34,14 @@ class CourseController extends Controller
     }
 
     /**
+     * 沉浸学习页（全屏阅读模式，专注章节学习）
+     */
+    public function study(Request $request, $id)
+    {
+        return view('courses.study', array('id' => $id));
+    }
+
+    /**
      * 创建课程
      */
     public function store(Request $request)

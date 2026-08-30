@@ -194,6 +194,14 @@ public function getUserCreatedCourses($userId, $withTrashed = false) {
 | `POST /api/v2/courses/{id}/approve\|unapprove` | 新增：公开状态流转（创建者/管理员） |
 | `GET /api/v2/courses/{id}` | course 增加 `chapters_count`/`enrollment_count`/`is_owner` |
 
+#### 沉浸学习页（Study Mode）追加记录
+
+- 新页面：`GET /courses/{id}/study`（web，auth）→ `resources/views/courses/study.blade.php`，全屏隐藏主站导航（`$hideAppShell`），专注章节学习。
+- API 变更：`GET /api/v2/courses/{id}` 在已加入时，`structure` 每个节点附加 `is_completed`（`CourseService::attachUserProgressToStructure`），供学习页展示已学状态与"下一节未学"自动定位；支持 `?item=` 深链定位章节。
+- 进度分母修正：`CourseService::recomputeEnrollmentProgress` 分母改为"非容器课时"（排除 module/chapter 类型及有子章节的节点），与前端仅对课时开放"标记完成"的规则对齐，修复多层课程进度无法到 100% 的问题。
+- 学习页能力：章节抽屉（已学/当前高亮）、Markdown 正文、外链、小测验（及格自动记完成）、标记完成（自动前进下一节未学）、上/下一节与方向键导航、AI 制品生成（复用 `artifacts._dialog`）。
+- 入口接线：`/courses` 卡片 CTA、详情页"继续学习"、课程中心已加入卡片 → 均指向 `/courses/{id}/study`（原详情页内"继续学习→/courses"怪按钮已修正）。
+
 ### 5.10 数据库变更
 
 - 无新表；如需要可为 `course_items.order_index`、`courses.public_status` 补索引迁移（可选）。

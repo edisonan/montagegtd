@@ -63,4 +63,22 @@ class StudyController extends Controller
     {
         return view('study.checkins');
     }
+
+    /**
+     * 学习工具卡片列表页
+     */
+    public function tools(Request $request)
+    {
+        return view('study.tools', array(
+            'tools' => (array)config('study_tools.tools', array()),
+        ));
+    }
+
+    /**
+     * 远程辅导工具页（WebRTC 音视频 + 内容 + 同步白板）
+     */
+    public function tutoring(Request $request)
+    {
+        return view('study.tools.tutoring');
+    }
 }

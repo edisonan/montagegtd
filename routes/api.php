@@ -69,6 +69,9 @@ Route::prefix('v2')->group(function () {
         Route::get('/study/plans', 'Api\\V2\\StudyController@plans');
         Route::get('/study/plans/{plan}', 'Api\\V2\\StudyController@showPlan');
         Route::get('/study/tasks/{task}/focus', 'Api\\V2\\StudyController@focusTask');
+        // 学习工具：远程辅导房间（WebRTC 信令 HTTP 轮询中继）
+        Route::get('/study/tools/rooms/{code}', 'Api\\V2\\StudyToolController@showRoom');
+        Route::get('/study/tools/rooms/{code}/messages', 'Api\\V2\\StudyToolController@pollMessages');
         Route::get('/index', 'Api\\V2\\IndexController@show');
         Route::get('/tasks/all', 'Api\\V2\\TaskController@getAllList');
         Route::get('/tasks/tab-counts', 'Api\\V2\\TaskController@tabCounts');
@@ -132,6 +135,8 @@ Route::prefix('v2')->group(function () {
 
         Route::get('/artifacts', 'Api\\V2\\ArtifactController@index');
         Route::get('/artifacts/{artifact}', 'Api\\V2\\ArtifactController@show');
+        Route::get('/artifacts/{artifact}/versions', 'Api\\V2\\ArtifactController@versions');
+        Route::get('/artifacts/{artifact}/versions/{version}', 'Api\\V2\\ArtifactController@showVersion');
 
         Route::get('/courses', 'Api\\V2\\CourseController@index');
         Route::get('/courses/management', 'Api\\V2\\CourseController@management');
@@ -233,6 +238,11 @@ Route::prefix('v2')->group(function () {
         Route::post('/study/tasks/{task}/focus-sessions', 'Api\\V2\\StudyController@createFocusSession');
         Route::delete('/study/tasks/{task}', 'Api\\V2\\StudyController@destroyTask');
         Route::post('/study/tasks/{task}/reschedule', 'Api\\V2\\StudyController@rescheduleTask');
+        // 学习工具：远程辅导房间（WebRTC 信令 HTTP 轮询中继）
+        Route::post('/study/tools/rooms', 'Api\\V2\\StudyToolController@createRoom');
+        Route::post('/study/tools/rooms/{code}/join', 'Api\\V2\\StudyToolController@joinRoom');
+        Route::post('/study/tools/rooms/{code}/messages', 'Api\\V2\\StudyToolController@sendMessage');
+        Route::post('/study/tools/rooms/{code}/close', 'Api\\V2\\StudyToolController@closeRoom');
 
         Route::post('/focuss/start', 'Api\\V2\\FocusController@start');
         Route::post('/focuss/discard', 'Api\\V2\\FocusController@discardCurrent');

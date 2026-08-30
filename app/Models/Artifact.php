@@ -19,6 +19,7 @@ class Artifact extends Model
     const TYPE_BRIEFING_LATEST = 'briefing_latest';
     const TYPE_BRIEFING_FOLLOWED = 'briefing_followed';
     const TYPE_NOTE_MIND_MAP = 'note_mind_map';
+    const TYPE_AI_PPT = 'ai_ppt';
 
     const STATUS_SUCCESS = 'success';
     const STATUS_FAILED = 'failed';
@@ -37,6 +38,7 @@ class Artifact extends Model
         'prompt_version',
         'generated_at',
         'error_message',
+        'custom_prompt',
         'attempt_count',
     );
 
@@ -50,5 +52,13 @@ class Artifact extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 历史版本（重新生成前的旧制品内容）
+     */
+    public function versions()
+    {
+        return $this->hasMany(ArtifactVersion::class, 'artifact_id')->orderBy('version', 'desc');
     }
 }

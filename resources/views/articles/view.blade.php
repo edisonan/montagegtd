@@ -558,6 +558,11 @@
                                 思维导图
                             </button>
 
+                            <button type="button" class="header-action-btn js-artifact-open" data-article-id="{{ $article->id }}" data-artifact-type="ai_ppt">
+                                <i class="fas fa-file-powerpoint"></i>
+                                AIPPT
+                            </button>
+
                             <a href="{{ url('/article/'.$article->id.'/artifacts') }}" class="header-action-btn">
                                 <i class="fas fa-box-archive"></i>
                                 AI制品库
@@ -624,6 +629,11 @@
                         <button type="button" class="share-btn js-artifact-open" data-article-id="{{ $article->id }}" data-artifact-type="visual_reading">
                             <i class="fas fa-wand-magic-sparkles"></i>
                             AI可视化
+                        </button>
+
+                        <button type="button" class="share-btn js-artifact-open" data-article-id="{{ $article->id }}" data-artifact-type="ai_ppt">
+                            <i class="fas fa-file-powerpoint"></i>
+                            AIPPT
                         </button>
 
                         <a href="{{ url('/articles') }}" class="continue-reading">

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\CustomException;
 use App\Repositories\CourseRepository;
 use App\Repositories\CourseEnrollmentRepository;
 use App\Repositories\CourseItemRepository;
@@ -47,7 +48,7 @@ class CourseService
     {
         // 验证必需字段
         if (empty($data['title']) || empty($data['created_by'])) {
-            throw new \Exception('课程标题和创建者为必填项');
+            throw new CustomException('课程标题和创建者为必填项');
         }
 
         // 如果没有提供user_id，使用created_by
@@ -82,7 +83,7 @@ class CourseService
         // 检查课程是否存在
         $course = $this->courseRepository->getCourseById($id);
         if (!$course) {
-            throw new \Exception('课程不存在');
+            throw new CustomException('课程不存在');
         }
 
         return $this->courseRepository->updateCourse($id, $data);
@@ -96,13 +97,13 @@ class CourseService
         // 检查课程是否存在
         $course = $this->courseRepository->getCourseById($id);
         if (!$course) {
-            throw new \Exception('课程不存在');
+            throw new CustomException('课程不存在');
         }
 
         // 检查是否有用户课程关联
         $courseEnrollments = $this->courseEnrollmentRepository->getCourseEnrollmentsByCourseId($id);
         if ($courseEnrollments && count($courseEnrollments) > 0) {
-            throw new \Exception('无法删除有关联用户学习记录的课程');
+            throw new CustomException('无法删除有关联用户学习记录的课程');
         }
 
         return $this->courseRepository->deleteCourse($id);
@@ -116,18 +117,19 @@ class CourseService
         // 检查课程是否存在
         $course = $this->courseRepository->getCourseById($courseId);
         if (!$course) {
-            throw new \Exception('课程不存在');
+            throw new CustomException('课程不存在');
         }
 
-        // 检查课程是否已审核通过（public_status = 3）
-        if ($course->public_status != 3) {
-            throw new \Exception('无法加入未审核通过的课程');
+        // 课程创建者可以加入自己的课程（无论是否已公开）；其他用户仅可加入已审核通过的公开课程
+        $isOwner = $course->created_by && (int)$course->created_by === (int)$userId;
+        if ($course->public_status != 3 && !$isOwner) {
+            throw new CustomException('无法加入未审核通过的课程');
         }
 
         // 检查用户是否已经加入了课程
         $existingCourseEnrollment = $this->courseEnrollmentRepository->getCourseEnrollmentByUserIdAndCourseId($userId, $courseId);
         if ($existingCourseEnrollment) {
-            throw new \Exception('您已经加入了该课程');
+            throw new CustomException('您已经加入了该课程');
         }
 
         // 创建用户课程记录
@@ -186,6 +188,37 @@ class CourseService
     }
 
     /**
+     * 给课程结构树附加当前学习者的逐节完成状态
+     * 叶子节点增加 is_completed=true/false，供沉浸学习页展示"已学/未学"并计算下一节。
+     */
+    public function attachUserProgressToStructure($structure, $userCourseId = null)
+    {
+        if (!$userCourseId || !$structure || !is_iterable($structure)) {
+            return $structure;
+        }
+
+        $completedIds = UserProgress::where('user_course_id', $userCourseId)
+            ->where('status', 'completed')
+            ->pluck('course_item_id')
+            ->map(function ($v) {
+                return (int)$v;
+            })
+            ->all();
+
+        $decorate = function ($items) use (&$decorate, $completedIds) {
+            foreach ($items as $item) {
+                $item->is_completed = in_array((int)$item->id, $completedIds, true);
+                if (!empty($item->children)) {
+                    $decorate($item->children);
+                }
+            }
+            return $items;
+        };
+
+        return $decorate($structure);
+    }
+
+    /**
      * 根据ID获取用户课程学习记录
      */
     public function getCourseEnrollmentById($id)
@@ -200,7 +233,7 @@ class CourseService
     {
         $enrollment = $this->courseEnrollmentRepository->getCourseEnrollmentById($id);
         if (!$enrollment) {
-            throw new \Exception('学习记录不存在');
+            throw new CustomException('学习记录不存在');
         }
         return $this->courseEnrollmentRepository->updateCourseEnrollment($id, $data);
     }
@@ -217,7 +250,16 @@ class CourseService
             return null;
         }
 
-        $total = CourseItem::where('course_id', $enrollment->course_id)->count();
+        // 分母 = 可完成的"课时"（非容器节点）。容器（module/chapter 类型或带子章节的节点）不参与计数，
+        // 与前端"标记完成"仅对课时开放的规则一致，否则多层课程永远到不了 100%。
+        $parentIds = CourseItem::where('course_id', $enrollment->course_id)
+            ->whereNotNull('parent_id')
+            ->distinct()
+            ->pluck('parent_id');
+        $total = CourseItem::where('course_id', $enrollment->course_id)
+            ->whereNotIn('id', $parentIds)
+            ->whereNotIn('item_type', array('module', 'chapter'))
+            ->count();
         $completed = UserProgress::where('user_id', $enrollment->user_id)
             ->where('user_course_id', $enrollment->id)
             ->where('status', 'completed')
@@ -247,7 +289,7 @@ class CourseService
     {
         // 验证必需字段
         if (empty($data['course_id']) || empty($data['title'])) {
-            throw new \Exception('课程ID和标题为必填项');
+            throw new CustomException('课程ID和标题为必填项');
         }
 
         if (!isset($data['content_status'])) {
@@ -272,7 +314,7 @@ class CourseService
         // 检查课程项目是否存在
         $item = $this->courseItemRepository->getCourseItemById($id);
         if (!$item) {
-            throw new \Exception('课程项目不存在');
+            throw new CustomException('课程项目不存在');
         }
 
         return $this->courseItemRepository->updateCourseItem($id, $data);
@@ -286,7 +328,7 @@ class CourseService
         // 检查课程项目是否存在
         $item = $this->courseItemRepository->getCourseItemById($id);
         if (!$item) {
-            throw new \Exception('课程项目不存在');
+            throw new CustomException('课程项目不存在');
         }
 
         return $this->courseItemRepository->deleteCourseItem($id);
@@ -331,7 +373,7 @@ class CourseService
     {
         $course = $this->courseRepository->getCourseById($id);
         if (!$course) {
-            throw new \Exception('课程不存在');
+            throw new CustomException('课程不存在');
         }
         
         $course->public_status = 3;
@@ -347,7 +389,7 @@ class CourseService
     {
         $course = $this->courseRepository->getCourseById($id);
         if (!$course) {
-            throw new \Exception('课程不存在');
+            throw new CustomException('课程不存在');
         }
         
         $course->public_status = 2;

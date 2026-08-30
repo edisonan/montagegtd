@@ -218,6 +218,7 @@
                 var course = item.course || {};
                 var progress = Number(item.progress_percent || 0);
                 var detailUrl = '/courses/' + (course.id || item.course_id || '');
+                var studyUrl = detailUrl + '/study';
                 var title = escapeHtml(item.title || course.title || '未命名课程');
                 var description = escapeHtml(course.description || '暂无描述');
                 var cover = course.cover_image_url ? '<img src="' + escapeHtml(course.cover_image_url) + '" alt="' + title + '" class="w-full h-full object-cover">' : '<div class="text-center p-4"><i class="fas fa-book-open text-gray-400 text-3xl mb-2"></i><p class="text-xs text-gray-500">' + title + '</p></div>';
@@ -234,7 +235,7 @@
                     + '<div class="mb-4"><div class="flex items-center justify-between text-sm mb-1"><span class="text-gray-600">学习进度</span><span class="font-medium text-gray-900">' + progress + '%</span></div><div class="progress h-2"><div class="progress-bar bg-gradient-to-r from-blue-500 to-purple-600" style="width:' + progress + '%"></div></div></div>'
                     + '<div class="flex flex-wrap gap-4 text-sm text-gray-500"><span class="flex items-center gap-1"><i class="fas fa-layer-group text-xs"></i>章节: ' + Number(course.chapters_count || 0) + '</span><span class="flex items-center gap-1"><i class="fas fa-clock text-xs"></i>时长: ' + hours + '</span><span class="flex items-center gap-1"><i class="fas fa-calendar-alt text-xs"></i>最后学习: ' + lastStudied + '</span></div>'
                     + '</div>'
-                    + '<div class="lg:w-1/4 flex flex-col gap-3"><a href="' + detailUrl + '" class="btn btn-primary w-full justify-center"><i class="fas fa-play-circle mr-2"></i>' + (item.status === 'completed' ? '复习课程' : '继续学习') + '</a>'
+                    + '<div class="lg:w-1/4 flex flex-col gap-3"><a href="' + studyUrl + '" class="btn btn-primary w-full justify-center"><i class="fas fa-play-circle mr-2"></i>' + (item.status === 'completed' ? '复习课程' : '继续学习') + '</a>'
                     + '<button type="button" class="btn btn-outline w-full justify-center update-status-btn" data-id="' + Number(item.id || 0) + '" data-status="' + escapeHtml(item.status || 'planned') + '"><i class="fas fa-exchange-alt mr-2"></i>更新状态</button>'
                     + '</div></div></div>';
             }).join(''));

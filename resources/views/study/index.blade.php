@@ -61,6 +61,7 @@
         .quick-plan-preset-desc { font-size: 11px; color: #667085; margin-top: 2px; }
         .study-advanced-toggle { margin-top: 2px; font-size: 12px; color: #1e3a8a; background: none; border: 0; cursor: pointer; padding: 6px 0; }
         .study-only-pending { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #475467; cursor: pointer; user-select: none; }
+        .study-plan-modal { z-index: 70 !important; } /* 编辑弹窗需盖过同级的计划列表弹窗(z-50) */
         @media (min-width: 900px) {
             .study-week-scroll { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); overflow: visible; }
             .study-day-item { min-height: 68px; flex: initial; width: 100%; }
@@ -153,7 +154,7 @@
     </div>
 
     <!-- 新建/编辑计划弹窗（统一入口，高级设置折叠） -->
-    <div id="planModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closePlanModal(event)">
+    <div id="planModal" class="study-plan-modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" onclick="closePlanModal(event)">
         <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
             <div class="p-4 border-b border-gray-200 flex items-center justify-between shrink-0">
                 <div class="font-semibold text-gray-900" id="planModalTitle">新建学习计划</div>
@@ -1290,6 +1291,36 @@
             }, 150);
         }
 
+        // ===== 学习工具（远程辅导 iframe 直达）: ?plan= 打开指定计划详情 =====
+        function applyUrlPlanParam() {
+            const m = (window.location.search || '').match(/[?&]plan=(\d+)/);
+            if (!m) return;
+            const planId = Number(m[1]);
+            if (!planId) return;
+            openPlanListModal();
+            const waitUntil = async function(fn, timeoutMs) {
+                const started = Date.now();
+                while (Date.now() - started < timeoutMs) {
+                    if (fn()) return true;
+                    await new Promise(function(r) { setTimeout(r, 200); });
+                }
+                return false;
+            };
+            waitUntil(function() {
+                const node = document.getElementById('planListContainer');
+                return node && node.textContent.indexOf('加载中') === -1;
+            }, 8000).then(function(ok) {
+                if (!ok) {
+                    toast('计划加载超时', 'error');
+                    return;
+                }
+                viewPlanDetail(planId).then(function() {
+                    const detailEl = document.getElementById('planDetailContainer');
+                    if (detailEl) detailEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }).catch(function() {});
+            });
+        }
+
         function initStudySummary() {
             const btn = document.getElementById('studySummaryBtn');
             const card = document.getElementById('studySummaryCard');
@@ -1318,6 +1349,7 @@
                 node.addEventListener('change', onPlanModeChange);
             });
             loadOverview(today);
+            applyUrlPlanParam();
         });
     </script>
 @endsection

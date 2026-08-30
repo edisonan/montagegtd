@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@php $hideAppShell = true; @endphp
+
 @section('title', '沉浸刷文 · 新版 - 蒙太奇')
 @section('description', '抖音式单卡文章信息流，先刷摘要，再按需阅读全文')
 
@@ -19,8 +21,8 @@
         --v2-accent: #ff6b4a;
         position: relative;
         width: 100%;
-        height: calc(100vh - 64px);
-        height: calc(100dvh - 64px);
+        height: 100vh;
+        height: 100dvh;
         min-height: 560px;
         overflow: hidden;
         color: #fff;
@@ -42,21 +44,21 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        filter: blur(34px) saturate(1.12);
-        transform: scale(1.12);
+        filter: blur(26px) saturate(1.18);
+        transform: scale(1.1);
         opacity: 0;
-        transition: opacity .28s ease;
+        transition: opacity .3s ease;
     }
 
-    .v2-bg.has-image img { opacity: .48; }
+    .v2-bg.has-image img { opacity: .6; }
 
     .v2-bg::after {
         content: "";
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(180deg, rgba(5, 7, 12, .48) 0%, rgba(5, 7, 12, .1) 34%, rgba(5, 7, 12, .82) 100%),
-            radial-gradient(circle at center, transparent 0%, rgba(5, 7, 12, .24) 70%, rgba(5, 7, 12, .62) 100%);
+            linear-gradient(180deg, rgba(5, 7, 12, .55) 0%, rgba(5, 7, 12, .18) 30%, rgba(5, 7, 12, .9) 100%),
+            radial-gradient(circle at center, transparent 0%, rgba(5, 7, 12, .26) 70%, rgba(5, 7, 12, .6) 100%);
     }
 
     .v2-topbar {
@@ -134,32 +136,37 @@
         z-index: 4;
         height: 100%;
         display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        padding: 74px 96px 28px 30px;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 74px 0 0;
     }
 
     .v2-card {
         position: relative;
-        width: min(820px, 72vw);
-        height: calc(100% - 4px);
+        width: 100%;
+        height: 100%;
         max-height: none;
-        padding: 26px 42px 28px;
-        border: 1px solid rgba(255, 255, 255, .14);
-        border-radius: 28px;
+        margin: 0 auto;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
         overflow: hidden;
-        background: linear-gradient(145deg, rgba(18, 22, 32, .58), rgba(10, 12, 19, .76));
-        box-shadow: 0 30px 100px rgba(0, 0, 0, .42);
-        backdrop-filter: blur(22px);
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
         cursor: pointer;
         transform-origin: center;
     }
 
     .v2-preview {
+        position: relative;
         height: 100%;
         min-height: 0;
         display: flex;
         flex-direction: column;
+        justify-content: flex-end;
+        padding: 70px 24px 108px;
+        background: linear-gradient(180deg, transparent 44%, rgba(4, 6, 10, .22) 74%, rgba(4, 6, 10, .62) 100%);
     }
 
     .v2-card.is-read { opacity: .78; }
@@ -181,9 +188,9 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 8px;
-        color: rgba(255, 255, 255, .72);
+        color: rgba(255, 255, 255, .8);
         font-size: 13px;
-        font-weight: 550;
+        font-weight: 600;
     }
 
     .v2-feed {
@@ -210,29 +217,29 @@
         overflow: hidden;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 3;
-        margin: 14px 0 14px;
-        max-width: 760px;
-        font-size: clamp(30px, 4vw, 56px);
-        line-height: 1.16;
-        letter-spacing: -.035em;
+        margin: 12px 0 10px;
+        max-width: min(720px, calc(100% - 92px));
+        font-size: clamp(26px, 3.8vw, 46px);
+        line-height: 1.18;
+        letter-spacing: -.03em;
         font-weight: 820;
         text-wrap: balance;
-        text-shadow: 0 8px 30px rgba(0, 0, 0, .28);
+        text-shadow: 0 6px 34px rgba(0, 0, 0, .5);
     }
 
     .v2-summary {
         position: relative;
         flex: 1 1 auto;
-        min-height: 180px;
-        max-width: 700px;
+        min-height: 110px;
+        max-width: min(680px, calc(100% - 92px));
         overflow: hidden;
-        color: rgba(255, 255, 255, .84);
-        font-size: clamp(16px, 1.5vw, 20px);
-        line-height: 1.78;
+        color: rgba(255, 255, 255, .88);
+        font-size: clamp(15px, 1.4vw, 18px);
+        line-height: 1.72;
         letter-spacing: .01em;
         pointer-events: none;
-        mask-image: linear-gradient(180deg, transparent 0, #000 5%, #000 88%, transparent 100%);
-        -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 5%, #000 88%, transparent 100%);
+        mask-image: linear-gradient(180deg, transparent 0, #000 6%, #000 86%, transparent 100%);
+        -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 6%, #000 86%, transparent 100%);
     }
 
     .v2-summary-track {
@@ -264,6 +271,7 @@
         justify-content: space-between;
         gap: 18px;
         margin-top: 14px;
+        padding-right: 88px;
     }
 
     .v2-reading-meta {
@@ -292,7 +300,7 @@
     }
 
     .v2-card.reading-mode {
-        width: min(980px, 78vw);
+        width: 100%;
         padding: 0;
         cursor: default;
         background: rgba(247, 244, 238, .97);
@@ -359,13 +367,14 @@
     .v2-rail {
         position: absolute;
         z-index: 10;
-        right: 24px;
-        top: 50%;
+        right: 12px;
+        top: auto;
+        bottom: 118px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 17px;
-        transform: translateY(-42%);
+        gap: 13px;
+        transform: none;
     }
 
     .v2-action {
@@ -426,6 +435,7 @@
         position: relative;
         z-index: 8;
         width: min(520px, calc(100vw - 40px));
+        margin: auto;
         padding: 34px;
         border-radius: 24px;
         color: rgba(255, 255, 255, .78);
@@ -602,22 +612,23 @@
         .v2-stream { min-height: 500px; }
         .v2-topbar { padding: 13px 12px; }
         .v2-filter-chip .v2-chip-extra { display: none; }
-        .v2-stage { align-items: flex-start; padding: 66px 70px 50px 12px; }
+        .v2-stage { align-items: flex-start; padding: 60px 0 0; }
         .v2-card {
             width: 100%;
             height: 100%;
             max-height: none;
-            padding: 18px 20px 18px;
-            border-radius: 22px;
+            padding: 0;
+            border-radius: 0;
         }
-        .v2-title { margin: 10px 0 9px; font-size: clamp(27px, 8vw, 40px); }
-        .v2-summary { min-height: 150px; font-size: 16px; line-height: 1.68; }
+        .v2-preview { padding: 60px 14px 96px; }
+        .v2-title { margin: 10px 0 9px; font-size: clamp(25px, 7vw, 37px); max-width: calc(100% - 66px); }
+        .v2-summary { min-height: 92px; font-size: 15px; line-height: 1.62; max-width: calc(100% - 66px); }
         .v2-tags { margin-top: 13px; }
-        .v2-card-footer { align-items: flex-end; margin-top: 10px; }
+        .v2-card-footer { align-items: flex-end; margin-top: 10px; padding-right: 70px; }
         .v2-reading-meta span:first-child { display: none; }
         .v2-primary-btn { padding: 9px 14px; }
-        .v2-rail { right: 8px; top: auto; bottom: 76px; transform: none; gap: 12px; }
-        .v2-action { width: 54px; }
+        .v2-rail { right: 6px; top: auto; bottom: 104px; transform: none; gap: 11px; }
+        .v2-action { width: 52px; }
         .v2-action .v2-action-icon { width: 44px; height: 44px; }
         .v2-swipe-hint { bottom: 16px; }
         .v2-sheet-grid { grid-template-columns: 1fr; }
@@ -646,10 +657,10 @@
             radial-gradient(circle at 78% 76%, rgba(74, 119, 255, .14), transparent 36%),
             #eef1f6;
     }
-    .v2-bg.has-image img { opacity: .22; }
+    .v2-bg.has-image img { opacity: .3; }
     .v2-bg::after {
         background:
-            linear-gradient(180deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, .06) 34%, rgba(255, 255, 255, .74) 100%),
+            linear-gradient(180deg, rgba(255, 255, 255, .45) 0%, rgba(255, 255, 255, .1) 30%, rgba(255, 255, 255, .84) 100%),
             radial-gradient(circle at center, transparent 0%, rgba(255, 255, 255, .12) 70%, rgba(255, 255, 255, .46) 100%);
     }
     .v2-icon-btn,
@@ -660,9 +671,12 @@
         box-shadow: 0 8px 26px rgba(15, 23, 42, .08);
     }
     .v2-card {
-        border: 1px solid rgba(148, 163, 184, .28);
-        background: rgba(255, 255, 255, .94);
-        box-shadow: 0 30px 80px rgba(15, 23, 42, .14);
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+    .v2-preview {
+        background: linear-gradient(180deg, transparent 44%, rgba(238, 241, 246, .34) 74%, rgba(238, 241, 246, .8) 100%);
     }
     .v2-meta { color: rgba(15, 23, 42, .6); }
     .v2-feed { color: #1e293b; }
@@ -756,6 +770,7 @@
         <a href="#" target="_blank" class="v2-action" id="v2OriginBtn"><span class="v2-action-icon"><i class="fas fa-external-link-alt"></i></span><span>原文</span></a>
         <button type="button" class="v2-action" id="v2VisualReadingBtn" title="生成/查看可视化阅读"><span class="v2-action-icon"><i class="fas fa-book-open"></i></span><span>可视化阅读</span></button>
         <button type="button" class="v2-action" id="v2MindMapBtn" title="生成/查看思维导图"><span class="v2-action-icon"><i class="fas fa-diagram-project"></i></span><span>思维导图</span></button>
+        <button type="button" class="v2-action" id="v2AiPptBtn" title="生成/查看AIPPT"><span class="v2-action-icon"><i class="fas fa-file-powerpoint"></i></span><span>AIPPT</span></button>
         <button type="button" class="v2-action" id="v2StarBtn"><span class="v2-action-icon"><i class="far fa-star"></i></span><span>收藏</span></button>
         <button type="button" class="v2-action" id="v2LaterBtn"><span class="v2-action-icon"><i class="far fa-clock"></i></span><span>稍后读</span></button>
         <button type="button" class="v2-action" id="v2ReadStateBtn"><span class="v2-action-icon"><i class="fas fa-check"></i></span><span id="v2ReadStateText">未读</span></button>
@@ -1007,6 +1022,14 @@
                 e.stopPropagation();
                 if (window.openArtifactDialog && article.id) {
                     window.openArtifactDialog({ relatedType: 'article', relatedId: article.id, artifactType: 'mind_map' });
+                } else {
+                    window.location.href = '/article/' + article.id + '/artifacts';
+                }
+            });
+            $('#v2AiPptBtn').off('click.artifact').on('click.artifact', function (e) {
+                e.stopPropagation();
+                if (window.openArtifactDialog && article.id) {
+                    window.openArtifactDialog({ relatedType: 'article', relatedId: article.id, artifactType: 'ai_ppt' });
                 } else {
                     window.location.href = '/article/' + article.id + '/artifacts';
                 }

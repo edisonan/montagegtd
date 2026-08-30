@@ -27,6 +27,9 @@ class ArtifactService
         'course_item:visual_reading' => 'generateCourseItemVisualReading',
         'course_item:mind_map' => 'generateCourseItemMindMap',
         'course_item:key_points' => 'generateCourseItemKeyPoints',
+        'article:ai_ppt' => 'generateArticleAiPpt',
+        'note:ai_ppt' => 'generateNoteAiPpt',
+        'course_item:ai_ppt' => 'generateCourseItemAiPpt',
     );
 
     public function __construct(
@@ -128,6 +131,7 @@ class ArtifactService
 
     /**
      * 确保制品存在：已有成功制品且非 force 时直接复用，否则生成并 upsert。
+     * 覆盖写入前会把旧制品状态沉入 `artifact_versions` 历史（供弹窗底部「历史列表」展示）。
      *
      * @return array ['artifact' => Artifact, 'generated' => bool]
      */
@@ -164,11 +168,14 @@ class ArtifactService
             'prompt_version' => $result['prompt_version'] ?? null,
             'generated_at' => $result['generated_at'] ?? date('Y-m-d H:i:s'),
             'error_message' => $result['error_message'] ?? null,
+            'custom_prompt' => !empty($options['custom_prompt']) ? trim((string)$options['custom_prompt']) : null,
             // 统计真实调用生成的次数（定时任务「每篇最多试 N 次」用）
             'attempt_count' => ((int)($existing->attempt_count ?? 0)) + 1,
         );
 
         if ($existing) {
+            // 覆盖前把旧制品状态沉入历史版本
+            $this->snapshotVersion($existing);
             $artifact = $this->artifactRepository->update($existing, $data);
         } else {
             try {
@@ -177,6 +184,8 @@ class ArtifactService
                 // 并发兜底：唯一键冲突说明另一个请求已写入，重查后覆盖
                 $artifact = $this->artifactRepository->findByUniqueKey($userId, $relatedType, $relatedId, $artifactType);
                 if ($artifact) {
+                    // 重查到的旧状态同样先沉入历史再覆盖
+                    $this->snapshotVersion($artifact);
                     $artifact = $this->artifactRepository->update($artifact, $data);
                 } else {
                     throw $e;
@@ -188,6 +197,47 @@ class ArtifactService
             'artifact' => $artifact,
             'generated' => true,
         );
+    }
+
+    /**
+     * 把制品当前状态保存为一个历史版本（不中断主流程，失败仅记日志）
+     */
+    protected function snapshotVersion(Artifact $artifact)
+    {
+        try {
+            $this->artifactRepository->createVersion($artifact, array(
+                'content' => $artifact->content,
+                'status' => (string)$artifact->status,
+                'model_name' => $artifact->model_name,
+                'prompt_version' => $artifact->prompt_version,
+                'generated_at' => $artifact->generated_at
+                    ? $artifact->generated_at->format('Y-m-d H:i:s')
+                    : date('Y-m-d H:i:s'),
+                'error_message' => $artifact->error_message,
+                'custom_prompt' => $artifact->custom_prompt,
+            ));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('snapshot artifact version failed', array(
+                'artifact_id' => (int)$artifact->id,
+                'error' => $e->getMessage(),
+            ));
+        }
+    }
+
+    /**
+     * 某制品的历史版本列表（新→旧）
+     */
+    public function listVersions(Artifact $artifact)
+    {
+        return $this->artifactRepository->listVersions($artifact->id);
+    }
+
+    /**
+     * 取某个历史版本
+     */
+    public function findVersion(Artifact $artifact, $version)
+    {
+        return $this->artifactRepository->findVersion($artifact->id, $version);
     }
 
     /**
@@ -370,6 +420,7 @@ class ArtifactService
             Artifact::TYPE_BRIEFING_LATEST => '最新简报',
             Artifact::TYPE_BRIEFING_FOLLOWED => '关注简报',
             Artifact::TYPE_NOTE_MIND_MAP => '笔记思维导图',
+            Artifact::TYPE_AI_PPT => 'AIPPT',
         );
 
         return $names[$artifactType] ?? ('制品 - ' . $artifactType);
@@ -954,6 +1005,208 @@ class ArtifactService
         ));
 
         return trim(implode("\n", $parts));
+    }
+
+    /**
+     * 生成器：文章 AIPPT（json 幻灯片）
+     */
+    protected function generateArticleAiPpt($relatedId, array $options = array())
+    {
+        $article = Article::with('feed')->find($relatedId);
+        if (empty($article)) {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '文章不存在');
+        }
+        $text = $this->buildArticleText($article);
+        if ($text === '') {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '文章内容为空');
+        }
+
+        return $this->runAiPptLlm($text, 'article', trim((string)$article->subject) ?: '文章内容', $options);
+    }
+
+    /**
+     * 生成器：笔记 AIPPT（json 幻灯片）
+     */
+    protected function generateNoteAiPpt($relatedId, array $options = array())
+    {
+        $note = \App\Models\Note::find($relatedId);
+        if (empty($note)) {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '笔记不存在');
+        }
+        $text = trim(strip_tags((string)$note->content));
+        if ($text === '') {
+            $text = trim((string)$note->name);
+        }
+        $text = ($note->name ? '标题：' . $note->name . "\n" : '') . '正文：' . $text;
+
+        return $this->runAiPptLlm($text, 'note', trim((string)$note->name) ?: '笔记内容', $options);
+    }
+
+    /**
+     * 生成器：课程章节 AIPPT（json 幻灯片）
+     */
+    protected function generateCourseItemAiPpt($relatedId, array $options = array())
+    {
+        $item = \App\Models\CourseItem::with('course')->find($relatedId);
+        if (empty($item)) {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节不存在');
+        }
+        $text = $this->buildCourseItemText($item);
+        if (trim($text) === '') {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '课程章节内容为空');
+        }
+
+        return $this->runAiPptLlm($text, 'course_item', trim((string)$item->title) ?: '课程章节内容', $options);
+    }
+
+    /**
+     * 统一的 AIPPT 幻灯片 JSON 生成（文章/笔记/课程章节共用）。
+     * 内容：{"format":"ppt","data":{"title":...,"subtitle":...,"slides":[{"title":...,"bullets":[...]}]}}
+     */
+    protected function runAiPptLlm($text, $sourceType, $defaultTitle, array $options = array())
+    {
+        $text = mb_substr(trim(preg_replace('/\s+/u', ' ', $text)), 0, 6000);
+        if ($text === '') {
+            return array('status' => Artifact::STATUS_FAILED, 'error_message' => '内容为空');
+        }
+
+        $customPrompt = trim((string)($options['custom_prompt'] ?? ''));
+        $promptVersion = $customPrompt !== '' ? ($sourceType . '_ai_ppt:custom-v1') : ($sourceType . '_ai_ppt:v1');
+
+        $messages = array(
+            array(
+                'role' => 'system',
+                'content' => '你是一名专业的 PPT 内容策划与演示文稿设计师，且不会有冗长的内心思考，看到内容后立即直接输出结果。把下面内容制作成一份结构清晰的演示文稿（PPT）内容稿。'
+                    . ' 必须只输出 JSON，不要 markdown，不要解释。输出 JSON 字段固定为 format, data。'
+                    . ' format 固定为 "ppt"。data 结构为 {"title":"<演示主标题>","subtitle":"<副标题：一句话简介>","slides":[{"title":"<幻灯片标题>","bullets":["<要点>","<要点>"]}]}。'
+                    . ' 要求：主标题用一句话概括主题（不超过 30 字）；副标题为来源或一句话简介（不超过 60 字）；'
+                    . ' 内容页 6-12 页，每页标题（不超过 20 字）必须是能独立成句的章节名，每页 2-5 条要点，每条要点（不超过 40 字）为一句完整表述；'
+                    . ' 整体遵循「总-分-总」结构：开头概括背景与核心结论，中间按角度展开，结尾给出总结与行动建议；'
+                    . ' 保留原文关键数字、专有名词、公司名、产品名，使用中文；严禁编造原文没有的事实，严禁空泛标题（如"概述""要点"）。'
+            ),
+            array(
+                'role' => 'user',
+                'content' => "请将下面内容制作成 PPT 内容稿并返回 JSON：\n"
+                    . ($customPrompt !== '' ? "用户自定义补充要求：\n" . $customPrompt . "\n" : '')
+                    . $text,
+            ),
+        );
+
+        $llmResult = $this->llmStructuredTaskService->runTask(
+            'artifact_' . $sourceType . '_ai_ppt',
+            $messages,
+            array(
+                'timeout' => 240,
+                'max_tokens' => 8192,
+                'force_model' => 'deepseek-v4-flash',
+            )
+        );
+
+        $parsed = null;
+        if (!empty($llmResult['success']) && !empty($llmResult['content'])) {
+            $parsed = $this->parseStructuredJson($llmResult['content']);
+        }
+
+        $deck = $this->normalizePptData($parsed['data'] ?? ($parsed ?? array()), $defaultTitle);
+
+        if (is_array($parsed) && !empty($deck['slides'])) {
+            return array(
+                'name' => $this->artifactSourceLabel($sourceType) . ' AIPPT',
+                'file_type' => Artifact::FILE_JSON,
+                'content' => json_encode(array('format' => 'ppt', 'data' => $deck), JSON_UNESCAPED_UNICODE),
+                'status' => Artifact::STATUS_SUCCESS,
+                'model_name' => $llmResult['meta']['model_name'] ?? 'unknown',
+                'prompt_version' => $this->limitPromptVersion($promptVersion),
+                'generated_at' => date('Y-m-d H:i:s'),
+                'error_message' => $llmResult['error'] ?? null,
+            );
+        }
+
+        $errorMessage = !empty($llmResult['error']) ? $llmResult['error'] : 'LLM 返回内容无法解析为幻灯片 JSON';
+        $fallback = $this->buildFallbackPptData($defaultTitle);
+
+        return array(
+            'name' => $this->artifactSourceLabel($sourceType) . ' AIPPT',
+            'file_type' => Artifact::FILE_JSON,
+            'content' => json_encode(array('format' => 'ppt', 'data' => $fallback), JSON_UNESCAPED_UNICODE),
+            'status' => Artifact::STATUS_FAILED,
+            'model_name' => !empty($llmResult['meta']['model_name']) ? $llmResult['meta']['model_name'] : 'fallback-local',
+            'prompt_version' => $this->limitPromptVersion($promptVersion),
+            'generated_at' => date('Y-m-d H:i:s'),
+            'error_message' => $errorMessage,
+        );
+    }
+
+    /**
+     * 规范化 PPT 数据：标题/副标题/页数/要点数限制（与思维导图 normalizeNodeTree 对应）。
+     */
+    protected function normalizePptData($data, $defaultTitle)
+    {
+        if (!is_array($data)) {
+            return array('title' => '', 'subtitle' => '', 'slides' => array());
+        }
+
+        $title = trim((string)($data['title'] ?? ''));
+        if ($title === '') {
+            $title = trim((string)$defaultTitle);
+        }
+        $title = mb_substr($title, 0, 60);
+
+        $subtitle = trim((string)($data['subtitle'] ?? ''));
+        if ($subtitle === '') {
+            $subtitle = 'AI 生成的演示文稿';
+        }
+        $subtitle = mb_substr($subtitle, 0, 80);
+
+        $slides = array();
+        foreach ((array)($data['slides'] ?? array()) as $slide) {
+            if (!is_array($slide) || count($slides) >= 14) {
+                continue;
+            }
+
+            $slideTitle = trim((string)($slide['title'] ?? ''));
+            $bullets = array();
+            foreach ((array)($slide['bullets'] ?? array()) as $bullet) {
+                $bullet = trim((string)$bullet);
+                if ($bullet !== '') {
+                    $bullets[] = mb_substr($bullet, 0, 80);
+                }
+                if (count($bullets) >= 5) {
+                    break;
+                }
+            }
+
+            if ($slideTitle === '' || empty($bullets)) {
+                continue;
+            }
+
+            $slides[] = array(
+                'title' => mb_substr($slideTitle, 0, 40),
+                'bullets' => $bullets,
+            );
+        }
+
+        return array(
+            'title' => $title,
+            'subtitle' => $subtitle,
+            'slides' => $slides,
+        );
+    }
+
+    /**
+     * 兜底 PPT 数据（LLM 失败时保留可展示的骨架）
+     */
+    protected function buildFallbackPptData($defaultTitle)
+    {
+        return array(
+            'title' => mb_substr(trim((string)$defaultTitle), 0, 60),
+            'subtitle' => 'AI 生成失败，以下为备用演示稿',
+            'slides' => array(
+                array('title' => '内容概况', 'bullets' => array('本演示稿由 AI 基于原文自动生成', '生成失败，可回到原文重新生成')),
+                array('title' => '关键信息', 'bullets' => array('原文核心结论与事实', '关键数据与专有名词')),
+                array('title' => '行动建议', 'bullets' => array('结合原文要点制定后续安排', '重新生成可获得更完整内容')),
+            ),
+        );
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Artifact;
+use App\Models\ArtifactVersion;
 
 class ArtifactRepository
 {
@@ -31,7 +32,8 @@ class ArtifactRepository
 
     public function listByRelated($userId, $relatedType, $relatedId)
     {
-        return Artifact::where('user_id', $userId)
+        return Artifact::withCount('versions')
+            ->where('user_id', $userId)
             ->where('related_type', $relatedType)
             ->where('related_id', $relatedId)
             ->orderBy('artifact_type', 'asc')
@@ -57,6 +59,47 @@ class ArtifactRepository
         $artifact->save();
 
         return $artifact;
+    }
+
+    /**
+     * 计算某制品下一个版本号
+     */
+    public function nextVersionNumber($artifactId)
+    {
+        $max = ArtifactVersion::where('artifact_id', (int)$artifactId)->max('version');
+        return ((int)$max) + 1;
+    }
+
+    /**
+     * 保存一个历史版本（保留重新生成前的制品状态）
+     */
+    public function createVersion(Artifact $artifact, array $data)
+    {
+        $data['artifact_id'] = (int)$artifact->id;
+        $data['version'] = $this->nextVersionNumber($artifact->id);
+
+        return ArtifactVersion::create($data);
+    }
+
+    /**
+     * 某制品的历史版本列表（新→旧）
+     */
+    public function listVersions($artifactId, $limit = 50)
+    {
+        return ArtifactVersion::where('artifact_id', (int)$artifactId)
+            ->orderBy('version', 'desc')
+            ->limit(max(1, $limit))
+            ->get();
+    }
+
+    /**
+     * 按版本号取某个历史版本（归属校验由上层完成）
+     */
+    public function findVersion($artifactId, $version)
+    {
+        return ArtifactVersion::where('artifact_id', (int)$artifactId)
+            ->where('version', (int)$version)
+            ->first();
     }
 
     public function delete(Artifact $artifact)

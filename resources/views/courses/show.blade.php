@@ -430,6 +430,16 @@
 
             <!-- 右：章节详情 -->
             <div class="lg:col-span-8">
+                <!-- 待复习（已加入课程且有到期复习项时显示） -->
+                <div class="card p-4 mb-6 hidden" id="reviewPanel">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-sync-alt text-amber-500"></i>待复习
+                        </h3>
+                        <span class="text-xs text-gray-400" id="reviewPanelCount"></span>
+                    </div>
+                    <div class="space-y-2" id="reviewPanelList"></div>
+                </div>
                 <div class="card detail-card">
                     <div class="detail-header px-5 py-4 flex flex-wrap items-center justify-between gap-3">
                         <div class="min-w-0">
@@ -453,11 +463,15 @@
         <div class="quiz-modal-card">
             <div class="flex items-center justify-between mb-4">
                 <h3 id="quizModalTitle" class="text-xl font-semibold text-gray-900">章节小测试</h3>
-                <button type="button" id="closeQuizBtn" class="text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+                <div class="flex items-center gap-3">
+                    <button type="button" id="quizHistoryBtn" class="btn-course btn-course-secondary btn-course-sm hidden"><i class="fas fa-history mr-1"></i>作答历史</button>
+                    <button type="button" id="closeQuizBtn" class="text-gray-400 hover:text-gray-700 text-xl">&times;</button>
+                </div>
             </div>
             <div id="quizLoading" class="text-gray-500 py-6 text-center">加载测试中...</div>
             <form id="quizForm" class="hidden"></form>
             <div id="quizResult" class="hidden"></div>
+            <div id="quizHistory" class="hidden"></div>
         </div>
     </div>
 
@@ -570,11 +584,18 @@
                 } else if (st === 3) {
                     html += '<button type="button" onclick="submitCourseReview(' + Number(course.id) + ', \'unapprove\')" class="btn-course btn-course-secondary"><i class="fas fa-eye-slash mr-2"></i>撤回公开</button>';
                 }
+                // 创建者同样可以加入自己的课程进行学习
+                if (!isJoined) {
+                    html += '<button type="button" class="btn-course btn-course-success join-course-btn" data-course-id="' + Number(course.id) + '"><i class="fas fa-user-plus mr-2"></i>加入课程</button>';
+                } else {
+                    html += '<span class="btn-course btn-course-success" disabled><i class="fas fa-check-circle mr-2"></i>已加入</span>';
+                    html += '<a href="/courses/' + Number(course.id) + '/study" class="btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>继续学习</a>';
+                }
             } else if (CURRENT_USER_ID > 0 && !isJoined) {
                 html += '<button type="button" class="btn-course btn-course-success join-course-btn" data-course-id="' + Number(course.id) + '"><i class="fas fa-user-plus mr-2"></i>加入课程</button>';
             } else if (CURRENT_USER_ID > 0 && isJoined) {
                 html += '<span class="btn-course btn-course-success" disabled><i class="fas fa-check-circle mr-2"></i>已加入</span>';
-                html += '<a href="/courses" class="btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>继续学习</a>';
+                html += '<a href="/courses/' + Number(course.id) + '/study" class="btn-course btn-course-primary"><i class="fas fa-graduation-cap mr-2"></i>继续学习</a>';
             }
             html += '<a href="/course/management" class="btn-course btn-course-secondary"><i class="fas fa-arrow-left mr-2"></i>返回课程中心</a>';
             box.html(html);
@@ -757,11 +778,12 @@
             if (CURRENT_USER_ID > 0) {
                 var artifactHtml = '<div class="mt-6 border-t border-gray-200 pt-4">'
                     + '<div class="flex items-center justify-between mb-2"><h4 class="text-sm font-semibold text-gray-700 flex items-center gap-2"><i class="fas fa-wand-magic-sparkles text-purple-500"></i>AI 制品</h4></div>'
-                    + '<p class="text-xs text-gray-500 mb-2">把本章内容加入制品库，生成可视化阅读 / 思维导图 / 关键信息</p>'
+                    + '<p class="text-xs text-gray-500 mb-2">把本章内容加入制品库，生成可视化阅读 / 思维导图 / 关键信息 / AIPPT</p>'
                     + '<div class="flex flex-wrap gap-2">'
                     + '<button type="button" class="btn-course btn-course-primary btn-course-sm course-artifact-btn" data-artifact-type="visual_reading"><i class="fas fa-book-open mr-1"></i>可视化界面</button>'
                     + '<button type="button" class="btn-course btn-course-primary btn-course-sm course-artifact-btn" data-artifact-type="mind_map"><i class="fas fa-diagram-project mr-1"></i>思维导图</button>'
                     + '<button type="button" class="btn-course btn-course-primary btn-course-sm course-artifact-btn" data-artifact-type="key_points"><i class="fas fa-lightbulb mr-1"></i>关键信息</button>'
+                    + '<button type="button" class="btn-course btn-course-primary btn-course-sm course-artifact-btn" data-artifact-type="ai_ppt"><i class="fas fa-file-powerpoint mr-1"></i>AIPPT</button>'
                     + '<a href="/artifacts" class="btn-course btn-course-secondary btn-course-sm"><i class="fas fa-box-archive mr-1"></i>制品库</a>'
                     + '</div></div>';
                 $('#item_detail_body').append(artifactHtml);
@@ -864,6 +886,7 @@
                 renderCourseInfo(course);
                 renderCourseActions(course, isJoined, IS_OWNER);
                 renderCourseStructure(structure);
+                if (isJoined) loadCourseReviews();
 
                 if (SELECTED_ITEM_ID && findItemInTree(structure, SELECTED_ITEM_ID)) {
                     selectCourseItem(SELECTED_ITEM_ID);
@@ -959,6 +982,7 @@
 
             // 测验弹窗
             $('#closeQuizBtn').on('click', closeQuiz);
+            $('#quizHistoryBtn').on('click', function() { openQuizHistory(quizState.itemId); });
             $('#quizModal').on('click', function(e) { if (e.target === this) closeQuiz(); });
             $(document).on('click', '.quiz-btn', function(e) {
                 e.preventDefault();
@@ -981,15 +1005,22 @@
         function closeQuiz() {
             $('#quizModal').removeClass('show');
             $('#quizResult').addClass('hidden').empty();
+            $('#quizHistory').addClass('hidden').empty();
         }
+
+        // 测验弹窗状态缓存（返回测验时保留已填表单 / 已出结果）
+        var quizState = { itemId: 0, formHtml: '', resultHtml: '', questions: null, view: 'form' };
 
         function openQuiz(itemId) {
             if (!apiRequest || !itemId) return;
+            quizState = { itemId: itemId, formHtml: '', resultHtml: '', questions: null, view: 'form' };
             $('#quizModalTitle').text('章节小测试');
             $('#quizModal').addClass('show');
             $('#quizLoading').removeClass('hidden').text('加载测试中...');
             $('#quizForm').addClass('hidden').empty();
             $('#quizResult').addClass('hidden').empty();
+            $('#quizHistory').addClass('hidden').empty();
+            $('#quizHistoryBtn').addClass('hidden');
             $('#quizForm').data('item-id', itemId);
             apiRequest('GET', '/course-items/' + itemId + '/quiz', {}).then(function(resp) {
                 if (!resp || resp.code !== 9999 || !resp.result || !resp.result.quiz) throw new Error((resp && resp.msg) || '该章节暂无测试');
@@ -1004,9 +1035,133 @@
                     html += '</div>';
                 });
                 html += '<button type="submit" class="btn-course btn-course-primary">提交测试</button>';
+                quizState.formHtml = html;
+                quizState.questions = quiz.questions || [];
                 $('#quizForm').html(html).removeClass('hidden');
                 $('#quizLoading').addClass('hidden');
-            }).catch(function(err) { $('#quizLoading').text(err && err.message ? err.message : '测试加载失败'); });
+                $('#quizHistoryBtn').removeClass('hidden');
+            }).catch(function(err) {
+                renderQuizEmpty(itemId, (err && err.message) ? err.message : '该章节还没有配置小测试');
+            });
+        }
+
+        // 章节没有测试时的友好空态（不再是一片空白/报错文本）
+        function renderQuizEmpty(itemId, msg) {
+            var html = '<div class="py-10 text-center">'
+                + '<i class="fas fa-question-circle text-4xl text-gray-300 mb-3" style="display:block"></i>'
+                + '<p class="text-gray-600 mb-1">' + escapeHtml(msg || '该章节还没有配置小测试') + '</p>'
+                + '<p class="text-xs text-gray-400 mb-5">可以稍后再来看看，或联系课程创建者补充测验。</p>'
+                + (IS_OWNER ? '<a href="/courses/' + COURSE_DETAIL_ID + '/items" class="btn-course btn-course-primary btn-course-sm"><i class="fas fa-cog mr-1"></i>去配置测验</a> ' : '')
+                + '<button type="button" class="btn-course btn-course-secondary btn-course-sm" onclick="closeQuiz()">关闭</button>'
+                + '</div>';
+            $('#quizLoading').html(html).removeClass('hidden');
+            $('#quizForm').addClass('hidden').empty();
+            $('#quizResult').addClass('hidden').empty();
+            $('#quizHistory').addClass('hidden').empty();
+            $('#quizHistoryBtn').addClass('hidden');
+        }
+
+        function showQuizView(itemId) {
+            $('#quizHistory').addClass('hidden').empty();
+            if (itemId !== quizState.itemId) { openQuiz(itemId); return; }
+            $('#quizHistoryBtn').removeClass('hidden');
+            if (quizState.view === 'result' && quizState.resultHtml) {
+                $('#quizForm').addClass('hidden');
+                $('#quizResult').html(quizState.resultHtml).removeClass('hidden');
+            } else if (quizState.formHtml) {
+                $('#quizResult').addClass('hidden').empty();
+                $('#quizForm').removeClass('hidden');
+            } else {
+                openQuiz(itemId);
+            }
+        }
+
+        function openQuizHistory(itemId) {
+            if (!apiRequest || !itemId) return;
+            $('#quizLoading').addClass('hidden').empty();
+            $('#quizForm').addClass('hidden');
+            $('#quizResult').addClass('hidden').empty();
+            $('#quizHistory').removeClass('hidden').html(
+                '<div class="text-center text-gray-400 py-8"><i class="fas fa-spinner fa-spin mr-2"></i>加载作答记录...</div>'
+            );
+            apiRequest('GET', '/course-items/' + itemId + '/quiz/attempts', {}).then(function(resp) {
+                var attempts = (resp && resp.code === 9999 && resp.result && Array.isArray(resp.result.attempts)) ? resp.result.attempts : [];
+                if (!attempts.length) {
+                    $('#quizHistory').html(
+                        '<div class="text-center text-gray-400 py-10"><i class="fas fa-inbox text-3xl mb-3" style="display:block"></i>'
+                        + '<p>还没有作答记录</p>'
+                        + '<button type="button" class="btn-course btn-course-primary btn-course-sm mt-4" onclick="showQuizView(' + itemId + ')">返回测验</button></div>'
+                    );
+                    return;
+                }
+                var qMap = {};
+                if (quizState.itemId === itemId && Array.isArray(quizState.questions)) {
+                    quizState.questions.forEach(function(q) { qMap[Number(q.id)] = q; });
+                }
+                var html = '<div class="flex items-center justify-between mb-3">'
+                    + '<span class="text-sm font-semibold text-gray-700"><i class="fas fa-history mr-1"></i>共 ' + attempts.length + ' 次作答</span>'
+                    + '<button type="button" class="btn-course btn-course-secondary btn-course-sm" onclick="showQuizView(' + itemId + ')">返回测验</button>'
+                    + '</div>';
+                attempts.forEach(function(a, index) {
+                    var passed = !!a.passed;
+                    var isLast = index === 0;
+                    html += '<div class="quiz-result" style="background:' + (passed ? '#ecfdf5' : '#fef2f2') + '">'
+                        + '<div class="flex items-center justify-between flex-wrap gap-1">'
+                        + '<span class="font-semibold ' + (passed ? 'text-green-700' : 'text-red-700') + '">' + (isLast ? '最近一次 · ' : '') + (passed ? '通过' : '未通过') + ' · ' + Number(a.score || 0) + '%</span>'
+                        + '<span class="text-xs text-gray-400">' + escapeHtml(a.completed_at ? String(a.completed_at).replace('T', ' ').substring(0, 16) : '') + '</span>'
+                        + '</div>'
+                        + '<div class="text-xs text-gray-500 mt-1">答对 ' + Number(a.correct_count || 0) + ' / ' + Number(a.total_count || 0) + ' 题</div>';
+                    (a.answers || []).forEach(function(row, qIdx) {
+                        var qt = qMap[Number(row.question_id)];
+                        html += '<div class="text-sm mt-2" style="border-top:1px dashed #e2e8f0;padding-top:8px">'
+                            + '<div class="text-gray-700">' + (qt ? escapeHtml(qt.question) : ('第 ' + (qIdx + 1) + ' 题')) + '</div>'
+                            + '<div class="text-xs mt-1 text-gray-600">你的答案：' + escapeHtml((row.submitted && row.submitted.length ? row.submitted : ['（未作答）']).join('、'))
+                            + (row.correct ? ' <span class="text-green-600">✓ 正确</span>' : ' <span class="text-red-600">✗ 错误，正确答案：' + escapeHtml((row.correct_options || []).join('、')) + '</span>') + '</div>'
+                            + (row.explanation ? '<div class="text-xs text-gray-500 mt-1">解析：' + escapeHtml(row.explanation) + '</div>' : '')
+                            + '</div>';
+                    });
+                    html += '</div>';
+                });
+                $('#quizHistory').html(html);
+            }).catch(function() {
+                $('#quizHistory').html(
+                    '<div class="text-center text-gray-400 py-10"><p>作答历史加载失败</p>'
+                    + '<button type="button" class="btn-course btn-course-secondary btn-course-sm mt-4" onclick="showQuizView(' + itemId + ')">返回测验</button></div>'
+                );
+            });
+        }
+
+        // 待复习：拉取当前课程到期的复习项
+        function loadCourseReviews() {
+            $('#reviewPanel').addClass('hidden');
+            if (!CURRENT_USER_ID || !apiRequest || !COURSE_DETAIL_DATA || !COURSE_DETAIL_DATA.is_joined) return;
+            apiRequest('GET', '/reviews/course-items', {}).then(function(resp) {
+                var all = (resp && resp.code === 9999 && resp.result && Array.isArray(resp.result.reviews)) ? resp.result.reviews : [];
+                var reviews = all.filter(function(r) {
+                    return r && r.course_item && Number(r.course_item.course_id) === Number(COURSE_DETAIL_ID);
+                });
+                if (!reviews.length) return;
+                reviews.sort(function(a, b) {
+                    return String(a.next_review_at || '9999-99-99').localeCompare(String(b.next_review_at || '9999-99-99'));
+                });
+                var html = '';
+                reviews.forEach(function(r) {
+                    var item = r.course_item || {};
+                    html += '<div class="flex items-center justify-between gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">'
+                        + '<div class="min-w-0">'
+                        + '<div class="text-sm font-medium text-gray-800 truncate">' + escapeHtml(item.title || '未命名章节') + '</div>'
+                        + '<div class="text-xs text-gray-500 mt-0.5">上次 ' + (r.last_score === null ? '—' : (Number(r.last_score) + '%')) + ' · 复习 ' + Number(r.review_count || 0) + ' 次'
+                        + (r.next_review_at ? ' · 到期 ' + escapeHtml(String(r.next_review_at).replace('T', ' ').substring(0, 10)) : '') + '</div>'
+                        + '</div>'
+                        + '<div class="flex gap-2 shrink-0">'
+                        + '<button type="button" class="btn-course btn-course-primary btn-course-sm quiz-btn" data-course-item-id="' + Number(item.id) + '"><i class="fas fa-pen mr-1"></i>去测验</button>'
+                        + '<a href="/courses/' + COURSE_DETAIL_ID + '/study?item=' + Number(item.id) + '" class="btn-course btn-course-secondary btn-course-sm"><i class="fas fa-book mr-1"></i>去学习</a>'
+                        + '</div></div>';
+                });
+                $('#reviewPanelList').html(html);
+                $('#reviewPanelCount').text(reviews.length + ' 个章节');
+                $('#reviewPanel').removeClass('hidden');
+            }).catch(function() { $('#reviewPanel').addClass('hidden'); });
         }
 
         function submitQuiz() {
@@ -1020,13 +1175,20 @@
             apiRequest('POST', '/course-items/' + itemId + '/quiz/attempts', {answers: answers}).then(function(resp) {
                 if (!resp || resp.code !== 9999) throw new Error((resp && resp.msg) || '提交失败');
                 var result = resp.result || {};
+                quizState.view = 'result';
                 var html = '<div class="quiz-result"><div class="font-semibold ' + (result.passed ? 'text-green-700' : 'text-red-700') + '">' + (result.passed ? '测试通过' : '需要复习') + '：' + Number(result.score || 0) + '%</div>';
                 (result.results || []).forEach(function(row, index) {
                     html += '<div class="text-sm mt-2">第 ' + (index + 1) + ' 题：' + (row.correct ? '<span class="text-green-600">正确</span>' : '<span class="text-red-600">错误，正确答案：' + escapeHtml((row.correct_options || []).join(', ')) + '</span>') + (row.explanation ? '<div class="text-gray-500">解析：' + escapeHtml(row.explanation) + '</div>' : '') + '</div>';
                 });
-                html += '</div><button type="button" class="btn-course btn-course-secondary mt-4" onclick="closeQuiz()">关闭</button>';
+                html += '</div><div class="mt-4 flex flex-wrap gap-2">'
+                    + '<button type="button" class="btn-course btn-course-secondary" onclick="showQuizView(' + itemId + ')">返回测验</button>'
+                    + '<button type="button" class="btn-course btn-course-secondary" onclick="openQuizHistory(' + itemId + ')">查看作答历史</button>'
+                    + '<button type="button" class="btn-course btn-course-primary" onclick="closeQuiz()">关闭</button>'
+                    + '</div>';
                 $('#quizForm').addClass('hidden');
                 $('#quizResult').html(html).removeClass('hidden');
+                $('#quizHistoryBtn').removeClass('hidden');
+                loadCourseReviews();
             }).catch(function(err) {
                 $('#quizResult').html('<div class="quiz-result text-red-600">' + escapeHtml(err && err.message ? err.message : '提交失败') + '</div>').removeClass('hidden');
             });

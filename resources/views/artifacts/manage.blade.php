@@ -11,7 +11,7 @@
                     <div>
                         <div class="text-xs uppercase tracking-[0.18em] text-slate-500 mb-2">AI Artifact Library</div>
                         <h1 class="text-2xl font-bold text-slate-900">制品库管理</h1>
-                        <div class="mt-2 text-sm text-slate-600">管理所有 AI 二次产出：可视化阅读、思维导图等，共 {{ $total }} 个来源实体</div>
+                        <div class="mt-2 text-sm text-slate-600">管理所有 AI 二次产出：可视化阅读、思维导图、关键信息、AIPPT 等，共 {{ $total }} 个来源实体</div>
                     </div>
                 </div>
             </div>
@@ -42,6 +42,8 @@
                             <option value="">全部</option>
                             <option value="visual_reading" {{ ($filters['artifact_type'] ?? '') === 'visual_reading' ? 'selected' : '' }}>可视化阅读</option>
                             <option value="mind_map" {{ ($filters['artifact_type'] ?? '') === 'mind_map' ? 'selected' : '' }}>思维导图</option>
+                            <option value="key_points" {{ ($filters['artifact_type'] ?? '') === 'key_points' ? 'selected' : '' }}>关键信息</option>
+                            <option value="ai_ppt" {{ ($filters['artifact_type'] ?? '') === 'ai_ppt' ? 'selected' : '' }}>AIPPT</option>
                         </select>
                     </div>
                     <div class="flex gap-2">
@@ -74,7 +76,7 @@
                                 <div class="px-4 py-3 flex-1">
                                     <div class="text-sm font-semibold text-slate-800 break-all leading-6">{{ \Illuminate\Support\Str::limit($entity['related_title'], 40) }}</div>
                                     <div class="mt-3 flex flex-wrap gap-1.5">
-                                        @foreach(['visual_reading' => '可视化阅读', 'mind_map' => '思维导图', 'key_points' => '关键信息'] as $type => $label)
+                                        @foreach(['visual_reading' => '可视化阅读', 'mind_map' => '思维导图', 'key_points' => '关键信息', 'ai_ppt' => 'AIPPT'] as $type => $label)
                                             @if(!empty($entity['success_types'][$type]))
                                                 <span class="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700"><i class="fas fa-check mr-0.5"></i>{{ $label }}</span>
                                             @elseif(!empty($entity['failed_types'][$type]))
@@ -98,6 +100,10 @@
                                             data-related-type="{{ $entity['related_type'] }}" data-related-id="{{ $entity['related_id'] }}" data-artifact-type="key_points">
                                         <i class="fas fa-lightbulb mr-1"></i>关键信息
                                     </button>
+                                    <button type="button" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs hover:bg-rose-700 transition js-artifact-action"
+                                            data-related-type="{{ $entity['related_type'] }}" data-related-id="{{ $entity['related_id'] }}" data-artifact-type="ai_ppt">
+                                        <i class="fas fa-file-powerpoint mr-1"></i>AIPPT
+                                    </button>
                                     @if(!empty($entity['related_url']))
                                         <a href="{{ url($entity['related_url']) }}" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-600 hover:border-sky-400 hover:text-sky-600 transition">
                                             <i class="fas fa-external-link-alt mr-1"></i>原文
@@ -108,7 +114,7 @@
                                     <div class="px-4 py-2 border-t border-slate-100 bg-slate-50/60">
                                         @foreach($entity['artifacts'] as $artifact)
                                             <div class="flex items-center justify-between gap-2 py-1 text-xs">
-                                                <span class="text-slate-600">{{ $artifact->artifact_type === 'mind_map' ? '思维导图' : ($artifact->artifact_type === 'key_points' ? '关键信息' : '可视化阅读') }}
+                                                <span class="text-slate-600">{{ $artifact->artifact_type === 'mind_map' ? '思维导图' : ($artifact->artifact_type === 'key_points' ? '关键信息' : ($artifact->artifact_type === 'ai_ppt' ? 'AIPPT' : '可视化阅读')) }}
                                                     <span class="text-slate-400">· {{ $artifact->generated_at ? $artifact->generated_at->format('m-d H:i') : '-' }}</span>
                                                 </span>
                                                 @if($artifact->status === 'success')

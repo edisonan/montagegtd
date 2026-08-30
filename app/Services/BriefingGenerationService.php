@@ -9,6 +9,7 @@ use App\Repositories\BriefingConfigRepository;
 use App\Repositories\BriefingPageRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 文章简报生成服务
@@ -82,7 +83,36 @@ class BriefingGenerationService
             'last_generated_at' => $coverEnd->toDateTimeString(),
         ));
 
+        $this->notifyGenerated($config, $page);
+
         return array('status' => 'success', 'page_id' => $page->id);
+    }
+
+    /**
+     * 简报生成成功后，通过用户已启用的通知渠道推送通知，附带可直接打开的简报地址。
+     * 通知失败不影响生成结果。
+     */
+    protected function notifyGenerated($config, $page)
+    {
+        try {
+            $user = $config->user;
+            if (!$user) {
+                return;
+            }
+            $configName = trim((string)$config->name);
+            $pageTitle = trim((string)$page->title);
+            $message = $configName !== '' ? $configName . '：' . $pageTitle : $pageTitle;
+            $message = mb_substr($message, 0, 100);
+
+            app(NotificationChannelService::class)->sendToUser(
+                $user,
+                '文章简报已生成',
+                $message,
+                url('/briefings/' . (int)$page->id)
+            );
+        } catch (\Throwable $e) {
+            Log::warning('briefing notify failed: ' . $e->getMessage());
+        }
     }
 
     /**

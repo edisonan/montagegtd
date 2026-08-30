@@ -48,6 +48,7 @@ class ArtifactController extends Controller
             'related_type' => trim((string)$request->input('related_type', '')),
             'related_id' => (int)$request->input('related_id', 0),
             'artifact_type' => trim((string)$request->input('artifact_type', '')),
+            'has_artifact_type' => trim((string)$request->input('artifact_type', '')),
             'status' => trim((string)$request->input('status', '')),
         );
 
@@ -83,6 +84,14 @@ class ArtifactController extends Controller
             }
         }
 
+        $pptData = null;
+        if ($artifact->file_type === Artifact::FILE_JSON && $artifact->artifact_type === Artifact::TYPE_AI_PPT) {
+            $decoded = json_decode((string)$artifact->content, true);
+            if (is_array($decoded)) {
+                $pptData = $decoded['data'] ?? $decoded;
+            }
+        }
+
         // 课程章节制品：补关联课程信息，用于视图返回链接
         $courseItemCourseId = null;
         $courseItemTitle = null;
@@ -94,7 +103,7 @@ class ArtifactController extends Controller
             }
         }
 
-        return view('artifacts.view', compact('artifact', 'nodeTree', 'courseItemCourseId', 'courseItemTitle'));
+        return view('artifacts.view', compact('artifact', 'nodeTree', 'pptData', 'courseItemCourseId', 'courseItemTitle'));
     }
 
     /**

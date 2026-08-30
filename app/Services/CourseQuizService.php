@@ -94,6 +94,16 @@ class CourseQuizService
             throw new CustomException('请先加入课程');
         }
 
+        // 作答次数上限（attempts_allowed 为空表示不限）
+        if ($quiz->attempts_allowed !== null) {
+            $taken = CourseQuizAttempt::where('quiz_id', $quiz->id)
+                ->where('user_id', $userId)
+                ->count();
+            if ($taken >= (int)$quiz->attempts_allowed) {
+                throw new CustomException('该章节测试已达作答次数上限（' . (int)$quiz->attempts_allowed . ' 次）');
+            }
+        }
+
         $correctCount = 0;
         $results = array();
         foreach ($quiz->questions as $question) {

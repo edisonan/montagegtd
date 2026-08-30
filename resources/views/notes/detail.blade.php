@@ -191,6 +191,9 @@
                     <button type="button" class="action-btn js-note-artifact" data-note-id="{{ $note->id }}" data-artifact-type="key_points">
                         <i class="fas fa-list-check"></i> 关键信息
                     </button>
+                    <button type="button" class="action-btn js-note-artifact" data-note-id="{{ $note->id }}" data-artifact-type="ai_ppt">
+                        <i class="fas fa-file-powerpoint"></i> AIPPT
+                    </button>
                     <a class="action-btn primary" href="{{ url('/notes/' . $note->id . '/edit') }}">
                         <i class="fas fa-edit"></i> 编辑
                     </a>

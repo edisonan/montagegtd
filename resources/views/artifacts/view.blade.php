@@ -101,6 +101,13 @@
                     @else
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-500 text-center">思维导图数据格式无效</div>
                     @endif
+                @elseif($artifact->file_type === 'json' && $artifact->artifact_type === 'ai_ppt')
+                    @if(!empty($pptData) && !empty($pptData['slides']))
+                        <div id="ai_ppt_container" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"></div>
+                        <div class="mt-2 text-center text-xs text-slate-400">使用键盘 ← / → 或点击按钮翻页 · 封面 + {{ count($pptData['slides']) }} 页内容</div>
+                    @else
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-500 text-center">AIPPT 数据格式无效</div>
+                    @endif
                 @elseif($artifact->file_type === 'markdown')
                     <div id="markdown_content" class="prose max-w-none rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">{{ $artifact->content }}</div>
                 @else
@@ -148,6 +155,17 @@
                 jm.show(mindData);
                 var loading = document.getElementById('mindmapLoading');
                 if (loading) { loading.style.display = 'none'; }
+            })();
+        </script>
+    @elseif($artifact->file_type === 'json' && $artifact->artifact_type === 'ai_ppt' && !empty($pptData) && !empty($pptData['slides']))
+        <script src="{{ url('/js/ai-ppt.js') }}"></script>
+        <script>
+            (function () {
+                var deck = {!! json_encode($pptData, JSON_UNESCAPED_UNICODE) !!};
+                var container = document.getElementById('ai_ppt_container');
+                if (container && typeof window.renderAiPpt === 'function') {
+                    window.renderAiPpt(container, deck, { startIndex: 0 });
+                }
             })();
         </script>
     @elseif($artifact->file_type === 'markdown' && $artifact->status === 'success' && $artifact->content !== null)

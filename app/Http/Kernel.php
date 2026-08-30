@@ -60,7 +60,8 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            'throttle:60,1',
+            // 60→120：远程辅导信令轮询/ICE 属高频低负载接口，需更高余量（前端已做降频合并）
+            'throttle:120,1',
             'bindings',
             'auth.context',
         ]

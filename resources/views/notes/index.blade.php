@@ -1975,6 +1975,7 @@
                             '<button class="operation-btn ai js-note-artifact" data-note-id="' + Number(note.id) + '" data-artifact-type="visual_reading" title="可视化阅读"><i class="fas fa-book-open"></i></button>' +
                             '<button class="operation-btn ai js-note-artifact" data-note-id="' + Number(note.id) + '" data-artifact-type="mind_map" title="思维导图"><i class="fas fa-diagram-project"></i></button>' +
                             '<button class="operation-btn ai js-note-artifact" data-note-id="' + Number(note.id) + '" data-artifact-type="key_points" title="AI关键信息"><i class="fas fa-list-check"></i></button>' +
+                            '<button class="operation-btn ai js-note-artifact" data-note-id="' + Number(note.id) + '" data-artifact-type="ai_ppt" title="AIPPT"><i class="fas fa-file-powerpoint"></i></button>' +
                             '<button class="operation-btn ai" onclick="openNoteAI(\'' + Number(note.id) + '\')" title="AI助手"><i class="fas fa-robot"></i></button>' +
                             '<button class="operation-btn" onclick="copyNoteContent(\'' + Number(note.id) + '\')" title="复制内容"><i class="fas fa-copy"></i></button>' +
                             exportHtml +
