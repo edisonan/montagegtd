@@ -102,9 +102,24 @@
                 }).then(function() {
                     window.location.href = '{{ url('/login') }}';
                 }).catch(function(error) {
-                    var msg = (error && error.data && (error.data.msg || error.data.message))
-                        ? (error.data.msg || error.data.message)
-                        : '重置失败，请稍后重试';
+                    var msg = '重置失败，请稍后重试';
+                    if (error && error.data) {
+                        var fieldErrors = [];
+                        if (error.data.errors) {
+                            Object.keys(error.data.errors).forEach(function (key) {
+                                var list = error.data.errors[key];
+                                if (list && list.length && fieldErrors.indexOf(list[0]) === -1) {
+                                    fieldErrors.push(list[0]);
+                                }
+                            });
+                        }
+                        if (fieldErrors.length) {
+                            msg = fieldErrors.join('；');
+                        } else {
+                            if (error.data.msg) msg = error.data.msg;
+                            if (error.data.message) msg = error.data.message;
+                        }
+                    }
                     alert(msg);
                 }).finally(function() {
                     if (submitBtn) {

@@ -716,15 +716,21 @@
 
             function extractErrorMessage(error) {
                 if (!error) return '请求失败，请稍后再试';
+                if (error.data && error.data.errors) {
+                    const fieldErrors = [];
+                    Object.keys(error.data.errors).forEach(function (key) {
+                        const list = error.data.errors[key];
+                        if (list && list.length && fieldErrors.indexOf(list[0]) === -1) {
+                            fieldErrors.push(list[0]);
+                        }
+                    });
+                    if (fieldErrors.length) {
+                        return fieldErrors.join('；');
+                    }
+                }
                 if (error.data) {
                     if (error.data.msg) return error.data.msg;
                     if (error.data.message) return error.data.message;
-                    if (error.data.errors) {
-                        const firstKey = Object.keys(error.data.errors)[0];
-                        if (firstKey && error.data.errors[firstKey] && error.data.errors[firstKey][0]) {
-                            return error.data.errors[firstKey][0];
-                        }
-                    }
                 }
                 if (error.message) return error.message;
                 return '请求失败，请稍后再试';
