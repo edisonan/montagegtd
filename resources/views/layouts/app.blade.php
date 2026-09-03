@@ -145,6 +145,7 @@
                                 'icon'=>'fas fa-graduation-cap',
                                 'submenu' => [
                                     ['url'=>'/study', 'label'=>'学习计划', 'icon'=>'fas fa-calendar-alt'],
+                                    ['url'=>'/course/management', 'label'=>'课程中心', 'icon'=>'fas fa-compass'],
                                     ['url'=>'/courses', 'label'=>'我的课程', 'icon'=>'fas fa-book'],
                                     ['url'=>'/study/tools', 'label'=>'学习工具', 'icon'=>'fas fa-tools']
                                 ]
@@ -303,7 +304,7 @@
     </div>
 
     <!-- 移动端导航菜单 -->
-    <div id="mobileMenu" class="md:hidden bg-white border-t border-gray-200 hidden">
+    <div id="mobileMenu" class="md:hidden bg-white border-t border-gray-200 hidden max-h-[calc(100vh-4rem)] overflow-y-auto">
         <div class="px-4 py-3">
             @foreach ($menuItems as $index => $item)
                 <div class="mb-2">
@@ -325,6 +326,84 @@
                     </div>
                 </div>
             @endforeach
+
+            @if(!Auth::guest())
+                <!-- 移动端用户菜单（与桌面端用户下拉一致；手机端无法访问桌面导航，必须在这里提供退出入口） -->
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                    <div class="flex items-center space-x-3 px-1 pb-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-sm font-medium text-gray-900 truncate">{{ Auth::user()->name }}</div>
+                            <div class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <a href="{{ url('cals') }}" class="nav-link py-2">
+                            <i class="fas fa-medal fa-fw text-yellow-500 text-sm mr-3"></i>
+                            <span>日历/订阅</span>
+                        </a>
+                        <a href="{{ url('dailysummarys') }}" class="nav-link py-2">
+                            <i class="fas fa-store fa-fw text-emerald-500 text-sm mr-3"></i>
+                            <span>日报记录</span>
+                        </a>
+                        <a href="{{ url('satistics') }}" class="nav-link py-2">
+                            <i class="fas fa-trophy fa-fw text-purple-500 text-sm mr-3"></i>
+                            <span>数据统计</span>
+                        </a>
+
+                        <div class="border-t border-gray-200 my-1"></div>
+
+                        <a href="{{ url('points') }}" class="nav-link py-2">
+                            <i class="fas fa-medal fa-fw text-yellow-500 text-sm mr-3"></i>
+                            <span>积分中心</span>
+                        </a>
+                        <a href="{{ url('point-mall') }}" class="nav-link py-2">
+                            <i class="fas fa-store fa-fw text-emerald-500 text-sm mr-3"></i>
+                            <span>积分商城</span>
+                        </a>
+                        <a href="{{ url('achievements') }}" class="nav-link py-2">
+                            <i class="fas fa-trophy fa-fw text-purple-500 text-sm mr-3"></i>
+                            <span>成就勋章</span>
+                        </a>
+
+                        <div class="border-t border-gray-200 my-1"></div>
+
+                        <a href="{{ url('accounts') }}" class="nav-link py-2">
+                            <i class="fas fa-user-cog fa-fw text-gray-500 text-sm mr-3"></i>
+                            <span>账号管理</span>
+                        </a>
+                        <a href="{{ url('/personal-access-tokens') }}" class="nav-link py-2">
+                            <i class="fas fa-key fa-fw text-gray-500 text-sm mr-3"></i>
+                            <span>访问令牌</span>
+                        </a>
+                        <a href="{{ url('settings') }}" class="nav-link py-2">
+                            <i class="fas fa-cog fa-fw text-gray-500 text-sm mr-3"></i>
+                            <span>平台设置</span>
+                        </a>
+
+                        <div class="border-t border-gray-200 my-1"></div>
+
+                        <a href="{{ url('/help/feedback') }}" class="nav-link py-2">
+                            <i class="fas fa-comment-dots fa-fw text-blue-500 text-sm mr-3"></i>
+                            <span>添加反馈</span>
+                        </a>
+                        <a href="{{ url('/about') }}" class="nav-link py-2">
+                            <i class="fas fa-info-circle fa-fw text-green-500 text-sm mr-3"></i>
+                            <span>关于我们</span>
+                        </a>
+
+                        <div class="border-t border-gray-200 my-1"></div>
+
+                        <a href="{{ url('/logout') }}" class="nav-link py-2 text-red-600" id="mobileLogoutLink">
+                            <i class="fas fa-sign-out-alt fa-fw text-red-500 text-sm mr-3"></i>
+                            <span>登出</span>
+                        </a>
+                    </div>
+                </div>
+            @endif
 
             @if(Auth::guest())
                 <div class="mt-4">
@@ -695,33 +774,35 @@
     })();
 
     (function() {
-        var logoutLink = document.getElementById('logoutLink');
-        if (!logoutLink) {
+        var logoutLinks = document.querySelectorAll('#logoutLink, #mobileLogoutLink');
+        if (!logoutLinks.length) {
             return;
         }
 
-        logoutLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            var webLogoutUrl = logoutLink.getAttribute('href') || '/logout';
+        logoutLinks.forEach(function(logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                var webLogoutUrl = logoutLink.getAttribute('href') || '/logout';
 
-            var doWebLogout = function() {
-                window.location.href = webLogoutUrl;
-            };
+                var doWebLogout = function() {
+                    window.location.href = webLogoutUrl;
+                };
 
-            if (!window.TaskApiClient || typeof window.TaskApiClient.logout !== 'function') {
-                doWebLogout();
-                return;
-            }
-
-            window.TaskApiClient.logout()
-                .catch(function() {
-                    if (typeof window.TaskApiClient.clearTokenPair === 'function') {
-                        window.TaskApiClient.clearTokenPair();
-                    }
-                })
-                .finally(function() {
+                if (!window.TaskApiClient || typeof window.TaskApiClient.logout !== 'function') {
                     doWebLogout();
-                });
+                    return;
+                }
+
+                window.TaskApiClient.logout()
+                    .catch(function() {
+                        if (typeof window.TaskApiClient.clearTokenPair === 'function') {
+                            window.TaskApiClient.clearTokenPair();
+                        }
+                    })
+                    .finally(function() {
+                        doWebLogout();
+                    });
+            });
         });
     })();
 </script>
