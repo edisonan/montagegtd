@@ -28,6 +28,10 @@
                         <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
                     </div>
 
+                    <a href="{{ url('/courses') }}" class="btn btn-outline">
+                        <i class="fas fa-book mr-2"></i>
+                        我的课程
+                    </a>
                     <a href="{{ url('/courses/create') }}" class="btn btn-primary">
                         <i class="fas fa-plus-circle mr-2"></i>
                         创建课程
@@ -284,8 +288,7 @@
                 '<div class="flex items-center justify-between"><div class="flex items-center gap-2"><a href="/courses/' + Number(course.id) + '" class="btn btn-primary btn-sm">查看详情</a></div>' +
                 '<div class="flex items-center gap-2">' +
                 statusActions +
-                '<a href="/courses/' + Number(course.id) + '/edit" class="btn btn-outline btn-sm" title="编辑课程"><i class="fas fa-edit"></i></a>' +
-                '<a href="/courses/' + Number(course.id) + '/items" class="btn btn-outline btn-sm" title="完整章节管理（含测验编辑）"><i class="fas fa-list-alt"></i></a>' +
+                '<a href="/courses/' + Number(course.id) + '/manage" class="btn btn-outline btn-sm" title="课程管理（基础信息 / 章节 / 测试 / 制品）"><i class="fas fa-cog"></i></a>' +
                 '<button onclick="deleteCreatedCourse(' + Number(course.id) + ', \'' + title.replace(/'/g, "\\'") + '\')" class="btn btn-outline btn-sm text-red-600 border-red-200 hover:bg-red-50" title="删除课程"><i class="fas fa-trash-alt"></i></button>' +
                 '</div></div></div></div></div>';
         }
