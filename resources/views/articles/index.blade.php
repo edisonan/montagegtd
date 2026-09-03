@@ -3521,6 +3521,7 @@
             $("#unable_desc_btn").on('click', function() {
                 var isChecked = !$('#unable_desc').is(':checked');
                 $('#unable_desc').prop('checked', isChecked);
+                unableDesc = isChecked;
                 syncToolButtons();
                 $.cookie('unable_desc', isChecked, { expires: 365, path: '/' });
 
@@ -3546,6 +3547,20 @@
                     var $readMoreBtn = $card.find('.read-more-btn');
 
                     $articleContent.hide();
+
+                    // 补齐一目十行快捷操作（展开/收起 + 稍后阅读）：
+                    // 列表渲染时仅当 cookie 已开启一目十行才会生成 quick-actions，
+                    // 若用户是在当前页面点击开关开启（渲染时未开启），这里需要动态补上，
+                    // 否则内容被隐藏、footer 被折叠后卡片上既没有展开折叠也没有稍后阅读。
+                    if ($card.find('.quick-actions').length === 0) {
+                        var subId = $card.attr('id').replace('article-', '');
+                        var isLaterActive = $card.find('.set_read_later').hasClass('active');
+                        var quickHtml = '<div class="quick-actions">'
+                            + '<button type="button" class="quick-btn set_read_later_another ' + (isLaterActive ? 'active' : '') + '" data-article-id="' + subId + '">稍后阅读</button>'
+                            + '<button type="button" class="quick-btn expand-btn" data-article-id="' + subId + '">展开/收起</button>'
+                            + '</div>';
+                        $card.find('.article-meta').append(quickHtml);
+                    }
 
                     // 获取文章内容文本
                     var contentText = $content.text().trim();
@@ -3598,6 +3613,9 @@
                     $content.siblings('.read-more').hide();
                     syncArticleFooter($card);
                 });
+                // 移除一目十行专用的快捷操作按钮（渲染时或动态补齐生成的），
+                // 否则 footer 恢复显示后会与「稍后阅读 / 展开收起」重复
+                $('.article-card .quick-actions').remove();
             }
 
             // 图片点击恢复功能
