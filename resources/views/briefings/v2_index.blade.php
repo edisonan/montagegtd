@@ -160,10 +160,12 @@
                         if (scope === 'by_category') return cats.length + ' 个分类';
                         return '全部订阅源';
                     })(cfg.scope, cfg.feed_ids || [], cfg.category_ids || [])
-                    + ' · v1 最近 ' + v1Time + ' · 已生成 ' + (cfg.v2_page_count || 0) + ' 期</div>'
+                    + ' · 最近 ' + v1Time + ' · 已生成 ' + (cfg.v2_page_count || 0) + ' 期</div>'
                     + '<div class="bf-config-meta">' + v2Info + '</div>'
                     + '<div class="bf-config-actions">'
                     + '<button class="bf-mini-btn primary gen" data-id="' + cfg.id + '"><i class="fas fa-bolt mr-1"></i>立即生成</button>'
+                    + '<a class="bf-mini-btn" href="/briefings/config/' + cfg.id + '">编辑</a>'
+                    + '<button class="bf-mini-btn danger del" data-id="' + cfg.id + '">删除</button>'
                     + (latest ? '<a class="bf-mini-btn" href="/briefings/' + latest.id + '">查看最新</a>' : '')
                     + '</div>';
                 wrap.appendChild(div);
@@ -208,24 +210,35 @@
         }
 
         document.getElementById('configList').addEventListener('click', function(e){
-            var btn = e.target.closest('.bf-mini-btn.gen');
-            if (!btn || generating) return;
+            var btn = e.target.closest('.bf-mini-btn');
+            if (!btn) return;
             var id = btn.getAttribute('data-id');
-            generating = true;
-            showMask(true);
-            window.taskApiFetch('/api/v2/briefings/configs/' + id + '/generate', { method: 'POST' }).then(function(r){ return r.json(); }).then(function(data){
-                generating = false;
-                showMask(false);
-                if (data.code === 9999 && data.result && data.result.page_id) {
-                    window.location.href = '/briefings/' + data.result.page_id;
-                } else {
-                    alert('生成失败：' + (data.msg || '未知错误'));
-                }
-            }).catch(function(err){
-                generating = false;
-                showMask(false);
-                alert('生成失败，请重试');
-            });
+            if (btn.classList.contains('gen')) {
+                if (generating) return;
+                generating = true;
+                showMask(true);
+                window.taskApiFetch('/api/v2/briefings/configs/' + id + '/generate', { method: 'POST' }).then(function(r){ return r.json(); }).then(function(data){
+                    generating = false;
+                    showMask(false);
+                    if (data.code === 9999 && data.result && data.result.page_id) {
+                        window.location.href = '/briefings/' + data.result.page_id;
+                    } else {
+                        alert('生成失败：' + (data.msg || '未知错误'));
+                    }
+                }).catch(function(){
+                    generating = false;
+                    showMask(false);
+                    alert('生成失败，请重试');
+                });
+            } else if (btn.classList.contains('del')) {
+                if (!confirm('确定删除该配置？')) return;
+                window.taskApiFetch('/api/v2/briefings/configs/' + id, { method: 'DELETE' }).then(function(r){ return r.json(); }).then(function(data){
+                    if (data.code === 9999) {
+                        selectedConfigId = null;
+                        loadConfigs();
+                    } else { alert(data.msg || '删除失败'); }
+                });
+            }
         });
 
         document.addEventListener('DOMContentLoaded', function () { whenReady(loadConfigs); });
