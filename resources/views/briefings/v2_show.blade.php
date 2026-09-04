@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', '文章简报 v2 详情 - 蒙太奇')
-@section('description', '查看文章简报 v2 详情')
+@section('title', '文章简报详情 - 蒙太奇')
+@section('description', '查看文章简报详情')
 
 @section('content')
     <style>
@@ -52,8 +52,7 @@
     <div class="bf-show">
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-4">
-                <a href="/briefings-v2" class="text-sm text-emerald-700 hover:underline"><i class="fas fa-arrow-left mr-1"></i>返回 v2 列表</a>
-                <a href="/briefings" class="text-sm text-indigo-600 hover:underline"><i class="fas fa-file-alt mr-1"></i>对比 v1</a>
+                <a href="/briefings" class="text-sm text-emerald-700 hover:underline"><i class="fas fa-arrow-left mr-1"></i>返回简报列表</a>
             </div>
             <button id="refreshBtn" class="text-sm text-emerald-700 hover:underline"><i class="fas fa-sync-alt mr-1"></i>刷新</button>
         </div>
@@ -282,7 +281,7 @@
         function load() {
             var root = document.getElementById('briefingRoot');
             root.innerHTML = '<div class="text-gray-500 text-center py-10">加载中...</div>';
-            window.taskApiFetch('/api/v2/briefings-v2/pages/' + pageId).then(function(r){ return r.json(); }).then(function(data){
+            window.taskApiFetch('/api/v2/briefings/pages/' + pageId).then(function(r){ return r.json(); }).then(function(data){
                 if (data.code !== 9999 || !data.result || !data.result.page) { root.innerHTML = '<div class="bf-empty">简报不存在或已删除</div>'; return; }
                 window.__briefingTags = (data.result.page.tag_aggregation || []).slice();
                 root.innerHTML = render(data.result);

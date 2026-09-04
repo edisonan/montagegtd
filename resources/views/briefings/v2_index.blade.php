@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', '文章简报 v2 - 蒙太奇')
-@section('description', '简报 v2 对比版：独立管线的生成结果，可随时与 v1 对照')
+@section('title', '文章简报 - 蒙太奇')
+@section('description', '配置文章简报并查看生成的简报结果')
 
 @section('content')
     <style>
@@ -42,12 +42,10 @@
     <div class="briefing-page">
         <div class="bf-topbar">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900"><i class="fas fa-clone mr-2 text-emerald-600"></i>文章简报 v2</h1>
-                <p class="text-gray-500 text-sm mt-1">对比版管线：max_tokens 4096 · 标签聚合移出 LLM · 失败自动重试 · 与 v1 同口径候选</p>
+                <h1 class="text-2xl font-bold text-gray-900"><i class="fas fa-file-alt mr-2 text-emerald-600"></i>文章简报</h1>
+                <p class="text-gray-500 text-sm mt-1">汇聚近期热点、趋势、待观察信号与标签聚合，多佐证 · 高 token 预算 · 失败自动重试</p>
             </div>
-            <div class="flex gap-3">
-                <a href="/briefings" class="bf-btn bf-btn-ghost"><i class="fas fa-file-alt mr-1"></i>对比 v1 简报</a>
-            </div>
+            <a href="/briefings/config" class="bf-btn bf-btn-new"><i class="fas fa-plus mr-1"></i>新建简报配置</a>
         </div>
 
         <div class="bf-layout">
@@ -65,7 +63,7 @@
             <!-- 右：v2 简报历史 -->
             <div class="bf-panel">
                 <div class="bf-panel-head">
-                    <span class="bf-panel-title"><i class="fas fa-newspaper mr-1 text-emerald-600"></i>生成的简报 v2</span>
+                    <span class="bf-panel-title"><i class="fas fa-newspaper mr-1 text-emerald-600"></i>生成的简报</span>
                     <span id="pageCount" class="text-xs text-gray-400"></span>
                 </div>
                 <div id="pageList">
@@ -95,7 +93,7 @@
                     mask = document.createElement('div');
                     mask.id = 'genMask';
                     mask.className = 'generating-mask';
-                    mask.innerHTML = '<div class="text-center"><div class="inline-block animate-spin text-emerald-600 mb-3"><i class="fas fa-circle-notch fa-3x"></i></div><div class="text-gray-700 font-semibold">正在生成 v2 简报，请稍候（约 10~30 秒）...</div></div>';
+                    mask.innerHTML = '<div class="text-center"><div class="inline-block animate-spin text-emerald-600 mb-3"><i class="fas fa-circle-notch fa-3x"></i></div><div class="text-gray-700 font-semibold">正在立即生成 简报，请稍候（约 10~30 秒）...</div></div>';
                     document.body.appendChild(mask);
                 }
                 mask.style.display = 'flex';
@@ -108,7 +106,7 @@
             var wrap = document.getElementById('configList');
             wrap.innerHTML = '<div class="bf-empty">加载中...</div>';
             if (!window.taskApiFetch) { showLoadError('前端 API 尚未就绪，请刷新重试'); return; }
-            window.taskApiFetch('/api/v2/briefings-v2/configs').then(function(r){ return r.json(); }).then(function(data){
+            window.taskApiFetch('/api/v2/briefings/configs').then(function(r){ return r.json(); }).then(function(data){
                 if (!data || data.code !== 9999) { showLoadError('加载配置失败：' + ((data && data.msg) || '未知错误')); return; }
                 configs = (data.result && data.result.configs) ? data.result.configs : [];
                 document.getElementById('configCount').textContent = configs.length + ' 个';
@@ -138,7 +136,7 @@
             var wrap = document.getElementById('configList');
             wrap.innerHTML = '';
             if (!configs.length) {
-                wrap.innerHTML = '<div class="bf-empty">还没有简报配置，请到 <a href="/briefings/config" class="text-emerald-600 underline">v1 简报配置</a> 创建</div>';
+                wrap.innerHTML = '<div class="bf-empty">还没有简报配置，请到 <a href="/briefings/config" class="text-emerald-600 underline">简报配置</a> 创建</div>';
                 return;
             }
             configs.forEach(function(cfg){
@@ -147,8 +145,8 @@
                 var latest = cfg.latest_v2_page;
                 var v1Time = cfg.last_generated_at ? cfg.last_generated_at.replace('T',' ').substring(5,16) : '未生成';
                 var v2Info = latest
-                    ? ('v2 最新：' + esc(latest.title) + '（' + latest.generated_at.replace('T',' ').substring(5,16) + '）')
-                    : 'v2 尚未生成，点击下方「生成 v2」开始对比';
+                    ? ('最新：' + esc(latest.title) + '（' + latest.generated_at.replace('T',' ').substring(5,16) + '）')
+                    : '尚未生成，点击下方「立即生成」开始';
                 div.innerHTML =
                     '<div class="flex items-center gap-2">'
                     + '<i class="fas ' + (cfg.enabled ? 'fa-toggle-on text-green-500' : 'fa-toggle-off text-gray-300') + '"></i>'
@@ -162,18 +160,18 @@
                         if (scope === 'by_category') return cats.length + ' 个分类';
                         return '全部订阅源';
                     })(cfg.scope, cfg.feed_ids || [], cfg.category_ids || [])
-                    + ' · v1 最近 ' + v1Time + ' · v2 已生成 ' + (cfg.v2_page_count || 0) + ' 期</div>'
+                    + ' · v1 最近 ' + v1Time + ' · 已生成 ' + (cfg.v2_page_count || 0) + ' 期</div>'
                     + '<div class="bf-config-meta">' + v2Info + '</div>'
                     + '<div class="bf-config-actions">'
-                    + '<button class="bf-mini-btn primary gen" data-id="' + cfg.id + '"><i class="fas fa-bolt mr-1"></i>生成 v2</button>'
-                    + (latest ? '<a class="bf-mini-btn" href="/briefings-v2/' + latest.id + '">查看最新</a>' : '')
+                    + '<button class="bf-mini-btn primary gen" data-id="' + cfg.id + '"><i class="fas fa-bolt mr-1"></i>立即生成</button>'
+                    + (latest ? '<a class="bf-mini-btn" href="/briefings/' + latest.id + '">查看最新</a>' : '')
                     + '</div>';
                 wrap.appendChild(div);
             });
         }
 
         function loadPages(configId) {
-            var url = '/api/v2/briefings-v2/pages';
+            var url = '/api/v2/briefings/pages';
             if (selectedConfigId) { url += '?config_id=' + selectedConfigId; }
             window.taskApiFetch(url).then(function(r){ return r.json(); }).then(function(data){
                 var pages = (data.result && data.result.pages) ? data.result.pages : [];
@@ -181,7 +179,7 @@
                 var wrap = document.getElementById('pageList');
                 wrap.innerHTML = '';
                 if (!pages.length) {
-                    wrap.innerHTML = '<div class="bf-empty">还没有 v2 简报，选择配置点击「生成 v2」对比</div>';
+                    wrap.innerHTML = '<div class="bf-empty">还没有简报，选择配置点击「立即生成」</div>';
                     return;
                 }
                 pages.forEach(function(p){
@@ -198,7 +196,7 @@
                         + '<div class="bf-page-meta">'
                         + '<span class="bf-badge">' + esc(p.topic_count) + ' 主题</span>'
                         + '<span class="bf-page-time">' + (p.generated_at ? esc(p.generated_at.replace('T',' ').substring(5,16)) : '') + '</span>'
-                        + '<a href="/briefings-v2/' + p.id + '" class="text-emerald-600 text-sm hover:underline"><i class="fas fa-eye"></i></a>'
+                        + '<a href="/briefings/' + p.id + '" class="text-emerald-600 text-sm hover:underline"><i class="fas fa-eye"></i></a>'
                         + '</div>';
                     wrap.appendChild(div);
                 });
@@ -215,11 +213,11 @@
             var id = btn.getAttribute('data-id');
             generating = true;
             showMask(true);
-            window.taskApiFetch('/api/v2/briefings-v2/configs/' + id + '/generate', { method: 'POST' }).then(function(r){ return r.json(); }).then(function(data){
+            window.taskApiFetch('/api/v2/briefings/configs/' + id + '/generate', { method: 'POST' }).then(function(r){ return r.json(); }).then(function(data){
                 generating = false;
                 showMask(false);
                 if (data.code === 9999 && data.result && data.result.page_id) {
-                    window.location.href = '/briefings-v2/' + data.result.page_id;
+                    window.location.href = '/briefings/' + data.result.page_id;
                 } else {
                     alert('生成失败：' + (data.msg || '未知错误'));
                 }

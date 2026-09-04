@@ -157,16 +157,11 @@ Route::group([
     Route::get('/article/proxyview', 'ArticleController@proxyView');
 
     // 文章简报
-    Route::get('/briefings', 'BriefingController@index');
+    Route::get('/briefings', 'BriefingV2Controller@index');
     Route::get('/briefings/config', 'BriefingController@config');
     Route::get('/briefings/config/{id}', 'BriefingController@config');
-    Route::get('/briefings/generate/{configId}', 'BriefingController@generate');
-    Route::get('/briefings/{id}', 'BriefingController@show');
-
-    // 文章简报 v2（对比版管线）：独立页面，与 v1 数据隔离
-    Route::get('/briefings-v2', 'BriefingV2Controller@index');
-    Route::get('/briefings-v2/generate/{configId}', 'BriefingV2Controller@generate');
-    Route::get('/briefings-v2/{id}', 'BriefingV2Controller@show');
+    Route::get('/briefings/generate/{configId}', 'BriefingV2Controller@generate');
+    Route::get('/briefings/{id}', 'BriefingV2Controller@show');
 
     Route::get('/focuss', 'FocusController@index');
     Route::get('/focusstoday', 'FocusController@todayFocuss');

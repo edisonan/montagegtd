@@ -172,12 +172,9 @@ Route::prefix('v2')->group(function () {
         Route::get('/digest/profile', 'Api\\V2\\DigestController@profile');
         Route::get('/digest/pages', 'Api\\V2\\DigestController@pages');
         Route::get('/digest/pages/{id}', 'Api\\V2\\DigestController@showPage');
-        Route::get('/briefings/configs', 'Api\\V2\\BriefingController@configs');
-        Route::get('/briefings/pages', 'Api\\V2\\BriefingController@pages');
-        Route::get('/briefings/pages/{id}', 'Api\\V2\\BriefingController@showPage');
-        Route::get('/briefings-v2/configs', 'Api\\V2\\BriefingV2Controller@configs');
-        Route::get('/briefings-v2/pages', 'Api\\V2\\BriefingV2Controller@pages');
-        Route::get('/briefings-v2/pages/{id}', 'Api\\V2\\BriefingV2Controller@showPage');
+        Route::get('/briefings/configs', 'Api\\V2\\BriefingV2Controller@configs');
+        Route::get('/briefings/pages', 'Api\\V2\\BriefingV2Controller@pages');
+        Route::get('/briefings/pages/{id}', 'Api\\V2\\BriefingV2Controller@showPage');
     });
 
     // Code 的访问策略由应用/文件自身决定，默认公开；PAT 模式由 code.access 校验。
@@ -313,10 +310,8 @@ Route::prefix('v2')->group(function () {
         Route::post('/digest/pages/generate', 'Api\\V2\\DigestController@generate');
         Route::post('/briefings/configs', 'Api\\V2\\BriefingController@saveConfig');
         Route::delete('/briefings/configs/{id}', 'Api\\V2\\BriefingController@destroyConfig');
-        Route::post('/briefings/configs/{configId}/generate', 'Api\\V2\\BriefingController@generate');
-        Route::delete('/briefings/pages/{id}', 'Api\\V2\\BriefingController@destroyPage');
-        Route::post('/briefings-v2/configs/{configId}/generate', 'Api\\V2\\BriefingV2Controller@generate');
-        Route::delete('/briefings-v2/pages/{id}', 'Api\\V2\\BriefingV2Controller@destroyPage');
+        Route::post('/briefings/configs/{configId}/generate', 'Api\\V2\\BriefingV2Controller@generate');
+        Route::delete('/briefings/pages/{id}', 'Api\\V2\\BriefingV2Controller@destroyPage');
         Route::delete('/articles/{articleSub}', 'Api\\V2\\ArticleController@destroy');
 
         Route::post('/artifacts/generate', 'Api\\V2\\ArtifactController@generate');

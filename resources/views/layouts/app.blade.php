@@ -135,7 +135,6 @@
                                     ['url'=>'/articles?status=read_later', 'label'=>'稍后阅读', 'icon'=>'fas fa-bookmark'],
                                     ['url'=>'/articles?status=star', 'label'=>'收藏文章', 'icon'=>'fas fa-star'],
                                     ['url'=>'/briefings', 'label'=>'文章简报', 'icon'=>'fas fa-file-alt'],
-                                    ['url'=>'/briefings-v2', 'label'=>'简报v2', 'icon'=>'fas fa-clone'],
                                     ['url'=>'/feeds', 'label'=>'订阅管理', 'icon'=>'fas fa-rss'],
                                     ['url'=>'/feeds/explorer', 'label'=>'探索发现', 'icon'=>'fas fa-compass'],
                                 ]
