@@ -970,7 +970,7 @@
         $('regenerateBtn').onclick = regenerate;
         $('clearBtn').onclick = clearSession;
         $('deleteBtn').onclick = deleteSession;
-        $('exportBtn').onclick = exportSession;
+        if ($('exportBtn')) $('exportBtn').onclick = exportSession;
         $('clearUnpinnedBtn').onclick = async function () {
             var removable = state.sessions.filter(function (session) { return !session.is_pinned; });
             if (!removable.length) return toast('没有可清理的会话', 'info');

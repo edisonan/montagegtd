@@ -1729,6 +1729,18 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reading-page">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 articles-layout{{ request()->cookie('articles_sidebar_collapsed') === 'true' ? ' sidebar-collapsed' : '' }}" id="articlesLayout">
+            {{-- 移动端/窄屏：首帧即折叠订阅目录，避免先渲染"加载中"侧栏再隐藏的闪烁；
+                 feed 目录数据（/articles/navinfo）仅在用户点开"订阅目录"按钮时按需请求（懒加载） --}}
+            <script>
+                (function () {
+                    if (window.matchMedia && window.matchMedia('(max-width: 1024px)').matches) {
+                        var layoutEl = document.getElementById('articlesLayout');
+                        if (layoutEl) {
+                            layoutEl.classList.add('sidebar-collapsed');
+                        }
+                    }
+                })();
+            </script>
             <!-- 侧边栏导航 -->
             <div class="lg:col-span-1" id="sidebarColumn">
                 <div class="reading-sidebar">
@@ -1749,10 +1761,10 @@
 
                     <div class="sidebar-body" id="navBody">
                         <ul class="category-list" id="nav">
-                            <!-- 动态加载订阅 -->
-                            <li class="text-center py-4 text-gray-500">
-                                <i class="fas fa-spinner fa-spin mr-2"></i>
-                                加载中...
+                            <!-- 动态加载订阅：移动端/窄屏默认折叠目录，点开"订阅目录"按钮时才请求加载 -->
+                            <li class="text-center py-4 text-gray-400">
+                                <i class="fas fa-folder-open mr-2"></i>
+                                点击上方 ☰ 加载订阅目录
                             </li>
                         </ul>
                     </div>
@@ -2730,7 +2742,9 @@
             const NAV_STORAGE_TIMESTAMP_KEY = 'nav_storage_timestamp';
             const STORAGE_EXPIRY_HOURS = 2; // 存储过期时间（小时）
 
-            // 主处理函数 - 优先从localStorage加载，没有则请求远程
+            // 主处理函数 - 优先从localStorage加载，没有则请求远程。
+            // 懒加载开关：目录处于折叠态（移动端/窄屏默认折叠、桌面手动折叠）时直接跳过，
+            // 保证 /articles/navinfo 只在用户展开订阅目录后才请求。
             function processNav(status) {
                 if (processNavFlag || navRequestInFlight || $('#articlesLayout').hasClass('sidebar-collapsed')) {
                     return;
@@ -3651,7 +3665,9 @@
                     });
                 }
 
-                if (!isCollapsed && !processNavFlag) {
+                // 懒加载：目录折叠时不请求 feed 目录数据；只有展开（用户点开订阅目录）时才加载。
+                // 移动端/窄屏进入页面时目录默认为折叠，因此 navinfo 请求只发生在用户主动点开目录之后。
+                if (!isCollapsed && !processNavFlag && !navRequestInFlight) {
                     processNav(status);
                 }
             }
@@ -3662,6 +3678,7 @@
                 // 与 CSS 断点(1024px)保持一致：窄屏一律默认折叠订阅目录，
                 // 避免仅依赖 UA 判断(部分手机 webview / 桌面模式 / 平板检测不到)时
                 // 在手机上仍加载 feed 目录数据。目录改为点击“订阅目录”时才懒加载。
+                // （首帧折叠由页面内联脚本在布局渲染前完成，避免闪现"加载中"侧栏）
                 var narrowScreen = window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
 
                 setSidebarCollapsed(isMobile || narrowScreen, false);

@@ -412,7 +412,7 @@
                             课程结构
                         </h3>
                         <div class="flex items-center gap-2">
-                            <a href="javascript:void(0)" id="fullManageLink" class="hidden text-gray-400 hover:text-blue-600 transition" title="完整章节管理（含测验编辑）" style="display:none">
+                            <a href="javascript:void(0)" id="fullManageLink" class="hidden text-gray-400 hover:text-blue-600 transition" title="课程管理（基础信息 / 章节 / 测试 / 制品）" style="display:none">
                                 <i class="fas fa-cog"></i>
                             </a>
                             <button type="button" id="btnAddTopItem" class="hidden btn-course btn-course-primary btn-course-sm" style="display:none">
@@ -575,7 +575,7 @@
             if (!box.length) return;
             var html = '';
             if (isOwner) {
-                html += '<a href="/courses/' + Number(course.id) + '/edit" class="btn-course btn-course-secondary"><i class="fas fa-edit mr-2"></i>编辑课程</a>';
+                html += '<a href="/courses/' + Number(course.id) + '/manage" class="btn-course btn-course-secondary"><i class="fas fa-cog mr-2"></i>管理课程</a>';
                 var st = Number(course.public_status || 1);
                 if (st === 1) {
                     html += '<button type="button" onclick="submitCourseReview(' + Number(course.id) + ', \'request-public\')" class="btn-course btn-course-primary"><i class="fas fa-eye mr-2"></i>提交公开审核</button>';
@@ -605,7 +605,7 @@
             var manageLink = $('#fullManageLink');
             manageLink.toggle(isOwner).css('display', isOwner ? '' : 'none');
             if (isOwner) {
-                manageLink.attr('href', '/courses/' + Number(course.id) + '/items');
+                manageLink.attr('href', '/courses/' + Number(course.id) + '/manage');
             }
         }
 
@@ -1051,7 +1051,7 @@
                 + '<i class="fas fa-question-circle text-4xl text-gray-300 mb-3" style="display:block"></i>'
                 + '<p class="text-gray-600 mb-1">' + escapeHtml(msg || '该章节还没有配置小测试') + '</p>'
                 + '<p class="text-xs text-gray-400 mb-5">可以稍后再来看看，或联系课程创建者补充测验。</p>'
-                + (IS_OWNER ? '<a href="/courses/' + COURSE_DETAIL_ID + '/items" class="btn-course btn-course-primary btn-course-sm"><i class="fas fa-cog mr-1"></i>去配置测验</a> ' : '')
+                + (IS_OWNER ? '<a href="/courses/' + COURSE_DETAIL_ID + '/manage?tab=tests" class="btn-course btn-course-primary btn-course-sm"><i class="fas fa-cog mr-1"></i>去配置测验</a> ' : '')
                 + '<button type="button" class="btn-course btn-course-secondary btn-course-sm" onclick="closeQuiz()">关闭</button>'
                 + '</div>';
             $('#quizLoading').html(html).removeClass('hidden');

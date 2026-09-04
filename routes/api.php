@@ -144,6 +144,8 @@ Route::prefix('v2')->group(function () {
         Route::get('/courses/{id}', 'Api\\V2\\CourseController@show');
         Route::get('/courses/{courseId}/items', 'Api\\V2\\CourseItemController@index');
         Route::get('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@show');
+        Route::get('/courses/{courseId}/quiz-status', 'Api\\V2\\CourseQuizController@status');
+        Route::get('/courses/{courseId}/artifact-status', 'Api\\V2\\ArtifactController@statusForCourse');
         Route::get('/course-items/structure/{courseId}', 'Api\\V2\\CourseItemController@getStructure');
         Route::get('/course-items/{id}', 'Api\\V2\\CourseItemController@show');
         Route::get('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@show');
@@ -173,6 +175,9 @@ Route::prefix('v2')->group(function () {
         Route::get('/briefings/configs', 'Api\\V2\\BriefingController@configs');
         Route::get('/briefings/pages', 'Api\\V2\\BriefingController@pages');
         Route::get('/briefings/pages/{id}', 'Api\\V2\\BriefingController@showPage');
+        Route::get('/briefings-v2/configs', 'Api\\V2\\BriefingV2Controller@configs');
+        Route::get('/briefings-v2/pages', 'Api\\V2\\BriefingV2Controller@pages');
+        Route::get('/briefings-v2/pages/{id}', 'Api\\V2\\BriefingV2Controller@showPage');
     });
 
     // Code 的访问策略由应用/文件自身决定，默认公开；PAT 模式由 code.access 校验。
@@ -251,6 +256,8 @@ Route::prefix('v2')->group(function () {
         Route::put('/focuss/{focus}', 'Api\\V2\\FocusController@update');
         Route::delete('/focuss/{focus}', 'Api\\V2\\FocusController@destroy');
 
+        Route::post('/tasks/ai-parse', 'Api\\V2\\TaskController@aiParse');
+
         Route::post('/notes', 'Api\\V2\\NoteController@store');
         Route::post('/notes/upload', 'Api\\V2\\NoteController@upload');
         Route::put('/notes/{note}', 'Api\\V2\\NoteController@update');
@@ -308,9 +315,12 @@ Route::prefix('v2')->group(function () {
         Route::delete('/briefings/configs/{id}', 'Api\\V2\\BriefingController@destroyConfig');
         Route::post('/briefings/configs/{configId}/generate', 'Api\\V2\\BriefingController@generate');
         Route::delete('/briefings/pages/{id}', 'Api\\V2\\BriefingController@destroyPage');
+        Route::post('/briefings-v2/configs/{configId}/generate', 'Api\\V2\\BriefingV2Controller@generate');
+        Route::delete('/briefings-v2/pages/{id}', 'Api\\V2\\BriefingV2Controller@destroyPage');
         Route::delete('/articles/{articleSub}', 'Api\\V2\\ArticleController@destroy');
 
         Route::post('/artifacts/generate', 'Api\\V2\\ArtifactController@generate');
+        Route::post('/artifacts/generate-batch', 'Api\\V2\\ArtifactController@generateBatch');
         Route::post('/artifacts/{artifact}/to-mind', 'Api\\V2\\ArtifactController@toMind');
         Route::delete('/artifacts/{artifact}', 'Api\\V2\\ArtifactController@destroy');
 
@@ -339,6 +349,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
         Route::put('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
         Route::post('/course-items/{id}/quiz/attempts', 'Api\\V2\\CourseQuizController@submit');
+        Route::post('/courses/{courseId}/quizzes/generate', 'Api\\V2\\CourseQuizController@generate');
         Route::delete('/course-items/{id}', 'Api\\V2\\CourseItemController@destroy');
         Route::post('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@store');
         Route::post('/courses/{courseId}/discussions/{id}/reply', 'Api\\V2\\DiscussionController@reply');

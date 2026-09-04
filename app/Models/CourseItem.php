@@ -21,6 +21,7 @@ class CourseItem extends Model
         'content_hash',
         'generated_at',
         'content_status',
+        'quiz_generation_error',
         'avg_rating',
         'avg_study_time',
         'completion_count'

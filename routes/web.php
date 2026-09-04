@@ -163,6 +163,11 @@ Route::group([
     Route::get('/briefings/generate/{configId}', 'BriefingController@generate');
     Route::get('/briefings/{id}', 'BriefingController@show');
 
+    // 文章简报 v2（对比版管线）：独立页面，与 v1 数据隔离
+    Route::get('/briefings-v2', 'BriefingV2Controller@index');
+    Route::get('/briefings-v2/generate/{configId}', 'BriefingV2Controller@generate');
+    Route::get('/briefings-v2/{id}', 'BriefingV2Controller@show');
+
     Route::get('/focuss', 'FocusController@index');
     Route::get('/focusstoday', 'FocusController@todayFocuss');
     Route::get('/focuss/start', 'FocusController@start');
@@ -271,6 +276,7 @@ Route::group([
     
     // 课程管理相关路由
     Route::get('/courses/{id}/edit', 'CourseController@edit');
+    Route::get('/courses/{id}/manage', 'CourseController@edit');
     Route::get('/courses/{id}/study', 'CourseController@study');
     Route::resource('courses', 'CourseController')->except(['edit', 'update', 'destroy']);
     Route::post('/courses/{id}/join', 'CourseController@joinCourse');

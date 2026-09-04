@@ -453,5 +453,12 @@
                 });
             });
         });
+
+        // 编辑任务弹窗保存成功后，无需整页刷新，直接重拉列表与统计
+        window.afterTaskUpdate = function () {
+            loadTaskStats().finally(function() {
+                loadTasks();
+            });
+        };
     </script>
 @endsection

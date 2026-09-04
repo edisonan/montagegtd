@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
 use App\Models\Artifact;
 use App\Models\ArtifactVersion;
+use App\Models\Course;
+use App\Models\CourseItem;
 use App\Services\ArtifactService;
 use App\Services\PointGrantService;
 use Illuminate\Http\Request;
@@ -192,6 +194,134 @@ class ArtifactController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'artifact' => $this->serializeArtifact($artifact, false),
             'generated' => $result['generated'],
+        )));
+    }
+
+    /**
+     * 课程各章节制品状态：GET /api/v2/courses/{courseId}/artifact-status
+     * 返回 { item_id: { artifact_type: status } } + { item_id: { artifact_type: error_message } }
+     */
+    public function statusForCourse(Request $request, $courseId)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        $course = Course::where('id', $courseId)->first();
+        if (!$course || (int)$course->created_by !== $userId) {
+            throw new CustomException('您没有权限管理此课程');
+        }
+
+        $itemIds = CourseItem::where('course_id', $course->id)->pluck('id')->all();
+        $artifacts = Artifact::where('user_id', $userId)
+            ->where('related_type', 'course_item')
+            ->whereIn('related_id', $itemIds ?: array(0))
+            ->get();
+
+        $map = array();
+        $errors = array();
+        foreach ($artifacts as $artifact) {
+            $itemId = (int)$artifact->related_id;
+            if (!isset($map[$itemId])) {
+                $map[$itemId] = array();
+            }
+            $map[$itemId][$artifact->artifact_type] = $artifact->status;
+            // 失败的制品带上失败理由，供课程管理页展示
+            if ($artifact->status === Artifact::STATUS_FAILED && !empty($artifact->error_message)) {
+                if (!isset($errors[$itemId])) {
+                    $errors[$itemId] = array();
+                }
+                $errors[$itemId][$artifact->artifact_type] = (string)$artifact->error_message;
+            }
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'artifact_map' => $map,
+            'artifact_errors' => $errors,
+        )));
+    }
+
+    /**
+     * 以章节为主线批量生成制品（支持多章节同时生成）：
+     * POST /api/v2/artifacts/generate-batch
+     * body: { related_type: 'course_item', item_ids: [..], artifact_type, force?, custom_prompt?, template_style? }
+     */
+    public function generateBatch(Request $request)
+    {
+        $this->validate($request, array(
+            'related_type' => 'required|string|max:32',
+            'artifact_type' => 'required|string|max:32',
+            'item_ids' => 'required|array',
+            'item_ids.*' => 'integer|min:1',
+        ));
+
+        $userId = (int)$this->getAuthUserId($request);
+        $relatedType = (string)$request->input('related_type');
+        $artifactType = (string)$request->input('artifact_type');
+        $itemIds = array_values(array_unique(array_map('intval', $request->input('item_ids', array()))));
+        if (empty($itemIds)) {
+            throw new CustomException('请至少选择一个章节');
+        }
+        if (count($itemIds) > 50) {
+            throw new CustomException('单次生成章节数不能超过 50 个');
+        }
+        if ($relatedType !== 'course_item') {
+            throw new CustomException('批量生成仅支持课程章节（course_item）');
+        }
+
+        // 校验章节归属：属于当前用户创建的课程
+        $items = CourseItem::with('course')->whereIn('id', $itemIds)->get()->keyBy('id');
+        $options = array(
+            'force' => (int)$request->input('force', 0) === 1,
+            'custom_prompt' => (string)$request->input('custom_prompt', ''),
+            'template_style' => (string)$request->input('template_style', 'magazine'),
+        );
+
+        $results = array();
+        $successCount = 0;
+        $failCount = 0;
+        $reusedCount = 0;
+        foreach ($itemIds as $itemId) {
+            $item = $items->get($itemId);
+            if (!$item || !$item->course || (int)$item->course->created_by !== $userId) {
+                $failCount++;
+                $results[] = array('item_id' => $itemId, 'title' => '', 'success' => false, 'error' => '章节不存在或无权限');
+                continue;
+            }
+            try {
+                $result = $this->artifactService->ensure($userId, $relatedType, $itemId, $artifactType, $options);
+                $artifact = $result['artifact'];
+                if ($result['generated'] && $artifact->status === Artifact::STATUS_SUCCESS) {
+                    $this->grantPoints($request, $artifact);
+                }
+                if ($result['generated']) {
+                    $successCount++;
+                } else {
+                    $reusedCount++;
+                }
+                $results[] = array(
+                    'item_id' => (int)$itemId,
+                    'title' => $item->title,
+                    'success' => $artifact->status === Artifact::STATUS_SUCCESS,
+                    'artifact_id' => (int)$artifact->id,
+                    'artifact_type' => $artifact->artifact_type,
+                    'artifact_status' => $artifact->status,
+                    'generated' => $result['generated'],
+                    'error' => $artifact->error_message,
+                );
+            } catch (\Throwable $e) {
+                $failCount++;
+                $results[] = array(
+                    'item_id' => (int)$itemId,
+                    'title' => $item->title,
+                    'success' => false,
+                    'error' => mb_substr($e->getMessage(), 0, 200),
+                );
+            }
+        }
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'results' => $results,
+            'success_count' => $successCount,
+            'fail_count' => $failCount,
+            'reused_count' => $reusedCount,
         )));
     }
 

@@ -33,8 +33,7 @@
             <button class="ai-icon-btn ai-menu-btn" id="openSidebar" title="打开会话列表"><i class="fas fa-bars"></i></button>
             <div class="ai-topbar-context"><span class="ai-live-dot"></span><span id="topbarContext">准备开始</span></div>
             <div class="ai-topbar-actions">
-                <button class="ai-icon-btn" id="exportBtn" title="导出当前会话"><i class="fas fa-arrow-up-right-from-square"></i></button>
-                <span class="ai-avatar" title="当前账户">{{ mb_substr(Auth::user()->name, 0, 1) }}</span>
+                <a class="ai-agent-mgmt-btn" href="{{ url('/llm/agentmanagement') }}" title="智能体管理"><i class="fas fa-user-robot"></i><span>智能体管理</span></a>
             </div>
         </header>
 
@@ -142,6 +141,9 @@
     .ai-topbar-context{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px}
     .ai-live-dot{width:6px;height:6px;border-radius:50%;background:#3aa9ef;box-shadow:0 0 0 4px rgba(58,169,239,.14)}
     .ai-topbar-actions{display:flex;align-items:center;gap:8px}
+    .ai-agent-mgmt-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:9px;background:var(--brand-soft);color:var(--brand);font-size:11px;font-weight:500;text-decoration:none;cursor:pointer;transition:background .12s,box-shadow .12s}
+    .ai-agent-mgmt-btn:hover{background:var(--brand-soft-2);box-shadow:0 2px 8px rgba(65,118,230,.14)}
+    .ai-agent-mgmt-btn i{font-size:11px}
     .ai-icon-btn{width:30px;height:30px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;transition:background .12s,color .12s}
     .ai-icon-btn:hover{background:var(--hover);color:var(--ink)}
     .ai-avatar{width:26px;height:26px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--brand-soft-2);color:var(--brand);font-size:11px;font-weight:600}

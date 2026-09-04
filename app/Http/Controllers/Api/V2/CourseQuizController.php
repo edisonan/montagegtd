@@ -62,6 +62,57 @@ class CourseQuizController extends Controller
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array('attempts' => $attempts)));
     }
 
+    /**
+     * 课程各章节测试状态：GET /api/v2/courses/{courseId}/quiz-status
+     */
+    public function status(Request $request, $courseId)
+    {
+        $course = $this->getOwnedCourse($request, $courseId);
+        // 章节最近一次「AI 生成测试」的失败理由（成功生成或手动保存后会被清空）
+        $quizErrors = CourseItem::where('course_id', $course->id)
+            ->whereNotNull('quiz_generation_error')
+            ->where('quiz_generation_error', '<>', '')
+            ->pluck('quiz_generation_error', 'id')
+            ->all();
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'quiz_status' => $this->quizService->statusForCourse($course->id),
+            'quiz_errors' => $quizErrors,
+        )));
+    }
+
+    /**
+     * 以章节为主线批量生成测试：POST /api/v2/courses/{courseId}/quizzes/generate
+     * body: { item_ids: [..], question_count?: 5, passing_score?: 70 }
+     */
+    public function generate(Request $request, $courseId)
+    {
+        $course = $this->getOwnedCourse($request, $courseId);
+        $itemIds = $request->input('item_ids');
+        if (!is_array($itemIds) || empty($itemIds)) {
+            throw new CustomException('请至少选择一个章节');
+        }
+        if (count($itemIds) > 100) {
+            throw new CustomException('单次生成章节数不能超过 100 个');
+        }
+        $result = $this->quizService->generateForItems($course, $itemIds, array(
+            'question_count' => $request->input('question_count', 5),
+            'passing_score' => $request->input('passing_score', 70),
+        ));
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($result));
+    }
+
+    protected function getOwnedCourse(Request $request, $courseId)
+    {
+        $course = \App\Models\Course::where('id', $courseId)->first();
+        if (!$course) {
+            throw new CustomException('课程不存在');
+        }
+        if ((int)$course->created_by !== (int)$this->getAuthUserId($request)) {
+            throw new CustomException('您没有权限管理此课程');
+        }
+        return $course;
+    }
+
     protected function getAccessibleItem(Request $request, $itemId, $ownerOnly)
     {
         $item = CourseItem::find($itemId);

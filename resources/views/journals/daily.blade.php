@@ -872,6 +872,11 @@
                 }
             }
 
+            // 新增手账弹窗保存成功后，无需整页刷新，直接重拉当日数据
+            window.afterJournalCreate = function () {
+                loadData();
+            };
+
             loadData();
         });
     })();
