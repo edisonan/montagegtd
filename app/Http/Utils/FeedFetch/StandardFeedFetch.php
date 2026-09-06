@@ -45,7 +45,7 @@ class StandardFeedFetch implements FeedFetchBasic
             $published = $item->get_date('Y-m-j H:i:s');
             $imageUrl = CommonUtil::getImageFromHtmlText($content);
 
-            if (strtotime($published) < strtotime($previousweek)) {
+            if (empty($published) || strtotime($published) < strtotime($previousweek)) {
                 continue;
             }
 
