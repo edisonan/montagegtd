@@ -1725,6 +1725,13 @@
         @media (max-width: 768px) {
             .v2-filter-pop { right: auto; left: 0; width: 86vw; }
         }
+        /* 订阅目录占位文案：宽屏(>1024px)自动加载→显示加载中；窄屏(≤1024px)折叠懒加载→显示点击提示 */
+        .nav-loading-hint { display: none; }
+        .nav-lazy-hint { display: inline-flex; }
+        @media (min-width: 1025px) {
+            .nav-loading-hint { display: inline-flex; }
+            .nav-lazy-hint { display: none; }
+        }
     </style>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 reading-page">
@@ -1761,10 +1768,10 @@
 
                     <div class="sidebar-body" id="navBody">
                         <ul class="category-list" id="nav">
-                            <!-- 动态加载订阅：移动端/窄屏默认折叠目录，点开"订阅目录"按钮时才请求加载 -->
+                            <!-- 动态加载订阅：宽屏自动加载；窄屏(≤1024px)默认折叠目录，点开☰时才按需请求 -->
                             <li class="text-center py-4 text-gray-400">
-                                <i class="fas fa-folder-open mr-2"></i>
-                                点击上方 ☰ 加载订阅目录
+                                <span class="nav-loading-hint"><i class="fas fa-spinner fa-spin mr-2"></i>加载中...</span>
+                                <span class="nav-lazy-hint"><i class="fas fa-folder-open mr-2"></i>点击上方 ☰ 加载订阅目录</span>
                             </li>
                         </ul>
                     </div>
