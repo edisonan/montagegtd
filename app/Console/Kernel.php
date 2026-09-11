@@ -67,8 +67,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('focus_daily_reminder', array(
             1
         ))->dailyAt('13:40')->weekdays();
-        $schedule->command('focus_record_reminder')->cron('* 9-19 * * *');
-        $schedule->command('focus_rested_reminder')->cron('* 9-19 * * *');
+        // 专注完成记录提醒 / 休息完成提醒：9-23 点每分钟巡检，避免 19 点后完全不提醒
+        $schedule->command('focus_record_reminder')->cron('* 9-23 * * *');
+        $schedule->command('focus_rested_reminder')->cron('* 9-23 * * *');
 
         $schedule->command('statistics_daily', array(
             1

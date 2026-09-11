@@ -184,7 +184,8 @@ class FocusRepository {
 	 * @return unknown
 	 */
 	public function getAllListByBetweenEndTime($startTime, $endTime) {
-		return Focus::where ( 'status', 1 )->where ( 'end_time', '>', $startTime )->where ( 'end_time', '<', $endTime )->get ();
+		// 使用左闭右开区间 [startTime, endTime)，配合每分钟调度可无缝覆盖，避免 end_time 恰好落在分钟边界时漏提醒
+		return Focus::where ( 'status', 1 )->where ( 'end_time', '>=', $startTime )->where ( 'end_time', '<', $endTime )->get ();
 	}
 	
 	/**
@@ -196,7 +197,8 @@ class FocusRepository {
 	 * @return unknown
 	 */
 	public function getAllListByRestBetweenEndTime($startTime, $endTime) {
-		return Focus::where ( 'status', 2 )->where ( 'rest_end_time', '>', $startTime )->where ( 'rest_end_time', '<', $endTime )->get ();
+		// 使用左闭右开区间 [startTime, endTime)，避免 rest_end_time 恰好落在分钟边界时漏提醒
+		return Focus::where ( 'status', 2 )->where ( 'rest_end_time', '>=', $startTime )->where ( 'rest_end_time', '<', $endTime )->get ();
 	}
 	
 	/**

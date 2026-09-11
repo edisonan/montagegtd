@@ -814,11 +814,15 @@
         };
         let timer;
         let calibrationTimer;
+        let pomoReminderTimer;
         let mode = 1;
         const interval = 1000;
         const calibrationBaseInterval = 60000;
         const calibrationMaxInterval = 1800000;
-        const calibrationBackoffIntervals = [60000, 120000, 240000, 480000, 960000, 1800000];
+        // 划水/待记录提醒检查间隔：首次/最短 1 分钟，最长 5 分钟（原实现指数退避最长 30 分钟，导致提醒严重滞后）
+        const pomoReminderInterval = 60000;
+        const pomoReminderMaxInterval = 300000;
+        const calibrationBackoffMaxStep = 6;
         let remain = 0;
         let status = 1;
         const title = '蒙太奇 - 专注效率工具';
@@ -906,8 +910,24 @@
             showtasks();
             showfocuss();
 
-            // 启动指数退避校准定时器
+            // 启动状态校准定时器
             schedulePomoCalibration(calibrationBaseInterval);
+            // 启动独立的提醒检查定时器，保证番茄钟完成/划水提醒及时
+            schedulePomoReminderCheck();
+
+            // 页面重新可见时立即校准并检查提醒（后台标签页定时器会被浏览器节流）
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    return;
+                }
+                indexDebug('page visible: recalibrate and check reminder');
+                if (status === 2 || status === 4) {
+                    // 立即按墙上时钟补算倒计时，避免后台冻结导致番茄钟完成提醒延迟
+                    updatePomoCountdown();
+                }
+                maybeNotifyPomoReminder();
+                calibratePomoStatus();
+            });
 
             const pureModeToggle = document.getElementById('pureModeToggle');
             if (pureModeToggle) {
@@ -969,8 +989,13 @@
             remain = Number(data.current_focus_remain || 0);
             originalRemain = remain;
             totalTime = status === 2 ? 1500 : (status === 4 ? 300 : 1500);
-            activePomoStartTime = data.active_focus && data.active_focus.start_time ? data.active_focus.start_time : '';
-            activePomoEndTime = data.active_focus && data.active_focus.end_time ? data.active_focus.end_time : '';
+            const activeFocusData = data.active_focus || {};
+            activePomoStartTime = activeFocusData.start_time ? activeFocusData.start_time : '';
+            if (status === 4 && activeFocusData.rest_end_time) {
+                activePomoEndTime = activeFocusData.rest_end_time;
+            } else {
+                activePomoEndTime = activeFocusData.end_time ? activeFocusData.end_time : '';
+            }
 
             const focusIdInput = document.getElementById('focus_id');
             if (focusIdInput) {
@@ -1046,7 +1071,33 @@
             }, interval);
         }
 
+        // 兼容 Safari：'YYYY-MM-DD HH:mm:ss' 在 Safari 下 new Date 会解析失败
+        function parseServerDate(value) {
+            if (!value) {
+                return NaN;
+            }
+            if (value instanceof Date) {
+                return value.getTime();
+            }
+            if (typeof value === 'number') {
+                return value;
+            }
+            return new Date(String(value).replace(/-/g, '/')).getTime();
+        }
+
         function updatePomoCountdown() {
+            // 以服务端返回的结束时间为准推算剩余时间，避免后台标签页定时器节流导致的倒计时漂移/提醒延迟
+            if (activePomoEndTime) {
+                const endMs = parseServerDate(activePomoEndTime);
+                if (!isNaN(endMs)) {
+                    remain = Math.max(0, Math.round((endMs - Date.now()) / 1000));
+                } else {
+                    remain--;
+                }
+            } else {
+                remain--;
+            }
+
             if (remain <= 0) {
                 clearInterval(timer);
                 remain = 0;
@@ -1054,7 +1105,6 @@
                 return;
             }
 
-            remain--;
             updateDisplay();
         }
 
@@ -1248,6 +1298,12 @@
             return '';
         }
 
+        // 提醒间隔：按次退避但封顶 5 分钟，避免重复打扰，同时保证足够及时
+        function getPomoNotifyInterval() {
+            const intervalByStep = pomoReminderInterval * Math.pow(2, pomoNotifyBackoffStep);
+            return Math.min(intervalByStep, pomoReminderMaxInterval);
+        }
+
         function maybeNotifyPomoReminder() {
             const message = getPomoReminderMessage();
             if (!message) {
@@ -1262,7 +1318,7 @@
             const focusId = document.getElementById('focus_id') ? document.getElementById('focus_id').value : '';
             const notifyKey = status + ':' + (focusId || 'none');
             const now = Date.now();
-            const requiredInterval = calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+            const requiredInterval = getPomoNotifyInterval();
 
             if (notifyKey === lastPomoNotifyKey && lastPomoNotifyAt && now - lastPomoNotifyAt < requiredInterval) {
                 indexDebug('pomo notify skipped', {
@@ -1286,10 +1342,10 @@
             notify(message);
             lastPomoNotifyKey = notifyKey;
             lastPomoNotifyAt = now;
-            pomoNotifyBackoffStep = Math.min(pomoNotifyBackoffStep + 1, calibrationBackoffIntervals.length - 1);
-            indexDebug('pomo notify backoff advanced', {
+            pomoNotifyBackoffStep = Math.min(pomoNotifyBackoffStep + 1, calibrationBackoffMaxStep);
+            indexDebug('pomo notify recorded', {
                 next_backoff_step: pomoNotifyBackoffStep,
-                next_interval_ms: calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)]
+                next_interval_ms: getPomoNotifyInterval()
             });
         }
 
@@ -1298,15 +1354,26 @@
                 return calibrationBaseInterval;
             }
 
+            // 待记录/划水状态需要尽快感知状态变化并提醒，按封顶退避校准（最长 5 分钟），不再延迟到 30 分钟
             if (status === 3) {
-                return calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+                return getPomoNotifyInterval();
             }
 
             if (status === 1 && canNotifyIdlePomo(new Date())) {
-                return calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+                return getPomoNotifyInterval();
             }
 
             return calibrationMaxInterval;
+        }
+
+        // 独立的提醒检查定时器：与状态校准解耦，保证划水/待记录提醒按固定频率触发
+        function schedulePomoReminderCheck(delay) {
+            clearTimeout(pomoReminderTimer);
+            const nextDelay = typeof delay === 'number' ? delay : pomoReminderInterval;
+            pomoReminderTimer = setTimeout(function() {
+                maybeNotifyPomoReminder();
+                schedulePomoReminderCheck();
+            }, nextDelay);
         }
 
         function schedulePomoCalibration(delay) {
@@ -1367,10 +1434,12 @@
                 maybeNotifyPomoReminder();
                 schedulePomoCalibration(getNextPomoCalibrationDelay());
             }).catch(function() {
+                // 同步失败时也要按当前状态安排在合理时间重试，避免划水/待记录提醒被拖到 30 分钟后
+                const retryDelay = getNextPomoCalibrationDelay();
                 indexDebug('pomo calibration failed', {
-                    next_delay_ms: calibrationMaxInterval
+                    next_delay_ms: retryDelay
                 });
-                schedulePomoCalibration(calibrationMaxInterval);
+                schedulePomoCalibration(retryDelay);
             });
         }
 
