@@ -42,7 +42,18 @@ class StandardFeedFetch implements FeedFetchBasic
             $url = $item->get_permalink();
             $subject = $item->get_title();
             $content = $item->get_description();
-            $published = $item->get_date('Y-m-j H:i:s');
+            try {
+                $published = $item->get_date('Y-m-j H:i:s');
+            } catch (\Throwable $e) {
+                // 部分订阅源包含无法解析的日期（SimplePie 解析结果为 null 时 date() 会报错），
+                // 这类条目直接跳过，避免污染日志。
+                Log::info('feed item has invalid date, skipped', array(
+                    'feed_id' => $feed->id,
+                    'url' => $url,
+                    'error' => $e->getMessage(),
+                ));
+                continue;
+            }
             $imageUrl = CommonUtil::getImageFromHtmlText($content);
 
             if (empty($published) || strtotime($published) < strtotime($previousweek)) {
