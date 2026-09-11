@@ -1,363 +1,616 @@
 @extends('layouts.app')
 
-@section('title', '积分公交车 - 蒙太奇')
+@section('title', '京城公交收藏馆 - 蒙太奇')
 
 @section('content')
     <style>
-        .line-card {
-            border-left: 6px solid #0ea5e9;
-            background: linear-gradient(90deg, rgba(14,165,233,0.08), rgba(255,255,255,0.96));
+        .bus-hero {
+            background: radial-gradient(circle at top right, rgba(14,165,233,0.18), rgba(255,255,255,0.2)),
+                        linear-gradient(120deg, #0f172a, #1e293b);
+            color: #f8fafc;
+            border-radius: 18px;
         }
-        .run-progress-wrap {
-            width: 100%;
-            height: 10px;
+        .bus-stat {
+            border: 1px solid rgba(148,163,184,0.35);
+            background: rgba(15,23,42,0.35);
+            border-radius: 12px;
+        }
+        .bus-tab {
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
             border-radius: 999px;
-            background: #e5e7eb;
-            overflow: hidden;
-            position: relative;
-        }
-        .run-progress-inner {
-            height: 100%;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #2563eb, #22c55e);
-            position: relative;
-            transition: width .35s ease;
-        }
-        .run-progress-inner::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: -12px;
-            width: 12px;
-            height: 100%;
-            background: rgba(255,255,255,0.45);
-            filter: blur(2px);
-        }
-        .arrival-board {
-            border: 1px solid #bfdbfe;
-            background: linear-gradient(90deg, #eff6ff, #f8fafc);
-            color: #1e3a8a;
-            border-radius: 10px;
-            padding: 8px 12px;
+            padding: 6px 16px;
             font-size: 13px;
-            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all .15s;
         }
-        .station-strip {
+        .bus-tab.active {
+            background: #0f172a;
+            color: #fff;
+            border-color: #0f172a;
+        }
+        .bus-card {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            transition: transform .15s ease, box-shadow .15s ease;
+            cursor: pointer;
+        }
+        .bus-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 30px -20px rgba(15,23,42,.55);
+        }
+        .bus-card.locked { opacity: .92; }
+        .bus-card-strip { height: 8px; }
+        .bus-progress { height: 7px; border-radius: 999px; background: #eef2f7; overflow: hidden; }
+        .bus-progress-inner { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #38bdf8, #22c55e); transition: width .35s ease; }
+        .rarity-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            color: #fff;
+            letter-spacing: .04em;
+        }
+        .rarity-N { background: #94a3b8; }
+        .rarity-R { background: #3b82f6; }
+        .rarity-SR { background: #8b5cf6; }
+        .rarity-SSR { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+        .bus-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1300;
+            padding: 16px;
+        }
+        .bus-modal.show { display: flex; }
+        .bus-modal-card {
+            width: min(860px, 96vw);
+            max-height: 90vh;
+            overflow: auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 28px 60px -30px rgba(15,23,42,.7);
+        }
+        .station-item {
             display: flex;
             align-items: center;
-            gap: 4px;
-            margin-top: 6px;
+            gap: 10px;
+            padding: 5px 0;
         }
         .station-dot {
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             border-radius: 999px;
-            background: #d1d5db;
+            background: #cbd5e1;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #cbd5e1;
+            flex: 0 0 auto;
         }
-        .station-dot.active { background: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,.16); }
+        .station-dot.checked { background: #22c55e; box-shadow: 0 0 0 1px #22c55e; }
+        .station-dot.next { background: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,.2); }
+        .achievement-item {
+            border: 1px solid #eef2f7;
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .achievement-item.unlocked { background: #f8fafc; }
+        .achievement-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: #f1f5f9; color: #64748b; flex: 0 0 auto;
+        }
+        .achievement-item.unlocked .achievement-icon { background: #fef3c7; color: #b45309; }
+        .bus-toast {
+            position: fixed;
+            right: 20px;
+            bottom: 24px;
+            z-index: 1400;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .bus-toast-item {
+            background: #0f172a;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            box-shadow: 0 14px 30px -18px rgba(15,23,42,.9);
+            animation: toastIn .2s ease;
+        }
+        .bus-toast-item.success { background: #065f46; }
+        .bus-toast-item.error { background: #991b1b; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+
     <div class="max-w-6xl mx-auto">
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">积分公交车</h1>
-                <p class="text-sm text-gray-500 mt-1">购买线路后可在地图上模拟公交运行</p>
+        <div class="bus-hero p-6 mb-6">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fas fa-bus"></i> 京城公交收藏馆</h1>
+                    <p class="text-sm text-slate-300 mt-1">收集北京真实公交 · 地铁 · BRT · 夜班线路，逐站打卡，集齐成就徽章</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="bus-stat px-4 py-2 text-center">
+                        <div class="text-xs text-slate-300">可用积分</div>
+                        <div class="text-lg font-bold text-amber-300" id="apBalance">-- AP</div>
+                    </div>
+                    <a href="/point-mall" class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,.5);color:#fff;"><i class="fas fa-arrow-left mr-1"></i>返回商城</a>
+                </div>
             </div>
-            <a href="/point-mall" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left mr-1"></i>返回商城</a>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+                <div class="bus-stat px-4 py-3">
+                    <div class="text-xs text-slate-300">收藏度 · 称号</div>
+                    <div class="text-xl font-bold" id="statScore">0</div>
+                    <div class="text-xs text-sky-300" id="statTitle">交通萌新</div>
+                </div>
+                <div class="bus-stat px-4 py-3">
+                    <div class="text-xs text-slate-300">已收藏线路</div>
+                    <div class="text-xl font-bold" id="statCollected">0 / 0</div>
+                    <div class="text-xs text-slate-400" id="statNextTitle"></div>
+                </div>
+                <div class="bus-stat px-4 py-3">
+                    <div class="text-xs text-slate-300">全线贯通</div>
+                    <div class="text-xl font-bold text-emerald-300" id="statCompleted">0</div>
+                    <div class="text-xs text-slate-400">完成全部站点打卡</div>
+                </div>
+                <div class="bus-stat px-4 py-3">
+                    <div class="text-xs text-slate-300">累计打卡站点</div>
+                    <div class="text-xl font-bold text-sky-300" id="statCheckins">0</div>
+                    <div class="text-xs text-emerald-300" id="statFreeHint">今日首站免费</div>
+                </div>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="card lg:col-span-1">
-                <div class="p-4 border-b border-gray-200 font-semibold text-gray-900">可购买线路</div>
-                <div class="p-4 space-y-3" id="lineList">加载中...</div>
-            </div>
-            <div class="card lg:col-span-2">
-                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
-                    <div class="font-semibold text-gray-900">我的线路与运行模拟</div>
-                    <div class="text-xs text-gray-500">支持高德地图，未配置 key 时自动降级</div>
+            <div class="lg:col-span-2">
+                <div class="card mb-4">
+                    <div class="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                        <div class="font-semibold text-gray-900"><i class="fas fa-map-marked-alt text-sky-600 mr-1"></i>线路图鉴</div>
+                        <div class="flex flex-wrap gap-2" id="typeTabs"></div>
+                    </div>
+                    <div class="p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lineGrid">加载中...</div>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <div id="arrivalBoard" class="arrival-board">等待发车...</div>
-                    <div id="busStats" class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4"></div>
-                    <div id="ownedLineList" class="space-y-3 mb-4">加载中...</div>
-                    <div id="runList" class="space-y-2 mb-4"></div>
-                    <div id="amapContainer" class="w-full h-96 rounded-lg border border-gray-200 bg-gray-50"></div>
+
+                <div class="card">
+                    <div class="p-4 border-b border-gray-200 font-semibold text-gray-900"><i class="fas fa-history text-gray-500 mr-1"></i>最近打卡</div>
+                    <div class="p-4 space-y-2" id="recentList">加载中...</div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 space-y-6">
+                <div class="card">
+                    <div class="p-4 border-b border-gray-200 font-semibold text-gray-900"><i class="fas fa-medal text-amber-500 mr-1"></i>成就徽章</div>
+                    <div class="p-4 space-y-3" id="achievementList">加载中...</div>
+                </div>
+                <div class="card">
+                    <div class="p-4 border-b border-gray-200 font-semibold text-gray-900"><i class="fas fa-trophy text-amber-500 mr-1"></i>收藏排行榜</div>
+                    <div class="p-4 space-y-2" id="leaderboard">加载中...</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="lineModal" class="bus-modal" onclick="closeLineModal(event)">
+        <div class="bus-modal-card" onclick="event.stopPropagation()">
+            <div id="lineModalBody"></div>
+        </div>
+    </div>
+
+    <div class="bus-toast" id="toastBox"></div>
+
     <script>
         const AMAP_KEY = '{{ config('services.amap.key') }}';
+        const TYPE_LABELS = { bus: '常规公交', brt: '快速公交', night: '夜班车', subway: '地铁', sightseeing: '观光专线' };
+        const TYPE_ICONS = { bus: 'fa-bus', brt: 'fa-bolt', night: 'fa-moon', subway: 'fa-subway', sightseeing: 'fa-camera' };
+        const RARITY_LABELS = { N: '普通', R: '稀有', SR: '史诗', SSR: '传说' };
+
+        let overviewData = null;
+        let activeFilter = 'all';
+        let activeLineId = 0;
         let busMap = null;
-        let busPolyline = null;
-        let busMarker = null;
-        let stationCircles = [];
-        let activeRunId = 0;
-        let activeRunPath = [];
+        let mapReady = false;
+        let mapCallbacks = [];
 
         function getResultData(resp) { return resp && (resp.result || resp.data) ? (resp.result || resp.data) : {}; }
-        function api(path, opts = {}) {
+        function api(path, opts) {
+            opts = opts || {};
             const fetcher = window.taskApiFetch || window.fetch;
             const tokenNode = document.querySelector('meta[name="csrf-token"]');
             const csrf = tokenNode ? tokenNode.getAttribute('content') : '';
             const options = Object.assign({ method: 'GET' }, opts);
             options.headers = Object.assign({ 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, opts.headers || {});
             if (options.method !== 'GET') options.headers['X-CSRF-TOKEN'] = csrf;
-            return fetcher('/api/v2' + path, options).then(async r => {
-                const text = await r.text();
-                try {
-                    return JSON.parse(text || '{}');
-                } catch (e) {
-                    return { code: 0, msg: '响应解析失败', raw: text };
-                }
+            return fetcher('/api/v2' + path, options).then(function(r) {
+                return r.text();
+            }).then(function(text) {
+                try { return JSON.parse(text || '{}'); } catch (e) { return { code: 0, msg: '响应解析失败' }; }
             });
         }
 
-        function parsePath(payload) {
-            if (!payload) return [];
-            if (Array.isArray(payload)) return payload;
-            try { return JSON.parse(payload || '[]'); } catch (e) { return []; }
-        }
-
-        function ensureMapReady(callback) {
-            if (!AMAP_KEY) {
-                callback(false);
-                return;
-            }
-            if (window.AMap) {
-                callback(true);
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = 'https://webapi.amap.com/maps?v=2.0&key=' + AMAP_KEY;
-            script.onload = function() { callback(true); };
-            script.onerror = function() { callback(false); };
-            document.head.appendChild(script);
-        }
-
-        function initMap() {
-            ensureMapReady(function(ok) {
-                if (!ok) {
-                    document.getElementById('amapContainer').innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-500">未配置高德 key，使用文字模拟</div>';
-                    return;
-                }
-                busMap = new AMap.Map('amapContainer', {
-                    zoom: 11,
-                    center: [116.397428, 39.90923]
-                });
+        function escapeHtml(text) {
+            return String(text == null ? '' : text).replace(/[&<>"']/g, function(c) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
             });
+        }
+
+        function showToast(message, type) {
+            const box = document.getElementById('toastBox');
+            if (!box) return;
+            const item = document.createElement('div');
+            item.className = 'bus-toast-item ' + (type || '');
+            item.textContent = message;
+            box.appendChild(item);
+            setTimeout(function() { item.remove(); }, 3200);
         }
 
         function render(data) {
-            const lines = data.lines || [];
-            const owned = data.owned_lines || [];
-            const runs = data.recent_runs || [];
+            overviewData = data;
             const stats = data.stats || {};
+            const account = data.account || {};
 
-            const lineList = document.getElementById('lineList');
+            document.getElementById('apBalance').textContent = Number(account.ap_balance || 0) + ' AP';
+            document.getElementById('statScore').textContent = Number(stats.score || 0);
+            document.getElementById('statTitle').textContent = stats.title || '交通萌新';
+            document.getElementById('statCollected').textContent = Number(stats.collected_lines || 0) + ' / ' + Number(stats.total_lines || 0);
+            document.getElementById('statCompleted').textContent = Number(stats.completed_lines || 0);
+            document.getElementById('statCheckins').textContent = Number(stats.checked_stations || 0) + ' / ' + Number(stats.total_stations || 0);
+            if (stats.next_title) {
+                document.getElementById('statNextTitle').textContent = '距离「' + stats.next_title + '」还差 ' + Math.max(0, Number(stats.next_title_score || 0) - Number(stats.score || 0)) + ' 分';
+            } else {
+                document.getElementById('statNextTitle').textContent = '已达最高称号';
+            }
+            document.getElementById('statFreeHint').textContent = stats.free_checkin_available ? '今日首站免费' : '今日免费机会已用';
+
+            renderTabs(data.type_stats || []);
+            renderLines();
+            renderAchievements(data.achievements || []);
+            renderLeaderboard(data.leaderboard || []);
+            renderRecent(data.recent_checkins || []);
+        }
+
+        function typeCount(type) {
+            if (!overviewData) return 0;
+            if (type === 'all') return (overviewData.lines || []).length;
+            return (overviewData.lines || []).filter(function(l) { return l.type === type; }).length;
+        }
+
+        function renderTabs(typeStats) {
+            const tabs = [{ type: 'all', label: '全部' }];
+            (typeStats || []).forEach(function(t) {
+                tabs.push({ type: t.type, label: TYPE_LABELS[t.type] || t.type });
+            });
+            document.getElementById('typeTabs').innerHTML = tabs.map(function(t) {
+                return '<button class="bus-tab ' + (activeFilter === t.type ? 'active' : '') + '" onclick="setFilter(\'' + t.type + '\')">' +
+                    escapeHtml(t.label) + ' (' + typeCount(t.type) + ')</button>';
+            }).join('');
+        }
+
+        function setFilter(type) {
+            activeFilter = type;
+            renderTabs((overviewData && overviewData.type_stats) || []);
+            renderLines();
+        }
+
+        function renderLines() {
+            const grid = document.getElementById('lineGrid');
+            if (!overviewData) return;
+            const lines = (overviewData.lines || []).filter(function(l) {
+                return activeFilter === 'all' || l.type === activeFilter;
+            });
             if (!lines.length) {
-                lineList.innerHTML = '<div class="text-sm text-gray-500">暂无线路</div>';
-            } else {
-                lineList.innerHTML = lines.map(l => `
-                    <div class="border border-sky-200 rounded-lg p-3 bg-sky-50 line-card">
-                        <div class="font-semibold text-sky-900">${l.name}</div>
-                        <div class="text-sm text-sky-800 mt-1">价格：${l.price_ap} AP</div>
-                        <button class="btn btn-primary btn-sm mt-2" onclick="buyLine(${l.id})">购买线路</button>
-                    </div>
-                `).join('');
+                grid.innerHTML = '<div class="text-sm text-gray-500 col-span-2">暂无线路</div>';
+                return;
             }
-
-            const ownedLineList = document.getElementById('ownedLineList');
-            if (!owned.length) {
-                ownedLineList.innerHTML = '<div class="text-sm text-gray-500">还未购买线路</div>';
-            } else {
-                ownedLineList.innerHTML = owned.map(o => `
-                    <div class="border border-gray-200 rounded-lg p-3">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <div class="font-medium text-gray-900">${o.name}</div>
-                                <div class="text-xs text-gray-500">购买时间：${o.bought_at || '-'}</div>
-                            </div>
-                            <button class="btn btn-outline btn-sm" data-line-name="${String(o.name || '').replace(/"/g, '&quot;')}" onclick="runLine(${o.user_line_id}, this.dataset.lineName || '')">开始运行</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            const runList = document.getElementById('runList');
-            if (!runs.length) {
-                runList.innerHTML = '<div class="text-sm text-gray-500">暂无运行记录</div>';
-            } else {
-                runList.innerHTML = runs.map(r => `
-                    <div class="border border-gray-100 rounded-lg p-2">
-                        <div class="flex items-center justify-between text-xs text-gray-600 mb-1">
-                            <span>运行#${r.id}</span><span>${r.run_status}</span>
-                        </div>
-                        <div class="run-progress-wrap">
-                            <div class="run-progress-inner" style="width:${Math.max(0, Math.min(100, Number(r.progress || 0)))}%"></div>
-                        </div>
-                        ${renderStationStrip(r)}
-                    </div>
-                `).join('');
-            }
-
-            const busStats = document.getElementById('busStats');
-            busStats.innerHTML = `
-                <div class="border border-gray-100 rounded p-2"><div class="text-xs text-gray-500">总运行</div><div class="text-lg font-semibold text-gray-900">${Number(stats.total_runs || 0)}</div></div>
-                <div class="border border-gray-100 rounded p-2"><div class="text-xs text-gray-500">已到站</div><div class="text-lg font-semibold text-emerald-700">${Number(stats.arrived_runs || 0)}</div></div>
-                <div class="border border-gray-100 rounded p-2"><div class="text-xs text-gray-500">奖励次数</div><div class="text-lg font-semibold text-blue-700">${Number(stats.rewarded_runs || 0)}</div></div>
-                <div class="border border-gray-100 rounded p-2"><div class="text-xs text-gray-500">累计奖励AP</div><div class="text-lg font-semibold text-amber-700">${Number(stats.total_reward_ap || 0)}</div></div>
-            `;
+            grid.innerHTML = lines.map(function(l) {
+                const percent = l.station_count ? Math.round(l.progress / l.station_count * 100) : 0;
+                let actionHtml;
+                if (!l.unlocked) {
+                    const priceText = l.is_free || Number(l.price_ap) === 0 ? '免费领取' : (Number(l.price_ap) + ' AP 解锁');
+                    actionHtml = '<button class="btn btn-primary btn-sm w-full" onclick="event.stopPropagation(); unlockLine(' + l.id + ')">' + priceText + '</button>';
+                } else if (l.completed) {
+                    actionHtml = '<button class="btn btn-outline btn-sm w-full" disabled style="color:#059669;border-color:#a7f3d0;background:#ecfdf5;">已全线贯通</button>';
+                } else {
+                    actionHtml = '<button class="btn btn-primary btn-sm w-full" onclick="event.stopPropagation(); checkinLine(' + l.id + ')">' +
+                        '打卡 · ' + escapeHtml(l.next_station || '下一站') + '</button>';
+                }
+                return '' +
+                '<div class="bus-card ' + (l.unlocked ? '' : 'locked') + '" onclick="openLineModal(' + l.id + ')">' +
+                    '<div class="bus-card-strip" style="background:' + escapeHtml(l.color) + '"></div>' +
+                    '<div class="p-4">' +
+                        '<div class="flex items-start justify-between gap-2">' +
+                            '<div>' +
+                                '<div class="font-bold text-gray-900">' + escapeHtml(l.name) + '</div>' +
+                                '<div class="text-xs text-gray-500 mt-1"><i class="fas ' + (TYPE_ICONS[l.type] || 'fa-bus') + ' mr-1"></i>' + escapeHtml(TYPE_LABELS[l.type] || l.type) + ' · ' + escapeHtml(l.district) + '</div>' +
+                            '</div>' +
+                            '<span class="rarity-badge rarity-' + escapeHtml(l.rarity) + '">' + escapeHtml(l.rarity) + '</span>' +
+                        '</div>' +
+                        '<div class="text-xs text-gray-500 mt-3">站点 ' + Number(l.station_count) + ' · ' + Number(l.distance_km) + ' km · ' + escapeHtml(l.first_bus || '--') + '-' + escapeHtml(l.last_bus || '--') + '</div>' +
+                        '<div class="bus-progress mt-3"><div class="bus-progress-inner" style="width:' + percent + '%"></div></div>' +
+                        '<div class="flex items-center justify-between text-xs text-gray-500 mt-1 mb-3">' +
+                            '<span>' + (l.unlocked ? ('进度 ' + l.progress + '/' + l.station_count) : '尚未解锁') + '</span>' +
+                            '<span>' + (l.unlocked ? ('收藏度 +' + l.score) : ('+' + l.base_score + ' 分')) + '</span>' +
+                        '</div>' +
+                        actionHtml +
+                    '</div>' +
+                '</div>';
+            }).join('');
         }
 
-        function renderStationStrip(run) {
-            let path = [];
-            try {
-                const metaObj = run.meta_payload ? JSON.parse(run.meta_payload) : {};
-                path = Array.isArray(metaObj.path) ? metaObj.path : [];
-            } catch (e) {}
-            const count = Math.max(2, Math.min(10, path.length || 0));
-            const activeIndex = Math.max(0, Math.min(count - 1, Math.round((Number(run.progress || 0) / 100) * (count - 1))));
-            return `<div class="station-strip">${Array.from({ length: count }).map((_, idx) => `<span class="station-dot ${idx <= activeIndex ? 'active' : ''}"></span>`).join('')}</div>`;
+        function renderAchievements(list) {
+            const node = document.getElementById('achievementList');
+            if (!list.length) { node.innerHTML = '<div class="text-sm text-gray-500">暂无成就</div>'; return; }
+            node.innerHTML = list.map(function(a) {
+                let action = '';
+                if (a.unlocked && !a.claimed) {
+                    action = '<button class="btn btn-primary btn-sm" onclick="claimAchievement(\'' + a.code + '\')">领取 +' + a.reward_ap + '</button>';
+                } else if (a.claimed) {
+                    action = '<span class="text-xs text-emerald-600 font-medium"><i class="fas fa-check-circle mr-1"></i>已领取</span>';
+                } else {
+                    action = '<span class="text-xs text-gray-400">+' + a.reward_ap + ' AP</span>';
+                }
+                return '' +
+                '<div class="achievement-item ' + (a.unlocked ? 'unlocked' : '') + '">' +
+                    '<div class="achievement-icon"><i class="fas ' + escapeHtml(a.badge_icon || 'fa-medal') + '"></i></div>' +
+                    '<div class="flex-1 min-w-0">' +
+                        '<div class="flex items-center justify-between gap-2">' +
+                            '<div class="font-medium text-sm text-gray-900 truncate">' + escapeHtml(a.name) + '</div>' + action +
+                        '</div>' +
+                        '<div class="text-xs text-gray-500 mt-1">' + escapeHtml(a.description) + '</div>' +
+                        '<div class="bus-progress mt-2"><div class="bus-progress-inner" style="width:' + Number(a.percent || 0) + '%"></div></div>' +
+                        '<div class="text-xs text-gray-400 mt-1">' + Number(a.current || 0) + ' / ' + Number(a.target || 1) + '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
         }
 
-        function announce(message) {
-            const board = document.getElementById('arrivalBoard');
-            if (!board) return;
-            board.textContent = message;
+        function renderLeaderboard(list) {
+            const node = document.getElementById('leaderboard');
+            if (!list.length) { node.innerHTML = '<div class="text-sm text-gray-500">暂无上榜收藏家</div>'; return; }
+            node.innerHTML = list.map(function(r, idx) {
+                return '' +
+                '<div class="flex items-center justify-between border-b border-gray-100 pb-2">' +
+                    '<div class="flex items-center gap-2 min-w-0">' +
+                        '<span class="w-6 text-center font-semibold ' + (idx < 3 ? 'text-amber-600' : 'text-gray-400') + '">' + (idx + 1) + '</span>' +
+                        '<span class="font-medium text-gray-900 truncate">' + escapeHtml(r.name) + '</span>' +
+                        '<span class="text-xs text-gray-400">' + escapeHtml(r.title || '') + '</span>' +
+                    '</div>' +
+                    '<span class="text-sky-700 font-semibold">' + Number(r.score || 0) + '</span>' +
+                '</div>';
+            }).join('');
         }
 
-        function syncStationHighlightByProgress(progress) {
-            if (!stationCircles.length || !activeRunPath.length) return;
-            const idx = Math.max(0, Math.min(stationCircles.length - 1, Math.round((Number(progress || 0) / 100) * (stationCircles.length - 1))));
-            stationCircles.forEach((circle, i) => {
-                circle.setOptions({
-                    fillColor: i <= idx ? '#16a34a' : '#0ea5e9',
-                    radius: i <= idx ? 8 : 6
+        function renderRecent(list) {
+            const node = document.getElementById('recentList');
+            if (!list.length) { node.innerHTML = '<div class="text-sm text-gray-500">还没有打卡记录，去解锁一条线路吧</div>'; return; }
+            node.innerHTML = list.map(function(r) {
+                return '' +
+                '<div class="flex items-center justify-between border border-gray-100 rounded-lg px-3 py-2">' +
+                    '<div class="flex items-center gap-2 min-w-0">' +
+                        '<span style="width:8px;height:8px;border-radius:999px;background:' + escapeHtml(r.line_color || '#0ea5e9') + ';display:inline-block;"></span>' +
+                        '<span class="text-sm text-gray-800 truncate">' + escapeHtml(r.line_name) + ' · ' + escapeHtml(r.station_name) + '</span>' +
+                    '</div>' +
+                    '<div class="text-xs text-gray-500 whitespace-nowrap ml-2">' +
+                        (Number(r.ap_cost) > 0 ? ('-' + r.ap_cost + ' AP') : '免费') +
+                        (Number(r.reward_ap) > 0 ? (' · +' + r.reward_ap + ' AP') : '') +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        function findLine(id) {
+            return ((overviewData && overviewData.lines) || []).filter(function(l) { return Number(l.id) === Number(id); })[0] || null;
+        }
+
+        function openLineModal(id) {
+            const line = findLine(id);
+            if (!line) return;
+            activeLineId = Number(id);
+            const percent = line.station_count ? Math.round(line.progress / line.station_count * 100) : 0;
+
+            let actionHtml;
+            if (!line.unlocked) {
+                const priceText = line.is_free || Number(line.price_ap) === 0 ? '免费领取线路' : ('消耗 ' + line.price_ap + ' AP 解锁');
+                actionHtml = '<button class="btn btn-primary" onclick="unlockLine(' + line.id + ')">' + priceText + '</button>';
+            } else if (line.completed) {
+                actionHtml = '<span class="inline-flex items-center text-emerald-600 font-medium"><i class="fas fa-check-circle mr-1"></i>已全线贯通</span>';
+            } else {
+                actionHtml = '<button class="btn btn-primary" onclick="checkinLine(' + line.id + ')">打卡下一站 · ' + escapeHtml(line.next_station || '') + '</button>';
+            }
+
+            const stationsHtml = (line.stations || []).map(function(s, idx) {
+                const isNext = line.unlocked && !line.completed && idx === line.progress;
+                const cls = s.checked ? 'checked' : (isNext ? 'next' : '');
+                return '' +
+                '<div class="station-item">' +
+                    '<span class="station-dot ' + cls + '"></span>' +
+                    '<span class="text-sm ' + (s.checked ? 'text-gray-800' : 'text-gray-500') + '">' + escapeHtml(s.name) + '</span>' +
+                    (isNext ? '<span class="text-xs text-sky-600 ml-1">下一站</span>' : '') +
+                '</div>';
+            }).join('');
+
+            const body = '' +
+            '<div style="height:8px;background:' + escapeHtml(line.color) + '"></div>' +
+            '<div class="p-5">' +
+                '<div class="flex items-start justify-between gap-3">' +
+                    '<div>' +
+                        '<div class="flex items-center gap-2">' +
+                            '<h2 class="text-xl font-bold text-gray-900">' + escapeHtml(line.name) + '</h2>' +
+                            '<span class="rarity-badge rarity-' + escapeHtml(line.rarity) + '">' + escapeHtml(line.rarity) + ' · ' + escapeHtml(RARITY_LABELS[line.rarity] || '') + '</span>' +
+                        '</div>' +
+                        '<p class="text-sm text-gray-500 mt-1">' + escapeHtml(line.description) + '</p>' +
+                    '</div>' +
+                    '<button class="text-gray-400 hover:text-gray-600" onclick="closeLineModal()"><i class="fas fa-times text-lg"></i></button>' +
+                '</div>' +
+                '<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">' +
+                    '<div class="border border-gray-100 rounded-lg p-2 text-center"><div class="text-xs text-gray-500">运营区间</div><div class="text-sm font-medium text-gray-800">' + escapeHtml(line.first_bus || '--') + ' - ' + escapeHtml(line.last_bus || '--') + '</div></div>' +
+                    '<div class="border border-gray-100 rounded-lg p-2 text-center"><div class="text-xs text-gray-500">站点数</div><div class="text-sm font-medium text-gray-800">' + Number(line.station_count) + ' 站</div></div>' +
+                    '<div class="border border-gray-100 rounded-lg p-2 text-center"><div class="text-xs text-gray-500">线路长度</div><div class="text-sm font-medium text-gray-800">' + Number(line.distance_km) + ' km</div></div>' +
+                    '<div class="border border-gray-100 rounded-lg p-2 text-center"><div class="text-xs text-gray-500">贯通奖励</div><div class="text-sm font-medium text-amber-600">+' + Number(line.reward_ap) + ' AP</div></div>' +
+                '</div>' +
+                '<div class="mt-4">' +
+                    '<div class="flex items-center justify-between text-sm text-gray-600 mb-1"><span>打卡进度</span><span>' + line.progress + ' / ' + line.station_count + '（' + percent + '%）</span></div>' +
+                    '<div class="bus-progress"><div class="bus-progress-inner" style="width:' + percent + '%"></div></div>' +
+                '</div>' +
+                '<div class="flex items-center justify-between mt-4">' +
+                    '<div class="text-sm text-gray-600">' + (line.unlocked ? ('打卡消耗 ' + line.checkin_cost + ' AP（每日首站免费）') : '解锁后可逐站打卡收藏') + '</div>' +
+                    actionHtml +
+                '</div>' +
+                '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">' +
+                    '<div>' +
+                        '<div class="font-semibold text-gray-900 mb-2"><i class="fas fa-map-signs text-sky-600 mr-1"></i>站点时间轴</div>' +
+                        '<div style="max-height:280px;overflow:auto;padding-right:6px;">' + stationsHtml + '</div>' +
+                    '</div>' +
+                    '<div>' +
+                        '<div class="font-semibold text-gray-900 mb-2"><i class="fas fa-map text-sky-600 mr-1"></i>线路示意</div>' +
+                        '<div id="lineMap" class="w-full h-64 rounded-lg border border-gray-200 bg-gray-50"></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+            document.getElementById('lineModalBody').innerHTML = body;
+            document.getElementById('lineModal').classList.add('show');
+            drawLineMap(line);
+        }
+
+        function closeLineModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('lineModal').classList.remove('show');
+            activeLineId = 0;
+        }
+
+        function ensureMap(callback) {
+            if (!AMAP_KEY) { callback(false); return; }
+            if (window.AMap) { callback(true); return; }
+            if (mapReady) { callback(true); return; }
+            mapCallbacks.push(callback);
+            if (mapCallbacks.length > 1) return;
+            const script = document.createElement('script');
+            script.src = 'https://webapi.amap.com/maps?v=2.0&key=' + AMAP_KEY;
+            script.onload = function() { mapReady = true; mapCallbacks.forEach(function(cb) { cb(true); }); mapCallbacks = []; };
+            script.onerror = function() { mapCallbacks.forEach(function(cb) { cb(false); }); mapCallbacks = []; };
+            document.head.appendChild(script);
+        }
+
+        function drawLineMap(line) {
+            ensureMap(function(ok) {
+                const node = document.getElementById('lineMap');
+                if (!node) return;
+                if (!ok) {
+                    node.innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-500 text-sm">未配置高德地图 key，已展示站点时间轴</div>';
+                    return;
+                }
+                const points = (line.stations || []).filter(function(s) { return s.lng && s.lat; }).map(function(s) { return [Number(s.lng), Number(s.lat)]; });
+                if (!points.length) {
+                    node.innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-500 text-sm">暂无坐标数据</div>';
+                    return;
+                }
+                busMap = new AMap.Map('lineMap', { zoom: 12, center: points[0] });
+                const polyline = new AMap.Polyline({ path: points, strokeColor: line.color, strokeWeight: 6 });
+                busMap.add(polyline);
+                busMap.setFitView([polyline]);
+                points.forEach(function(p, idx) {
+                    busMap.add(new AMap.CircleMarker({
+                        center: p,
+                        radius: idx < line.progress ? 7 : 5,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2,
+                        fillColor: idx < line.progress ? '#22c55e' : line.color,
+                        fillOpacity: 0.95
+                    }));
                 });
             });
-            announce(`车辆运行中：第 ${idx + 1}/${stationCircles.length} 站`);
         }
 
         function loadOverview() {
-            api('/point-mall/bus/overview').then(resp => {
+            return api('/point-mall/bus/collection').then(function(resp) {
                 if (!resp || Number(resp.code) !== 9999) {
-                    document.getElementById('lineList').innerHTML = '<div class="text-sm text-red-500">线路加载失败</div>';
-                    document.getElementById('ownedLineList').innerHTML = '<div class="text-sm text-red-500">我的线路加载失败</div>';
-                    document.getElementById('runList').innerHTML = '<div class="text-sm text-red-500">运行记录加载失败</div>';
-                    announce(resp && resp.msg ? ('加载失败：' + resp.msg) : '加载失败');
+                    document.getElementById('lineGrid').innerHTML = '<div class="text-sm text-red-500 col-span-2">加载失败：' + escapeHtml((resp && resp.msg) || '网络异常') + '</div>';
                     return;
                 }
                 render(getResultData(resp));
-            }).catch(() => {
-                document.getElementById('lineList').innerHTML = '<div class="text-sm text-red-500">线路加载失败</div>';
-                document.getElementById('ownedLineList').innerHTML = '<div class="text-sm text-red-500">我的线路加载失败</div>';
-                document.getElementById('runList').innerHTML = '<div class="text-sm text-red-500">运行记录加载失败</div>';
-                announce('加载失败：网络异常');
+            }).catch(function() {
+                document.getElementById('lineGrid').innerHTML = '<div class="text-sm text-red-500 col-span-2">加载失败：网络异常</div>';
             });
         }
 
-        function buyLine(lineId) {
-            api('/point-mall/bus/buy-line', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ line_id: lineId })
-            }).then(resp => {
-                if (resp && Number(resp.code) === 9999) { loadOverview(); return; }
-                alert(resp && resp.msg ? resp.msg : '购买失败');
+        function handleNewAchievements(list) {
+            (list || []).forEach(function(a) {
+                showToast('解锁成就「' + a.name + '」+' + a.reward_ap + ' AP 待领取', 'success');
             });
         }
 
-        function runLine(userLineId, lineName) {
-            api('/point-mall/bus/start-run', {
+        function unlockLine(id) {
+            if (activeLineId === Number(id)) closeLineModal();
+            api('/point-mall/bus/collection/unlock', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_line_id: userLineId })
-            }).then(resp => {
+                body: JSON.stringify({ catalog_id: id })
+            }).then(function(resp) {
                 if (!resp || Number(resp.code) !== 9999) {
-                    alert(resp && resp.msg ? resp.msg : '启动失败');
+                    showToast((resp && resp.msg) || '解锁失败', 'error');
                     return;
                 }
-                const run = getResultData(resp).run || {};
-                activeRunId = Number(run.id || 0);
-                let pathData = [];
-                try {
-                    const metaObj = run.meta_payload ? JSON.parse(run.meta_payload) : {};
-                    pathData = Array.isArray(metaObj.path) ? metaObj.path : [];
-                } catch (e) {
-                    pathData = [];
-                }
-                const meta = parsePath(pathData);
-                activeRunPath = meta;
-                if (!window.AMap || !busMap || !meta.length) {
-                    announce('线路已启动：' + lineName + '（简化模拟）');
-                    runTickLoop(run.id);
-                    return;
-                }
-                const path = meta.map(p => [Number(p.lng), Number(p.lat)]);
-                if (busPolyline) busMap.remove(busPolyline);
-                if (busMarker) busMap.remove(busMarker);
-                if (stationCircles.length) busMap.remove(stationCircles);
-                busPolyline = new AMap.Polyline({ path: path, strokeColor: '#2563eb', strokeWeight: 6 });
-                busMap.add(busPolyline);
-                stationCircles = path.map(p => new AMap.CircleMarker({
-                    center: p,
-                    radius: 6,
-                    strokeColor: '#ffffff',
-                    strokeWeight: 2,
-                    fillColor: '#0ea5e9',
-                    fillOpacity: 0.95
-                }));
-                busMap.add(stationCircles);
-                busMap.setFitView([busPolyline]);
-                busMarker = new AMap.Marker({
-                    position: path[0],
-                    content: '<div style="width:26px;height:26px;border-radius:999px;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 6px 12px rgba(22,163,74,.35);">🚌</div>',
-                    offset: new AMap.Pixel(-13, -13)
-                });
-                busMap.add(busMarker);
-                announce('线路已发车：' + lineName + '，前往第 1 站');
-
-                let i = 0;
-                const timer = setInterval(() => {
-                    i++;
-                    if (i >= path.length) {
-                        clearInterval(timer);
-                        return;
-                    }
-                    busMarker.setPosition(path[i]);
-                    syncStationHighlightByProgress(Math.round((i / (path.length - 1 || 1)) * 100));
-                }, 1000);
-                runTickLoop(run.id);
+                const data = getResultData(resp);
+                showToast('成功解锁「' + data.line.name + '」', 'success');
+                handleNewAchievements(data.new_achievements);
+                loadOverview();
             });
         }
 
-        function runTickLoop(runId) {
-            let ticks = 0;
-            const t = setInterval(() => {
-                ticks++;
-                api('/point-mall/bus/run/' + runId + '/tick', { method: 'POST' }).then(resp => {
-                    if (!resp || Number(resp.code) !== 9999) return;
-                    const run = (getResultData(resp).run || {});
-                    syncStationHighlightByProgress(Number(run.progress || 0));
-                    if (Number(run.progress || 0) >= 100 || (run.run_status || '') === 'arrived' || ticks > 20) {
-                        clearInterval(t);
-                        if ((run.run_status || '') === 'arrived') {
-                            let rewardAp = 0;
-                            try {
-                                const metaObj = run.meta_payload ? JSON.parse(run.meta_payload) : {};
-                                rewardAp = Number(metaObj.reward_ap || 0);
-                            } catch (e) {}
-                            announce(`到站完成，奖励 ${rewardAp || 0} AP 已到账`);
-                        }
-                    }
-                    loadOverview();
-                });
-            }, 1500);
+        function checkinLine(id) {
+            if (activeLineId === Number(id)) closeLineModal();
+            api('/point-mall/bus/collection/checkin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ catalog_id: id })
+            }).then(function(resp) {
+                if (!resp || Number(resp.code) !== 9999) {
+                    showToast((resp && resp.msg) || '打卡失败', 'error');
+                    return;
+                }
+                const data = getResultData(resp);
+                const checkin = data.checkin || {};
+                let msg = '打卡「' + (checkin.station_name || '') + '」' + (checkin.free ? '（今日免费）' : (' -' + checkin.ap_cost + ' AP'));
+                if (checkin.completed) {
+                    msg += ' · 全线贯通 +' + checkin.reward_ap + ' AP';
+                }
+                showToast(msg, 'success');
+                handleNewAchievements(data.new_achievements);
+                loadOverview();
+            });
+        }
+
+        function claimAchievement(code) {
+            api('/point-mall/bus/collection/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            }).then(function(resp) {
+                if (!resp || Number(resp.code) !== 9999) {
+                    showToast((resp && resp.msg) || '领取失败', 'error');
+                    return;
+                }
+                const data = getResultData(resp);
+                showToast('领取成就「' + data.achievement.name + '」+' + data.achievement.reward_ap + ' AP', 'success');
+                loadOverview();
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            initMap();
             loadOverview();
         });
     </script>

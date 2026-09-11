@@ -4,16 +4,19 @@ namespace App\Http\Controllers\Api\V2;
 
 use App\Http\Controllers\Controller;
 use App\Http\Utils\ResponseDataUtil;
+use App\Services\PointBusCollectionService;
 use App\Services\PointMallGameplayService;
 use Illuminate\Http\Request;
 
 class PointMallGameplayController extends Controller
 {
     protected $service;
+    protected $busCollectionService;
 
-    public function __construct(PointMallGameplayService $service)
+    public function __construct(PointMallGameplayService $service, PointBusCollectionService $busCollectionService)
     {
         $this->service = $service;
+        $this->busCollectionService = $busCollectionService;
     }
 
     public function treeOverview(Request $request)
@@ -141,6 +144,63 @@ class PointMallGameplayController extends Controller
         } catch (\Throwable $e) {
             return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
         }
+    }
+
+    public function busCollectionOverview(Request $request)
+    {
+        $userId = (int)$this->getAuthUserId($request);
+        $data = $this->busCollectionService->getOverview($userId);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($data));
+    }
+
+    public function busCollectionUnlock(Request $request)
+    {
+        $this->validate($request, array(
+            'catalog_id' => 'required|integer|min:1',
+        ));
+        $userId = (int)$this->getAuthUserId($request);
+        try {
+            $data = $this->busCollectionService->unlockLine($userId, (int)$request->input('catalog_id'));
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($data));
+        } catch (\Throwable $e) {
+            return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
+        }
+    }
+
+    public function busCollectionCheckin(Request $request)
+    {
+        $this->validate($request, array(
+            'catalog_id' => 'required|integer|min:1',
+        ));
+        $userId = (int)$this->getAuthUserId($request);
+        try {
+            $data = $this->busCollectionService->checkinStation($userId, (int)$request->input('catalog_id'));
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($data));
+        } catch (\Throwable $e) {
+            return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
+        }
+    }
+
+    public function busCollectionClaim(Request $request)
+    {
+        $this->validate($request, array(
+            'code' => 'required|string|max:64',
+        ));
+        $userId = (int)$this->getAuthUserId($request);
+        try {
+            $data = $this->busCollectionService->claimAchievement($userId, (string)$request->input('code'));
+            return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($data));
+        } catch (\Throwable $e) {
+            return $this->jsonResponse($request, ResponseDataUtil::genCommonFail($e->getMessage()));
+        }
+    }
+
+    public function busCollectionLeaderboard(Request $request)
+    {
+        $limit = (int)$request->input('limit', 20);
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'leaderboard' => $this->busCollectionService->getLeaderboard($limit),
+        )));
     }
 
     public function treeLeaderboard(Request $request)

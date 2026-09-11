@@ -105,6 +105,8 @@ Route::prefix('v2')->group(function () {
         Route::get('/point-mall/pond/overview', 'Api\\V2\\PointMallGameplayController@pondOverview');
         Route::get('/point-mall/lottery/overview', 'Api\\V2\\PointMallGameplayController@lotteryOverview');
         Route::get('/point-mall/bus/overview', 'Api\\V2\\PointMallGameplayController@busOverview');
+        Route::get('/point-mall/bus/collection', 'Api\\V2\\PointMallGameplayController@busCollectionOverview');
+        Route::get('/point-mall/bus/collection/leaderboard', 'Api\\V2\\PointMallGameplayController@busCollectionLeaderboard');
         Route::get('/statistics', 'Api\\V2\\StatisticsController@index');
         Route::get('/accounts', 'Api\\V2\\AccountController@index');
         Route::get('/personal-access-tokens', 'Api\\V2\\PersonalAccessTokenController@index');
@@ -279,6 +281,9 @@ Route::prefix('v2')->group(function () {
         Route::post('/point-mall/bus/buy-line', 'Api\\V2\\PointMallGameplayController@busBuyLine');
         Route::post('/point-mall/bus/start-run', 'Api\\V2\\PointMallGameplayController@busStartRun');
         Route::post('/point-mall/bus/run/{runId}/tick', 'Api\\V2\\PointMallGameplayController@busTickRun');
+        Route::post('/point-mall/bus/collection/unlock', 'Api\\V2\\PointMallGameplayController@busCollectionUnlock');
+        Route::post('/point-mall/bus/collection/checkin', 'Api\\V2\\PointMallGameplayController@busCollectionCheckin');
+        Route::post('/point-mall/bus/collection/claim', 'Api\\V2\\PointMallGameplayController@busCollectionClaim');
         Route::post('/notifications/read-all', 'Api\\V2\\NotificationController@markAllRead');
         Route::post('/notifications/{id}/read', 'Api\\V2\\NotificationController@markRead');
         Route::post('/personal-access-tokens', 'Api\\V2\\PersonalAccessTokenController@store');
