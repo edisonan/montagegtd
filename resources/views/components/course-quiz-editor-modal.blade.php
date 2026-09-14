@@ -243,6 +243,7 @@
             if (resp && resp.code === 9999) {
                 closeQuizEditorModal();
                 showToast('测验已保存', 'success');
+                if (window.refreshQuizStatus) window.refreshQuizStatus();
                 return;
             }
             showToast((resp && resp.msg) ? resp.msg : '保存失败', 'error');

@@ -8877,6 +8877,216 @@ paths:
           $ref: "#/components/responses/ValidationError"
         default:
           $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/collection":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/bus/collection"
+      operationId: unknown_handle_get_point_mall_bus_collection
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busCollectionOverview
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/collection/checkin":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/bus/collection/checkin"
+      operationId: unknown_handle_post_point_mall_bus_collection_checkin
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busCollectionCheckin
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/collection/claim":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/bus/collection/claim"
+      operationId: unknown_handle_post_point_mall_bus_collection_claim
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busCollectionClaim
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/collection/leaderboard":
+    get:
+      tags:
+        - point-mall
+      summary: "GET /point-mall/bus/collection/leaderboard"
+      operationId: unknown_handle_get_point_mall_bus_collection_leaderboard
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busCollectionLeaderboard
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/point-mall/bus/collection/unlock":
+    post:
+      tags:
+        - point-mall
+      summary: "POST /point-mall/bus/collection/unlock"
+      operationId: unknown_handle_post_point_mall_bus_collection_unlock
+      description: |
+        Action: Api\\V2\\PointMallGameplayController@busCollectionUnlock
+        Capability: write
+      x-token-capability: "write"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FlexibleObject"
+            examples:
+              sample:
+                value:
+                  key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
   "/point-mall/bus/overview":
     get:
       tags:

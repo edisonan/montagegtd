@@ -344,5 +344,10 @@
                 loadPriorityTasks();
             });
         });
+
+        // 编辑任务弹窗保存成功后，无需整页刷新，直接重拉四象限列表
+        window.afterTaskUpdate = function () {
+            loadPriorityTasks();
+        };
     </script>
 @endsection

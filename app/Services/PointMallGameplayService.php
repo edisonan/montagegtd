@@ -580,7 +580,7 @@ class PointMallGameplayService
         $arrivedCount = (int)DB::table('point_bus_run_logs')->where('user_id', $userId)->where('run_status', 'arrived')->count();
         $rewardedCount = (int)DB::table('point_bus_run_logs')
             ->where('user_id', $userId)
-            ->whereRaw("JSON_EXTRACT(meta_payload, '$.reward_granted') = 'true'")
+            ->where('meta_payload', 'like', '%"reward_granted":true%')
             ->count();
 
         return array(

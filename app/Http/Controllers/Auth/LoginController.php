@@ -58,8 +58,24 @@ class LoginController extends Controller
         $this->accountService = $accountService;
     }
 
+    protected function isSupportedDriver($driver)
+    {
+        return in_array($driver, array(
+            'fanfou',
+            'twitter',
+            'github',
+            'weibo',
+            'wechat',
+            'wechatmini'
+        ), true);
+    }
+
     public function thirdRedirect(Request $request, $driver)
     {
+        if (!$this->isSupportedDriver($driver)) {
+            abort(404);
+        }
+
         if (in_array($driver, array(
             'fanfou',
             'twitter'
@@ -83,6 +99,10 @@ class LoginController extends Controller
 
     public function thirdCallback(Request $request, $driver)
     {
+        if (!$this->isSupportedDriver($driver)) {
+            abort(404);
+        }
+
         if (in_array($driver, array(
             'fanfou',
             'twitter'

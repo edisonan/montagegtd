@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\CustomException;
+use App\Models\Course;
 use App\Models\CourseItem;
 use App\Models\CourseQuiz;
 use App\Models\CourseQuizAttempt;
@@ -12,18 +13,22 @@ use App\Models\CourseReviewItem;
 use App\Models\UserProgress;
 use App\Repositories\CourseEnrollmentRepository;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CourseQuizService
 {
     protected $courseEnrollmentRepository;
     protected $courseService;
+    protected $llmStructuredTaskService;
 
     public function __construct(
         CourseEnrollmentRepository $courseEnrollmentRepository,
-        CourseService $courseService
+        CourseService $courseService,
+        LlmStructuredTaskService $llmStructuredTaskService
     ) {
         $this->courseEnrollmentRepository = $courseEnrollmentRepository;
         $this->courseService = $courseService;
+        $this->llmStructuredTaskService = $llmStructuredTaskService;
     }
 
     public function getQuizForItem($itemId)
@@ -47,6 +52,12 @@ class CourseQuizService
             $quiz->attempts_allowed = isset($data['attempts_allowed']) ? $data['attempts_allowed'] : null;
             $quiz->status = isset($data['status']) ? $data['status'] : 'published';
             $quiz->save();
+
+            // 测验已成功保存（AI 生成成功或手动编辑保存），清掉上次生成失败的标记
+            if (!empty($item->quiz_generation_error)) {
+                $item->quiz_generation_error = null;
+                $item->save();
+            }
 
             CourseQuizQuestion::where('quiz_id', $quiz->id)->delete();
             foreach (array_values($data['questions']) as $index => $questionData) {
@@ -80,6 +91,178 @@ class CourseQuizService
             }
             return $quiz->fresh(array('questions.options'));
         });
+    }
+
+    /**
+     * 课程内各章节是否有测试：返回 [item_id => bool]
+     */
+    public function statusForCourse($courseId)
+    {
+        $itemIds = CourseItem::where('course_id', $courseId)->pluck('id');
+        $hasQuizIds = CourseQuiz::whereIn('course_item_id', $itemIds)->pluck('course_item_id')->all();
+        $map = array();
+        foreach ($itemIds as $itemId) {
+            $map[(int)$itemId] = false;
+        }
+        foreach ($hasQuizIds as $itemId) {
+            $map[(int)$itemId] = true;
+        }
+        return $map;
+    }
+
+    /**
+     * 以章节为主线批量生成测试：为选中章节逐章调用 LLM 生成题目并落库。
+     * 单项失败不中断整体，逐项返回结果。
+     *
+     * @param Course $course
+     * @param array $itemIds
+     * @param array $options [question_count, passing_score]
+     * @return array ['results' => [...], 'success_count' => int, 'fail_count' => int]
+     */
+    public function generateForItems(Course $course, array $itemIds, array $options = array())
+    {
+        $questionCount = max(3, min(20, (int)($options['question_count'] ?? 5)));
+        $passingScore = max(1, min(100, (float)($options['passing_score'] ?? 70)));
+
+        $itemIds = array_values(array_unique(array_map('intval', $itemIds)));
+        $items = CourseItem::where('course_id', $course->id)
+            ->whereIn('id', $itemIds)
+            ->get()
+            ->keyBy('id');
+
+        $results = array();
+        $successCount = 0;
+        $failCount = 0;
+        foreach ($itemIds as $itemId) {
+            $item = $items->get($itemId);
+            if (!$item) {
+                $failCount++;
+                $results[] = array('item_id' => $itemId, 'title' => '', 'success' => false, 'error' => '章节不存在');
+                continue;
+            }
+            try {
+                $questions = $this->generateQuestionsForItem($item, $questionCount);
+                if (empty($questions)) {
+                    throw new CustomException('AI 未返回有效题目');
+                }
+                $quiz = $this->saveQuiz($item->id, array(
+                    'passing_score' => $passingScore,
+                    'attempts_allowed' => null,
+                    'status' => 'published',
+                    'questions' => $questions,
+                ));
+                $successCount++;
+                $results[] = array(
+                    'item_id' => (int)$item->id,
+                    'title' => $item->title,
+                    'success' => true,
+                    'quiz_id' => (int)$quiz->id,
+                    'question_count' => count($questions),
+                    'error' => null,
+                );
+            } catch (\Throwable $e) {
+                $failCount++;
+                $errorMessage = Str::limit($e->getMessage(), 200, '');
+                // 失败理由落库，供课程管理页刷新后仍可查看
+                $item->quiz_generation_error = $errorMessage;
+                $item->save();
+                $results[] = array(
+                    'item_id' => (int)$item->id,
+                    'title' => $item->title,
+                    'success' => false,
+                    'error' => $errorMessage,
+                );
+            }
+        }
+
+        return array(
+            'results' => $results,
+            'success_count' => $successCount,
+            'fail_count' => $failCount,
+        );
+    }
+
+    /**
+     * 调用 LLM 为一个章节生成测试题（严格 JSON 校验后转为题组结构）
+     */
+    protected function generateQuestionsForItem(CourseItem $item, $questionCount)
+    {
+        $title = trim((string)$item->title);
+        $description = trim((string)$item->description);
+        $content = trim(preg_replace('/\s+/u', ' ', strip_tags((string)$item->content)));
+        $content = mb_substr($content, 0, 4000);
+        $text = trim(implode("\n", array_filter(array(
+            $title !== '' ? '标题：' . $title : '',
+            $description !== '' ? '简介：' . $description : '',
+            $content !== '' ? '正文：' . $content : '',
+        ))));
+        if ($text === '') {
+            throw new CustomException('章节内容为空，无法生成测试');
+        }
+
+        $prompt = '你是课程测验设计师。请根据下面的课程章节内容，为学员生成 ' . $questionCount . ' 道选择题（单选或双选）测试学习效果。'
+            . '题目必须基于章节内容，难度适中，并给出答案解析。'
+            . "章节内容：\n" . $text . "\n"
+            . "返回严格 JSON，不要输出 Markdown 代码围栏：{\"questions\":[{\"question\":\"题干\",\"question_type\":\"single\",\"options\":[{\"content\":\"选项A\",\"is_correct\":true},{\"content\":\"选项B\",\"is_correct\":false}],\"explanation\":\"答案解析\"}]}\n"
+            . '要求：每题 3~6 个选项；question_type 为 single 时恰好一个 is_correct 为 true，为 multiple 时恰好两个 is_correct 为 true；共 ' . $questionCount . ' 道题。';
+
+        $result = $this->llmStructuredTaskService->runTask('course_quiz_generation', array(
+            array('role' => 'system', 'content' => '你是课程测验设计师，只输出合法 JSON。'),
+            array('role' => 'user', 'content' => $prompt),
+        ), array('response_format' => array('type' => 'json_object'), 'timeout' => 120));
+
+        if (empty($result['success'])) {
+            throw new CustomException($result['error'] ?: '测试生成失败');
+        }
+        $payload = $this->decodeJsonContent($result['content']);
+        $questions = isset($payload['questions']) && is_array($payload['questions']) ? $payload['questions'] : array();
+        if (empty($questions)) {
+            throw new CustomException('AI 未返回有效题目');
+        }
+
+        $normalized = array();
+        foreach (array_values($questions) as $index => $question) {
+            if (empty($question['question'])) continue;
+            $options = array();
+            $correctCount = 0;
+            foreach (array_values((array)($question['options'] ?? array())) as $optionIndex => $option) {
+                if (is_string($option)) {
+                    $option = array('content' => $option, 'is_correct' => $optionIndex === 0);
+                }
+                if (empty($option['content'])) continue;
+                $isCorrect = !empty($option['is_correct']);
+                if ($isCorrect) $correctCount++;
+                $options[] = array('content' => $option['content'], 'is_correct' => $isCorrect);
+            }
+            if (count($options) < 3 || $correctCount < 1) continue;
+            $questionType = ($question['question_type'] ?? 'single') === 'multiple' ? 'multiple' : 'single';
+            // 多选题目必须有两个正确答案，否则降级为单选并修正为第一个正确项
+            if ($questionType === 'multiple' && $correctCount !== 2) {
+                $questionType = 'single';
+                $fixed = 0;
+                foreach ($options as $k => $option) {
+                    $options[$k]['is_correct'] = $fixed < 1 && $option['is_correct'];
+                    if ($options[$k]['is_correct']) $fixed++;
+                }
+            }
+            $normalized[] = array(
+                'question' => $question['question'],
+                'question_type' => $questionType,
+                'explanation' => $question['explanation'] ?? null,
+                'points' => 1,
+                'source_type' => 'ai',
+                'options' => $options,
+            );
+        }
+        return $normalized;
+    }
+
+    protected function decodeJsonContent($content)
+    {
+        $content = trim((string)$content);
+        $content = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', $content);
+        $data = json_decode($content, true);
+        return is_array($data) ? $data : array();
     }
 
     public function submit($itemId, $userId, array $answers)

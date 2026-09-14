@@ -116,6 +116,25 @@
                 });
             }
 
+            function extractRegisterError(error) {
+                if (!error || !error.data) return '注册失败，请稍后重试';
+                if (error.data.errors) {
+                    var fieldErrors = [];
+                    Object.keys(error.data.errors).forEach(function (key) {
+                        var list = error.data.errors[key];
+                        if (list && list.length && fieldErrors.indexOf(list[0]) === -1) {
+                            fieldErrors.push(list[0]);
+                        }
+                    });
+                    if (fieldErrors.length) {
+                        return fieldErrors.join('；');
+                    }
+                }
+                if (error.data.msg) return error.data.msg;
+                if (error.data.message) return error.data.message;
+                return '注册失败，请稍后重试';
+            }
+
             form.addEventListener('submit', function(e) {
                 if (!window.TaskApiClient || typeof window.TaskApiClient.request !== 'function') {
                     return;
@@ -151,10 +170,7 @@
                 }).then(function() {
                     window.location.href = '{{ url('/index') }}';
                 }).catch(function(error) {
-                    var msg = (error && error.data && (error.data.msg || error.data.message))
-                        ? (error.data.msg || error.data.message)
-                        : '注册失败，请稍后重试';
-                    alert(msg);
+                    alert(extractRegisterError(error));
                 }).finally(function() {
                     if (submitBtn) {
                         submitBtn.disabled = false;

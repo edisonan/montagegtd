@@ -196,11 +196,16 @@
                                        name="name"
                                        id="task_name"
                                        placeholder="添加新任务，按回车键保存..."
-                                       class="input w-full pl-10"
+                                       class="input w-full pl-10 pr-10"
                                        autocomplete="off">
-                                <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
                                     <i class="fas fa-plus"></i>
                                 </div>
+                                <button type="button" id="taskAiParseBtn"
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full text-purple-500 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                                        title="AI 智能解析待办（解析输入内容并填充到新建待办弹窗）">
+                                    <i class="fas fa-wand-magic-sparkles text-sm"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -261,6 +266,54 @@
     <!-- 原有模态框保留 -->
     @include('components.task-update-modal')
     @include('components.journal-create-modal')
+
+    <!-- AI 智能解析待办弹窗 -->
+    <div id="taskAiParseModal" class="hidden fixed inset-0 z-50">
+        <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closeTaskAiParseModal()"></div>
+        <div class="fixed inset-0 flex items-center justify-center px-4">
+            <div class="w-full max-w-lg bg-white rounded-xl shadow-xl">
+                <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-wand-magic-sparkles text-purple-500"></i>
+                        <h3 class="text-base font-semibold text-gray-900">AI 智能解析待办</h3>
+                    </div>
+                    <button type="button" class="text-gray-400 hover:text-gray-700" onclick="closeTaskAiParseModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="px-5 py-4 space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="taskAiParseText" class="text-sm text-gray-700">待解析内容</label>
+                            <span class="text-xs text-gray-400">可粘贴多行，支持「明天下午3点」「重要紧急」等描述</span>
+                        </div>
+                        <textarea id="taskAiParseText" rows="5" maxlength="4000"
+                                  class="input w-full" placeholder="例如：&#10;明天下午3点开产品评审会，重要紧急，提醒今天下班前&#10;买牛奶&#10;周五前提交周报，置顶"></textarea>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-700 mb-1.5">默认模式</div>
+                        <div class="flex gap-3">
+                            <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+                                <input type="radio" name="aiParseMode" value="1" class="w-4 h-4 text-blue-600" checked>
+                                <i class="fas fa-briefcase text-blue-500 text-xs"></i>工作
+                            </label>
+                            <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+                                <input type="radio" name="aiParseMode" value="2" class="w-4 h-4 text-blue-600">
+                                <i class="fas fa-home text-green-500 text-xs"></i>生活
+                            </label>
+                        </div>
+                    </div>
+                    <div id="taskAiParseError" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600"></div>
+                </div>
+                <div class="px-5 py-4 border-t border-gray-200 flex justify-end gap-2">
+                    <button class="btn btn-outline" onclick="closeTaskAiParseModal()">取消</button>
+                    <button class="btn btn-primary" id="taskAiParseSubmit" onclick="runTaskAiParse()">
+                        <i class="fas fa-wand-magic-sparkles mr-1"></i>开始解析
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="taskScheduleModal" class="hidden fixed inset-0 z-50">
         <div class="fixed inset-0 bg-black bg-opacity-40" onclick="closeTaskScheduleModal()"></div>
@@ -761,11 +814,15 @@
         };
         let timer;
         let calibrationTimer;
+        let pomoReminderTimer;
         let mode = 1;
         const interval = 1000;
         const calibrationBaseInterval = 60000;
         const calibrationMaxInterval = 1800000;
-        const calibrationBackoffIntervals = [60000, 120000, 240000, 480000, 960000, 1800000];
+        // 划水/待记录提醒检查间隔：首次/最短 1 分钟，最长 5 分钟（原实现指数退避最长 30 分钟，导致提醒严重滞后）
+        const pomoReminderInterval = 60000;
+        const pomoReminderMaxInterval = 300000;
+        const calibrationBackoffMaxStep = 6;
         let remain = 0;
         let status = 1;
         const title = '蒙太奇 - 专注效率工具';
@@ -853,12 +910,35 @@
             showtasks();
             showfocuss();
 
-            // 启动指数退避校准定时器
+            // 启动状态校准定时器
             schedulePomoCalibration(calibrationBaseInterval);
+            // 启动独立的提醒检查定时器，保证番茄钟完成/划水提醒及时
+            schedulePomoReminderCheck();
+
+            // 页面重新可见时立即校准并检查提醒（后台标签页定时器会被浏览器节流）
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    return;
+                }
+                indexDebug('page visible: recalibrate and check reminder');
+                if (status === 2 || status === 4) {
+                    // 立即按墙上时钟补算倒计时，避免后台冻结导致番茄钟完成提醒延迟
+                    updatePomoCountdown();
+                }
+                maybeNotifyPomoReminder();
+                calibratePomoStatus();
+            });
 
             const pureModeToggle = document.getElementById('pureModeToggle');
             if (pureModeToggle) {
                 pureModeToggle.addEventListener('click', togglePureMode);
+            }
+
+            // 从cookie恢复纯净模式状态，按上次记录展示
+            if (getCookie("pure_mode") === "1") {
+                pureMode = true;
+                applyPureModeUI();
+                updateDisplay();
             }
 
             // 绑定键盘事件
@@ -909,8 +989,13 @@
             remain = Number(data.current_focus_remain || 0);
             originalRemain = remain;
             totalTime = status === 2 ? 1500 : (status === 4 ? 300 : 1500);
-            activePomoStartTime = data.active_focus && data.active_focus.start_time ? data.active_focus.start_time : '';
-            activePomoEndTime = data.active_focus && data.active_focus.end_time ? data.active_focus.end_time : '';
+            const activeFocusData = data.active_focus || {};
+            activePomoStartTime = activeFocusData.start_time ? activeFocusData.start_time : '';
+            if (status === 4 && activeFocusData.rest_end_time) {
+                activePomoEndTime = activeFocusData.rest_end_time;
+            } else {
+                activePomoEndTime = activeFocusData.end_time ? activeFocusData.end_time : '';
+            }
 
             const focusIdInput = document.getElementById('focus_id');
             if (focusIdInput) {
@@ -986,7 +1071,33 @@
             }, interval);
         }
 
+        // 兼容 Safari：'YYYY-MM-DD HH:mm:ss' 在 Safari 下 new Date 会解析失败
+        function parseServerDate(value) {
+            if (!value) {
+                return NaN;
+            }
+            if (value instanceof Date) {
+                return value.getTime();
+            }
+            if (typeof value === 'number') {
+                return value;
+            }
+            return new Date(String(value).replace(/-/g, '/')).getTime();
+        }
+
         function updatePomoCountdown() {
+            // 以服务端返回的结束时间为准推算剩余时间，避免后台标签页定时器节流导致的倒计时漂移/提醒延迟
+            if (activePomoEndTime) {
+                const endMs = parseServerDate(activePomoEndTime);
+                if (!isNaN(endMs)) {
+                    remain = Math.max(0, Math.round((endMs - Date.now()) / 1000));
+                } else {
+                    remain--;
+                }
+            } else {
+                remain--;
+            }
+
             if (remain <= 0) {
                 clearInterval(timer);
                 remain = 0;
@@ -994,7 +1105,6 @@
                 return;
             }
 
-            remain--;
             updateDisplay();
         }
 
@@ -1063,6 +1173,15 @@
         // 切换纯净模式
         function togglePureMode() {
             pureMode = !pureMode;
+            // 记录到cookie，下次访问按上次状态展示
+            setCookie("pure_mode", pureMode ? "1" : "0", 365);
+            applyPureModeUI();
+            // 立即更新一次显示
+            updateDisplay();
+        }
+
+        // 应用纯净模式UI状态
+        function applyPureModeUI() {
             const toggleBtn = document.getElementById('pureModeToggle');
             const timerContainer = document.getElementById('focusTimerContainer');
 
@@ -1072,20 +1191,21 @@
                     timerContainer.classList.add('opacity-0');
                 }
 
-                toggleBtn.innerHTML = '<i class="fas fa-eye mr-1"></i>显示时间';
-                toggleBtn.className = 'text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors';
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '<i class="fas fa-eye mr-1"></i>显示时间';
+                    toggleBtn.className = 'text-sm px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors';
+                }
             } else {
                 // 切换到正常模式
                 if (timerContainer) {
                     timerContainer.classList.remove('opacity-0');
                 }
 
-                toggleBtn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i>纯净模式';
-                toggleBtn.className = 'text-sm px-3 py-1 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors';
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '<i class="fas fa-eye-slash mr-1"></i>纯净模式';
+                    toggleBtn.className = 'text-sm px-3 py-1 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors';
+                }
             }
-
-            // 立即更新一次显示
-            updateDisplay();
         }
 
         function handlePomoComplete() {
@@ -1178,6 +1298,12 @@
             return '';
         }
 
+        // 提醒间隔：按次退避但封顶 5 分钟，避免重复打扰，同时保证足够及时
+        function getPomoNotifyInterval() {
+            const intervalByStep = pomoReminderInterval * Math.pow(2, pomoNotifyBackoffStep);
+            return Math.min(intervalByStep, pomoReminderMaxInterval);
+        }
+
         function maybeNotifyPomoReminder() {
             const message = getPomoReminderMessage();
             if (!message) {
@@ -1192,7 +1318,7 @@
             const focusId = document.getElementById('focus_id') ? document.getElementById('focus_id').value : '';
             const notifyKey = status + ':' + (focusId || 'none');
             const now = Date.now();
-            const requiredInterval = calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+            const requiredInterval = getPomoNotifyInterval();
 
             if (notifyKey === lastPomoNotifyKey && lastPomoNotifyAt && now - lastPomoNotifyAt < requiredInterval) {
                 indexDebug('pomo notify skipped', {
@@ -1216,10 +1342,10 @@
             notify(message);
             lastPomoNotifyKey = notifyKey;
             lastPomoNotifyAt = now;
-            pomoNotifyBackoffStep = Math.min(pomoNotifyBackoffStep + 1, calibrationBackoffIntervals.length - 1);
-            indexDebug('pomo notify backoff advanced', {
+            pomoNotifyBackoffStep = Math.min(pomoNotifyBackoffStep + 1, calibrationBackoffMaxStep);
+            indexDebug('pomo notify recorded', {
                 next_backoff_step: pomoNotifyBackoffStep,
-                next_interval_ms: calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)]
+                next_interval_ms: getPomoNotifyInterval()
             });
         }
 
@@ -1228,15 +1354,26 @@
                 return calibrationBaseInterval;
             }
 
+            // 待记录/划水状态需要尽快感知状态变化并提醒，按封顶退避校准（最长 5 分钟），不再延迟到 30 分钟
             if (status === 3) {
-                return calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+                return getPomoNotifyInterval();
             }
 
             if (status === 1 && canNotifyIdlePomo(new Date())) {
-                return calibrationBackoffIntervals[Math.min(pomoNotifyBackoffStep, calibrationBackoffIntervals.length - 1)];
+                return getPomoNotifyInterval();
             }
 
             return calibrationMaxInterval;
+        }
+
+        // 独立的提醒检查定时器：与状态校准解耦，保证划水/待记录提醒按固定频率触发
+        function schedulePomoReminderCheck(delay) {
+            clearTimeout(pomoReminderTimer);
+            const nextDelay = typeof delay === 'number' ? delay : pomoReminderInterval;
+            pomoReminderTimer = setTimeout(function() {
+                maybeNotifyPomoReminder();
+                schedulePomoReminderCheck();
+            }, nextDelay);
         }
 
         function schedulePomoCalibration(delay) {
@@ -1297,10 +1434,12 @@
                 maybeNotifyPomoReminder();
                 schedulePomoCalibration(getNextPomoCalibrationDelay());
             }).catch(function() {
+                // 同步失败时也要按当前状态安排在合理时间重试，避免划水/待记录提醒被拖到 30 分钟后
+                const retryDelay = getNextPomoCalibrationDelay();
                 indexDebug('pomo calibration failed', {
-                    next_delay_ms: calibrationMaxInterval
+                    next_delay_ms: retryDelay
                 });
-                schedulePomoCalibration(calibrationMaxInterval);
+                schedulePomoCalibration(retryDelay);
             });
         }
 
@@ -2213,6 +2352,91 @@
                 });
         }
 
+        // ===== AI 智能解析待办 =====
+        function openTaskAiParseModal() {
+            const input = document.getElementById('task_name');
+            if (input) {
+                document.getElementById('taskAiParseText').value = input.value.trim();
+            }
+            $('input[name="aiParseMode"][value="' + mode + '"]').prop('checked', true);
+
+            const errorBox = document.getElementById('taskAiParseError');
+            if (errorBox) {
+                errorBox.classList.add('hidden');
+            }
+            const submitBtn = document.getElementById('taskAiParseSubmit');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles mr-1"></i>开始解析';
+            }
+
+            document.getElementById('taskAiParseModal').classList.remove('hidden');
+            setTimeout(function() {
+                const textArea = document.getElementById('taskAiParseText');
+                if (textArea) {
+                    textArea.focus();
+                    textArea.setSelectionRange(textArea.value.length, textArea.value.length);
+                }
+            }, 150);
+        }
+
+        function closeTaskAiParseModal() {
+            document.getElementById('taskAiParseModal').classList.add('hidden');
+        }
+
+        function runTaskAiParse() {
+            const text = document.getElementById('taskAiParseText').value.trim();
+            if (!text) {
+                showNotification('warning', '请先输入要 AI 解析的内容');
+                return;
+            }
+            const aiModeInput = document.querySelector('input[name="aiParseMode"]:checked');
+            const aiMode = aiModeInput ? parseInt(aiModeInput.value, 10) : mode;
+
+            const submitBtn = document.getElementById('taskAiParseSubmit');
+            const errorBox = document.getElementById('taskAiParseError');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>解析中...';
+            if (errorBox) {
+                errorBox.classList.add('hidden');
+            }
+
+            if (!apiRequest) {
+                showNotification('error', 'API客户端未初始化');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles mr-1"></i>开始解析';
+                return;
+            }
+
+            apiRequest('POST', '/tasks/ai-parse', {
+                text: text,
+                mode: aiMode
+            }).then(function(response) {
+                if (!response || response.code != 9999 || !response.result) {
+                    throw new Error((response && response.msg) ? response.msg : '解析失败');
+                }
+                const items = response.result.items || [];
+                if (!items.length) {
+                    throw new Error('未解析到有效待办事项，请调整内容后重试');
+                }
+                closeTaskAiParseModal();
+                openTaskCreateModal({
+                    items: items,
+                    index: 0
+                });
+            }).catch(function(err) {
+                const msg = (err && err.message) ? err.message : '解析失败，请稍后重试';
+                showNotification('error', msg);
+                if (errorBox) {
+                    errorBox.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i>' + escapeHtml(msg);
+                    errorBox.classList.remove('hidden');
+                }
+            }).finally(function() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles mr-1"></i>开始解析';
+            });
+        }
+
         // 开始专注
         function startPomo() {
             if (!apiRequest) {
@@ -2323,6 +2547,27 @@
                         if (taskName) {
                             addNewTask(taskName);
                         }
+                    }
+                });
+            }
+
+            // AI 智能解析按钮
+            const taskAiParseBtn = document.getElementById('taskAiParseBtn');
+            if (taskAiParseBtn) {
+                taskAiParseBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openTaskAiParseModal();
+                });
+            }
+
+            // 绑定 AI 解析弹窗：Ctrl/Cmd + Enter 直接开始解析
+            const aiParseText = document.getElementById('taskAiParseText');
+            if (aiParseText) {
+                aiParseText.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault();
+                        runTaskAiParse();
                     }
                 });
             }
@@ -2773,5 +3018,21 @@
         }
 
         restoreTaskPanelState();
+
+        // 编辑任务 / 记录手账弹窗保存成功后，无需整页刷新，直接 AJAX 重拉列表
+        window.afterTaskUpdate = function () {
+            showtasks();
+        };
+        // 新建待办弹窗（含 AI 解析）保存成功后：清空输入框并刷新列表
+        window.afterTaskCreate = function () {
+            const taskInput = document.getElementById('task_name');
+            if (taskInput) {
+                taskInput.value = '';
+            }
+            showtasks();
+        };
+        window.afterJournalCreate = function () {
+            showfocuss();
+        };
     </script>
 @endsection

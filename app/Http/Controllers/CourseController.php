@@ -135,11 +135,11 @@ class CourseController extends Controller
     }
 
     /**
-     * 显示编辑课程表单（复用创建视图，JS 加载数据后走 v2 update）
+     * 显示单个课程的管理页面（Tab 标签页：基础信息 / 章节管理 / 测试管理 / 制品管理）
      */
     public function edit(Request $request, $id)
     {
-        return view('courses.create', ['editCourseId' => (int)$id]);
+        return view('courses.manage', ['courseId' => (int)$id]);
     }
 
     /**

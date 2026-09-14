@@ -225,7 +225,16 @@ class ArticleAiService
         $profileData['prompt_version'] = $classification['meta']['prompt_version'] ?? 'article_classification:v2';
         $profileData['analyzed_at'] = date('Y-m-d H:i:s');
 
-        $this->profileRepository->updateOrCreateByArticleId($article->id, $profileData);
+        try {
+            $this->profileRepository->updateOrCreateByArticleId($article->id, $profileData);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Duplicate key — race condition: another process already inserted this profile.
+            Log::warning('article ai profile upsert race, falling back to update', array(
+                'article_id' => $article->id,
+                'error' => $e->getMessage(),
+            ));
+            $this->profileRepository->updateByArticleId($article->id, $profileData);
+        }
 
         $this->taskRepository->update($task->id, array(
             'status' => 'success',

@@ -101,4 +101,9 @@ rsync -azv \
   "$ROOT_DIR/" \
   "${REMOTE_HOST}:${REMOTE_PATH}/"
 
+# 修补远程权限：本地新建文件可能为 0600，Web 服务（apache）无法读取会导致 500。
+# 仅“追加”读/执行权限（a+r / a+rx），不删除任何已有权限。
+# 注意 REMOTE_PATH 可能是符号链接（如 task -> task-pre），必须用 find -L 跟随。
+$SSH_CMD "$REMOTE_HOST" "find -L '$REMOTE_PATH' -type f ! -name '.env' ! -perm -004 -exec chmod a+r {} + 2>/dev/null; find -L '$REMOTE_PATH' -type d ! -perm -001 -exec chmod a+rx {} + 2>/dev/null"
+
 echo "Deploy complete."

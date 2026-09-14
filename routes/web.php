@@ -157,11 +157,11 @@ Route::group([
     Route::get('/article/proxyview', 'ArticleController@proxyView');
 
     // 文章简报
-    Route::get('/briefings', 'BriefingController@index');
+    Route::get('/briefings', 'BriefingV2Controller@index');
     Route::get('/briefings/config', 'BriefingController@config');
     Route::get('/briefings/config/{id}', 'BriefingController@config');
-    Route::get('/briefings/generate/{configId}', 'BriefingController@generate');
-    Route::get('/briefings/{id}', 'BriefingController@show');
+    Route::get('/briefings/generate/{configId}', 'BriefingV2Controller@generate');
+    Route::get('/briefings/{id}', 'BriefingV2Controller@show');
 
     Route::get('/focuss', 'FocusController@index');
     Route::get('/focusstoday', 'FocusController@todayFocuss');
@@ -259,7 +259,7 @@ Route::group([
     // 智能体管理页面 - 必须在API路由之后定义，以避免冲突
     Route::get('/llm/agentmanagement', function () {
         return view('llm.agentmanagement');
-    })->middleware('auth');
+    })->middleware('auth')->name('llm.agents.index');
     
     // 智能体草稿编辑页面
     Route::get('/llm/agents/{id}/draft', 'LlmAgentController@showDraftEditor')->middleware('auth');
@@ -271,6 +271,7 @@ Route::group([
     
     // 课程管理相关路由
     Route::get('/courses/{id}/edit', 'CourseController@edit');
+    Route::get('/courses/{id}/manage', 'CourseController@edit');
     Route::get('/courses/{id}/study', 'CourseController@study');
     Route::resource('courses', 'CourseController')->except(['edit', 'update', 'destroy']);
     Route::post('/courses/{id}/join', 'CourseController@joinCourse');

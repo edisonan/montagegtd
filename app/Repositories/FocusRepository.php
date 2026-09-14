@@ -50,6 +50,10 @@ class FocusRepository {
 	public function getFocusListSummary($filters = []) {
 		$focus = $this->buildFocusListQuery($filters);
 
+		// 聚合查询不能继承列表查询的 ORDER BY，否则 MySQL 严格模式会报错。
+		$durationFocus = clone $focus;
+		$durationFocus->getQuery()->orders = array();
+
 		return array(
 			'total' => (int)(clone $focus)->count(),
 			'avg_rating' => round((float)((clone $focus)->whereNotNull('rating')->avg('rating')), 1),
@@ -58,7 +62,7 @@ class FocusRepository {
 					->orWhereNull('review_note')
 					->orWhere('review_note', '');
 			})->count(),
-			'duration_minutes' => (int)(clone $focus)->select(DB::raw('COALESCE(SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)), 0) as aggregate'))->value('aggregate'),
+			'duration_minutes' => (int)$durationFocus->select(DB::raw('COALESCE(SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time)), 0) as aggregate'))->value('aggregate'),
 		);
 	}
 
@@ -180,7 +184,8 @@ class FocusRepository {
 	 * @return unknown
 	 */
 	public function getAllListByBetweenEndTime($startTime, $endTime) {
-		return Focus::where ( 'status', 1 )->where ( 'end_time', '>', $startTime )->where ( 'end_time', '<', $endTime )->get ();
+		// 使用左闭右开区间 [startTime, endTime)，配合每分钟调度可无缝覆盖，避免 end_time 恰好落在分钟边界时漏提醒
+		return Focus::where ( 'status', 1 )->where ( 'end_time', '>=', $startTime )->where ( 'end_time', '<', $endTime )->get ();
 	}
 	
 	/**
@@ -192,7 +197,8 @@ class FocusRepository {
 	 * @return unknown
 	 */
 	public function getAllListByRestBetweenEndTime($startTime, $endTime) {
-		return Focus::where ( 'status', 2 )->where ( 'rest_end_time', '>', $startTime )->where ( 'rest_end_time', '<', $endTime )->get ();
+		// 使用左闭右开区间 [startTime, endTime)，避免 rest_end_time 恰好落在分钟边界时漏提醒
+		return Focus::where ( 'status', 2 )->where ( 'rest_end_time', '>=', $startTime )->where ( 'rest_end_time', '<', $endTime )->get ();
 	}
 	
 	/**

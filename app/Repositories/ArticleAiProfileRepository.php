@@ -25,6 +25,11 @@ class ArticleAiProfileRepository
         );
     }
 
+    public function updateByArticleId($articleId, array $data)
+    {
+        return ArticleAiProfile::where('article_id', $articleId)->update($data);
+    }
+
     public function paginateByFilters(array $filters = array(), $perPage = 20)
     {
         $query = ArticleAiProfile::with('article')->orderBy('updated_at', 'desc');

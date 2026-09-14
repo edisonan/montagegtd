@@ -297,7 +297,12 @@
             }).then(function(resp) {
                 if (resp && resp.code === 9999) {
                     hideJournalCreateModal();
-                    window.location.reload();
+                    // 优先走页面提供的 AJAX 刷新钩子，避免整页刷新；未提供时回退为刷新页面
+                    if (typeof window.afterJournalCreate === 'function') {
+                        window.afterJournalCreate();
+                    } else {
+                        window.location.reload();
+                    }
                     return;
                 }
                 alert((resp && resp.msg) ? resp.msg : '提交失败');

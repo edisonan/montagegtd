@@ -105,6 +105,8 @@ Route::prefix('v2')->group(function () {
         Route::get('/point-mall/pond/overview', 'Api\\V2\\PointMallGameplayController@pondOverview');
         Route::get('/point-mall/lottery/overview', 'Api\\V2\\PointMallGameplayController@lotteryOverview');
         Route::get('/point-mall/bus/overview', 'Api\\V2\\PointMallGameplayController@busOverview');
+        Route::get('/point-mall/bus/collection', 'Api\\V2\\PointMallGameplayController@busCollectionOverview');
+        Route::get('/point-mall/bus/collection/leaderboard', 'Api\\V2\\PointMallGameplayController@busCollectionLeaderboard');
         Route::get('/statistics', 'Api\\V2\\StatisticsController@index');
         Route::get('/accounts', 'Api\\V2\\AccountController@index');
         Route::get('/personal-access-tokens', 'Api\\V2\\PersonalAccessTokenController@index');
@@ -144,6 +146,8 @@ Route::prefix('v2')->group(function () {
         Route::get('/courses/{id}', 'Api\\V2\\CourseController@show');
         Route::get('/courses/{courseId}/items', 'Api\\V2\\CourseItemController@index');
         Route::get('/courses/{courseId}/items/{id}', 'Api\\V2\\CourseItemController@show');
+        Route::get('/courses/{courseId}/quiz-status', 'Api\\V2\\CourseQuizController@status');
+        Route::get('/courses/{courseId}/artifact-status', 'Api\\V2\\ArtifactController@statusForCourse');
         Route::get('/course-items/structure/{courseId}', 'Api\\V2\\CourseItemController@getStructure');
         Route::get('/course-items/{id}', 'Api\\V2\\CourseItemController@show');
         Route::get('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@show');
@@ -170,9 +174,9 @@ Route::prefix('v2')->group(function () {
         Route::get('/digest/profile', 'Api\\V2\\DigestController@profile');
         Route::get('/digest/pages', 'Api\\V2\\DigestController@pages');
         Route::get('/digest/pages/{id}', 'Api\\V2\\DigestController@showPage');
-        Route::get('/briefings/configs', 'Api\\V2\\BriefingController@configs');
-        Route::get('/briefings/pages', 'Api\\V2\\BriefingController@pages');
-        Route::get('/briefings/pages/{id}', 'Api\\V2\\BriefingController@showPage');
+        Route::get('/briefings/configs', 'Api\\V2\\BriefingV2Controller@configs');
+        Route::get('/briefings/pages', 'Api\\V2\\BriefingV2Controller@pages');
+        Route::get('/briefings/pages/{id}', 'Api\\V2\\BriefingV2Controller@showPage');
     });
 
     // Code 的访问策略由应用/文件自身决定，默认公开；PAT 模式由 code.access 校验。
@@ -251,6 +255,8 @@ Route::prefix('v2')->group(function () {
         Route::put('/focuss/{focus}', 'Api\\V2\\FocusController@update');
         Route::delete('/focuss/{focus}', 'Api\\V2\\FocusController@destroy');
 
+        Route::post('/tasks/ai-parse', 'Api\\V2\\TaskController@aiParse');
+
         Route::post('/notes', 'Api\\V2\\NoteController@store');
         Route::post('/notes/upload', 'Api\\V2\\NoteController@upload');
         Route::put('/notes/{note}', 'Api\\V2\\NoteController@update');
@@ -275,6 +281,9 @@ Route::prefix('v2')->group(function () {
         Route::post('/point-mall/bus/buy-line', 'Api\\V2\\PointMallGameplayController@busBuyLine');
         Route::post('/point-mall/bus/start-run', 'Api\\V2\\PointMallGameplayController@busStartRun');
         Route::post('/point-mall/bus/run/{runId}/tick', 'Api\\V2\\PointMallGameplayController@busTickRun');
+        Route::post('/point-mall/bus/collection/unlock', 'Api\\V2\\PointMallGameplayController@busCollectionUnlock');
+        Route::post('/point-mall/bus/collection/checkin', 'Api\\V2\\PointMallGameplayController@busCollectionCheckin');
+        Route::post('/point-mall/bus/collection/claim', 'Api\\V2\\PointMallGameplayController@busCollectionClaim');
         Route::post('/notifications/read-all', 'Api\\V2\\NotificationController@markAllRead');
         Route::post('/notifications/{id}/read', 'Api\\V2\\NotificationController@markRead');
         Route::post('/personal-access-tokens', 'Api\\V2\\PersonalAccessTokenController@store');
@@ -306,11 +315,12 @@ Route::prefix('v2')->group(function () {
         Route::post('/digest/pages/generate', 'Api\\V2\\DigestController@generate');
         Route::post('/briefings/configs', 'Api\\V2\\BriefingController@saveConfig');
         Route::delete('/briefings/configs/{id}', 'Api\\V2\\BriefingController@destroyConfig');
-        Route::post('/briefings/configs/{configId}/generate', 'Api\\V2\\BriefingController@generate');
-        Route::delete('/briefings/pages/{id}', 'Api\\V2\\BriefingController@destroyPage');
+        Route::post('/briefings/configs/{configId}/generate', 'Api\\V2\\BriefingV2Controller@generate');
+        Route::delete('/briefings/pages/{id}', 'Api\\V2\\BriefingV2Controller@destroyPage');
         Route::delete('/articles/{articleSub}', 'Api\\V2\\ArticleController@destroy');
 
         Route::post('/artifacts/generate', 'Api\\V2\\ArtifactController@generate');
+        Route::post('/artifacts/generate-batch', 'Api\\V2\\ArtifactController@generateBatch');
         Route::post('/artifacts/{artifact}/to-mind', 'Api\\V2\\ArtifactController@toMind');
         Route::delete('/artifacts/{artifact}', 'Api\\V2\\ArtifactController@destroy');
 
@@ -339,6 +349,7 @@ Route::prefix('v2')->group(function () {
         Route::post('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
         Route::put('/course-items/{id}/quiz', 'Api\\V2\\CourseQuizController@store');
         Route::post('/course-items/{id}/quiz/attempts', 'Api\\V2\\CourseQuizController@submit');
+        Route::post('/courses/{courseId}/quizzes/generate', 'Api\\V2\\CourseQuizController@generate');
         Route::delete('/course-items/{id}', 'Api\\V2\\CourseItemController@destroy');
         Route::post('/courses/{courseId}/discussions', 'Api\\V2\\DiscussionController@store');
         Route::post('/courses/{courseId}/discussions/{id}/reply', 'Api\\V2\\DiscussionController@reply');

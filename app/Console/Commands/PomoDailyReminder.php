@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\FocusService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 专注每日提醒
@@ -41,7 +42,7 @@ class FocusDailyReminder extends Command
         }
 
         $type = $this->argument('type');
-        if ($type != 1 || $type != 2) {
+        if ($type != 1 && $type != 2) {
             Log::error('focus daily type wrong');
             return;
         }

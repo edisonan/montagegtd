@@ -528,5 +528,10 @@
 
             loadJournals(journalPageState.currentPage);
         });
+
+        // 新增手账弹窗保存成功后，无需整页刷新，直接重拉当前页列表
+        window.afterJournalCreate = function () {
+            loadJournals(journalPageState.currentPage);
+        };
     </script>
 @endsection

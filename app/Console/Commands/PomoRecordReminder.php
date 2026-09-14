@@ -41,6 +41,11 @@ class FocusRecordReminder extends Command
          */
         $focusService = app(FocusService::class);
 
+        // 立即（专注结束后 1 分钟内）：保证首个提醒及时，原实现最早也要 5 分钟后才提醒
+        $startTime = date('Y-m-d H:i:s', time() - 60);
+        $endTime = date('Y-m-d H:i:s', time());
+        $focusService->scheduleFocusRecordReminder($startTime, $endTime);
+
         // 5分钟
         $startTime = date('Y-m-d H:i:s', time() - 300);
         $endTime = date('Y-m-d H:i:s', strtotime($startTime) + 60);

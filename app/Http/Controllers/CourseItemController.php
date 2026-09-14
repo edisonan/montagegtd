@@ -35,7 +35,7 @@ class CourseItemController extends Controller
             }
         }
 
-        return view('course-items.index');
+        return redirect('/courses/' . (int)$courseId . '/manage?tab=chapters');
     }
 
     /**

@@ -21,7 +21,7 @@
                 <div class="flex items-center gap-3">
                     <a href="{{ url('/course/management') }}" class="btn btn-primary">
                         <i class="fas fa-compass mr-2"></i>
-                        浏览课程
+                        课程中心
                     </a>
                     <a href="{{ url('/courses/create') }}" class="btn btn-outline">
                         <i class="fas fa-plus-circle mr-2"></i>
@@ -207,7 +207,7 @@
                     + '<i class="fas fa-book-open text-gray-400 text-3xl"></i></div>'
                     + '<h3 class="text-lg font-semibold text-gray-900 mb-3">暂无课程</h3>'
                     + '<p class="text-gray-600 mb-8 max-w-md mx-auto">您还没有加入任何课程，前往课程中心开始学习吧！</p>'
-                    + '<a href="/course/management" class="btn btn-primary"><i class="fas fa-compass mr-2"></i>浏览课程</a>'
+                    + '<a href="/course/management" class="btn btn-primary"><i class="fas fa-compass mr-2"></i>课程中心</a>'
                     + '</div>'
                 );
                 return;
