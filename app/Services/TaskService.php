@@ -208,7 +208,15 @@ class TaskService {
 			$params ['status'] = 2;
 			$params ['is_doing'] = 0;
 			
-			$this->journalService->storeJournal ( 2, $task->name, date ( 'Y-m-d H:i:s' ), date ( 'Y-m-d H:i:s' ) );
+			$journalName = $task->name;
+			if (! empty ( $task->parent_task_id )) {
+				$parentTask = $task->parentTask;
+				if (! empty ( $parentTask )) {
+					$journalName = $parentTask->name . '-' . $task->name;
+				}
+			}
+			
+			$this->journalService->storeJournal ( 2, $journalName, date ( 'Y-m-d H:i:s' ), date ( 'Y-m-d H:i:s' ) );
 		} elseif ($type == 'restore') {
 			$params ['status'] = 1;
 			$params ['is_doing'] = 0;
