@@ -1477,7 +1477,7 @@
             const endTime = formatTime(new Date(focusData.end_time));
             const fullName = escapeHtml((focusData.name || '未命名专注'));
             const ratingHtml = renderRatingStars(focusData.rating);
-            const reviewNote = escapeHtml(focusData.review_note || '');
+            const reviewNote = formatNoteHtml(focusData.review_note);
 
             return `
     <li id="focus${focusData.id}" class="focus-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
@@ -1495,7 +1495,7 @@
             </div>
             <div class="flex items-center gap-1 flex-shrink-0 ml-2">
                 <button class="action-button text-gray-400 hover:text-amber-500"
-                        onclick='openReviewModal("focus", ${focusData.id}, ${JSON.stringify(String(focusData.name || '未命名专注'))}, ${focusData.rating || 'null'}, ${JSON.stringify(String(focusData.review_note || ''))})'
+                        onclick="openReviewModal('focus', ${focusData.id})"
                         title="评分备注">
                     <i class="fas fa-star-half-alt"></i>
                 </button>
@@ -1621,7 +1621,7 @@
             const isDoingList = listType === 'doing';
             const fullTaskName = escapeHtml(data.name || '');
             const ratingHtml = renderRatingStars(data.rating);
-            const reviewNote = escapeHtml(data.review_note || '');
+            const reviewNote = formatNoteHtml(data.review_note);
             const scheduleSummary = [formatDateTime(data.planned_start_time), formatDateTime(data.planned_end_time)].filter(Boolean).join(' ~ ');
             const remindSummary = formatDateTime(data.remindtime);
             const deadlineBarHtml = getTodayDeadlineBarHtml(data.deadline);
@@ -1706,7 +1706,7 @@
             </button>
 
             <button class="action-button text-gray-400 hover:text-amber-500"
-                    onclick='openReviewModal("task", ${data.id}, ${JSON.stringify(String(data.name || ''))}, ${data.rating || 'null'}, ${JSON.stringify(String(data.review_note || ''))})'
+                    onclick="openReviewModal('task', ${data.id})"
                     title="评分备注">
                 <i class="fas fa-star"></i>
             </button>
@@ -1770,7 +1770,7 @@
                     <i class="fas fa-folder-minus"></i>
                 </button>
                 <button class="action-button text-gray-400 hover:text-amber-500"
-                        onclick='openReviewModal("task", ${task.id}, ${JSON.stringify(String(task.name || ''))}, ${task.rating || 'null'}, ${JSON.stringify(String(task.review_note || ''))})'
+                        onclick="openReviewModal('task', ${task.id})"
                         title="评分备注">
                     <i class="fas fa-star"></i>
                 </button>
@@ -2512,6 +2512,17 @@
             return div.innerHTML;
         }
 
+        // 备注展示：先转义，再保留换行；清理多余空白，避免特殊字符污染页面
+        function formatNoteHtml(text) {
+            const normalized = String(text == null ? '' : text)
+                .replace(/\r\n|\r/g, '\n')
+                .trim();
+            if (!normalized) {
+                return '';
+            }
+            return escapeHtml(normalized).replace(/\n/g, '<br>');
+        }
+
         function bindEvents() {
             // 切换模式
             document.getElementById('changeModeBtn').addEventListener('click', function() {
@@ -2838,15 +2849,40 @@
             });
         }
 
-        function openReviewModal(type, id, name, rating, note) {
-            reviewTargetType = type;
-            reviewTargetId = Number(id || 0);
-            document.getElementById('reviewModalTitle').textContent = type === 'task' ? '任务评分与备注' : '专注评分与备注';
+        function fetchReviewTarget(type, id) {
+            if (!apiRequest || !id || type !== 'task') {
+                return Promise.resolve(null);
+            }
+            return getTaskDetail(id);
+        }
+
+        function applyReviewModalData(type, name, rating, note) {
             document.getElementById('reviewTargetName').textContent = name || (type === 'task' ? '任务' : '专注');
             document.getElementById('reviewScoreInput').value = rating ? String(rating) : '';
             renderReviewScoreUI();
             document.getElementById('reviewNoteInput').value = note || '';
+        }
+
+        function openReviewModal(type, id, name, rating, note) {
+            reviewTargetType = type;
+            reviewTargetId = Number(id || 0);
+            document.getElementById('reviewModalTitle').textContent = type === 'task' ? '任务评分与备注' : '专注评分与备注';
             document.getElementById('reviewModal').classList.remove('hidden');
+
+            // 调用方已提供完整数据（如完成提示）时直接回填；否则按 id 拉取最新数据，
+            // 避免把备注等文本拼进内联 onclick 导致特殊字符污染页面。
+            if (typeof name === 'string') {
+                applyReviewModalData(type, name, rating, note);
+                return;
+            }
+
+            applyReviewModalData(type, '', null, '');
+            fetchReviewTarget(type, reviewTargetId).then(function(data) {
+                if (!data) {
+                    return;
+                }
+                applyReviewModalData(type, data.name || '', data.rating || null, data.review_note || '');
+            });
         }
 
         function closeReviewModal() {
