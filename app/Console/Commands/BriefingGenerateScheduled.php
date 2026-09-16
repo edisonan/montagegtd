@@ -5,6 +5,9 @@ namespace App\Console\Commands;
 use App\Services\BriefingGenerationService;
 use Illuminate\Console\Command;
 
+/**
+ * 文章简报定时生成
+ */
 class BriefingGenerateScheduled extends Command
 {
     protected $signature = 'briefing:generate-scheduled {--limit=50 : Max configs to process} {--check-time= : Force a specific HH:MM check time, defaults to now (Asia/Shanghai)}';

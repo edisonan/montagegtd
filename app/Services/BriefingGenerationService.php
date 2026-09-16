@@ -14,11 +14,22 @@ use Illuminate\Support\Facades\Log;
 /**
  * 文章简报生成服务
  *
+ * 管线要点：
+ * 1. 输出 max_tokens 提到 8192，避免结构化 JSON 被 reasoning 内容截断；
+ * 2. 标签聚合移出 LLM 输出，改由 AI 画像标签确定性聚合（top 15），大幅降低输出预算；
+ * 3. LLM 失败自动重试一次（附「直接输出 JSON，禁止思考过程」指令）；
+ * 4. 兜底结果显式标记 fallback=1 并记录真实失败原因；
+ * 5. topic_count 存「真实热点数」，候选数单独存 candidate_count；
+ * 6. 趋势/信号支持多佐证：LLM 输出 article_ids（1~5 条），逐条展示相关候选文章。
+ *
  * @author edison.an
  */
 class BriefingGenerationService
 {
     const MAX_PULL_HOURS = 24;
+    // 推理模型会把大量输出预算消耗在 reasoning_content 上，故给正文留足余量。
+    const MAX_OUTPUT_TOKENS = 8192;
+    const MAX_TAG_GROUPS = 15;
 
     protected $configRepository;
     protected $pageRepository;
@@ -66,6 +77,7 @@ class BriefingGenerationService
             'config_id' => $config->id,
             'title' => $content['title'],
             'topic_count' => (int)$content['topic_count'],
+            'candidate_count' => $candidates->count(),
             'time_window' => $this->formatTimeWindow($coverStart, $coverEnd),
             'model_name' => $content['model_name'],
             'cover_time_start' => $coverStart->toDateTimeString(),
@@ -76,16 +88,28 @@ class BriefingGenerationService
             'tag_aggregation_json' => $content['tag_aggregation'],
             'article_ids_json' => $candidates->pluck('article_id')->values()->all(),
             'status' => 'success',
+            'fallback' => !empty($content['fallback']) ? 1 : 0,
+            'error_message' => isset($content['error']) && $content['error'] !== '' ? mb_substr($content['error'], 0, 255) : null,
             'generated_at' => $coverEnd->toDateTimeString(),
         ));
 
-        $this->configRepository->update($config->id, array(
-            'last_generated_at' => $coverEnd->toDateTimeString(),
-        ));
+        if (!empty($content['fallback'])) {
+            Log::warning('briefing fallback, config=' . $config->id . ', page=' . $page->id
+                . ', reason=' . (string)$page->error_message . ', candidates=' . $candidates->count());
+        } else {
+            Log::info('briefing generated, config=' . $config->id . ', page=' . $page->id
+                . ', candidates=' . $candidates->count() . ', model=' . (string)$page->model_name);
+        }
 
         $this->notifyGenerated($config, $page);
 
-        return array('status' => 'success', 'page_id' => $page->id);
+        return array(
+            'status' => 'success',
+            'page_id' => $page->id,
+            'fallback' => (int)$page->fallback,
+            'error' => $page->error_message,
+            'candidates' => $candidates->count(),
+        );
     }
 
     /**
@@ -174,7 +198,7 @@ class BriefingGenerationService
 
         $subs = $query->orderBy('article_subs.published', 'desc')->limit(200)->get();
 
-        // 仅保留有正文/标题的有效候选，并附加 AI 画像
+        // 仅保留有标题的有效候选，并附加 AI 画像
         return $subs->filter(function ($sub) {
             $article = $sub->article;
             return $article && trim((string)$article->subject) !== '';
@@ -201,6 +225,9 @@ class BriefingGenerationService
             ->all();
     }
 
+    /**
+     * 生成：最多两次尝试（第二次附「禁止思考过程」指令），失败返回兜底并记录原因。
+     */
     protected function generateBriefingContent($config, Collection $candidates)
     {
         $sourceLines = array();
@@ -219,49 +246,74 @@ class BriefingGenerationService
 
         $supplement = trim((string)$config->supplement);
         $pullHours = max(1, min(self::MAX_PULL_HOURS, (int)$config->pull_hours));
+        $modelName = 'fallback-local';
+        $errorNotes = array();
 
-        $messages = array(
-            array(
-                'role' => 'system',
-                'content' => '你是资深内容编辑。请根据给定候选文章生成一份结构化的中文文章简报，只输出 JSON，不要输出其他内容。'
-                    . ' JSON 字段如下：'
-                    . ' {"title": string(简报标题), "hot_topics": string[](本次主要包含的热点内容关键词，3~6个), '
-                    . ' "trends": object[](今日趋势，最多5条，每条 {"title": string, "summary": string(2句话简述), "article_id": int}), '
-                    . ' "signals": object[](待观察信号，最多6条，每条 {"title": string, "summary": string, "article_id": int}), '
-                    . ' "tag_aggregation": object[](标签聚合，每条 {"tag": string, "article_ids": int[]})}',
-            ),
-            array(
-                'role' => 'user',
-                'content' => "拉取时间范围：前 {$pullHours} 小时。\n"
-                    . ($supplement !== '' ? "补充要求：{$supplement}\n" : '')
-                    . "候选文章（每行一条）：\n" . implode("\n", $sourceLines)
-                    . "\n\n请生成简报 JSON。今日趋势与待观察信号的 article_id 必须来自上面给出的候选文章。",
-            ),
+        $attempts = array(
+            1 => ' 直接输出最终 JSON，不要输出任何思考过程、分析或解释。保持精炼：每条 summary 控制在 40~80 字。',
+            2 => ' 再次强调：只输出 JSON 本身，禁止任何思考过程/解释/额外文字。保持精炼：每条 summary 控制在 40~80 字。',
         );
 
-        $llmResult = $this->llmStructuredTaskService->runTask(
-            'briefing_generation',
-            $messages,
-            array(
-                'response_format' => array('type' => 'json_object'),
-                'timeout' => 120,
-            )
-        );
+        foreach ($attempts as $attemptNo => $extraInstruction) {
+            $systemContent = '你是资深内容编辑。请根据给定候选文章生成一份结构化的中文文章简报，只输出 JSON，不要输出其他内容。'
+                . ' JSON 字段如下：'
+                . ' {"title": string(简报标题), "hot_topics": string[](本次主要包含的热点内容关键词，3~6个), '
+                . ' "trends": object[](今日趋势，最多5条，每条 {"title": string, "summary": string(2句话简述), "article_ids": int[](佐证文章id，1~5条，尽量列出所有与主题直接相关的候选文章)}), '
+                . ' "signals": object[](待观察信号，最多6条，每条 {"title": string, "summary": string, "article_ids": int[](佐证文章id，1~5条，尽量列出所有与主题直接相关的候选文章)})}'
+                . ' 注意：每条趋势/信号请给出全部直接相关的佐证文章 id，而不是只给一篇。'
+                . $extraInstruction;
 
-        $modelName = isset($llmResult['meta']['model_name']) ? (string)$llmResult['meta']['model_name'] : 'fallback-local';
+            $messages = array(
+                array(
+                    'role' => 'system',
+                    'content' => $systemContent,
+                ),
+                array(
+                    'role' => 'user',
+                    'content' => "拉取时间范围：前 {$pullHours} 小时。\n"
+                        . ($supplement !== '' ? "补充要求：{$supplement}\n" : '')
+                        . "候选文章（每行一条）：\n" . implode("\n", $sourceLines)
+                        . "\n\n请生成简报 JSON。今日趋势与待观察信号的 article_ids 必须来自上面给出的候选文章。",
+                ),
+            );
 
-        if (!empty($llmResult['success']) && !empty($llmResult['content'])) {
-            try {
-                $decoded = json_decode(trim((string)$llmResult['content']), true);
-            } catch (\Throwable $e) {
+            $llmResult = $this->llmStructuredTaskService->runTask(
+                'briefing_generation',
+                $messages,
+                array(
+                    'response_format' => array('type' => 'json_object'),
+                    'timeout' => 120,
+                    'max_tokens' => self::MAX_OUTPUT_TOKENS,
+                )
+            );
+
+            $modelName = isset($llmResult['meta']['model_name']) ? (string)$llmResult['meta']['model_name'] : $modelName;
+
+            if (!empty($llmResult['success']) && !empty($llmResult['content'])) {
                 $decoded = null;
-            }
-            if (is_array($decoded) && json_last_error() === JSON_ERROR_NONE) {
-                return $this->buildResultFromDecoded($config, $decoded, $candidates, $modelName);
+                try {
+                    $decoded = json_decode(trim((string)$llmResult['content']), true);
+                } catch (\Throwable $e) {
+                    $decoded = null;
+                }
+                if (is_array($decoded) && json_last_error() === JSON_ERROR_NONE) {
+                    return $this->buildResultFromDecoded($config, $decoded, $candidates, $modelName) + array(
+                        'fallback' => false,
+                        'error' => '',
+                        'retries' => $attemptNo - 1,
+                    );
+                }
+                $errorNotes[] = 'attempt' . $attemptNo . ': invalid_json(' . mb_strlen((string)$llmResult['content']) . 'B)';
+            } else {
+                $errorNotes[] = 'attempt' . $attemptNo . ': ' . trim((string)($llmResult['error'] ?? 'empty_content'));
             }
         }
 
-        return $this->buildFallbackResult($config, $candidates, $modelName);
+        $fallback = $this->buildFallbackResult($config, $candidates, $modelName);
+        $fallback['fallback'] = true;
+        $fallback['error'] = implode('; ', $errorNotes);
+        $fallback['retries'] = count($attempts);
+        return $fallback;
     }
 
     protected function buildResultFromDecoded($config, array $decoded, Collection $candidates, $modelName)
@@ -283,33 +335,14 @@ class BriefingGenerationService
             }
         }
 
-        $tagAggregation = array();
-        foreach ((array)($decoded['tag_aggregation'] ?? array()) as $tagGroup) {
-            $tag = trim((string)($tagGroup['tag'] ?? ''));
-            if ($tag === '') {
-                continue;
-            }
-            $articleIds = array();
-            foreach ((array)($tagGroup['article_ids'] ?? array()) as $aid) {
-                $aid = (int)$aid;
-                if ($aid > 0 && isset($byId[$aid])) {
-                    $articleIds[] = $aid;
-                }
-            }
-            if (!empty($articleIds)) {
-                $tagAggregation[] = array('tag' => $tag, 'article_ids' => array_values($articleIds));
-            }
-        }
-
-        // 若 LLM 未给出标签聚合，则按候选的 AI 标签自动聚合兜底
-        if (empty($tagAggregation)) {
-            $tagAggregation = $this->buildTagAggregationFromCandidates($candidates);
-        }
-
         $title = trim((string)($decoded['title'] ?? ''));
         if ($title === '') {
             $title = '前' . max(1, (int)$config->pull_hours) . '小时文章简报';
         }
+
+        // 标签聚合一律走确定性聚合（AI 画像标签），并按文章数排序取 top N，避免「标签墙」
+        $tagAggregation = $this->buildTagAggregationFromCandidates($candidates);
+        $tagAggregation = array_slice($tagAggregation, 0, self::MAX_TAG_GROUPS);
 
         return array(
             'title' => mb_substr($title, 0, 120),
@@ -332,14 +365,16 @@ class BriefingGenerationService
             }
         }
 
-        $count = $candidates->count();
+        $tagAggregation = $this->buildTagAggregationFromCandidates($candidates);
+        $tagAggregation = array_slice($tagAggregation, 0, self::MAX_TAG_GROUPS);
+
         return array(
             'title' => '前' . max(1, (int)$config->pull_hours) . '小时文章简报',
             'hot_topics' => $topics,
-            'topic_count' => $count,
+            'topic_count' => count($topics),
             'trends' => $this->buildFallbackItems($candidates->take(5)),
             'signals' => array(),
-            'tag_aggregation' => $this->buildTagAggregationFromCandidates($candidates),
+            'tag_aggregation' => $tagAggregation,
             'model_name' => $modelName,
         );
     }
@@ -353,6 +388,11 @@ class BriefingGenerationService
         return $items;
     }
 
+    /**
+     * 规范化趋势/信号条目：支持多佐证。
+     * 兼容两种来源：LLM 输出的 article_ids（int[]）或历史数据/兜底的 article_id（int）。
+     * 仅保留候选池内存在的 id，去重、限量（最多 5 条佐证）。
+     */
     protected function normalizeArticleItems(array $rawItems, array $byId)
     {
         $items = array();
@@ -360,14 +400,42 @@ class BriefingGenerationService
             if (!is_array($item)) {
                 continue;
             }
-            $articleId = (int)($item['article_id'] ?? 0);
-            if ($articleId <= 0 || !isset($byId[$articleId])) {
+            $ids = array();
+            foreach ((array)($item['article_ids'] ?? array()) as $aid) {
+                $aid = (int)$aid;
+                if ($aid > 0) {
+                    $ids[$aid] = $aid;
+                }
+            }
+            $single = (int)($item['article_id'] ?? 0);
+            if ($single > 0) {
+                $ids[$single] = $single;
+            }
+            $ids = array_values($ids);
+            if (empty($ids)) {
                 continue;
             }
+
+            // 过滤：id 必须在候选池内，且最多保留 5 条
+            $valid = array();
+            foreach ($ids as $aid) {
+                if (isset($byId[$aid])) {
+                    $valid[] = $aid;
+                }
+                if (count($valid) >= 5) {
+                    break;
+                }
+            }
+            if (empty($valid)) {
+                continue;
+            }
+
+            $firstId = $valid[0];
             $items[] = array(
-                'title' => trim((string)($item['title'] ?? '') ?: (string)$byId[$articleId]->article->subject),
+                'title' => trim((string)($item['title'] ?? '') ?: (string)$byId[$firstId]->article->subject),
                 'summary' => trim((string)($item['summary'] ?? '')),
-                'article_id' => $articleId,
+                'article_id' => $firstId,
+                'article_ids' => $valid,
             );
         }
         return $items;
@@ -376,10 +444,12 @@ class BriefingGenerationService
     protected function articleItem($sub)
     {
         $profile = optional($sub->article)->aiProfile;
+        $id = (int)$sub->article_id;
         return array(
             'title' => trim((string)$sub->article->subject),
             'summary' => trim((string)optional($profile)->summary),
-            'article_id' => (int)$sub->article_id,
+            'article_id' => $id,
+            'article_ids' => array($id),
         );
     }
 

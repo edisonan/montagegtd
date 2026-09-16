@@ -78,10 +78,8 @@ class Kernel extends ConsoleKernel
             1
         ))->everyTenMinutes();
         $schedule->command('articles:classify-pending --limit=20 --backfill=50')->everyFiveMinutes();
-        // 文章简报 v2（已替换 v1）：每 5 分钟巡检一次，到达配置定时时间的简报自动生成
-        $schedule->command('briefing-v2:generate-scheduled --limit=50')->everyFiveMinutes();
-        // 文章简报 v1（已废弃，如需临时启用取消下一行注释）
-        // $schedule->command('briefing:generate-scheduled --limit=50')->everyFiveMinutes();
+        // 文章简报：每 5 分钟巡检一次，到达配置定时时间的简报自动生成
+        $schedule->command('briefing:generate-scheduled --limit=50')->everyFiveMinutes();
         $schedule->command('feed_common', array(
             2
         ))->hourly();

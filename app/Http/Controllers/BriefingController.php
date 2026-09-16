@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\BriefingConfigRepository;
 use App\Repositories\BriefingPageRepository;
 use App\Services\BriefingGenerationService;
 use Illuminate\Http\Request;
@@ -14,17 +13,14 @@ use Illuminate\Http\Request;
  */
 class BriefingController extends Controller
 {
-    protected $configRepository;
     protected $pageRepository;
     protected $generationService;
 
     public function __construct(
-        BriefingConfigRepository $configRepository,
         BriefingPageRepository $pageRepository,
         BriefingGenerationService $generationService
     ) {
         $this->middleware('auth');
-        $this->configRepository = $configRepository;
         $this->pageRepository = $pageRepository;
         $this->generationService = $generationService;
     }
@@ -64,17 +60,6 @@ class BriefingController extends Controller
     }
 
     /**
-     * 渲染视图并禁止缓存（避免浏览器缓存旧版 JS 导致页面卡在加载中）
-     */
-    protected function renderNoCacheView($view, array $data = array())
-    {
-        return response()
-            ->view($view, $data)
-            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-            ->header('Pragma', 'no-cache');
-    }
-
-    /**
      * 手动立即生成（Web 表单/请求）
      */
     public function generate(Request $request, $configId)
@@ -86,6 +71,7 @@ class BriefingController extends Controller
             return $this->jsonResponse($request, \App\Http\Utils\ResponseDataUtil::genSimpleSucc(array(
                 'status' => $result['status'] ?? 'failed',
                 'page_id' => isset($result['page_id']) ? (int)$result['page_id'] : null,
+                'fallback' => isset($result['fallback']) ? (int)$result['fallback'] : null,
                 'message' => $result['message'] ?? null,
             )));
         }
@@ -95,5 +81,16 @@ class BriefingController extends Controller
         }
 
         return redirect('/briefings')->with('message', '生成失败：' . ($result['message'] ?? '未知错误'));
+    }
+
+    /**
+     * 渲染视图并禁止缓存
+     */
+    protected function renderNoCacheView($view, array $data = array())
+    {
+        return response()
+            ->view($view, $data)
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 }

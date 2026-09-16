@@ -33,6 +33,13 @@ class BriefingPageRepository
             ->first();
     }
 
+    public function countByConfigId($configId)
+    {
+        return BriefingPage::where('config_id', $configId)
+            ->where('status', 'success')
+            ->count();
+    }
+
     public function create(array $data)
     {
         return BriefingPage::create($data);
