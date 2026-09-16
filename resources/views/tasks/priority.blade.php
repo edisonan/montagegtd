@@ -14,7 +14,9 @@
         .priority-task-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: var(--gray-300); }
         .priority-task-item.dragging { opacity: 0.5; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
         .priority-task-item.completed { opacity: 0.6; background: var(--gray-50); text-decoration: line-through; color: var(--gray-500); }
-        .priority-task-content { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .priority-task-content { flex: 1; min-width: 0; overflow: hidden; }
+        .priority-task-parent { display: block; font-size: 11px; line-height: 1.3; color: var(--gray-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .priority-task-name { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .priority-task-actions { display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity 0.2s ease; flex-shrink: 0; }
         .priority-task-item:hover .priority-task-actions { opacity: 1; }
         @media (max-width: 768px) { .priority-task-actions { opacity: 1; } }
@@ -122,12 +124,15 @@
         function renderTaskItem(task) {
             var completed = Number(task.status) === 2;
             var taskName = escapeHtml(task.name || '');
+            var parentName = (task.parent_task && task.parent_task.name) ? escapeHtml(task.parent_task.name) : '';
+            var checkIcon = completed ? '<i class="fas fa-check-circle text-green-500 mr-1"></i>' : '';
+            var label = checkIcon + '<span class="' + (completed ? 'line-through text-gray-500' : 'text-gray-800') + '">' + taskName + '</span>';
+            var contentHtml = parentName
+                ? '<span class="priority-task-parent" title="父任务：' + parentName + '"><i class="fas fa-level-up-alt mr-1"></i>' + parentName + '</span><span class="priority-task-name">' + label + '</span>'
+                : '<span class="priority-task-name">' + label + '</span>';
             return '' +
                 '<div class="priority-task-item ' + (completed ? 'completed' : '') + '" draggable="true" data-task-id="' + task.id + '">' +
-                '<div class="priority-task-content">' +
-                (completed ? '<i class="fas fa-check-circle text-green-500 mr-2"></i>' : '') +
-                '<span class="' + (completed ? 'line-through text-gray-500' : 'text-gray-800') + '">' + taskName + '</span>' +
-                '</div>' +
+                '<div class="priority-task-content">' + contentHtml + '</div>' +
                 '<div class="priority-task-actions">' +
                 '<button class="task-action-btn complete" title="标记完成" onclick="toggleComplete(' + task.id + ', ' + (completed ? 1 : 2) + ')"><i class="fas ' + (completed ? 'fa-undo' : 'fa-check') + '"></i></button>' +
                 '<button class="task-action-btn edit" title="编辑任务" onclick="editTask(' + task.id + ')"><i class="fas fa-edit"></i></button>' +

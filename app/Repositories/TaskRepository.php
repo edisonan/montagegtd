@@ -42,7 +42,7 @@ class TaskRepository {
 	 * @return unknown
 	 */
 	public function getTaskListWithPagination($filters = [], $pageSize = 10) {
-        $tasks = Task::orderBy ( 'updated_at', 'desc' );
+        $tasks = Task::with ( 'parentTask:id,name' )->orderBy ( 'updated_at', 'desc' );
         if (isset($filters['user_id'])){
             $tasks = $tasks->where ( 'user_id', $filters['user_id'] );
         }
@@ -92,7 +92,10 @@ class TaskRepository {
 	 * @return unknown
 	 */
 	public function getUserAllListByStatusMode($userId, $status = '', $mode = '') {
-		$tasks = Task::with ( 'plan' )->where ( 'user_id', $userId );
+		$tasks = Task::with ( array (
+				'plan',
+				'parentTask:id,name' 
+		) )->where ( 'user_id', $userId );
 		
 		if (! empty ( $status )) {
 			$tasks->where ( 'status', $status );

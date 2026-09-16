@@ -213,7 +213,7 @@
 
             tasks.forEach(function(task) {
                 var updated = formatDateTime(task.updated_at);
-                var parentName = (task.parentTask && task.parentTask.name) ? task.parentTask.name : '';
+                var parentName = (task.parent_task && task.parent_task.name) ? task.parent_task.name : '';
                 var taskNameHtml = parentName
                     ? '<span class="text-gray-500 text-sm">' + escapeHtml(parentName) + ' →</span> ' + escapeHtml(task.name)
                     : escapeHtml(task.name);
