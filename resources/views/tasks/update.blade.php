@@ -73,6 +73,13 @@
                     </div>
 
                     <div class="form-group row">
+                        <label for="review_note" class="col-md-3 control-label">备注</label>
+                        <div class="col-md-8">
+                            <textarea name="review_note" id="review_note" class="form-control" rows="3" maxlength="2000" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
                         <div class="col-md-offset-3 col-md-6">
                             <button type="submit" class="btn btn-primary" id="taskUpdateSubmitBtn"><i class="fa fa-btn fa-plus"></i>提交！</button>
                         </div>
@@ -136,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('name').value = task.name || '';
             document.getElementById('remindtime').value = task.remindtime || '';
             document.getElementById('deadline').value = task.deadline || '';
+            document.getElementById('review_note').value = task.review_note || '';
             setRadio('priority', task.priority || 1);
             setRadio('status', task.status || 1);
             setRadio('is_top', task.is_top || 0);
@@ -167,7 +175,8 @@ document.addEventListener('DOMContentLoaded', function() {
             deadline: (document.getElementById('deadline') || {}).value || '',
             status: (form.querySelector('input[name="status"]:checked') || {}).value || '',
             is_top: (form.querySelector('input[name="is_top"]:checked') || {}).value || '',
-            mode: (form.querySelector('input[name="mode"]:checked') || {}).value || ''
+            mode: (form.querySelector('input[name="mode"]:checked') || {}).value || '',
+            review_note: (document.getElementById('review_note') || {}).value || ''
         }).then(function(resp) {
             if (resp && resp.code === 9999) {
                 window.location.href = '/tasks';

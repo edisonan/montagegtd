@@ -47,7 +47,7 @@ class BriefingService
             'feed_ids' => (array)$config->feed_ids_json,
             'category_ids' => (array)$config->category_ids_json,
             'supplement' => $config->supplement,
-            'last_generated_at' => $config->last_generated_at ? $config->last_generated_at->toDateTimeString() : null,
+            'page_count' => $this->pageRepository->countByConfigId($configId),
             'latest_page' => $latest ? $this->serializePageMeta($latest) : null,
         );
     }
@@ -70,8 +70,11 @@ class BriefingService
             'config_name' => $config ? $config->name : null,
             'title' => $page->title,
             'topic_count' => (int)$page->topic_count,
+            'candidate_count' => (int)$page->candidate_count,
             'time_window' => $page->time_window,
             'model_name' => $page->model_name,
+            'fallback' => (int)$page->fallback,
+            'error_message' => $page->error_message,
             'hot_topics' => (array)$page->hot_topics_json,
             'trends' => $this->attachArticleDetail((array)$page->trends_json, $articleMap),
             'signals' => $this->attachArticleDetail((array)$page->signals_json, $articleMap),
@@ -87,8 +90,10 @@ class BriefingService
             'id' => (int)$page->id,
             'title' => $page->title,
             'topic_count' => (int)$page->topic_count,
+            'candidate_count' => (int)$page->candidate_count,
             'time_window' => $page->time_window,
             'model_name' => $page->model_name,
+            'fallback' => (int)$page->fallback,
             'generated_at' => $page->generated_at ? $page->generated_at->toDateTimeString() : null,
         );
     }
@@ -211,6 +216,10 @@ class BriefingService
         return $map;
     }
 
+    /**
+     * 组装趋势/信号条目的文章详情（支持多佐证）。
+     * 兼容两种存储形状：article_ids（int[]，多佐证）与 article_id（int，旧/兜底）。
+     */
     protected function attachArticleDetail(array $items, array $articleMap)
     {
         $result = array();
@@ -218,14 +227,41 @@ class BriefingService
             if (!is_array($item)) {
                 continue;
             }
-            $articleId = (int)($item['article_id'] ?? 0);
+            $ids = array();
+            foreach ((array)($item['article_ids'] ?? array()) as $aid) {
+                $aid = (int)$aid;
+                if ($aid > 0) {
+                    $ids[$aid] = $aid;
+                }
+            }
+            $single = (int)($item['article_id'] ?? 0);
+            if ($single > 0) {
+                $ids[$single] = $single;
+            }
+            $ids = array_values($ids);
+
+            $articles = array();
+            $firstArticle = null;
+            foreach ($ids as $articleId) {
+                if (isset($articleMap[$articleId])) {
+                    $articles[] = $articleMap[$articleId];
+                    if ($firstArticle === null) {
+                        $firstArticle = $articleMap[$articleId];
+                    }
+                }
+            }
+
             $entry = array(
-                'title' => isset($item['title']) ? (string)$item['title'] : '',
+                'title' => isset($item['title']) ? (string)$item['title'] : ($firstArticle ? $firstArticle['subject'] : ''),
                 'summary' => isset($item['summary']) ? (string)$item['summary'] : '',
-                'article_id' => $articleId,
+                'article_id' => $articles ? (int)$articles[0]['article_id'] : (int)($item['article_id'] ?? 0),
+                'article_ids' => array_map(function ($a) {
+                    return (int)$a['article_id'];
+                }, $articles),
+                'articles' => $articles,
             );
-            if (isset($articleMap[$articleId])) {
-                $entry['article'] = $articleMap[$articleId];
+            if ($firstArticle) {
+                $entry['article'] = $firstArticle;
             }
             $result[] = $entry;
         }

@@ -10,6 +10,11 @@ use App\Services\BriefingGenerationService;
 use App\Services\BriefingService;
 use Illuminate\Http\Request;
 
+/**
+ * 文章简报 API 控制器
+ *
+ * @author edison.an
+ */
 class BriefingController extends Controller
 {
     protected $briefingService;
@@ -96,6 +101,8 @@ class BriefingController extends Controller
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
             'page_id' => (int)$result['page_id'],
+            'fallback' => (int)$result['fallback'],
+            'candidates' => (int)$result['candidates'],
         )));
     }
 

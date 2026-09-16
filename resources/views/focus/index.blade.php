@@ -283,6 +283,14 @@
             return div.innerHTML;
         }
 
+        function formatNoteHtml(text) {
+            var normalized = String(text == null ? '' : text).replace(/\r\n|\r/g, '\n').trim();
+            if (!normalized) {
+                return '';
+            }
+            return escapeHtml(normalized).replace(/\n/g, '<br>');
+        }
+
         function renderQuickRatingControl(focus) {
             var current = Number(focus.rating || 0);
             var html = '<div class="inline-flex items-center gap-1" title="点击数字快速评分">';
@@ -308,7 +316,7 @@
                     '</button>';
             }
             return '<button type="button" class="review_focus ' + (extraClass || 'mt-2') + ' block w-full text-left text-xs text-gray-500 hover:text-emerald-700 break-words" data-focus-id="' + focus.id + '" title="点击编辑备注">' +
-                escapeHtml(text) +
+                formatNoteHtml(text) +
                 '</button>';
         }
 

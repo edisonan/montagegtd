@@ -226,6 +226,17 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 备注（仅编辑时显示） -->
+                        <div id="review_note_field" class="hidden grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 items-start">
+                            <label for="review_note_input" class="font-medium text-gray-700 pt-2">备注</label>
+                            <div class="md:col-span-3">
+                                <textarea name="review_note" id="review_note_input" rows="3"
+                                          class="input w-full text-sm sm:text-base"
+                                          maxlength="2000"
+                                          placeholder="请输入备注"></textarea>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
@@ -453,6 +464,10 @@
         $('#remindtime_input').val(taskData.remindtime || '');
         $('#deadline_input').val(taskData.deadline || '');
 
+        // 备注（仅编辑时显示）
+        $('#review_note_input').val(taskData.review_note || '');
+        $('#review_note_field').removeClass('hidden');
+
         // 清除错误信息
         $('#taskUpdateErrors').addClass('hidden');
         $('#taskUpdateErrorList').empty();
@@ -478,6 +493,8 @@
             titleEl.textContent = title || '新建待办';
         }
         $('#task_id_input').val('');
+        $('#review_note_field').addClass('hidden');
+        $('#review_note_input').val('');
         $('#taskUpdateErrors').addClass('hidden');
         $('#taskUpdateErrorList').empty();
     }

@@ -11,7 +11,7 @@
    ============================================================ */
 'use strict';
 
-var VERSION = 'pwa-v1.2.4';
+var VERSION = 'pwa-v1.2.5';
 var STATIC_CACHE = 'montage-static-' + VERSION;
 var PAGES_CACHE = 'montage-pages-' + VERSION;
 var API_CACHE = 'montage-api-' + VERSION;
@@ -185,6 +185,31 @@ self.addEventListener('sync', function (event) {
       })
     );
   }
+});
+
+/* 通知点击：聚焦已打开的窗口，否则新开窗口 */
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+
+  var targetUrl = '/index';
+  if (event.notification && event.notification.data && event.notification.data.url) {
+    targetUrl = event.notification.data.url;
+  }
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
+        if ('focus' in client) {
+          if ('navigate' in client) { client.navigate(targetUrl); }
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
 });
 
 self.addEventListener('message', function (event) {
