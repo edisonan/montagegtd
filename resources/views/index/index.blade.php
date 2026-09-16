@@ -266,6 +266,7 @@
     <!-- 原有模态框保留 -->
     @include('components.task-update-modal')
     @include('components.journal-create-modal')
+    @include('components.journal-edit-modal')
 
     <!-- AI 智能解析待办弹窗 -->
     <div id="taskAiParseModal" class="hidden fixed inset-0 z-50">
@@ -1611,6 +1612,11 @@
             const name = escapeHtml(journal.name || '未命名手账');
             const typeHtml = renderIndexJournalType(journal.type);
 
+            if (!window.indexJournalsById) {
+                window.indexJournalsById = {};
+            }
+            window.indexJournalsById[journal.id] = journal;
+
             return `
     <li id="journal${journal.id}" class="focus-item bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
         <div class="flex items-center justify-between gap-3">
@@ -1631,6 +1637,12 @@
                    title="记录更多笔记">
                     <i class="fas fa-sticky-note"></i>
                 </a>
+                <button type="button"
+                        class="action-button text-gray-400 hover:text-amber-500"
+                        onclick="openJournalEdit(${Number(journal.id)})"
+                        title="修改手账">
+                    <i class="fas fa-pen-to-square"></i>
+                </button>
                 <a href="/journals"
                    class="action-button text-gray-400 hover:text-green-500"
                    title="查看手账">
@@ -1923,6 +1935,7 @@
             }).then(function(response) {
                 if (response.code == 9999) {
                     showtasks();
+                    showfocuss();
                     showNotification('success', '任务已完成');
                     showTaskCompletionTip(taskSnapshot || { id: taskId, name: '任务' });
                 } else {
@@ -1950,6 +1963,7 @@
                 }).then(function(response) {
                     if (response.code == 9999) {
                         showtasks();
+                        showfocuss();
                         showNotification('success', '任务已完成');
                         showTaskCompletionTip(taskSnapshot || { id: taskId, name: '任务' });
                     } else {
@@ -3123,6 +3137,9 @@
             showtasks();
         };
         window.afterJournalCreate = function () {
+            showfocuss();
+        };
+        window.afterJournalUpdate = function () {
             showfocuss();
         };
     </script>
