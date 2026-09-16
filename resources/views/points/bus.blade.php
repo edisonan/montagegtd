@@ -3,6 +3,8 @@
 @section('title', '京城公交收藏馆 - 蒙太奇')
 
 @section('content')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         .bus-hero {
             background: radial-gradient(circle at top right, rgba(14,165,233,0.18), rgba(255,255,255,0.2)),
@@ -131,6 +133,23 @@
         .bus-toast-item.success { background: #065f46; }
         .bus-toast-item.error { background: #991b1b; }
         @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .bus-map-canvas { width: 100%; height: 320px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f1f5f9; z-index: 1; }
+        .bus-marker-icon {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; line-height: 1;
+            filter: drop-shadow(0 4px 6px rgba(15,23,42,.4));
+            transition: transform .1s linear;
+        }
+        .bus-station-icon {
+            width: 12px; height: 12px; border-radius: 999px;
+            background: #94a3b8; border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #94a3b8;
+        }
+        .bus-station-icon.checked { background: #22c55e; box-shadow: 0 0 0 1px #22c55e; }
+        .bus-station-icon.next { background: #0ea5e9; box-shadow: 0 0 0 3px rgba(14,165,233,.25); }
+        .leaflet-container { font: inherit; }
+        .map-note { font-size: 12px; color: #64748b; margin-top: 6px; }
+        .drive-controls { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
     </style>
 
     <div class="max-w-6xl mx-auto">
@@ -213,7 +232,10 @@
     <div class="bus-toast" id="toastBox"></div>
 
     <script>
-        const AMAP_KEY = '{{ config('services.amap.key') }}';
+        const OSRM_ENDPOINTS = [
+            'https://router.project-osrm.org/route/v1/driving/',
+            'https://routing.openstreetmap.de/routed-car/route/v1/driving/'
+        ];
         const TYPE_LABELS = { bus: '常规公交', brt: '快速公交', night: '夜班车', subway: '地铁', sightseeing: '观光专线' };
         const TYPE_ICONS = { bus: 'fa-bus', brt: 'fa-bolt', night: 'fa-moon', subway: 'fa-subway', sightseeing: 'fa-camera' };
         const RARITY_LABELS = { N: '普通', R: '稀有', SR: '史诗', SSR: '传说' };
@@ -221,9 +243,9 @@
         let overviewData = null;
         let activeFilter = 'all';
         let activeLineId = 0;
-        let busMap = null;
-        let mapReady = false;
-        let mapCallbacks = [];
+        let leafletMap = null;
+        let drive = { raf: null, marker: null, path: [], cumulative: [], total: 0, startedAt: 0, playing: false, line: null };
+        const routeCache = {};
 
         function getResultData(resp) { return resp && (resp.result || resp.data) ? (resp.result || resp.data) : {}; }
         function api(path, opts) {
@@ -430,7 +452,9 @@
             } else {
                 actionHtml = '<button class="btn btn-primary" onclick="checkinLine(' + line.id + ')">打卡下一站 · ' + escapeHtml(line.next_station || '') + '</button>';
             }
-
+            const driveButton = line.unlocked
+                ? '<button class="btn btn-outline" id="driveToggleBtn" onclick="toggleDrive(' + line.id + ')"><i class="fas fa-play mr-1"></i>发车巡线</button>'
+                : '';
             const stationsHtml = (line.stations || []).map(function(s, idx) {
                 const isNext = line.unlocked && !line.completed && idx === line.progress;
                 const cls = s.checked ? 'checked' : (isNext ? 'next' : '');
@@ -465,9 +489,9 @@
                     '<div class="flex items-center justify-between text-sm text-gray-600 mb-1"><span>打卡进度</span><span>' + line.progress + ' / ' + line.station_count + '（' + percent + '%）</span></div>' +
                     '<div class="bus-progress"><div class="bus-progress-inner" style="width:' + percent + '%"></div></div>' +
                 '</div>' +
-                '<div class="flex items-center justify-between mt-4">' +
+                '<div class="flex items-center justify-between gap-2 mt-4 flex-wrap">' +
                     '<div class="text-sm text-gray-600">' + (line.unlocked ? ('打卡消耗 ' + line.checkin_cost + ' AP（每日首站免费）') : '解锁后可逐站打卡收藏') + '</div>' +
-                    actionHtml +
+                    '<div class="flex items-center gap-2">' + actionHtml + '</div>' +
                 '</div>' +
                 '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">' +
                     '<div>' +
@@ -475,8 +499,12 @@
                         '<div style="max-height:280px;overflow:auto;padding-right:6px;">' + stationsHtml + '</div>' +
                     '</div>' +
                     '<div>' +
-                        '<div class="font-semibold text-gray-900 mb-2"><i class="fas fa-map text-sky-600 mr-1"></i>线路示意</div>' +
-                        '<div id="lineMap" class="w-full h-64 rounded-lg border border-gray-200 bg-gray-50"></div>' +
+                        '<div class="font-semibold text-gray-900 mb-2"><i class="fas fa-map text-sky-600 mr-1"></i>真实线路地图</div>' +
+                        '<div id="lineMap" class="bus-map-canvas"></div>' +
+                        '<div class="drive-controls">' +
+                            driveButton +
+                            '<span class="map-note" id="mapNote">正在基于 OpenStreetMap 规划真实道路路径…</span>' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
             '</div>';
@@ -488,51 +516,235 @@
 
         function closeLineModal(event) {
             if (event && event.target !== event.currentTarget) return;
+            stopDrive();
+            destroyMap();
             document.getElementById('lineModal').classList.remove('show');
             activeLineId = 0;
         }
 
-        function ensureMap(callback) {
-            if (!AMAP_KEY) { callback(false); return; }
-            if (window.AMap) { callback(true); return; }
-            if (mapReady) { callback(true); return; }
-            mapCallbacks.push(callback);
-            if (mapCallbacks.length > 1) return;
-            const script = document.createElement('script');
-            script.src = 'https://webapi.amap.com/maps?v=2.0&key=' + AMAP_KEY;
-            script.onload = function() { mapReady = true; mapCallbacks.forEach(function(cb) { cb(true); }); mapCallbacks = []; };
-            script.onerror = function() { mapCallbacks.forEach(function(cb) { cb(false); }); mapCallbacks = []; };
-            document.head.appendChild(script);
+        function destroyMap() {
+            stopDrive();
+            if (leafletMap) {
+                try { leafletMap.remove(); } catch (e) {}
+                leafletMap = null;
+            }
+        }
+
+        function stationPoints(line) {
+            return (line.stations || []).filter(function(s) {
+                return s.lng != null && s.lat != null;
+            }).map(function(s) {
+                return [Number(s.lat), Number(s.lng)];
+            });
+        }
+
+        function routeStorageKey(code) { return 'busroute_v1_' + code; }
+
+        function readCachedRoute(code) {
+            try {
+                const raw = window.localStorage.getItem(routeStorageKey(code));
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) && parsed.length > 1 ? parsed : null;
+            } catch (e) { return null; }
+        }
+
+        function writeCachedRoute(code, path) {
+            try { window.localStorage.setItem(routeStorageKey(code), JSON.stringify(path)); } catch (e) {}
+        }
+
+        function osrmRoute(line) {
+            const straight = stationPoints(line);
+            if (line.type === 'subway' || straight.length < 2) {
+                return Promise.resolve(straight);
+            }
+            const cached = readCachedRoute(line.code);
+            if (cached) { routeCache[line.code] = cached; return Promise.resolve(cached); }
+            const coords = straight.map(function(p) { return p[1] + ',' + p[0]; }).join(';');
+            const query = coords + '?overview=full&geometries=geojson&steps=false';
+
+            function attempt(index) {
+                if (index >= OSRM_ENDPOINTS.length) return Promise.resolve(straight);
+                return fetch(OSRM_ENDPOINTS[index] + query).then(function(r) { return r.json(); }).then(function(json) {
+                    if (!json || json.code !== 'Ok' || !json.routes || !json.routes.length) {
+                        return attempt(index + 1);
+                    }
+                    const geometry = json.routes[0].geometry && json.routes[0].geometry.coordinates;
+                    if (!Array.isArray(geometry) || geometry.length < 2) {
+                        return attempt(index + 1);
+                    }
+                    const path = geometry.map(function(c) { return [Number(c[1]), Number(c[0])]; });
+                    writeCachedRoute(line.code, path);
+                    routeCache[line.code] = path;
+                    return path;
+                }).catch(function() { return attempt(index + 1); });
+            }
+
+            return attempt(0);
+        }
+
+        function haversine(a, b) {
+            const R = 6371000;
+            const dLat = (b[0] - a[0]) * Math.PI / 180;
+            const dLng = (b[1] - a[1]) * Math.PI / 180;
+            const lat1 = a[0] * Math.PI / 180;
+            const lat2 = b[0] * Math.PI / 180;
+            const h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+        }
+
+        function buildCumulative(path) {
+            const cumulative = [0];
+            for (let i = 1; i < path.length; i++) {
+                cumulative.push(cumulative[i - 1] + haversine(path[i - 1], path[i]));
+            }
+            return cumulative;
+        }
+
+        function pointAtDistance(path, cumulative, dist) {
+            if (path.length < 2) return path[0] || [39.90923, 116.397428];
+            for (let i = 1; i < cumulative.length; i++) {
+                if (dist <= cumulative[i]) {
+                    const seg = (cumulative[i] - cumulative[i - 1]) || 1;
+                    const t = (dist - cumulative[i - 1]) / seg;
+                    const a = path[i - 1], b = path[i];
+                    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+                }
+            }
+            return path[path.length - 1];
+        }
+
+        function busIcon() {
+            return L.divIcon({ className: 'bus-marker-icon', html: '🚌', iconSize: [30, 30], iconAnchor: [15, 15] });
+        }
+
+        function findStationPathIndex(line, path) {
+            if (!line.stations || !line.stations.length) return 0;
+            const idx = Math.max(0, Math.min(line.stations.length - 1, line.progress));
+            const target = line.stations[idx];
+            if (!target || target.lat == null) return 0;
+            let best = 0, bestDist = Infinity;
+            for (let i = 0; i < path.length; i++) {
+                const d = haversine([Number(target.lat), Number(target.lng)], path[i]);
+                if (d < bestDist) { bestDist = d; best = i; }
+            }
+            return best;
         }
 
         function drawLineMap(line) {
-            ensureMap(function(ok) {
-                const node = document.getElementById('lineMap');
-                if (!node) return;
-                if (!ok) {
-                    node.innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-500 text-sm">未配置高德地图 key，已展示站点时间轴</div>';
+            const node = document.getElementById('lineMap');
+            if (!node) return;
+            if (typeof L === 'undefined') {
+                node.innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-500 text-sm">地图组件加载失败（请检查网络是否可访问 CDN）</div>';
+                return;
+            }
+            destroyMap();
+            osrmRoute(line).then(function(path) {
+                const current = document.getElementById('lineMap');
+                if (!current || activeLineId !== Number(line.id)) return;
+                if (!path || path.length < 2) {
+                    current.innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-500 text-sm">暂无坐标数据</div>';
                     return;
                 }
-                const points = (line.stations || []).filter(function(s) { return s.lng && s.lat; }).map(function(s) { return [Number(s.lng), Number(s.lat)]; });
-                if (!points.length) {
-                    node.innerHTML = '<div class="h-full w-full flex items-center justify-center text-gray-500 text-sm">暂无坐标数据</div>';
-                    return;
-                }
-                busMap = new AMap.Map('lineMap', { zoom: 12, center: points[0] });
-                const polyline = new AMap.Polyline({ path: points, strokeColor: line.color, strokeWeight: 6 });
-                busMap.add(polyline);
-                busMap.setFitView([polyline]);
-                points.forEach(function(p, idx) {
-                    busMap.add(new AMap.CircleMarker({
-                        center: p,
-                        radius: idx < line.progress ? 7 : 5,
-                        strokeColor: '#ffffff',
-                        strokeWeight: 2,
-                        fillColor: idx < line.progress ? '#22c55e' : line.color,
-                        fillOpacity: 0.95
-                    }));
+
+                leafletMap = L.map('lineMap', { zoomControl: true, attributionControl: true });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(leafletMap);
+
+                const routeLine = L.polyline(path, { color: line.color || '#2563eb', weight: 6, opacity: 0.85 }).addTo(leafletMap);
+
+                (line.stations || []).forEach(function(s, idx) {
+                    if (s.lng == null || s.lat == null) return;
+                    const isNext = line.unlocked && !line.completed && idx === line.progress;
+                    const cls = s.checked ? 'checked' : (isNext ? 'next' : '');
+                    const marker = L.marker([Number(s.lat), Number(s.lng)], {
+                        icon: L.divIcon({ className: 'bus-station-icon ' + cls, iconSize: [12, 12], iconAnchor: [6, 6] })
+                    }).addTo(leafletMap);
+                    marker.bindTooltip((idx + 1) + '. ' + s.name, { direction: 'top' });
                 });
+
+                const startIndex = Math.max(0, Math.min(path.length - 1, line.progress > 0 ? findStationPathIndex(line, path) : 0));
+                drive.path = path;
+                drive.cumulative = buildCumulative(path);
+                drive.total = drive.cumulative[drive.cumulative.length - 1] || 0;
+                drive.marker = L.marker(path[startIndex], { icon: busIcon(), zIndexOffset: 1000 }).addTo(leafletMap);
+                drive.line = line;
+                drive.playing = false;
+                drive.pauseProgress = 0;
+                updateDriveButton();
+
+                leafletMap.fitBounds(routeLine.getBounds(), { padding: [24, 24] });
+
+                const note = document.getElementById('mapNote');
+                if (note) {
+                    note.textContent = line.type === 'subway'
+                        ? '地铁线路按站点示意绘制（地下线路无地面道路）'
+                        : '路径由 OpenStreetMap + OSRM 实时规划，公交车将沿真实道路行驶';
+                }
+                setTimeout(function() { if (leafletMap) leafletMap.invalidateSize(); }, 80);
             });
+        }
+
+        function updateDriveButton() {
+            const btn = document.getElementById('driveToggleBtn');
+            if (!btn) return;
+            btn.innerHTML = drive.playing
+                ? '<i class="fas fa-stop mr-1"></i>停车'
+                : '<i class="fas fa-play mr-1"></i>发车巡线';
+        }
+
+        function toggleDrive(lineId) {
+            if (!drive.path || drive.path.length < 2) {
+                showToast('线路路径尚未就绪', 'error');
+                return;
+            }
+            if (drive.playing) { stopDrive(); return; }
+            startDrive();
+        }
+
+        function startDrive() {
+            if (!drive.marker || !drive.total) return;
+            const startDist = (drive.pauseProgress || 0) * drive.total;
+            const duration = Math.max(12, Math.min(60, drive.total / 250));
+            drive.playing = true;
+            updateDriveButton();
+            const baseTime = Date.now();
+
+            function frame() {
+                if (!drive.playing) return;
+                const elapsed = (Date.now() - baseTime) / 1000;
+                let dist = startDist + (elapsed / duration) * drive.total;
+                if (dist >= drive.total) {
+                    drive.marker.setLatLng(drive.path[drive.path.length - 1]);
+                    drive.playing = false;
+                    drive.pauseProgress = 0;
+                    updateDriveButton();
+                    showToast('公交车已到达终点站', 'success');
+                    return;
+                }
+                drive.pauseProgress = dist / drive.total;
+                drive.marker.setLatLng(pointAtDistance(drive.path, drive.cumulative, dist));
+                drive.raf = requestAnimationFrame(frame);
+            }
+            frame();
+        }
+
+        function stopDrive() {
+            drive.playing = false;
+            if (drive.raf) { cancelAnimationFrame(drive.raf); drive.raf = null; }
+            updateDriveButton();
+        }
+
+        function autoDriveWhenReady(lineId, attempts) {
+            attempts = attempts || 0;
+            if (activeLineId !== Number(lineId) || attempts > 30) return;
+            if (drive.line && Number(drive.line.id) === Number(lineId) && drive.path && drive.path.length > 1) {
+                if (!drive.playing) startDrive();
+                return;
+            }
+            setTimeout(function() { autoDriveWhenReady(lineId, attempts + 1); }, 200);
         }
 
         function loadOverview() {
@@ -554,7 +766,8 @@
         }
 
         function unlockLine(id) {
-            if (activeLineId === Number(id)) closeLineModal();
+            const wasOpen = activeLineId === Number(id);
+            if (wasOpen) closeLineModal();
             api('/point-mall/bus/collection/unlock', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -565,14 +778,18 @@
                     return;
                 }
                 const data = getResultData(resp);
-                showToast('成功解锁「' + data.line.name + '」', 'success');
+                showToast('成功解锁「' + data.line.name + '」，公交车即将发车', 'success');
                 handleNewAchievements(data.new_achievements);
-                loadOverview();
+                loadOverview().then(function() {
+                    openLineModal(id);
+                    autoDriveWhenReady(id);
+                });
             });
         }
 
         function checkinLine(id) {
-            if (activeLineId === Number(id)) closeLineModal();
+            const wasOpen = activeLineId === Number(id);
+            if (wasOpen) closeLineModal();
             api('/point-mall/bus/collection/checkin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -590,7 +807,9 @@
                 }
                 showToast(msg, 'success');
                 handleNewAchievements(data.new_achievements);
-                loadOverview();
+                loadOverview().then(function() {
+                    if (wasOpen) openLineModal(id);
+                });
             });
         }
 
