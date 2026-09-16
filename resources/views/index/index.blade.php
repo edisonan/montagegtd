@@ -969,9 +969,8 @@
         }
 
         function initializePage() {
-            if (typeof Notification !== 'undefined' && Notification.permission !== "granted") {
-                Notification.requestPermission();
-            }
+            // 通知权限需在用户手势中申请，页面加载时直接申请会被浏览器忽略
+            bindNotificationPermissionGesture();
 
             renderPomoPanel();
 
@@ -1222,57 +1221,110 @@
             }
         }
 
-        // 浏览器通知
+        // 浏览器通知：优先走 Service Worker（兼容移动端与后台标签页），失败再退回构造器/站内提示
         function notify(message) {
+            requestNotifyPermission().then(function (granted) {
+                if (!granted) {
+                    indexDebug('pomo notify permission not granted', { permission: getNotifyPermission(), message: message });
+                    showNotification('info', message);
+                    return;
+                }
+                showBrowserNotification(message).then(function (shown) {
+                    if (!shown) {
+                        showNotification('warning', '浏览器通知发送失败：' + message);
+                    }
+                });
+            });
+        }
+
+        function getNotifyPermission() {
+            return (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported';
+        }
+
+        function requestNotifyPermission() {
             if (typeof Notification === 'undefined') {
-                indexDebug('pomo notify skipped', { reason: 'notification_api_unavailable', message: message });
-                showNotification('info', message);
-                return;
+                return Promise.resolve(false);
             }
-            if (Notification.permission !== "granted") {
-                indexDebug('pomo notify permission request', { permission: Notification.permission, message: message });
+            if (Notification.permission === 'granted') {
+                return Promise.resolve(true);
+            }
+            if (Notification.permission === 'denied') {
+                return Promise.resolve(false);
+            }
+            try {
                 const permissionResult = Notification.requestPermission();
                 if (permissionResult && typeof permissionResult.then === 'function') {
-                    permissionResult.then(function(permission) {
-                        indexDebug('pomo notify permission result', { permission: permission, message: message });
-                        if (permission === 'granted') {
-                            notify(message);
-                        } else {
-                            showNotification('info', message);
-                        }
+                    return permissionResult.then(function (permission) {
+                        indexDebug('pomo notify permission result', { permission: permission });
+                        return permission === 'granted';
+                    }).catch(function () {
+                        return false;
                     });
-                } else {
-                    showNotification('info', message);
                 }
+            } catch (e) {
+            }
+            return Promise.resolve(Notification.permission === 'granted');
+        }
+
+        // 通知权限必须在用户手势中申请，否则浏览器会忽略或直接拒绝
+        function bindNotificationPermissionGesture() {
+            if (typeof Notification === 'undefined' || Notification.permission === 'granted') {
                 return;
             }
+            const requestOnce = function () {
+                requestNotifyPermission();
+                document.removeEventListener('click', requestOnce, true);
+                document.removeEventListener('touchend', requestOnce, true);
+            };
+            document.addEventListener('click', requestOnce, true);
+            document.addEventListener('touchend', requestOnce, true);
+        }
 
-            indexDebug('pomo notify create', { permission: Notification.permission, message: message });
-            showNotification('info', message);
-            const notification = new Notification('蒙太奇', {
-                icon: '/favicon.ico',
+        function showBrowserNotification(message) {
+            // 最小参数：macOS 上 requireInteraction/tag 等会导致通知被静默丢弃、不弹横幅
+            const options = {
                 body: message,
-                tag: 'montage-pomo-reminder',
-                renotify: true,
-                requireInteraction: true,
-                silent: false,
-            });
+            };
 
-            notification.onshow = function () {
-                indexDebug('pomo notify shown', { message: message });
-            };
-            notification.onerror = function (event) {
-                indexDebug('pomo notify error', { message: message, event_type: event && event.type ? event.type : '' });
-                showNotification('warning', '浏览器通知发送失败：' + message);
-            };
-            notification.onclose = function () {
-                indexDebug('pomo notify closed', { message: message });
-            };
-            notification.onclick = function () {
-                indexDebug('pomo notify clicked', { message: message });
-                window.focus();
-                window.location.href = "/index";
-            };
+            if (window.navigator && window.navigator.serviceWorker && window.navigator.serviceWorker.getRegistration) {
+                return window.navigator.serviceWorker.getRegistration().then(function (registration) {
+                    if (!registration || typeof registration.showNotification !== 'function') {
+                        throw new Error('showNotification unavailable');
+                    }
+                    return registration.showNotification('蒙太奇', options);
+                }).then(function () {
+                    indexDebug('pomo notify shown', { via: 'service_worker', message: message });
+                    return true;
+                }).catch(function () {
+                    return legacyBrowserNotification(options, message);
+                });
+            }
+
+            return Promise.resolve(legacyBrowserNotification(options, message));
+        }
+
+        function legacyBrowserNotification(options, message) {
+            if (typeof Notification === 'undefined') {
+                return false;
+            }
+            try {
+                const notification = new Notification('蒙太奇', options);
+                notification.onshow = function () {
+                    indexDebug('pomo notify shown', { via: 'constructor', message: message });
+                };
+                notification.onerror = function (event) {
+                    indexDebug('pomo notify error', { message: message, event_type: event && event.type ? event.type : '' });
+                };
+                notification.onclick = function () {
+                    indexDebug('pomo notify clicked', { message: message });
+                    window.focus();
+                    window.location.href = '/index';
+                };
+                return true;
+            } catch (e) {
+                indexDebug('pomo notify construct failed', { message: message });
+                return false;
+            }
         }
 
         function canNotifyIdlePomo(now) {
@@ -2439,6 +2491,9 @@
 
         // 开始专注
         function startPomo() {
+            // 借用户点击手势申请通知权限，保证专注完成时能弹出浏览器通知
+            requestNotifyPermission();
+
             if (!apiRequest) {
                 showNotification('error', 'API客户端未初始化');
                 return;
