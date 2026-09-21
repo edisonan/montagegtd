@@ -77,6 +77,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/tasks/tab-counts', 'Api\\V2\\TaskController@tabCounts');
         Route::get('/tasks/priority', 'Api\\V2\\TaskController@priority');
         Route::get('/tasks/parent-tasks', 'Api\\V2\\TaskController@getParentTasks');
+        Route::get('/tasks/{task}/subtasks', 'Api\\V2\\TaskController@subtasks');
         Route::get('/tasks/{task}', 'Api\\V2\\TaskController@show');
 
         Route::get('/focuss', 'Api\\V2\\FocusController@index');

@@ -42,12 +42,16 @@ class TaskRepository {
 	 * @return unknown
 	 */
 	public function getTaskListWithPagination($filters = [], $pageSize = 10) {
-        $tasks = Task::with ( 'parentTask:id,name' )->orderBy ( 'updated_at', 'desc' );
+        $tasks = Task::with ( 'parentTask:id,name' )->withCount ( 'childTasks' )->orderBy ( 'updated_at', 'desc' );
         if (isset($filters['user_id'])){
             $tasks = $tasks->where ( 'user_id', $filters['user_id'] );
         }
         if (isset($filters['status']) && !empty($filters['status']) && $filters['status'] != 'all'){
             $tasks = $tasks->where ( 'status', $filters['status'] );
+        }
+        if (isset($filters['search']) && $filters['search'] !== '') {
+            $tasks = $tasks->where ( 'name', 'like', '%' . $filters['search'] . '%' );
+            return $tasks->paginate($pageSize);
         }
         return $tasks->simplePaginate($pageSize);
 	}
@@ -87,7 +91,7 @@ class TaskRepository {
 	/**
 	 * 通过状态和模式获取该用户所有列表
 	 * 
-	 * @param string $status        	
+	 * @param string|array $status 支持单个状态、逗号分隔状态串（如 "1,2"）或状态数组        	
 	 * @param string $mode        	
 	 * @return unknown
 	 */
@@ -98,7 +102,19 @@ class TaskRepository {
 		) )->where ( 'user_id', $userId );
 		
 		if (! empty ( $status )) {
-			$tasks->where ( 'status', $status );
+			if (is_array ( $status )) {
+				$statusList = $status;
+			} elseif (strpos ( ( string ) $status, ',' ) !== false) {
+				$statusList = explode ( ',', ( string ) $status );
+			} else {
+				$statusList = array ();
+			}
+			$statusList = array_values ( array_filter ( array_map ( 'trim', $statusList ), 'strlen' ) );
+			if (! empty ( $statusList )) {
+				$tasks->whereIn ( 'status', $statusList );
+			} else {
+				$tasks->where ( 'status', $status );
+			}
 		}
 		if (! empty ( $mode )) {
 			$tasks->where ( 'mode', $mode );

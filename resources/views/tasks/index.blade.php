@@ -66,8 +66,8 @@
                         <div class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gray-100 mb-4">
                             <i class="fas fa-tasks text-4xl text-gray-400"></i>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">当前没有待办任务</h3>
-                        <p class="text-gray-600 mb-6">创建您的第一个任务，开始高效工作吧！</p>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2" id="taskEmptyTitle">当前没有待办任务</h3>
+                        <p class="text-gray-600 mb-6" id="taskEmptyDesc">创建您的第一个任务，开始高效工作吧！</p>
                     </div>
                     <a href="{{url('/index')}}" class="btn btn-outline ml-4">
                         <i class="fas fa-home mr-2"></i>返回首页
@@ -130,11 +130,14 @@
 
         var taskPageState = {
             status: '1',
+            search: '',
             page: 1,
             perPage: 20,
             total: 0,
             lastPage: 1,
             tasks: [],
+            subtasksCache: {},
+            openSubtasks: {},
             statusCounts: {
                 active: 0,
                 completed: 0,
@@ -154,6 +157,11 @@
             var params = new URLSearchParams(window.location.search || '');
             params.set('status', taskPageState.status);
             params.set('page', String(taskPageState.page));
+            if (taskPageState.search) {
+                params.set('search', taskPageState.search);
+            } else {
+                params.delete('search');
+            }
             window.history.replaceState({}, '', window.location.pathname + '?' + params.toString());
         }
 
@@ -204,6 +212,94 @@
             return '<span class="badge bg-gray-100 text-gray-700"><i class="fas fa-ellipsis-h mr-1"></i>不重要不紧急</span>';
         }
 
+        function renderSubtaskItems(tasks) {
+            tasks = tasks || [];
+            if (tasks.length === 0) {
+                return '<div class="text-sm text-gray-500 py-2">该任务暂无子任务</div>';
+            }
+            return tasks.map(function(task) {
+                var updated = formatDateTime(task.updated_at);
+                var name = escapeHtml(task.name);
+                if (Number(task.status) === 2) {
+                    name = '<span class="line-through text-gray-400">' + name + '</span>';
+                }
+                return '' +
+                    '<div class="flex items-center justify-between gap-3 py-2 border-b border-gray-100 last:border-b-0">' +
+                    '<div class="flex items-center gap-2 min-w-0">' +
+                    statusBadge(task.status) +
+                    '<span class="text-sm text-gray-800 truncate">' + name + '</span>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-3 flex-shrink-0">' +
+                    priorityBadge(task.priority) +
+                    '<span class="text-xs text-gray-500">' + updated.date + ' ' + updated.time + '</span>' +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function fillSubtaskContainers(taskId, tasks) {
+            var html = renderSubtaskItems(tasks);
+            $('#subtasks-row-' + taskId).find('td').html(html);
+            $('#subtasks-mobile-' + taskId).html(html);
+        }
+
+        function syncSubtaskButton(btn, isOpen) {
+            if (!btn) {
+                return;
+            }
+            $(btn).toggleClass('text-indigo-600', isOpen);
+            $(btn).attr('title', isOpen ? '收起子任务' : '查看子任务');
+        }
+
+        function toggleSubtasks(taskId, btn) {
+            var $row = $('#subtasks-row-' + taskId);
+            var $mobile = $('#subtasks-mobile-' + taskId);
+            if (taskPageState.openSubtasks[taskId]) {
+                taskPageState.openSubtasks[taskId] = false;
+                $row.addClass('hidden');
+                $mobile.addClass('hidden');
+                syncSubtaskButton(btn, false);
+                return;
+            }
+
+            taskPageState.openSubtasks[taskId] = true;
+            $row.removeClass('hidden');
+            $mobile.removeClass('hidden');
+            syncSubtaskButton(btn, true);
+
+            if (taskPageState.subtasksCache[taskId]) {
+                fillSubtaskContainers(taskId, taskPageState.subtasksCache[taskId]);
+                return;
+            }
+
+            var apiRequest = getApiRequest();
+            if (!apiRequest) {
+                return;
+            }
+            $row.find('td').html('<div class="text-sm text-gray-500 py-2">加载中...</div>');
+            $mobile.html('<div class="text-sm text-gray-500 py-2">加载中...</div>');
+
+            apiRequest('GET', '/tasks/' + taskId + '/subtasks', {}).then(function(response) {
+                if (response.code === 9999) {
+                    var subtasks = (response.result && response.result.tasks) ? response.result.tasks : [];
+                    taskPageState.subtasksCache[taskId] = subtasks;
+                    if (taskPageState.openSubtasks[taskId]) {
+                        fillSubtaskContainers(taskId, subtasks);
+                    }
+                } else {
+                    taskPageState.openSubtasks[taskId] = false;
+                    $row.addClass('hidden');
+                    $mobile.addClass('hidden');
+                    alert('加载子任务失败：' + (response.msg || '未知错误'));
+                }
+            }).catch(function() {
+                taskPageState.openSubtasks[taskId] = false;
+                $row.addClass('hidden');
+                $mobile.addClass('hidden');
+                alert('加载子任务失败，请稍后重试');
+            });
+        }
+
         function renderTasks() {
             var tasks = taskPageState.tasks || [];
             var tbody = $('#taskTableBody');
@@ -218,6 +314,23 @@
                     ? '<span class="text-gray-500 text-sm">' + escapeHtml(parentName) + ' →</span> ' + escapeHtml(task.name)
                     : escapeHtml(task.name);
 
+                var childCount = Number(task.child_tasks_count || 0);
+                var hasChildren = childCount > 0;
+                var isSubtasksOpen = !!taskPageState.openSubtasks[task.id];
+                var subtaskPanelHtml = '';
+                if (hasChildren && isSubtasksOpen) {
+                    subtaskPanelHtml = taskPageState.subtasksCache[task.id]
+                        ? renderSubtaskItems(taskPageState.subtasksCache[task.id])
+                        : '<div class="text-sm text-gray-500 py-2">加载中...</div>';
+                }
+                var openClass = isSubtasksOpen ? '' : ' hidden';
+                var subtaskDesktopBtn = hasChildren
+                    ? '<button onclick="toggleSubtasks(' + task.id + ', this)" class="text-gray-400 hover:text-indigo-600 ' + (isSubtasksOpen ? 'text-indigo-600' : '') + '" title="' + (isSubtasksOpen ? '收起子任务' : '查看子任务') + '"><i class="fas fa-sitemap mr-1"></i>' + childCount + '</button>'
+                    : '';
+                var subtaskMobileBtn = hasChildren
+                    ? '<button onclick="toggleSubtasks(' + task.id + ', this)" class="text-sm text-gray-600 hover:text-indigo-600 ' + (isSubtasksOpen ? 'text-indigo-600' : '') + '"><i class="fas fa-sitemap mr-1"></i>子任务 ' + childCount + '</button>'
+                    : '';
+
                 var desktopRow = '' +
                     '<tr>' +
                     '<td>' + statusBadge(task.status) + '</td>' +
@@ -226,13 +339,17 @@
                     '<td>' + priorityBadge(task.priority) + '</td>' +
                     '<td>' +
                     '<div class="flex items-center justify-end space-x-3">' +
+                    subtaskDesktopBtn +
                     '<a href="/notes?source_type=3&source_id=' + task.id + '" class="text-gray-400 hover:text-blue-600" title="添加笔记"><i class="fas fa-sticky-note"></i></a>' +
                     '<button onclick="editTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="编辑任务"><i class="fas fa-edit"></i></button>' +
                     (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-gray-400 hover:text-green-600" title="标记完成"><i class="fas fa-check"></i></button>' : '') +
                     (Number(task.status) === 1 ? '<button onclick="foldTask(' + task.id + ')" class="text-gray-400 hover:text-gray-700" title="折叠任务"><i class="fas fa-folder"></i></button>' : '') +
                     '</div>' +
                     '</td>' +
-                    '</tr>';
+                    '</tr>' +
+                    (hasChildren
+                        ? '<tr id="subtasks-row-' + task.id + '" class="bg-gray-50' + openClass + '"><td colspan="5" class="px-4 py-3">' + subtaskPanelHtml + '</td></tr>'
+                        : '');
 
                 var mobileCard = '' +
                     '<div class="card border-l-4 border-gray-300"><div class="p-4">' +
@@ -241,16 +358,28 @@
                     '<div class="flex items-center justify-between">' +
                     '<div>' + priorityBadge(task.priority) + '</div>' +
                     '<div class="flex items-center space-x-3">' +
+                    subtaskMobileBtn +
                     '<button onclick="editTask(' + task.id + ')" class="text-sm text-gray-600 hover:text-green-600"><i class="fas fa-edit mr-1"></i>编辑</button>' +
                     (Number(task.status) === 1 ? '<button onclick="completeTask(' + task.id + ')" class="text-sm text-green-600 hover:text-green-800"><i class="fas fa-check mr-1"></i>完成</button>' : '') +
                     (Number(task.status) === 1 ? '<button onclick="foldTask(' + task.id + ')" class="text-sm text-gray-600 hover:text-gray-800"><i class="fas fa-folder mr-1"></i>折叠</button>' : '') +
-                    '</div></div></div></div>';
+                    '</div></div>' +
+                    (hasChildren
+                        ? '<div id="subtasks-mobile-' + task.id + '" class="mt-3 pt-3 border-t border-gray-100' + openClass + '">' + subtaskPanelHtml + '</div>'
+                        : '') +
+                    '</div></div>';
 
                 tbody.append(desktopRow);
                 mobile.append(mobileCard);
             });
 
             $('#taskRecordCount').text('共 ' + taskPageState.total + ' 条记录');
+            if (taskPageState.search) {
+                $('#taskEmptyTitle').text('没有找到匹配的任务');
+                $('#taskEmptyDesc').text('试试更换关键词，或清空搜索条件。');
+            } else {
+                $('#taskEmptyTitle').text('当前没有待办任务');
+                $('#taskEmptyDesc').text('创建您的第一个任务，开始高效工作吧！');
+            }
             $('#taskEmptyState').toggle(tasks.length === 0);
             $('#taskContentArea').toggle(tasks.length > 0);
 
@@ -308,6 +437,9 @@
             var url = '/tasks?status=' + encodeURIComponent(taskPageState.status)
                 + '&page_count=' + taskPageState.perPage
                 + '&page=' + taskPageState.page;
+            if (taskPageState.search) {
+                url += '&search=' + encodeURIComponent(taskPageState.search);
+            }
 
             apiRequest('GET', url, {}).then(function(response) {
                 if (response.code !== 9999) {
@@ -320,7 +452,11 @@
 
                 var currentStatus = String(taskPageState.status || '1');
                 var totalByStatus = 0;
-                if (taskPageState.hasStatsLoaded) {
+                if (taskPageState.search) {
+                    totalByStatus = (pagination.total != null)
+                        ? Number(pagination.total)
+                        : ((taskPageState.page - 1) * taskPageState.perPage + taskPageState.tasks.length);
+                } else if (taskPageState.hasStatsLoaded) {
                     if (currentStatus === '2') {
                         totalByStatus = taskPageState.statusCounts.completed;
                     } else if (currentStatus === '3') {
@@ -338,7 +474,11 @@
 
                 taskPageState.total = totalByStatus;
                 taskPageState.page = Math.max(1, Number(pagination.current_page || taskPageState.page));
-                taskPageState.lastPage = Math.max(1, Math.ceil((taskPageState.total || 0) / taskPageState.perPage));
+                if (pagination.last_page != null) {
+                    taskPageState.lastPage = Math.max(1, Number(pagination.last_page));
+                } else {
+                    taskPageState.lastPage = Math.max(1, Math.ceil((taskPageState.total || 0) / taskPageState.perPage));
+                }
                 if (taskPageState.lastPage < taskPageState.page) {
                     taskPageState.lastPage = taskPageState.page;
                 }
@@ -366,6 +506,8 @@
             }
             apiRequest('PUT', '/tasks/' + taskId, {status: 2}).then(function(response) {
                 if (response.code === 9999) {
+                    taskPageState.subtasksCache = {};
+                    taskPageState.openSubtasks = {};
                     loadTasks();
                 } else {
                     alert('操作失败: ' + (response.msg || '未知错误'));
@@ -386,6 +528,8 @@
             }
             apiRequest('DELETE', '/tasks/' + taskId, {type: 'fold'}).then(function(response) {
                 if (response.code === 9999) {
+                    taskPageState.subtasksCache = {};
+                    taskPageState.openSubtasks = {};
                     loadTaskStats().finally(function() {
                         loadTasks();
                     });
@@ -417,6 +561,8 @@
         $(document).ready(function() {
             taskPageState.status = getQueryParam('status') || '1';
             taskPageState.page = Math.max(1, Number(getQueryParam('page') || 1));
+            taskPageState.search = getQueryParam('search') || '';
+            $('#taskSearch').val(taskPageState.search);
 
             $('#taskStatusFilters').on('click', 'button', function() {
                 taskPageState.status = String($(this).data('status'));
@@ -440,10 +586,9 @@
 
             $('#taskSearch').on('keyup', function(e) {
                 if (e.key === 'Enter') {
-                    var searchTerm = $(this).val();
-                    if (searchTerm) {
-                        window.location.href = '{{ url("/tasks") }}?search=' + encodeURIComponent(searchTerm);
-                    }
+                    taskPageState.search = $.trim($(this).val());
+                    taskPageState.page = 1;
+                    loadTasks();
                 }
             });
 
@@ -456,6 +601,8 @@
 
         // 编辑任务弹窗保存成功后，无需整页刷新，直接重拉列表与统计
         window.afterTaskUpdate = function () {
+            taskPageState.subtasksCache = {};
+            taskPageState.openSubtasks = {};
             loadTaskStats().finally(function() {
                 loadTasks();
             });

@@ -497,6 +497,8 @@
         $('#review_note_input').val('');
         $('#taskUpdateErrors').addClass('hidden');
         $('#taskUpdateErrorList').empty();
+        // 保存成功后按钮会保持 disabled，重新打开弹窗时必须恢复可点击
+        $('#taskUpdateModal .btn-primary').prop('disabled', false);
     }
 
     // 填充待办表单数据（新建弹窗用）

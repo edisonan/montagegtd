@@ -223,8 +223,13 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="text-sm text-gray-500">
-                                    共 <span id="taskCount" class="font-semibold text-gray-900">0</span> 个任务
+                                <div class="flex items-center gap-3 text-sm text-gray-500">
+                                    <label class="flex items-center gap-1.5 cursor-pointer select-none" title="显示已完成任务">
+                                        <input type="checkbox" id="showCompletedTasks"
+                                               class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500">
+                                        <span>显示已完成</span>
+                                    </label>
+                                    <span>共 <span id="taskCount" class="font-semibold text-gray-900">0</span> 个任务</span>
                                 </div>
                             </div>
 
@@ -610,6 +615,12 @@
             gap: 4px;
         }
 
+        /* 已完成任务不展示操作按钮 */
+        .task-item.is-completed .task-actions,
+        .task-item.is-completed:hover .task-actions {
+            display: none !important;
+        }
+
         /* 操作按钮悬停效果 */
         .action-button:hover {
             background: var(--gray-50);
@@ -837,6 +848,7 @@
         let lastCreatedTaskName = '';
         let lastCreatedTaskAt = 0;
         let isSwitchingDoing = false;
+        let showCompletedTasks = false;
         let isTaskPanelCollapsed = false;
         let currentScheduleTaskId = 0;
         let currentTodayTaskId = 0;
@@ -1688,10 +1700,13 @@
             const reviewNote = formatNoteHtml(data.review_note);
             const scheduleSummary = [formatDateTime(data.planned_start_time), formatDateTime(data.planned_end_time)].filter(Boolean).join(' ~ ');
             const remindSummary = formatDateTime(data.remindtime);
-            const deadlineBarHtml = getTodayDeadlineBarHtml(data.deadline);
+            const deadlineBarHtml = isCompleted ? '' : getTodayDeadlineBarHtml(data.deadline);
+            const completedHtml = isCompleted
+                ? `<div class="text-xs text-gray-400 mt-1"><i class="fas fa-check-circle mr-1 text-emerald-500"></i>完成于 ${formatDateTime(data.updated_at) || '—'}</div>`
+                : '';
 
             return `
-    <li id="task${data.id}" class="task-item relative bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors ${isChild ? 'child-task ml-8' : ''}">
+    <li id="task${data.id}" class="task-item relative border rounded-lg p-4 transition-colors ${isCompleted ? 'is-completed bg-gray-50 border-gray-100' : 'bg-white border-gray-200 hover:border-blue-300'} ${isChild ? 'child-task ml-8' : ''}">
         ${deadlineBarHtml}
         <div class="flex items-start gap-3">
             <!-- 复选框 -->
@@ -1714,6 +1729,7 @@
                 </div>
                 ${(scheduleSummary || remindSummary) ? `<div class="text-xs text-gray-500 break-words">${scheduleSummary ? `<span><i class="far fa-clock mr-1"></i>${scheduleSummary}</span>` : ''}${(scheduleSummary && remindSummary) ? '<span class="mx-2">|</span>' : ''}${remindSummary ? `<span><i class="far fa-bell mr-1"></i>${remindSummary}</span>` : ''}</div>` : ''}
                 ${reviewNote ? `<div class="text-xs text-gray-500 mt-1 break-words">${reviewNote}</div>` : ''}
+                ${completedHtml}
             </div>
         </div>
 
@@ -2193,14 +2209,24 @@
             groups.forEach(function(group, idx) {
                 group._index = idx;
                 group._isTop = Number(group.head.is_top || 0);
+                group._isCompleted = Number(group.head.status) === 2;
                 const deadline = new Date(String(group.head.deadline || '').replace(' ', 'T')).getTime();
                 group._hasDeadline = !isNaN(deadline);
                 group._deadlineDist = group._hasDeadline ? Math.abs(deadline - now) : Infinity;
                 group._priority = Number(group.head.priority || 0);
                 group._updatedAt = new Date(String(group.head.updated_at || '').replace(' ', 'T')).getTime() || 0;
+
+                // 已完成的子任务统一排在未完成子任务之后，保持组内父子相邻
+                group.members.sort(function(x, y) {
+                    const xDone = Number(x.status) === 2 ? 1 : 0;
+                    const yDone = Number(y.status) === 2 ? 1 : 0;
+                    return xDone - yDone;
+                });
             });
 
             groups.sort(function(a, b) {
+                // 未完成的父任务分组优先展示，已完成的整体靠后
+                if (a._isCompleted !== b._isCompleted) return a._isCompleted ? 1 : -1;
                 if (a._isTop !== b._isTop) return b._isTop - a._isTop;
                 if (a._hasDeadline !== b._hasDeadline) return a._hasDeadline ? -1 : 1;
                 if (a._hasDeadline && a._deadlineDist !== b._deadlineDist) return a._deadlineDist - b._deadlineDist;
@@ -2245,7 +2271,7 @@
                 return;
             }
             apiRequest('GET', '/tasks/all', {
-                status: 1,
+                status: showCompletedTasks ? '1,2' : 1,
                 mode: mode
                 }).then(function(response) {
                     if (response && response.code == 9999) {
@@ -2604,6 +2630,16 @@
                     this.innerHTML = '切换';
                 }, 1000);
             });
+
+            // 显示/隐藏已完成任务
+            const showCompletedEl = document.getElementById('showCompletedTasks');
+            if (showCompletedEl) {
+                showCompletedEl.checked = showCompletedTasks;
+                showCompletedEl.addEventListener('change', function() {
+                    showCompletedTasks = this.checked;
+                    showtasks();
+                });
+            }
 
             // 专注按钮点击
             const focusBtn = document.getElementById('focusBtn');

@@ -33,6 +33,7 @@ Auth target: `hybrid.token` (`pat_` + `uat_`).
 | Task create | `POST /task` | `POST /api/v2/tasks` | done |
 | Task update | `POST /task/{task}` | `PUT /api/v2/tasks/{task}` | done |
 | Task delete/finish | `DELETE /task/{task}` | `DELETE /api/v2/tasks/{task}` | done |
+| Task subtasks | - | `GET /api/v2/tasks/{task}/subtasks` | done |
 
 ## Pomo
 

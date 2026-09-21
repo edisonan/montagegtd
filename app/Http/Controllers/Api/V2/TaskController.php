@@ -39,7 +39,8 @@ class TaskController extends Controller
 
         $filters = array(
             "status" => $status,
-            "user_id" => Auth::id ()
+            "user_id" => Auth::id (),
+            "search" => trim((string)$request->input('search', ''))
         );
 
         $tasks = $this->taskService->getTaskListWithPagination($filters, $pageSize);
@@ -49,8 +50,8 @@ class TaskController extends Controller
             'pagination' => array(
                 'current_page' => $tasks->currentPage(),
                 'per_page' => $tasks->perPage(),
-                'total' => null,
-                'last_page' => null,
+                'total' => method_exists($tasks, 'total') ? $tasks->total() : null,
+                'last_page' => method_exists($tasks, 'lastPage') ? $tasks->lastPage() : null,
                 'next_page_url' => $tasks->nextPageUrl(),
                 'prev_page_url' => $tasks->previousPageUrl(),
                 'has_more_pages' => $tasks->hasMorePages(),
@@ -105,6 +106,24 @@ class TaskController extends Controller
         $this->authorize('destroy', $task);
 
         return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc($task));
+    }
+
+    public function subtasks(Request $request, Task $task)
+    {
+        $this->authorize('destroy', $task);
+
+        $subtasks = $task->childTasks()
+            ->with('parentTask:id,name')
+            ->orderBy('status', 'asc')
+            ->orderBy('is_top', 'desc')
+            ->orderBy('priority', 'desc')
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return $this->jsonResponse($request, ResponseDataUtil::genSimpleSucc(array(
+            'tasks' => $subtasks,
+            'total' => $subtasks->count(),
+        )));
     }
 
     public function getParentTasks(Request $request)
@@ -366,6 +385,10 @@ class TaskController extends Controller
 
         if ($request->has('is_doing') && (int)$request->input('is_doing') === 1 && (int)$task->status !== 1) {
             throw new CustomException('仅进行中的任务可设置为正在做');
+        }
+
+        if ((int)$request->input('status', 0) === 2 && (int)$task->status !== 2) {
+            $this->taskService->assertTaskCanComplete($task);
         }
 
         $plannedStartTime = $request->input('planned_start_time');

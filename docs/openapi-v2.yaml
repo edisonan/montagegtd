@@ -10994,10 +10994,26 @@ paths:
       description: |
         Action: Api\\V2\\TaskController@getAllList
         Capability: read
+        Note: `status` 支持单个状态、逗号分隔状态串（如 `1,2`）或数组，按状态过滤并保持父子任务相邻返回。
       x-token-capability: "read"
       x-ai-hints:
         controller: "Unknown"
         handler: "handle"
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: 任务状态，可传单个（1 进行中 / 2 已完成 / 3 已删除 / 4 已折叠）或逗号分隔的多个状态，默认 1
+          schema:
+            type: string
+            example: "1,2"
+        - name: mode
+          in: query
+          required: false
+          description: 任务模式，1 工作 / 2 生活
+          schema:
+            type: integer
+            example: 1
       security:
         - BearerAuth: []
       responses:
@@ -11250,6 +11266,48 @@ paths:
               sample:
                 value:
                   key: value
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              examples:
+                ok:
+                  value:
+                    code: 9999
+                    msg: ok
+                    result: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        default:
+          $ref: "#/components/responses/GenericError"
+  "/tasks/{task}/subtasks":
+    get:
+      tags:
+        - tasks
+      summary: "GET /tasks/{task}/subtasks"
+      operationId: unknown_handle_get_tasks_by_task_subtasks
+      description: |
+        Action: Api\\V2\\TaskController@subtasks
+        Capability: read
+      x-token-capability: "read"
+      x-ai-hints:
+        controller: "Unknown"
+        handler: "handle"
+      parameters:
+        - name: task
+          in: path
+          required: true
+          schema:
+            type: string
       security:
         - BearerAuth: []
       responses:

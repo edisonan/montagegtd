@@ -205,6 +205,7 @@ class TaskService {
 		$params = array ();
 		
 		if ($type == 'finish') {
+			$this->assertTaskCanComplete ( $task );
 			$params ['status'] = 2;
 			$params ['is_doing'] = 0;
 			
@@ -228,6 +229,31 @@ class TaskService {
 			$params ['is_doing'] = 0;
 		}
 		$flag = $task->update ( $params );
+	}
+	
+	/**
+	 * 判断待办是否存在未完成的子任务
+	 *
+	 * @param Task $task        	
+	 * @return bool
+	 */
+	public function hasUnfinishedChildTasks($task) {
+		if (empty ( $task ) || empty ( $task->id )) {
+			return false;
+		}
+		return $task->childTasks ()->where ( 'status', 1 )->exists ();
+	}
+	
+	/**
+	 * 完成待办前校验：存在未完成子任务时不允许完成父任务
+	 *
+	 * @param Task $task        	
+	 * @throws CustomException
+	 */
+	public function assertTaskCanComplete($task) {
+		if ($this->hasUnfinishedChildTasks ( $task )) {
+			throw new CustomException ( "存在未完成的子任务，请先完成所有子任务" );
+		}
 	}
 	
 	/**
