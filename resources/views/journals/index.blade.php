@@ -166,6 +166,7 @@
     </div>
 
     @include('components.journal-create-modal')
+    @include('components.journal-edit-modal')
 
     <script src="{{ '/js/My97DatePicker/WdatePicker.js' }}"></script>
     <script type="text/javascript">
@@ -394,6 +395,11 @@
                 var typeHtml = renderJournalType(journal.type);
                 var name = escapeHtml(journal.name || '');
 
+                if (!window.indexJournalsById) {
+                    window.indexJournalsById = {};
+                }
+                window.indexJournalsById[journal.id] = journal;
+
                 desktopBody.append(
                     '<tr id="journal-row-' + journal.id + '" class="hover:bg-gray-50 transition-colors">' +
                     '<td><span class="font-medium text-gray-900">' + (showDate ? start.md : '<span class="text-gray-300">-- --</span>') + '</span></td>' +
@@ -403,7 +409,7 @@
                     '<td><div class="text-gray-800 font-medium break-words" title="' + name + '">' + name + '</div></td>' +
                     '<td><div class="flex items-center justify-end space-x-3">' +
                     '<a href="/notes?source_type=4&source_id=' + journal.id + '" class="text-gray-400 hover:text-blue-600 transition-colors" title="记录更多笔记"><i class="fas fa-sticky-note"></i></a>' +
-                    '<a href="/journal/' + journal.id + '" class="text-gray-400 hover:text-green-600 transition-colors" title="编辑手账"><i class="fas fa-edit"></i></a>' +
+                    '<button type="button" class="edit_journal text-gray-400 hover:text-green-600 transition-colors" data-journal-id="' + journal.id + '" title="编辑手账"><i class="fas fa-edit"></i></button>' +
                     '<button type="button" class="delete_journal text-gray-400 hover:text-red-600 transition-colors" data-journal-id="' + journal.id + '" title="删除手账"><i class="fas fa-trash"></i></button>' +
                     '</div></td>' +
                     '</tr>'
@@ -420,7 +426,7 @@
                     '<div class="text-gray-800 font-medium mb-3 break-words">' + name + '</div>' +
                     '<div class="flex items-center justify-end space-x-3 pt-3 border-t border-gray-100">' +
                     '<a href="/notes?source_type=4&source_id=' + journal.id + '" class="text-sm text-blue-600 hover:text-blue-700"><i class="fas fa-sticky-note mr-1"></i>笔记</a>' +
-                    '<a href="/journal/' + journal.id + '" class="text-sm text-green-600 hover:text-green-700"><i class="fas fa-edit mr-1"></i>编辑</a>' +
+                    '<button type="button" class="edit_journal text-sm text-green-600 hover:text-green-700" data-journal-id="' + journal.id + '"><i class="fas fa-edit mr-1"></i>编辑</button>' +
                     '<button type="button" class="delete_journal text-sm text-red-600 hover:text-red-700" data-journal-id="' + journal.id + '"><i class="fas fa-trash mr-1"></i>删除</button>' +
                     '</div>' +
                     '</div>' +
@@ -488,6 +494,16 @@
                 });
             });
 
+            $(document).on('click', '.edit_journal', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var journalId = $(this).data('journal-id');
+                if (typeof openJournalEdit === 'function') {
+                    openJournalEdit(journalId);
+                }
+            });
+
             $('#journals_prev_page').on('click', function() {
                 if (journalPageState.currentPage > 1) {
                     loadJournals(journalPageState.currentPage - 1);
@@ -531,6 +547,11 @@
 
         // 新增手账弹窗保存成功后，无需整页刷新，直接重拉当前页列表
         window.afterJournalCreate = function () {
+            loadJournals(journalPageState.currentPage);
+        };
+
+        // 修改手账弹窗保存成功后，无需整页刷新，直接重拉当前页列表
+        window.afterJournalUpdate = function () {
             loadJournals(journalPageState.currentPage);
         };
     </script>

@@ -201,6 +201,9 @@
             dialog.classList.remove('scale-95', 'opacity-0');
         }, 10);
 
+        // 每次打开都重置表单，避免带入上次填写/保存的信息
+        resetJournalCreateForm();
+
         // 设置默认时间
         setDefaultTimes();
         updateTimePreview();
@@ -226,6 +229,27 @@
             // 滚动到顶部
             modal.querySelector('.overflow-y-auto').scrollTop = 0;
         }, 300);
+    }
+
+    // 重置新增手账表单，避免上次填写/保存的内容残留
+    function resetJournalCreateForm() {
+        const form = document.getElementById('journalCreateForm');
+        if (!form) return;
+
+        $('#name').val('');
+        $('#duration').val('');
+        $('.quick-time-btn').removeClass('border-blue-400 bg-blue-50 ring-1 ring-blue-200');
+
+        // 清除必填字段的校验错误样式与提示
+        ['name', 'start_time', 'end_time'].forEach(function (id) {
+            const input = document.getElementById(id);
+            if (!input) return;
+            input.classList.remove('has-error');
+            const errorMsg = input.nextElementSibling;
+            if (errorMsg && errorMsg.classList.contains('error-message')) {
+                errorMsg.remove();
+            }
+        });
     }
 
     // 表单提交函数
